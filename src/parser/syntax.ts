@@ -21,6 +21,152 @@ import {
 import {
     Range,
     ASTNode,
+    IdentifierReferenceNode,
+    BindingIdentifierNode,
+    LabelIdentifierNode,
+    IdentifierNode,
+    PrimaryExpressionNode,
+    CoverParenthesizedExpressionAndArrowParameterListNode,
+    ParenthesizedExpressionNode,
+    LiteralNode,
+    ArrayLiteralNode,
+    ElementListNode,
+    ElisionNode,
+    SpreadElementNode,
+    ObjectLiteralNode,
+    PropertyDefinitionListNode,
+    PropertyDefinitionNode,
+    PropertyNameNode,
+    LiteralPropertyNameNode,
+    ComputedPropertyNameNode,
+    CoverInitializedNameNode,
+    InitializerNode,
+    TemplateLiteralNode,
+    TemplateSpansNode,
+    TemplateMiddleListNode,
+    MemberExpressionNode,
+    SuperPropertyNode,
+    MetaPropertyNode,
+    NewTargetNode,
+    NewExpressionNode,
+    CallExpressionNode,
+    SuperCallNode,
+    ArgumentsNode,
+    ArgumentListNode,
+    LeftHandSideExpressionNode,
+    PostfixExpressionNode,
+    UnaryExpressionNode,
+    MultiplicativeExpressionNode,
+    MultiplicativeOperatorNode,
+    AdditiveExpressionNode,
+    ShiftExpressionNode,
+    RelationalExpressionNode,
+    EqualityExpressionNode,
+    BitwiseANDExpressionNode,
+    BitwiseXORExpressionNode,
+    BitwiseORExpressionNode,
+    LogicalANDExpressionNode,
+    LogicalORExpressionNode,
+    ConditionalExpressionNode,
+    AssignmentExpressionNode,
+    AssignmentOperatorNode,
+    ExpressionNode,
+    StatementNode,
+    DeclarationNode,
+    HoistableDeclarationNode,
+    BreakableStatementNode,
+    BlockStatementNode,
+    BlockNode,
+    StatementListNode,
+    StatementListItemNode,
+    LexicalDeclarationNode,
+    LetOrConstNode,
+    BindingListNode,
+    LexicalBindingNode,
+    VariableStatementNode,
+    VariableDeclarationListNode,
+    VariableDeclarationNode,
+    BindingPatternNode,
+    ObjectBindingPatternNode,
+    ArrayBindingPatternNode,
+    BindingPropertyListNode,
+    BindingElementListNode,
+    BindingElisionElementNode,
+    BindingPropertyNode,
+    BindingElementNode,
+    SingleNameBindingNode,
+    BindingRestElementNode,
+    EmptyStatementNode,
+    ExpressionStatementNode,
+    IfStatementNode,
+    IterationStatementNode,
+    ForDeclarationNode,
+    ForBindingNode,
+    ContinueStatementNode,
+    BreakStatementNode,
+    ReturnStatementNode,
+    WithStatementNode,
+    SwitchStatementNode,
+    CaseBlockNode,
+    CaseClausesNode,
+    CaseClauseNode,
+    DefaultClauseNode,
+    LabelledStatementNode,
+    LabelledItemNode,
+    ThrowStatementNode,
+    TryStatementNode,
+    CatchNode,
+    FinallyNode,
+    CatchParameterNode,
+    DebuggerStatementNode,
+    FunctionDeclarationNode,
+    FunctionExpressionNode,
+    StrictFormalParametersNode,
+    FormalParametersNode,
+    FormalParameterListNode,
+    FormalsListNode,
+    FunctionRestParameterNode,
+    FormalParameterNode,
+    FunctionBodyNode,
+    FunctionStatementListNode,
+    ArrowFunctionNode,
+    ArrowParametersNode,
+    ConciseBodyNode,
+    ArrowFormalParametersNode,
+    MethodDefinitionNode,
+    PropertySetParameterListNode,
+    GeneratorMethodNode,
+    GeneratorDeclarationNode,
+    GeneratorExpressionNode,
+    GeneratorBodyNode,
+    YieldExpressionNode,
+    ClassDeclarationNode,
+    ClassExpressionNode,
+    ClassTailNode,
+    ClassHeritageNode,
+    ClassBodyNode,
+    ClassElementListNode,
+    ClassElementNode,
+    ScriptNode,
+    ScriptBodyNode,
+    ModuleNode,
+    ModuleBodyNode,
+    ModuleItemListNode,
+    ModuleItemNode,
+    ImportDeclarationNode,
+    ImportClauseNode,
+    ImportedDefaultBindingNode,
+    NameSpaceImportNode,
+    NamedImportsNode,
+    FromClauseNode,
+    ImportsListNode,
+    ImportSpecifierNode,
+    ModuleSpecifierNode,
+    ImportedBindingNode,
+    ExportDeclarationNode,
+    ExportClauseNode,
+    ExportsListNode,
+    ExportSpecifierNode,
 } from "./ast";
 
 // Section 12.1
@@ -265,19 +411,48 @@ function Expression(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not impl
 
 // Statement
 
-function Statement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function Statement(p: Parser): ASTNode {
+    try { return BlockStatement(p); } catch (e) {}
+    try { return VariableStatement(p); } catch (e) {}
+    try { return EmptyStatement(p); } catch(e) {}
+    try { return ExpressionStatement(p); } catch(e) {}
+    try { return IfStatement(p); } catch(e) {}
+    try { return BreakableStatement(p); } catch(e) {}
+    try { return ContinueStatement(p); } catch (e) {}
+    try { return BreakStatement(p); } catch (e) {}
+    try { return ReturnStatement(p); } catch (e) {}
+    try { return WithStatement(p); } catch (e) {}
+    try { return LabelledStatement(p); } catch (e) {}
+    try { return ThrowStatement(p); } catch (e) {}
+    try { return TryStatement(p); } catch (e) {}
+    try { return DebuggerStatement(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected Statement");
+}
 
 // Declaration
 
-function Declaration(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function Declaration(p: Parser): ASTNode {
+    try { return HoistableDeclaration(p); } catch (e) {}
+    try { return ClassDeclaration(p); } catch (e) {}
+    try { return LexicalDeclaration(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected Declaration");
+}
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function HoistableDeclaration(p: Parser): ASTNode {
+    try { return FunctionDeclaration(p); } catch (e) {}
+    try { return GeneratorDeclaration(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected HoistableDeclaration");
+}
 
 // BreakableStatement
 
-function BreakableStatement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BreakableStatement(p: Parser): ASTNode {
+    try { return IterationStatement(p); } catch (e) {}
+    try { return SwitchStatement(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected BreakableStatement");
+}
 
 // Section 13.2
 
