@@ -47,7 +47,14 @@ export class Parser {
     }
 
     public skipWhitespace(): void {
+        // FIXME: comments, tabs, and other whitespace characters
         while ((this.pos < this.len) && ((this.text[this.pos] == " ") || (this.text[this.pos] == "\n")))
+            this.pos++;
+    }
+
+    public skipWhitespaceNoNewline(): void {
+        // FIXME: comments, tabs, and other whitespace characters
+        while ((this.pos < this.len) && ((this.text[this.pos] == " ")))
             this.pos++;
     }
 
@@ -57,6 +64,9 @@ export class Parser {
         return false;
     }
 
+    // FIXME: This should be replaced with matchToken(), which matches a full token as specified
+    // in the lexical syntax, so that we avoid calls like match("==") which would return true even
+    // if the text at this.pos is "===". The same applies to lookahead() and expect().
     public match(str: string): boolean {
         if (this.lookahead(str)) {
             this.pos += str.length;
@@ -90,6 +100,17 @@ export class Parser {
         if (!this.matchKeyword(keyword))
             throw new ParseError(this,this.pos,"Expected "+keyword);
     }
+
+    public attempt<T>(f: (start: number) => T): T {
+        const start = this.pos;
+        try {
+            return f(start);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
 }
 
 export class ParseError {
@@ -105,5 +126,10 @@ export class ParseError {
         const before = this.parser.text.substring(0,this.pos);
         const after = this.parser.text.substring(this.pos,this.parser.text.length);
         return this.message+": "+JSON.stringify(before+"|"+after);
+    }
+}
+
+export class ParseIgnore {
+    public constructor() {
     }
 }
