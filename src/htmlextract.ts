@@ -203,7 +203,7 @@ class NoLineTerminatorAnnotationItem extends AnnotationItem {
         super();
     }
     public toString(): string {
-        return "NoLineTerminatorAnnotation()";
+        return "NoLineTerminator()";
     }
 }
 
