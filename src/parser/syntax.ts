@@ -27,6 +27,10 @@ import {
     LabelIdentifierNode,
     IdentifierNode,
     ThisNode,
+    CoverExpr1Node,
+    CoverExpr2Node,
+    CoverExpr3Node,
+    CoverExpr4Node,
     NullLiteralNode,
     BooleanLiteralNode,
     NumericLiteralNode,
@@ -35,16 +39,16 @@ import {
     // ParenthesizedExpressionNode,
     // LiteralNode,
     ArrayLiteralNode,
-    // ElementListNode,
-    // ElisionNode,
+    ElisionNode,
     SpreadElementNode,
-    // ObjectLiteralNode,
+    ObjectLiteralNode,
     // PropertyDefinitionListNode,
     // PropertyDefinitionNode,
+    ColonPropertyDefinitionNode,
     // PropertyNameNode,
     // LiteralPropertyNameNode,
-    // ComputedPropertyNameNode,
-    // CoverInitializedNameNode,
+    ComputedPropertyNameNode,
+    CoverInitializedNameNode,
     // InitializerNode,
     // TemplateLiteralNode,
     // TemplateSpansNode,
@@ -56,9 +60,9 @@ import {
     // MetaPropertyNode,
     NewTargetNode,
     NewExpressionNode,
-    // CallExpressionNode,
-    // SuperCallNode,
-    // ArgumentsNode,
+    CallNode,
+    SuperCallNode,
+    ArgumentsNode,
     // ArgumentListNode,
     // LeftHandSideExpressionNode,
     PostIncrementNode,
@@ -125,15 +129,17 @@ import {
     VarIdentifierBindingNode,
     VarPatternBindingNode,
     // BindingPatternNode,
-    // ObjectBindingPatternNode,
-    // ArrayBindingPatternNode,
+    ObjectBindingPatternNode,
+    ArrayBindingPattern1Node,
+    ArrayBindingPattern2Node,
+    ArrayBindingPattern3Node,
     // BindingPropertyListNode,
     // BindingElementListNode,
     // BindingElisionElementNode,
     // BindingPropertyNode,
-    // BindingElementNode,
-    // SingleNameBindingNode,
-    // BindingRestElementNode,
+    BindingPatternInitNode,
+    SingleNameBindingNode,
+    BindingRestElementNode,
     EmptyStatementNode,
     ExpressionStatementNode,
     IfStatementNode,
@@ -210,6 +216,94 @@ import {
     ExportNormalSpecifierNode,
     ExportAsSpecifierNode,
 } from "./ast";
+
+// CoverParenthesizedExpressionAndArrowParameterList_1
+
+function CoverParenthesizedExpressionAndArrowParameterList_1(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("(");
+        p.skipWhitespace();
+        const expr = Expression(p);
+        p.skipWhitespace();
+        p.expect(")");
+        return new CoverExpr1Node(new Range(start,p.pos),expr);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// CoverParenthesizedExpressionAndArrowParameterList_2
+
+function CoverParenthesizedExpressionAndArrowParameterList_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("(");
+        p.skipWhitespace();
+        p.expect(")");
+        return new CoverExpr2Node(new Range(start,p.pos));
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// CoverParenthesizedExpressionAndArrowParameterList_3
+
+function CoverParenthesizedExpressionAndArrowParameterList_3(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("(");
+        p.skipWhitespace();
+        p.expect("...");
+        p.skipWhitespace();
+        const ident = BindingIdentifier(p);
+        p.skipWhitespace();
+        p.expect(")");
+        return new CoverExpr3Node(new Range(start,p.pos),ident);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// CoverParenthesizedExpressionAndArrowParameterList_4
+
+function CoverParenthesizedExpressionAndArrowParameterList_4(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("(");
+        p.skipWhitespace();
+        const expr = Expression(p);
+        p.skipWhitespace();
+        p.expect(",");
+        p.skipWhitespace();
+        p.expect("...");
+        p.skipWhitespace();
+        const ident = BindingIdentifier(p);
+        p.skipWhitespace();
+        p.expect(")");
+        return new CoverExpr3Node(new Range(start,p.pos),ident);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// CoverParenthesizedExpressionAndArrowParameterList
+
+function CoverParenthesizedExpressionAndArrowParameterList(p: Parser): ASTNode {
+    try { return CoverParenthesizedExpressionAndArrowParameterList_1(p); } catch (e) {}
+    try { return CoverParenthesizedExpressionAndArrowParameterList_2(p); } catch (e) {}
+    try { return CoverParenthesizedExpressionAndArrowParameterList_3(p); } catch (e) {}
+    try { return CoverParenthesizedExpressionAndArrowParameterList_4(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected CoverParenthesizedExpressionAndArrowParameterList");
+}
 
 // Section 12.1
 
@@ -288,10 +382,6 @@ function PrimaryExpression(p: Parser): ASTNode {
     try { return CoverParenthesizedExpressionAndArrowParameterList(p); } catch (e) {}
     throw new ParseError(p,p.pos,"Expected PrimaryExpression");
 }
-
-// CoverParenthesizedExpressionAndArrowParameterList
-
-function CoverParenthesizedExpressionAndArrowParameterList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
 
 // ParenthesizedExpression
 
@@ -473,7 +563,23 @@ function ElementList(p: Parser): ASTNode[] {
 
 // Elision
 
-function Elision(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function Elision(p: Parser): ASTNode {
+    const start = p.pos;
+    p.expect(",");
+    let count = 1;
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.expect(",");
+            count++;
+        }
+        catch (e) {
+            p.pos = start2;
+            return new ElisionNode(new Range(start,p.pos),count);
+        }
+    }
+}
 
 // SpreadElement
 
@@ -494,35 +600,157 @@ function SpreadElement(p: Parser): ASTNode {
 
 // ObjectLiteral
 
-function ObjectLiteral(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ObjectLiteral(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("{");
+        p.skipWhitespace();
+
+        let properties: ASTNode[] = [];
+
+        const start2 = p.pos;
+        try {
+            properties = PropertyDefinitionList(p);
+            p.skipWhitespace();
+
+            const start3 = p.pos;
+            try {
+                p.expect(",");
+                p.skipWhitespace();
+            }
+            catch (e) {
+                p.pos = start3;
+            }
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+
+        p.expect("}");
+
+        return new ObjectLiteralNode(new Range(start,p.pos),properties);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function PropertyDefinitionList(p: Parser): ASTNode[] {
+    const start = p.pos;
+    const properties: ASTNode[] = [];
+    properties.push(PropertyDefinition(p));
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.expect(",");
+            p.skipWhitespace();
+            properties.push(PropertyDefinition(p));
+        }
+        catch (e) {
+            p.pos = start2;
+            return properties;
+        }
+    }
+}
+
+// PropertyDefinition_colon
+
+function PropertyDefinition_colon(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        const name = PropertyName(p);
+        p.skipWhitespace();
+        p.expect(":");
+        p.skipWhitespace();
+        const init = AssignmentExpression(p);
+        return new ColonPropertyDefinitionNode(new Range(start,p.pos),name,init);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // PropertyDefinition
 
-function PropertyDefinition(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function PropertyDefinition(p: Parser): ASTNode {
+    const start = p.pos;
+    try { return PropertyDefinition_colon(p); } catch (e) {}
+    try { return CoverInitializedName(p); } catch (e) {}
+    try { return MethodDefinition(p); } catch (e) {}
+    try { return IdentifierReference(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected PropertyDefinition");
+}
 
 // PropertyName
 
-function PropertyName(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function PropertyName(p: Parser): ASTNode {
+    try { return LiteralPropertyName(p); } catch (e) {}
+    try { return ComputedPropertyName(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected identifier, string, number, or computed name");
+}
 
 // LiteralPropertyName
 
-function LiteralPropertyName(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function LiteralPropertyName(p: Parser): ASTNode {
+    try { return IdentifierName(p); } catch (e) {}
+    try { return StringLiteral(p); } catch (e) {}
+    try { return NumericLiteral(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected identifier, string, or number");
+}
 
 // ComputedPropertyName
 
-function ComputedPropertyName(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ComputedPropertyName(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("{");
+        p.skipWhitespace();
+        const expr = AssignmentExpression(p);
+        p.skipWhitespace();
+        p.expect("}");
+        return new ComputedPropertyNameNode(new Range(start,p.pos),expr);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // CoverInitializedName
 
-function CoverInitializedName(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function CoverInitializedName(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        const ident = IdentifierReference(p);
+        p.skipWhitespace();
+        const init = Initializer(p);
+        return new CoverInitializedNameNode(new Range(start,p.pos),ident,init);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // Initializer
 
-function Initializer(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function Initializer(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("=");
+        p.skipWhitespace();
+        return AssignmentExpression(p);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // Section 12.2.9
 
@@ -587,9 +815,9 @@ function MemberExpression(p: Parser): ASTNode {
                 }
                 else if (p.match(".")) {
                     p.skipWhitespace();
-                    const ident = Identifier(p);
+                    const ident = IdentifierName(p);
                     p.skipWhitespace();
-                    left = new MemberAccessIdentNode(new Range(start,p.pos),left,ident.value);
+                    left = new MemberAccessIdentNode(new Range(start,p.pos),left,ident);
                 }
                 else {
                     // FIXME: TemplateLiteral
@@ -680,21 +908,164 @@ function NewExpression(p: Parser): ASTNode {
     }
 }
 
+// CallExpression_start
+
+function CallExpression_start(p: Parser): ASTNode {
+    try { return SuperCall(p); } catch (e) {}
+
+    const start = p.pos;
+    try {
+        const fun = MemberExpression(p);
+        p.skipWhitespace();
+        const args = Arguments(p);
+        return new CallNode(new Range(start,p.pos),fun,args);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
 // CallExpression
 
-function CallExpression(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function CallExpression(p: Parser): ASTNode {
+    const start = p.pos;
+    let left = CallExpression_start(p);
+    while (true) {
+        const start2 = p.pos;
+        try {
+            try {
+                p.skipWhitespace();
+                const right = Arguments(p);
+                left = new CallNode(new Range(start,p.pos),left,right);
+                continue;
+            }
+            catch (e) {
+                p.pos = start2;
+            }
+
+            try {
+                p.skipWhitespace();
+                p.expect("[");
+                p.skipWhitespace();
+                const right = Expression(p);
+                p.skipWhitespace();
+                p.expect("]");
+                left = new MemberAccessExprNode(new Range(start,p.pos),left,right);
+                continue;
+            }
+            catch (e) {
+                p.pos = start2;
+            }
+
+            try {
+                p.expect(".");
+                p.skipWhitespace();
+                const right = IdentifierName(p);
+                left = new MemberAccessIdentNode(new Range(start,p.pos),left,right);
+                continue;
+            }
+            catch (e) {
+                p.pos = start2;
+            }
+
+            try {
+                left = TemplateLiteral(p);
+                continue;
+            }
+            catch (e) {}
+
+            throw new ParseIgnore();
+        }
+        catch (e) {
+            p.pos = start2;
+            return left;
+        }
+    }
+}
 
 // SuperCall
 
-function SuperCall(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function SuperCall(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("super");
+        p.skipWhitespace();
+        const args = Arguments(p);
+        throw new SuperCallNode(new Range(start,p.pos),args);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
 
 // Arguments
 
-function Arguments(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function Arguments(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("(");
+        p.skipWhitespace();
+        p.expect(")");
+        return new ArgumentsNode(new Range(start,p.pos),[]);
+    }
+    catch (e) {
+        p.pos = start;
+    }
+
+    try {
+        p.expect("(")
+        p.skipWhitespace();
+        const args = ArgumentList(p);
+        p.skipWhitespace();
+        p.expect(")");
+        return new ArgumentsNode(new Range(start,p.pos),args);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// ArgumentList_item
+
+function ArgumentList_item(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("...");
+        p.skipWhitespace();
+        const expr = AssignmentExpression(p);
+        return new SpreadElementNode(new Range(start,p.pos),expr);
+    }
+    catch (e) {
+        p.pos = start;
+    }
+
+    return AssignmentExpression(p);
+}
 
 // ArgumentList
 
-function ArgumentList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ArgumentList(p: Parser): ASTNode[] {
+    const start = p.pos;
+    const items: ASTNode[] = [];
+    items.push(ArgumentList_item(p));
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.expect(",");
+            p.skipWhitespace();
+            items.push(ArgumentList_item(p));
+        }
+        catch (e) {
+            p.pos = start2;
+            return items;
+        }
+    }
+}
 
 // LeftHandSideExpression
 
@@ -1516,23 +1887,193 @@ function VariableDeclaration(p: Parser): ASTNode {
 
 // BindingPattern
 
-function BindingPattern(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingPattern(p: Parser): ASTNode {
+    try { return ObjectBindingPattern(p); } catch (e) {}
+    try { return ArrayBindingPattern(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected BindingPattern");
+}
 
 // ObjectBindingPattern
 
-function ObjectBindingPattern(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ObjectBindingPattern(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        let properties: ASTNode[] = [];
+        p.expect("{");
+        p.skipWhitespace();
+
+        const start2 = p.pos;
+        try {
+            properties = BindingPropertyList(p);
+            p.skipWhitespace();
+
+            const start3 = p.pos;
+            try {
+                p.expect(",");
+                p.skipWhitespace();
+            }
+            catch (e) {
+                p.pos = start3;
+            }
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+
+        p.expect("}");
+        return new ObjectBindingPatternNode(new Range(start,p.pos),properties);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// ArrayBindingPattern_1
+
+function ArrayBindingPattern_1(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        let elision: ASTNode = null;
+        let rest: ASTNode = null;
+        p.expect("[]");
+        p.skipWhitespace();
+
+        const start2 = p.pos;
+        try {
+            elision = Elision(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+
+        const start3 = p.pos;
+        try {
+            rest = BindingRestElement(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start3;
+        }
+
+        p.expect("]");
+
+        return new ArrayBindingPattern1Node(new Range(start,p.pos),elision,rest);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// ArrayBindingPattern_2
+
+function ArrayBindingPattern_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("[]");
+        p.skipWhitespace();
+        const elements = BindingElementList(p);
+        p.skipWhitespace();
+        p.expect("]");
+        return new ArrayBindingPattern2Node(new Range(start,p.pos),elements);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// ArrayBindingPattern_3
+
+function ArrayBindingPattern_3(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        let elision: ASTNode = null;
+        let rest: ASTNode = null;
+        p.expect("[");
+        p.skipWhitespace();
+        const elements = BindingElementList(p);
+        p.skipWhitespace();
+        p.expect(",");
+        p.skipWhitespace();
+
+        const start2 = p.pos;
+        try {
+            elision = Elision(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+
+        const start3 = p.pos;
+        try {
+            rest = BindingRestElement(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start3;
+        }
+
+        p.expect("]");
+        return new ArrayBindingPattern3Node(new Range(start,p.pos),elements,elision,rest);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ArrayBindingPattern
 
-function ArrayBindingPattern(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ArrayBindingPattern(p: Parser): ASTNode {
+    try { return ArrayBindingPattern_1(p); } catch (e) {}
+    try { return ArrayBindingPattern_2(p); } catch (e) {}
+    try { return ArrayBindingPattern_3(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected ArrayBindingPattern");
+}
 
 // BindingPropertyList
 
-function BindingPropertyList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingPropertyList(p: Parser): ASTNode[] {
+    const properties: ASTNode[] = [];
+    properties.push(BindingProperty(p));
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.expect(",");
+            p.skipWhitespace();
+            properties.push(BindingProperty(p));
+        }
+        catch (e) {
+            p.pos = start2;
+            return properties;
+        }
+    }
+}
 
 // BindingElementList
 
-function BindingElementList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingElementList(p: Parser): ASTNode[] {
+    const elements: ASTNode[] = [];
+    elements.push(BindingElisionElement(p));
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.expect(",");
+            p.skipWhitespace();
+            elements.push(BindingElisionElement(p));
+        }
+        catch (e) {
+            p.pos = start2;
+            return elements;
+        }
+    }
+}
 
 // BindingElisionElement
 
@@ -1544,15 +2085,53 @@ function BindingProperty(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not
 
 // BindingElement
 
-function BindingElement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingElement(p: Parser): ASTNode {
+    try { return SingleNameBinding(p); } catch (e) {}
+
+    const start = p.pos;
+    try {
+        const pattern = BindingPattern(p);
+        p.skipWhitespace();
+        const init = Initializer(p);
+        return new BindingPatternInitNode(new Range(start,p.pos),pattern,init);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // SingleNameBinding
 
-function SingleNameBinding(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function SingleNameBinding(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        const ident = BindingIdentifier(p);
+        p.skipWhitespace();
+        const init = Initializer(p);
+        return new SingleNameBindingNode(new Range(start,p.pos),ident,init);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // BindingRestElement
 
-function BindingRestElement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingRestElement(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expect("...");
+        p.skipWhitespace();
+        const ident = BindingIdentifier(p);
+        return new BindingRestElementNode(new Range(start,p.pos),ident);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // Section 13.4
 
