@@ -129,8 +129,8 @@ export class Parser {
 
     public upcomingPunctuator(): string {
         let longest: string = null;
-        for (let i = this.pos; i < this.len; i++) {
-            const candidate = this.text.substring(this.pos,this.pos+i);
+        for (let i = this.pos+1; i < this.len; i++) {
+            const candidate = this.text.substring(this.pos,i);
             if (isPunctuator(candidate))
                 longest = candidate;
             else

@@ -2052,3 +2052,28 @@ export class ExportAsSpecifierNode extends ASTNode {
         return [this.ident,this.asIdent];
     }
 }
+
+export class ListNode extends ASTNode {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
+        super(range,"[]]");
+        this.elements = elements;
+    }
+    public get children(): ASTNode[] {
+        return this.elements;
+    }
+}
+
+export class ErrorNode extends ASTNode {
+    public readonly message: string;
+    public constructor(range: Range, message: string) {
+        super(range,"Error");
+        this.message = message;
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+    public get label(): string {
+        return "ERROR: "+this.message;
+    }
+}
