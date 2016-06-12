@@ -12,6 +12,75 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const keywords = arrayToSet([
+    "async",  // Note: Future reserved word (not in spec but we know it's coming)
+    "await",  // Note: Future reserved word
+    "break",
+    "case",
+    "catch",
+    "class",
+    "const",
+    "continue",
+    "debugger",
+    "default",
+    "delete",
+    "do",
+    "else",
+    "enum", // Note: Future reserved word
+    "export",
+    "extends",
+    "finally",
+    "for",
+    "function",
+    "if",
+    "import",
+    "in",
+    "instanceof",
+    "let", // Note: in strict mode, treated as a reserved keyword through static semantic restrictions
+    "new",
+    "return",
+    "static", // Note: in strict mode, treated as a reserved keyword through static semantic restrictions
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "try",
+    "typeof",
+    "var",
+    "void",
+    "while",
+    "with",
+    "yield", // Note: can be an Identifier in some contexts
+]);
+
+const punctuators = arrayToSet([
+    "{",    "(",    ")",    "[",    "]",    ".",
+    "...",  ";",    ",",    "<",    ">",    "<=",
+    ">=",   "==",   "!=",   "===",  "!==",
+    "+",    "-",    "*",    "%",    "++",   "--",
+    "<<",   ">>",   ">>>",  "&",    "|",    "^",
+    "!",    "~",    "&&",   "||",   "?",    ":",
+    "=",    "+=",   "-=",   "*=",   "%=",   "<<=",
+    ">>=",  ">>>=", "&=",   "|=",   "^=",   "=>",
+    "/", "/=", // DivPunctuator
+    "}", // RightBracePunctuator
+]);
+
+function isKeyword(str: string): boolean {
+    return (keywords[str] === true);
+}
+
+function isPunctuator(str: string): boolean {
+    return (punctuators[str] === true);
+}
+
+function arrayToSet(array: string[]): { [key: string]: boolean } {
+    const result: { [key: string]: boolean } = {};
+    for (const item of array)
+        result[item] = true;
+    return result;
+}
+
 export function isIdStart(c: string): boolean {
     return (((c >= "A") && (c <= "Z")) ||
             ((c >= "a") && (c <= "z")) ||
@@ -58,6 +127,36 @@ export class Parser {
             this.pos++;
     }
 
+    public upcomingPunctuator(): string {
+        let longest: string = null;
+        for (let i = this.pos; i < this.len; i++) {
+            const candidate = this.text.substring(this.pos,this.pos+i);
+            if (isPunctuator(candidate))
+                longest = candidate;
+            else
+                break;
+        }
+        return longest;
+    }
+
+    public lookaheadPunctuator(str: string): boolean {
+        const upcoming = this.upcomingPunctuator();
+        return (upcoming == str);
+    }
+
+    public matchPunctuator(str: string): boolean {
+        if (this.lookaheadPunctuator(str)) {
+            this.pos += str.length;
+            return true;
+        }
+        return false;
+    }
+
+    public expectPunctuator(str: string): void {
+        if (!this.matchPunctuator(str))
+            throw new ParseError(this,this.pos,"Expected "+str);
+    }
+
     public lookahead(str: string): boolean {
         if ((this.pos < this.len) && (this.text.substring(this.pos,this.pos + str.length) == str))
             return true;
@@ -81,6 +180,8 @@ export class Parser {
     }
 
     public lookaheadKeyword(keyword: string): boolean {
+        if (!isKeyword(keyword))
+            throw new ParseError(this,this.pos,keyword+" is not a keyword");
         if ((this.pos < this.len) && (this.text.substring(this.pos,this.pos + keyword.length) == keyword)) {
             if ((this.pos + keyword.length == this.len) || !isIdChar(this.text[this.pos + keyword.length]))
                 return true;
