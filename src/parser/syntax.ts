@@ -2919,7 +2919,7 @@ function ClassElement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not im
 
 // Script
 
-function Script(p: Parser): ASTNode {
+export function Script(p: Parser): ASTNode {
     const start = p.pos;
     let body: ASTNode[] = [];
     try { body = ScriptBody(p); } catch (e) {}
