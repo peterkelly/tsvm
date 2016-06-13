@@ -179,20 +179,25 @@ import {
     // ArrowParametersNode,
     // ConciseBodyNode,
     // ArrowFormalParametersNode,
-    // MethodDefinitionNode,
+    MethodNode,
+    GetterNode,
+    SetterNode,
     // PropertySetParameterListNode,
-    // GeneratorMethodNode,
-    // GeneratorDeclarationNode,
-    // GeneratorExpressionNode,
-    // GeneratorBodyNode,
-    // YieldExpressionNode,
-    // ClassDeclarationNode,
-    // ClassExpressionNode,
-    // ClassTailNode,
-    // ClassHeritageNode,
+    GeneratorMethodNode,
+    GeneratorDeclarationNode,
+    DefaultGeneratorDeclarationNode,
+    GeneratorExpressionNode,
+    YieldExprNode,
+    YieldStarNode,
+    YieldNothingNode,
+    ClassDeclarationNode,
+    ClassExpressionNode,
+    ClassTailNode,
+    ExtendsNode,
     // ClassBodyNode,
     // ClassElementListNode,
-    // ClassElementNode,
+    StaticMethodDefinitionNode,
+    EmptyClassElementNode,
     ScriptNode,
     // ScriptBodyNode,
     ModuleNode,
@@ -2975,6 +2980,8 @@ function FunctionStatementList(p: Parser): ASTNode {
 
 // Section 14.2
 
+// ArrowFunction
+
 function ArrowFunction(p: Parser): ASTNode {
     const start = p.pos;
     try {
@@ -3053,65 +3060,478 @@ function ArrowFormalParameters(p: Parser): ASTNode {
 
 // Section 14.3
 
+// MethodDefinition_1
+
+function MethodDefinition_1(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        const name = PropertyName(p);
+        p.skipWhitespace();
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const params = StrictFormalParameters(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = FunctionBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new MethodNode(new Range(start,p.pos),name,params,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// MethodDefinition_2
+
+function MethodDefinition_2(p: Parser): ASTNode {
+    return GeneratorMethod(p);
+}
+
+// MethodDefinition_3
+
+function MethodDefinition_3(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("get");
+        p.skipWhitespace();
+        const name = PropertyName(p);
+        p.skipWhitespace();
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = FunctionBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new GetterNode(new Range(start,p.pos),name,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// MethodDefinition_4
+
+function MethodDefinition_4(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("set");
+        p.skipWhitespace();
+        const name = PropertyName(p);
+        p.skipWhitespace();
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const param = PropertySetParameterList(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = FunctionBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new SetterNode(new Range(start,p.pos),name,param,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
 // MethodDefinition
 
-function MethodDefinition(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function MethodDefinition(p: Parser): ASTNode {
+    try { return MethodDefinition_1(p); } catch (e) {}
+    try { return MethodDefinition_2(p); } catch (e) {}
+    try { return MethodDefinition_3(p); } catch (e) {}
+    try { return MethodDefinition_4(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected MethodDefinition");
+}
 
 // PropertySetParameterList
 
-function PropertySetParameterList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function PropertySetParameterList(p: Parser): ASTNode {
+    return FormalParameter(p);
+}
 
 // Section 14.4
 
 // GeneratorMethod
 
-function GeneratorMethod(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function GeneratorMethod(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectPunctuator("*");
+        p.skipWhitespace();
+        const name = PropertyName(p);
+        p.skipWhitespace();
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const params = StrictFormalParameters(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = GeneratorBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new GeneratorMethodNode(new Range(start,p.pos),name,params,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// GeneratorDeclaration_1
+
+function GeneratorDeclaration_1(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("function");
+        p.skipWhitespace();
+        p.expectPunctuator("*");
+        p.skipWhitespace();
+        const ident = BindingIdentifier(p);
+        p.skipWhitespace();
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const params = FormalParameters(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = GeneratorBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new GeneratorDeclarationNode(new Range(start,p.pos),ident,params,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// GeneratorDeclaration_2
+
+function GeneratorDeclaration_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("function");
+        p.skipWhitespace();
+        p.expectPunctuator("*");
+        p.skipWhitespace();
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const params = FormalParameters(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = GeneratorBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new DefaultGeneratorDeclarationNode(new Range(start,p.pos),params,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function GeneratorDeclaration(p: Parser): ASTNode {
+    try { return GeneratorDeclaration_1(p); } catch (e) {}
+    // try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
+    throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
+}
 
 // GeneratorExpression
 
-function GeneratorExpression(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function GeneratorExpression(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("function");
+        p.skipWhitespace();
+        p.expectPunctuator("*");
+        p.skipWhitespace();
+
+        let ident: ASTNode = null;
+        const start2 = p.pos;
+        try {
+            ident = BindingIdentifier(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const params = FormalParameters(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        p.skipWhitespace();
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = GeneratorBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new GeneratorExpressionNode(new Range(start,p.pos),ident,params,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // GeneratorBody
 
-function GeneratorBody(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function GeneratorBody(p: Parser): ASTNode {
+    return FunctionBody(p);
+}
+
+// YieldExpression_1
+
+function YieldExpression_1(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("yield");
+        p.skipWhitespaceNoNewline();
+        p.expectPunctuator("*");
+        p.skipWhitespace();
+        const expr = AssignmentExpression(p);
+        return new YieldStarNode(new Range(start,p.pos),expr);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// YieldExpression_2
+
+function YieldExpression_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("yield");
+        p.skipWhitespaceNoNewline();
+        const expr = AssignmentExpression(p);
+        return new YieldExprNode(new Range(start,p.pos),expr);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// YieldExpression_3
+
+function YieldExpression_3(p: Parser): ASTNode {
+    const start = p.pos;
+    p.expectKeyword("yield");
+    return new YieldNothingNode(new Range(start,p.pos));
+}
 
 // YieldExpression
 
-function YieldExpression(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function YieldExpression(p: Parser): ASTNode {
+    try { return YieldExpression_1(p); } catch (e) {}
+    try { return YieldExpression_2(p); } catch (e) {}
+    try { return YieldExpression_3(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected YieldExpression");
+}
 
 // Section 14.5
 
+// ClassDeclaration_1
+
+function ClassDeclaration_1(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("class");
+        p.skipWhitespace();
+        const ident = BindingIdentifier(p);
+        p.skipWhitespace();
+        const tail = ClassTail(p);
+        return new ClassDeclarationNode(new Range(start,p.pos),ident,tail);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// ClassDeclaration_2
+
+function ClassDeclaration_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("class");
+        p.skipWhitespace();
+        const tail = ClassTail(p);
+        return new ClassDeclarationNode(new Range(start,p.pos),null,tail);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassDeclaration(p: Parser): ASTNode {
+    try { return ClassDeclaration_1(p); } catch (e) {}
+    // try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
+    throw new ParseError(p,p.pos,"Expected ClassDeclaration");
+}
 
 // ClassExpression
 
-function ClassExpression(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassExpression(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        let ident: ASTNode = null;
+
+        p.expectKeyword("class");
+        p.skipWhitespace();
+
+        const start2 = p.pos;
+        try {
+            ident = BindingIdentifier(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+
+        const tail = ClassTail(p);
+        return new ClassExpressionNode(new Range(start,p.pos),ident,tail);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ClassTail
 
-function ClassTail(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassTail(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        let heritage: ASTNode = null;
+        try {
+            heritage = ClassHeritage(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start;
+        }
+
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = ClassBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return new ClassTailNode(new Range(start,p.pos),heritage,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ClassHeritage
 
-function ClassHeritage(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassHeritage(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("extends");
+        p.skipWhitespace();
+        const expr = LeftHandSideExpression(p);
+        return new ExtendsNode(new Range(start,p.pos),expr);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ClassBody
 
-function ClassBody(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassBody(p: Parser): ASTNode {
+    return ClassElementList(p);
+}
 
 // ClassElementList
 
-function ClassElementList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassElementList(p: Parser): ASTNode {
+    const start = p.pos;
+    const elements: ASTNode[] = [];
+    elements.push(ClassElement(p));
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            elements.push(ClassElement(p));
+        }
+        catch (e) {
+            p.pos = start2;
+            return new ListNode(new Range(start,p.pos),elements);
+        }
+    }
+}
+
+// ClassElement_1
+
+function ClassElement_1(p: Parser): ASTNode {
+    return MethodDefinition(p);
+}
+
+// ClassElement_2
+
+function ClassElement_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectKeyword("static");
+        p.skipWhitespace();
+        const method = MethodDefinition(p);
+        return new StaticMethodDefinitionNode(new Range(start,p.pos),method);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
+
+// ClassElement_3
+
+function ClassElement_3(p: Parser): ASTNode {
+    const start = p.pos;
+    p.expectPunctuator(";");
+    return new EmptyClassElementNode(new Range(start,p.pos));
+}
 
 // ClassElement
 
-function ClassElement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ClassElement(p: Parser): ASTNode {
+    try { return ClassElement_1(p); } catch (e) {}
+    try { return ClassElement_2(p); } catch (e) {}
+    try { return ClassElement_3(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected ClassElement");
+}
 
 // Section 15.1
 

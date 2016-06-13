@@ -1669,19 +1669,52 @@ export class ArrowFunctionNode extends ASTNode {
 //         return [];
 //     }
 // }
-//
-// // Section 14.3
-//
-// // TODO
-// export class MethodDefinitionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"MethodDefinition");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
+
+// Section 14.3
+
+export class MethodNode extends ASTNode {
+    public readonly name: ASTNode;
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, name: ASTNode, params: ASTNode, body: ASTNode) {
+        super(range,"Method");
+        this.name = name;
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.name,this.params,this.body];
+    }
+}
+
+export class GetterNode extends ASTNode {
+    public readonly name: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, name: ASTNode, body: ASTNode) {
+        super(range,"Getter");
+        this.name = name;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.name,this.body];
+    }
+}
+
+export class SetterNode extends ASTNode {
+    public readonly name: ASTNode;
+    public readonly param: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, name: ASTNode, param: ASTNode, body: ASTNode) {
+        super(range,"Setter");
+        this.name = name;
+        this.param = param;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.name,this.param,this.body];
+    }
+}
+
 // // TODO
 // export class PropertySetParameterListNode extends ASTNode {
 //     public constructor(range: Range) {
@@ -1693,99 +1726,148 @@ export class ArrowFunctionNode extends ASTNode {
 // }
 //
 // // Section 14.4
-//
-// // TODO
-// export class GeneratorMethodNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"GeneratorMethod");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class GeneratorDeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"GeneratorDeclaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class GeneratorExpressionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"GeneratorExpression");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class GeneratorBodyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"GeneratorBody");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class YieldExpressionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"YieldExpression");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 14.5
-//
-// // TODO
-// export class ClassDeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassDeclaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ClassExpressionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassExpression");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ClassTailNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassTail");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ClassHeritageNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassHeritage");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
+
+export class GeneratorMethodNode extends ASTNode {
+    public readonly name: ASTNode;
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, name: ASTNode, params: ASTNode, body: ASTNode) {
+        super(range,"GeneratorMethod");
+        this.name = name;
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.name,this.params,this.body];
+    }
+}
+
+export class GeneratorDeclarationNode extends ASTNode {
+    public readonly ident: ASTNode;
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+        super(range,"GeneratorDeclaration");
+        this.ident = ident;
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.ident,this.params,this.body];
+    }
+}
+
+export class DefaultGeneratorDeclarationNode extends ASTNode {
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, params: ASTNode, body: ASTNode) {
+        super(range,"GeneratorDeclaration");
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.params,this.body];
+    }
+}
+
+export class GeneratorExpressionNode extends ASTNode {
+    public readonly ident: ASTNode;
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+        super(range,"GeneratorExpression");
+        this.ident = ident;
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.ident,this.params,this.body];
+    }
+}
+
+export class YieldExprNode extends ASTNode {
+    public readonly expr: ASTNode;
+    public constructor(range: Range, expr: ASTNode) {
+        super(range,"YieldExpr");
+        this.expr = expr;
+    }
+    public get children(): ASTNode[] {
+        return [this.expr];
+    }
+}
+
+export class YieldStarNode extends ASTNode {
+    public readonly expr: ASTNode;
+    public constructor(range: Range, expr: ASTNode) {
+        super(range,"YieldStar");
+        this.expr = expr;
+    }
+    public get children(): ASTNode[] {
+        return [this.expr];
+    }
+}
+
+export class YieldNothingNode extends ASTNode {
+    public constructor(range: Range) {
+        super(range,"YieldNothing");
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+}
+
+// Section 14.5
+
+export class ClassDeclarationNode extends ASTNode {
+    public readonly ident: ASTNode;
+    public readonly tail: ASTNode;
+    public constructor(range: Range, ident: ASTNode, tail: ASTNode) {
+        super(range,"ClassDeclaration");
+        this.ident = ident;
+        this.tail = tail;
+    }
+    public get children(): ASTNode[] {
+        return [this.ident,this.tail];
+    }
+}
+
+export class ClassExpressionNode extends ASTNode {
+    public readonly ident: ASTNode;
+    public readonly tail: ASTNode;
+    public constructor(range: Range, ident: ASTNode, tail: ASTNode) {
+        super(range,"ClassExpression");
+        this.ident = ident;
+        this.tail = tail;
+    }
+    public get children(): ASTNode[] {
+        return [this.ident,this.tail];
+    }
+}
+
+export class ClassTailNode extends ASTNode {
+    public readonly heritage: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, heritage: ASTNode, body: ASTNode) {
+        super(range,"ClassTail");
+        this.heritage = heritage;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.heritage,this.body];
+    }
+}
+
+export class ExtendsNode extends ASTNode {
+    public readonly expr: ASTNode;
+    public constructor(range: Range, expr: ASTNode) {
+        super(range,"Extends");
+        this.expr = expr;
+    }
+    public get children(): ASTNode[] {
+        return [this.expr];
+    }
+}
+
 // // TODO
 // export class ClassBodyNode extends ASTNode {
 //     public constructor(range: Range) {
@@ -1805,16 +1887,25 @@ export class ArrowFunctionNode extends ASTNode {
 //         return [];
 //     }
 // }
-//
-// // TODO
-// export class ClassElementNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassElement");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
+
+export class StaticMethodDefinitionNode extends ASTNode {
+    public readonly method: ASTNode;
+    public constructor(range: Range, method: ASTNode) {
+        super(range,"StaticMethodDefinition");
+    }
+    public get children(): ASTNode[] {
+        return [this.method];
+    }
+}
+
+export class EmptyClassElementNode extends ASTNode {
+    public constructor(range: Range) {
+        super(range,"EmptyClassElement");
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+}
 
 // Section 15.1
 
