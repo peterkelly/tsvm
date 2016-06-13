@@ -2879,35 +2879,99 @@ function FunctionExpression(p: Parser): ASTNode {
 
 // StrictFormalParameters
 
-function StrictFormalParameters(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function StrictFormalParameters(p: Parser): ASTNode {
+    return FormalParameters(p);
+}
 
 // FormalParameters
 
-function FormalParameters(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FormalParameters(p: Parser): ListNode {
+    try { return FormalParameterList(p); } catch (e) {}
+    return new ListNode(new Range(p.pos,p.pos),[]);
+}
 
 // FormalParameterList
 
-function FormalParameterList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FormalParameterList(p: Parser): ListNode {
+    const start = p.pos;
+    try {
+        const rest = FunctionRestParameter(p);
+        return new ListNode(new Range(start,p.pos),[rest]);
+    }
+    catch (e) {
+        p.pos = start;
+    }
+
+    try {
+        const formals = FormalsList(p);
+
+        const start3 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.expectPunctuator(",");
+            p.skipWhitespace();
+            const rest = FunctionRestParameter(p);
+
+            const elements = formals.elements;
+            elements.push(rest);
+            return new ListNode(new Range(start,p.pos),elements);
+        }
+        catch (e) {
+            p.pos = start3;
+        }
+
+        return formals;
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // FormalsList
 
-function FormalsList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FormalsList(p: Parser): ListNode {
+    const start = p.pos;
+    const elements: ASTNode[] = [];
+    elements.push(FormalParameter(p));
+    while (true) {
+        const start2 = p.pos;
+        try {
+            p.skipWhitespace();
+            p.matchPunctuator(",");
+            p.skipWhitespace();
+            elements.push(FormalParameter(p));
+        }
+        catch (e) {
+            p.pos = start2;
+            return new ListNode(new Range(start,p.pos),elements);
+        }
+    }
+}
 
 // FunctionRestParameter
 
-function FunctionRestParameter(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FunctionRestParameter(p: Parser): ASTNode {
+    return BindingRestElement(p);
+}
 
 // FormalParameter
 
-function FormalParameter(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FormalParameter(p: Parser): ASTNode {
+    return BindingElement(p);
+}
 
 // FunctionBody
 
-function FunctionBody(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FunctionBody(p: Parser): ASTNode {
+    return FunctionStatementList(p);
+}
 
 // FunctionStatementList
 
-function FunctionStatementList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function FunctionStatementList(p: Parser): ASTNode {
+    return StatementList(p);
+}
 
 // Section 14.2
 
