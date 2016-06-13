@@ -1141,26 +1141,32 @@ export class ArrayBindingPattern3Node extends ASTNode {
 //         return [];
 //     }
 // }
-//
-// // TODO
-// export class BindingElisionElementNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BindingElisionElement");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class BindingPropertyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BindingProperty");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
+
+export class BindingElisionElementNode extends ASTNode {
+    public readonly elision: ASTNode;
+    public readonly element: ASTNode;
+    public constructor(range: Range, elision: ASTNode, element: ASTNode) {
+        super(range,"BindingElisionElement");
+        this.elision = elision;
+        this.element = element;
+    }
+    public get children(): ASTNode[] {
+        return [this.elision,this.element];
+    }
+}
+
+export class BindingPropertyNode extends ASTNode {
+    public readonly name: ASTNode;
+    public readonly element: ASTNode;
+    public constructor(range: Range, name: ASTNode, element: ASTNode) {
+        super(range,"BindingProperty");
+        this.name = name;
+        this.element = element;
+    }
+    public get children(): ASTNode[] {
+        return [this.name,this.element];
+    }
+}
 
 export class BindingPatternInitNode extends ASTNode {
     public readonly pattern: ASTNode;
@@ -1285,17 +1291,29 @@ export class ForStatementNode extends ASTNode {
     }
 }
 
-//
-// // TODO
-// export class ForDeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ForDeclaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
+export class LetForDeclarationNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public constructor(range: Range, binding: ASTNode) {
+        super(range,"LetForDeclaration");
+        this.binding = binding;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding];
+    }
+}
+
+export class ConstForDeclarationNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public constructor(range: Range, binding: ASTNode) {
+        super(range,"ConstForDeclaration");
+        this.binding = binding;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding];
+    }
+}
+
+
 // // TODO
 // export class ForBindingNode extends ASTNode {
 //     public constructor(range: Range) {
