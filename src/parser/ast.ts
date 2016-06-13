@@ -149,20 +149,6 @@ export class CoverExpr4Node extends ASTNode {
     }
 }
 
-// // TODO
-// export class ParenthesizedExpressionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ParenthesizedExpression");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 12.2.4
-//
-// TODO
-
 export class NullLiteralNode extends ASTNode {
     public constructor(range: Range) {
         super(range,"NullLiteral");
@@ -252,16 +238,6 @@ export class ObjectLiteralNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class PropertyDefinitionListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"PropertyDefinitionList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-
 export class ColonPropertyDefinitionNode extends ASTNode {
     public readonly name: ASTNode;
     public readonly init: ASTNode;
@@ -274,26 +250,6 @@ export class ColonPropertyDefinitionNode extends ASTNode {
         return [this.name,this.init];
     }
 }
-
-// // TODO
-// export class PropertyNameNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"PropertyName");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class LiteralPropertyNameNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"LiteralPropertyName");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
 
 export class ComputedPropertyNameNode extends ASTNode {
     public readonly expr: ASTNode;
@@ -319,49 +275,7 @@ export class CoverInitializedNameNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class InitializerNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"Initializer");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 12.2.9
-//
-// // TODO
-// export class TemplateLiteralNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"TemplateLiteral");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class TemplateSpansNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"TemplateSpans");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class TemplateMiddleListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"TemplateMiddleList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 12.3
+// Section 12.3
 
 export class MemberAccessExprNode extends ASTNode {
     public readonly obj: ASTNode;
@@ -399,17 +313,6 @@ export class SuperPropertyNode extends ASTNode {
         return [this.member];
     }
 }
-
-// // TODO
-// export class MetaPropertyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"MetaProperty");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
 
 export class NewTargetNode extends ASTNode {
     public constructor(range: Range) {
@@ -468,27 +371,7 @@ export class ArgumentsNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class ArgumentListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ArgumentList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class LeftHandSideExpressionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"LeftHandSideExpression");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 12.4
+// Section 12.4
 
 export class PostIncrementNode extends ASTNode {
     public readonly expr: ASTNode;
@@ -865,60 +748,7 @@ export class CommaNode extends BinaryNode {
     }
 }
 
-// // Section 13
-//
-// // TODO
-// export class StatementNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"Statement");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class DeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"Declaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class HoistableDeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"HoistableDeclaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class BreakableStatementNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BreakableStatement");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 13.2
-//
-// // TODO
-// export class BlockStatementNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BlockStatement");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
+// Section 13
 
 export class BlockNode extends ASTNode {
     public statements: ASTNode;
@@ -931,26 +761,6 @@ export class BlockNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class StatementListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"StatementList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class StatementListItemNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"StatementListItem");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
 // Section 13.3.1
 
 export class LetNode extends ASTNode {
@@ -1040,37 +850,7 @@ export class VarPatternBindingNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class VariableDeclarationListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"VariableDeclarationList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class VariableDeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"VariableDeclaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 13.3.3
-//
-// // TODO
-// export class BindingPatternNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BindingPattern");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
+// Section 13.3.3
 
 export class ObjectBindingPatternNode extends ASTNode {
     public readonly properties: ASTNode;
@@ -1121,26 +901,6 @@ export class ArrayBindingPattern3Node extends ASTNode {
         return [this.elements,this.elision,this.rest];
     }
 }
-
-// // TODO
-// export class BindingPropertyListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BindingPropertyList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class BindingElementListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"BindingElementList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
 
 export class BindingElisionElementNode extends ASTNode {
     public readonly elision: ASTNode;
@@ -1314,16 +1074,6 @@ export class ConstForDeclarationNode extends ASTNode {
 }
 
 
-// // TODO
-// export class ForBindingNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ForBinding");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
 // Section 13.8
 
 export class ContinueStatementNode extends ASTNode {
@@ -1393,26 +1143,6 @@ export class SwitchStatementNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class CaseBlockNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"CaseBlock");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class CaseClausesNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"CaseClauses");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-
 export class CaseClauseNode extends ASTNode {
     public readonly expr: ASTNode;
     public readonly statements: ASTNode;
@@ -1467,7 +1197,6 @@ export class ThrowStatementNode extends ASTNode {
 
 // Section 13.15
 
-// TODO
 export class TryStatementNode extends ASTNode {
     public tryNode: ASTNode;
     public catchNode: ASTNode;
@@ -1535,96 +1264,6 @@ export class FunctionNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class FunctionExpressionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FunctionExpression");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class StrictFormalParametersNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"StrictFormalParameters");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FormalParametersNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FormalParameters");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FormalParameterListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FormalParameterList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FormalsListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FormalsList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FunctionRestParameterNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FunctionRestParameter");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FormalParameterNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FormalParameter");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FunctionBodyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FunctionBody");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class FunctionStatementListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FunctionStatementList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-
 // Section 14.2
 
 export class ArrowFunctionNode extends ASTNode {
@@ -1639,36 +1278,6 @@ export class ArrowFunctionNode extends ASTNode {
         return [this.params,this.body];
     }
 }
-
-// // TODO
-// export class ArrowParametersNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ArrowParameters");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ConciseBodyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ConciseBody");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ArrowFormalParametersNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ArrowFormalParameters");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
 
 // Section 14.3
 
@@ -1715,17 +1324,7 @@ export class SetterNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class PropertySetParameterListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"PropertySetParameterList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 14.4
+// Section 14.4
 
 export class GeneratorMethodNode extends ASTNode {
     public readonly name: ASTNode;
@@ -1868,26 +1467,6 @@ export class ExtendsNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class ClassBodyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassBody");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ClassElementListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ClassElementList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-
 export class StaticMethodDefinitionNode extends ASTNode {
     public readonly method: ASTNode;
     public constructor(range: Range, method: ASTNode) {
@@ -1920,17 +1499,7 @@ export class ScriptNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class ScriptBodyNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ScriptBody");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 15.2
+// Section 15.2
 
 export class ModuleNode extends ASTNode {
     public readonly body: ASTNode;
@@ -1968,16 +1537,6 @@ export class ImportModuleNode extends ASTNode {
         return [this.specifier];
     }
 }
-
-// // TODO
-// export class ImportClauseNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ImportClause");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
 
 export class DefaultAndNameSpaceImportsNode extends ASTNode {
     public readonly defaultBinding: ASTNode;
@@ -2027,18 +1586,6 @@ export class NamedImportsNode extends ASTNode {
     }
 }
 
-// // TODO
-// export class FromClauseNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"FromClause");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-
-
 export class ImportNormalSpecifierNode extends ASTNode {
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
@@ -2063,58 +1610,7 @@ export class ImportAsSpecifierNode extends ASTNode {
     }
 }
 
-
-// // TODO
-// export class ImportsListNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ImportsList");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ImportSpecifierNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ImportSpecifier");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ModuleSpecifierNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ModuleSpecifier");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // TODO
-// export class ImportedBindingNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ImportedBinding");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
-// // Section 15.2.3
-//
-// // TODO
-// export class ExportDeclarationNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ExportDeclaration");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
+// Section 15.2.3
 
 export class ExportFromNode extends ASTNode {
     public readonly exportClause: ASTNode;
