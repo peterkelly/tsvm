@@ -1624,19 +1624,22 @@ export class FunctionNode extends ASTNode {
 //         return [];
 //     }
 // }
-//
-// // Section 14.2
-//
-// // TODO
-// export class ArrowFunctionNode extends ASTNode {
-//     public constructor(range: Range) {
-//         super(range,"ArrowFunction");
-//     }
-//     public get children(): ASTNode[] {
-//         return [];
-//     }
-// }
-//
+
+// Section 14.2
+
+export class ArrowFunctionNode extends ASTNode {
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, params: ASTNode, body: ASTNode) {
+        super(range,"ArrowFunction");
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.params,this.body];
+    }
+}
+
 // // TODO
 // export class ArrowParametersNode extends ASTNode {
 //     public constructor(range: Range) {
