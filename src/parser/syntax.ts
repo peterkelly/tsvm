@@ -175,7 +175,7 @@ import {
     // FormalParameterNode,
     // FunctionBodyNode,
     // FunctionStatementListNode,
-    // ArrowFunctionNode,
+    ArrowFunctionNode,
     // ArrowParametersNode,
     // ConciseBodyNode,
     // ArrowFormalParametersNode,
@@ -2975,21 +2975,81 @@ function FunctionStatementList(p: Parser): ASTNode {
 
 // Section 14.2
 
-// ArrowFunction
-
-function ArrowFunction(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ArrowFunction(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        const params = ArrowParameters(p);
+        p.skipWhitespaceNoNewline();
+        p.expectPunctuator("=>");
+        p.skipWhitespace();
+        const body = ConciseBody(p);
+        return new ArrowFunctionNode(new Range(start,p.pos),params,body);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ArrowParameters
 
-function ArrowParameters(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ArrowParameters(p: Parser): ASTNode {
+    try { return BindingIdentifier(p); } catch (e) {}
+    try { return CoverParenthesizedExpressionAndArrowParameterList(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected ArrowParameters");
+}
+
+// ConciseBody_1
+
+function ConciseBody_1(p: Parser): ASTNode {
+    if (p.lookaheadPunctuator("{"))
+        throw new ParseIgnore();
+    return AssignmentExpression(p);
+}
+
+// ConciseBody_2
+
+function ConciseBody_2(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectPunctuator("{");
+        p.skipWhitespace();
+        const body = FunctionBody(p);
+        p.skipWhitespace();
+        p.expectPunctuator("}");
+        return body;
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ConciseBody
 
-function ConciseBody(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ConciseBody(p: Parser): ASTNode {
+    try { return ConciseBody_1(p); } catch (e) {}
+    try { return ConciseBody_2(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected ConciseBody");
+}
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ArrowFormalParameters(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        p.expectPunctuator("(");
+        p.skipWhitespace();
+        const params = StrictFormalParameters(p);
+        p.skipWhitespace();
+        p.expectPunctuator(")");
+        return params;
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // Section 14.3
 
