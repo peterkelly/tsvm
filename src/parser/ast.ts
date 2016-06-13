@@ -207,13 +207,13 @@ export class StringLiteralNode extends ASTNode {
 // // Section 12.2.5
 
 export class ArrayLiteralNode extends ASTNode {
-    private readonly contents: ASTNode[];
-    public constructor(range: Range, contents: ASTNode[]) {
+    private readonly elements: ASTNode;
+    public constructor(range: Range, elements: ASTNode) {
         super(range,"ArrayLiteral");
-        this.contents = contents;
+        this.elements = elements;
     }
     public get children(): ASTNode[] {
-        return this.contents;
+        return [this.elements];
     }
 }
 
@@ -242,13 +242,13 @@ export class SpreadElementNode extends ASTNode {
 // Section 12.2.6
 
 export class ObjectLiteralNode extends ASTNode {
-    public readonly properties: ASTNode[];
-    public constructor(range: Range, properties: ASTNode[]) {
+    public readonly properties: ASTNode;
+    public constructor(range: Range, properties: ASTNode) {
         super(range,"ObjectLiteral");
         this.properties = properties;
     }
     public get children(): ASTNode[] {
-        return this.properties;
+        return [this.properties];
     }
 }
 
@@ -458,13 +458,13 @@ export class SuperCallNode extends ASTNode {
 }
 
 export class ArgumentsNode extends ASTNode {
-    public readonly items: ASTNode[];
-    public constructor(range: Range, items: ASTNode[]) {
+    public readonly items: ASTNode;
+    public constructor(range: Range, items: ASTNode) {
         super(range,"Arguments");
         this.items = items;
     }
     public get children(): ASTNode[] {
-        return this.items;
+        return [this.items];
     }
 }
 
@@ -921,13 +921,13 @@ export class CommaNode extends BinaryNode {
 //
 
 export class BlockNode extends ASTNode {
-    public statements: ASTNode[];
-    public constructor(range: Range, statements: ASTNode[]) {
+    public statements: ASTNode;
+    public constructor(range: Range, statements: ASTNode) {
         super(range,"Block");
         this.statements = statements;
     }
     public get children(): ASTNode[] {
-        return this.statements;
+        return [this.statements];
     }
 }
 
@@ -954,24 +954,24 @@ export class BlockNode extends ASTNode {
 // Section 13.3.1
 
 export class LetNode extends ASTNode {
-    public bindings: ASTNode[];
-    public constructor(range: Range, bindings: ASTNode[]) {
+    public bindings: ASTNode;
+    public constructor(range: Range, bindings: ASTNode) {
         super(range,"LetNode");
         this.bindings = bindings;
     }
     public get children(): ASTNode[] {
-        return this.bindings;
+        return [this.bindings];
     }
 }
 
 export class ConstNode extends ASTNode {
-    public bindings: ASTNode[];
-    public constructor(range: Range, bindings: ASTNode[]) {
+    public bindings: ASTNode;
+    public constructor(range: Range, bindings: ASTNode) {
         super(range,"Const");
         this.bindings = bindings;
     }
     public get children(): ASTNode[] {
-        return this.bindings;
+        return [this.bindings];
     }
 }
 
@@ -1004,13 +1004,13 @@ export class LexicalPatternBindingNode extends ASTNode {
 // Section 13.3.2
 
 export class VarNode extends ASTNode {
-    public declarations: ASTNode[];
-    public constructor(range: Range, declarations: ASTNode[]) {
+    public declarations: ASTNode;
+    public constructor(range: Range, declarations: ASTNode) {
         super(range,"Var");
         this.declarations = declarations;
     }
     public get children(): ASTNode[] {
-        return this.declarations;
+        return [this.declarations];
     }
 }
 
@@ -1073,13 +1073,13 @@ export class VarPatternBindingNode extends ASTNode {
 // }
 
 export class ObjectBindingPatternNode extends ASTNode {
-    public readonly properties: ASTNode[];
-    public constructor(range: Range, properties: ASTNode[]) {
+    public readonly properties: ASTNode;
+    public constructor(range: Range, properties: ASTNode) {
         super(range,"ObjectBindingPattern");
         this.properties = properties;
     }
     public get children(): ASTNode[] {
-        return this.properties;
+        return [this.properties];
     }
 }
 
@@ -1097,28 +1097,28 @@ export class ArrayBindingPattern1Node extends ASTNode {
 }
 
 export class ArrayBindingPattern2Node extends ASTNode {
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: ASTNode;
+    public constructor(range: Range, elements: ASTNode) {
         super(range,"ArrayBindingPattern2");
         this.elements = elements;
     }
     public get children(): ASTNode[] {
-        return this.elements;
+        return [this.elements];
     }
 }
 
 export class ArrayBindingPattern3Node extends ASTNode {
-    public readonly elements: ASTNode[];
+    public readonly elements: ASTNode;
     public readonly elision: ASTNode;
     public readonly rest: ASTNode;
-    public constructor(range: Range, elements: ASTNode[], elision: ASTNode, rest: ASTNode) {
+    public constructor(range: Range, elements: ASTNode, elision: ASTNode, rest: ASTNode) {
         super(range,"ArrayBindingPattern3");
         this.elements = elements;
         this.elision = elision;
         this.rest = rest;
     }
     public get children(): ASTNode[] {
-        return this.elements.concat(this.elision,this.rest);
+        return [this.elements,this.elision,this.rest];
     }
 }
 
@@ -1382,15 +1382,14 @@ export class WithStatementNode extends ASTNode {
 
 export class SwitchStatementNode extends ASTNode {
     public readonly expr: ASTNode;
-    public readonly cases: ASTNode[];
-    private readonly _children: ASTNode[];
-    public constructor(range: Range, expr: ASTNode, cases: ASTNode[]) {
+    public readonly cases: ASTNode;
+    public constructor(range: Range, expr: ASTNode, cases: ASTNode) {
         super(range,"SwitchStatement");
         this.expr = expr;
         this.cases = cases;
     }
     public get children(): ASTNode[] {
-        return [this.expr].concat(this.cases);
+        return [this.expr,this.cases];
     }
 }
 
@@ -1416,25 +1415,25 @@ export class SwitchStatementNode extends ASTNode {
 
 export class CaseClauseNode extends ASTNode {
     public readonly expr: ASTNode;
-    public readonly statements: ASTNode[];
-    public constructor(range: Range, expr: ASTNode, statements: ASTNode[]) {
+    public readonly statements: ASTNode;
+    public constructor(range: Range, expr: ASTNode, statements: ASTNode) {
         super(range,"CaseClause");
         this.expr = expr;
         this.statements = statements;
     }
     public get children(): ASTNode[] {
-        return [this.expr].concat(this.statements);
+        return [this.expr,this.statements];
     }
 }
 
 export class DefaultClauseNode extends ASTNode {
-    public readonly statements: ASTNode[];
-    public constructor(range: Range, statements: ASTNode[]) {
+    public readonly statements: ASTNode;
+    public constructor(range: Range, statements: ASTNode) {
         super(range,"DefaultClause");
         this.statements = statements;
     }
     public get children(): ASTNode[] {
-        return this.statements;
+        return [this.statements];
     }
 }
 
@@ -1817,13 +1816,13 @@ export class FunctionNode extends ASTNode {
 // Section 15.1
 
 export class ScriptNode extends ASTNode {
-    public readonly body: ASTNode[];
-    public constructor(range: Range, body: ASTNode[]) {
+    public readonly body: ASTNode;
+    public constructor(range: Range, body: ASTNode) {
         super(range,"Script");
         this.body = body;
     }
     public get children(): ASTNode[] {
-        return this.body;
+        return [this.body];
     }
 }
 
@@ -1840,13 +1839,13 @@ export class ScriptNode extends ASTNode {
 // // Section 15.2
 
 export class ModuleNode extends ASTNode {
-    public readonly body: ASTNode[];
-    public constructor(range: Range, body: ASTNode[]) {
+    public readonly body: ASTNode;
+    public constructor(range: Range, body: ASTNode) {
         super(range,"Module");
         this.body = body;
     }
     public get children(): ASTNode[] {
-        return this.body;
+        return [this.body];
     }
 }
 
@@ -1924,13 +1923,13 @@ export class NameSpaceImportNode extends ASTNode {
 }
 
 export class NamedImportsNode extends ASTNode {
-    public readonly imports: ASTNode[];
-    public constructor(range: Range, imports: ASTNode[]) {
+    public readonly imports: ASTNode;
+    public constructor(range: Range, imports: ASTNode) {
         super(range,"NamedImports");
         this.imports = imports;
     }
     public get children(): ASTNode[] {
-        return this.imports;
+        return [this.imports];
     }
 }
 
@@ -2037,13 +2036,13 @@ export class ExportFromNode extends ASTNode {
 }
 
 export class ExportClauseNode extends ASTNode {
-    public readonly items: ASTNode[];
-    public constructor(range: Range, items: ASTNode[]) {
+    public readonly items: ASTNode;
+    public constructor(range: Range, items: ASTNode) {
         super(range,"ExportClause");
         this.items = items;
     }
     public get children(): ASTNode[] {
-        return this.items;
+        return [this.items];
     }
 }
 

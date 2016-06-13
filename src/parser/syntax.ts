@@ -216,6 +216,8 @@ import {
     ExportClauseNode,
     ExportNormalSpecifierNode,
     ExportAsSpecifierNode,
+    ListNode,
+    ErrorNode,
 } from "./ast";
 
 // CoverParenthesizedExpressionAndArrowParameterList_1
@@ -533,26 +535,32 @@ function ArrayLiteral(p: Parser): ASTNode {
 
 // ElementList
 
-function ElementList(p: Parser): ASTNode[] {
+function ElementList(p: Parser): ASTNode {
     // TODO: Support elisions
     const start = p.pos;
     try {
-        const contents: ASTNode[] = [];
+        const elements: ASTNode[] = [];
         while (true) {
             let item: ASTNode = null;
             try { item = AssignmentExpression(p); } catch (e) {}
             try { item = SpreadElement(p); } catch (e) {}
             if (item == null)
-                return contents;
+                return new ListNode(new Range(start,p.pos),elements);
+            elements.push(item);
             const start2 = p.pos;
             try {
                 p.skipWhitespace();
                 p.expectPunctuator(",");
                 p.skipWhitespace();
+                try { item = AssignmentExpression(p); } catch (e) {}
+                try { item = SpreadElement(p); } catch (e) {}
+                if (item == null)
+                    throw new ParseIgnore();
+                elements.push(item);
             }
             catch (e) {
                 p.pos = start2;
-                return contents;
+                return new ListNode(new Range(start,p.pos),elements);
             }
         }
     }
@@ -607,7 +615,7 @@ function ObjectLiteral(p: Parser): ASTNode {
         p.expectPunctuator("{");
         p.skipWhitespace();
 
-        let properties: ASTNode[] = [];
+        let properties: ASTNode = null;
 
         const start2 = p.pos;
         try {
@@ -629,6 +637,8 @@ function ObjectLiteral(p: Parser): ASTNode {
 
         p.expectPunctuator("}");
 
+        if (properties == null)
+            properties = new ListNode(new Range(start,p.pos),[]);
         return new ObjectLiteralNode(new Range(start,p.pos),properties);
     }
     catch (e) {
@@ -639,7 +649,7 @@ function ObjectLiteral(p: Parser): ASTNode {
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(p: Parser): ASTNode[] {
+function PropertyDefinitionList(p: Parser): ASTNode {
     const start = p.pos;
     const properties: ASTNode[] = [];
     properties.push(PropertyDefinition(p));
@@ -653,7 +663,7 @@ function PropertyDefinitionList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return properties;
+            return new ListNode(new Range(start,p.pos),properties);
         }
     }
 }
@@ -1010,7 +1020,8 @@ function Arguments(p: Parser): ASTNode {
         p.expectPunctuator("(");
         p.skipWhitespace();
         p.expectPunctuator(")");
-        return new ArgumentsNode(new Range(start,p.pos),[]);
+        const args = new ListNode(new Range(start,p.pos),[]);
+        return new ArgumentsNode(new Range(start,p.pos),args);
     }
     catch (e) {
         p.pos = start;
@@ -1049,7 +1060,7 @@ function ArgumentList_item(p: Parser): ASTNode {
 
 // ArgumentList
 
-function ArgumentList(p: Parser): ASTNode[] {
+function ArgumentList(p: Parser): ASTNode {
     const start = p.pos;
     const items: ASTNode[] = [];
     items.push(ArgumentList_item(p));
@@ -1063,7 +1074,7 @@ function ArgumentList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return items;
+            return new ListNode(new Range(start,p.pos),items);
         }
     }
 }
@@ -1699,7 +1710,7 @@ function Block(p: Parser): ASTNode {
 
 // StatementList
 
-function StatementList(p: Parser): ASTNode[] {
+function StatementList(p: Parser): ASTNode {
     const start = p.pos;
     const statements: ASTNode[] = [];
     statements.push(StatementListItem(p));
@@ -1708,7 +1719,7 @@ function StatementList(p: Parser): ASTNode[] {
             statements.push(StatementListItem(p));
         }
         catch (e) {
-            return statements;
+            return new ListNode(new Range(start,p.pos),statements);
         }
     }
 }
@@ -1750,7 +1761,8 @@ function LexicalDeclaration(p: Parser): ASTNode {
 
 // BindingList
 
-function BindingList(p: Parser): ASTNode[] {
+function BindingList(p: Parser): ASTNode {
+    const start = p.pos;
     const bindings: ASTNode[] = [];
     bindings.push(LexicalBinding(p));
     while (true) {
@@ -1763,7 +1775,7 @@ function BindingList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return bindings;
+            return new ListNode(new Range(start,p.pos),bindings);
         }
     }
 }
@@ -1825,7 +1837,8 @@ function VariableStatement(p: Parser): ASTNode {
 
 // VariableDeclarationList
 
-function VariableDeclarationList(p: Parser): ASTNode[] {
+function VariableDeclarationList(p: Parser): ASTNode {
+    const start = p.pos;
     const declarations: ASTNode[] = [];
     declarations.push(VariableDeclaration(p));
     while (true) {
@@ -1838,7 +1851,7 @@ function VariableDeclarationList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return declarations;
+            return new ListNode(new Range(start,p.pos),declarations);
         }
     }
 }
@@ -1896,7 +1909,7 @@ function BindingPattern(p: Parser): ASTNode {
 function ObjectBindingPattern(p: Parser): ASTNode {
     const start = p.pos;
     try {
-        let properties: ASTNode[] = [];
+        let properties: ASTNode = null;
         p.expectPunctuator("{");
         p.skipWhitespace();
 
@@ -1919,6 +1932,8 @@ function ObjectBindingPattern(p: Parser): ASTNode {
         }
 
         p.expectPunctuator("}");
+        if (properties = null)
+            properties = new ListNode(new Range(start,p.pos),[]);
         return new ObjectBindingPatternNode(new Range(start,p.pos),properties);
     }
     catch (e) {
@@ -2035,7 +2050,8 @@ function ArrayBindingPattern(p: Parser): ASTNode {
 
 // BindingPropertyList
 
-function BindingPropertyList(p: Parser): ASTNode[] {
+function BindingPropertyList(p: Parser): ASTNode {
+    const start = p.pos;
     const properties: ASTNode[] = [];
     properties.push(BindingProperty(p));
     while (true) {
@@ -2048,14 +2064,15 @@ function BindingPropertyList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return properties;
+            return new ListNode(new Range(start,p.pos),properties);
         }
     }
 }
 
 // BindingElementList
 
-function BindingElementList(p: Parser): ASTNode[] {
+function BindingElementList(p: Parser): ASTNode {
+    const start = p.pos;
     const elements: ASTNode[] = [];
     elements.push(BindingElisionElement(p));
     while (true) {
@@ -2068,7 +2085,7 @@ function BindingElementList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return elements;
+            return new ListNode(new Range(start,p.pos),elements);
         }
     }
 }
@@ -2499,15 +2516,17 @@ function SwitchStatement(p: Parser): ASTNode {
 
 // CaseBlock_1
 
-function CaseBlock_1(p: Parser): ASTNode[] {
+function CaseBlock_1(p: Parser): ASTNode {
     const start = p.pos;
     try {
         p.expectPunctuator("{");
         p.skipWhitespace();
-        let clauses: ASTNode[] = [];
+        let clauses: ASTNode = null;
         try { clauses = CaseClauses(p); } catch (e) {}
         p.skipWhitespace();
         p.expectPunctuator("}");
+        if (clauses == null)
+            clauses = new ListNode(new Range(start,p.pos),[]);
         return clauses;
     }
     catch (e) {
@@ -2518,7 +2537,7 @@ function CaseBlock_1(p: Parser): ASTNode[] {
 
 // CaseBlock_2
 
-function CaseBlock_2(p: Parser): ASTNode[] {
+function CaseBlock_2(p: Parser): ASTNode {
     const start = p.pos;
     try {
         const start = p.pos;
@@ -2527,15 +2546,16 @@ function CaseBlock_2(p: Parser): ASTNode[] {
             p.skipWhitespace();
             let clauses1: ASTNode[] = [];
             let clauses2: ASTNode[] = [];
-            try { clauses1 = CaseClauses(p); } catch (e) {}
+            try { clauses1 = CaseClauses(p).elements; } catch (e) {}
             p.skipWhitespace();
             const defaultClause = DefaultClause(p);
             p.skipWhitespace();
-            try { clauses2 = CaseClauses(p); } catch (e) {}
+            try { clauses2 = CaseClauses(p).elements; } catch (e) {}
             p.skipWhitespace();
             p.expectPunctuator("}");
 
-            return [].concat(clauses1,defaultClause,clauses2);
+            const combined = [].concat(clauses1,defaultClause,clauses2);
+            return new ListNode(new Range(start,p.pos),combined);
         }
         catch (e) {
             p.pos = start;
@@ -2550,7 +2570,7 @@ function CaseBlock_2(p: Parser): ASTNode[] {
 
 // CaseBlock
 
-function CaseBlock(p: Parser): ASTNode[] {
+function CaseBlock(p: Parser): ASTNode {
     try { return CaseBlock_1(p); } catch (e) {}
     try { return CaseBlock_2(p); } catch (e) {}
     throw new ParseError(p,p.pos,"Expected CaseBlock");
@@ -2558,7 +2578,8 @@ function CaseBlock(p: Parser): ASTNode[] {
 
 // CaseClauses
 
-function CaseClauses(p: Parser): ASTNode[] {
+function CaseClauses(p: Parser): ListNode {
+    const start = p.pos;
     const clauses: ASTNode[] = [];
     clauses.push(CaseClause(p));
     while (true) {
@@ -2568,7 +2589,7 @@ function CaseClauses(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return clauses;
+            return new ListNode(new Range(start,p.pos),clauses);
         }
     }
 }
@@ -2974,14 +2995,16 @@ function ClassElement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not im
 
 export function Script(p: Parser): ASTNode {
     const start = p.pos;
-    let body: ASTNode[] = [];
+    let body: ASTNode = null;
     try { body = ScriptBody(p); } catch (e) {}
+    if (body == null)
+        body = new ListNode(new Range(start,p.pos),[]);
     return new ScriptNode(new Range(start,p.pos),body);
 }
 
 // ScriptBody
 
-function ScriptBody(p: Parser): ASTNode[] {
+function ScriptBody(p: Parser): ASTNode {
     return StatementList(p);
 }
 
@@ -2991,20 +3014,23 @@ function ScriptBody(p: Parser): ASTNode[] {
 
 function Module(p: Parser): ASTNode {
     const start = p.pos;
-    let body: ASTNode[] = [];
+    let body: ASTNode = null;
     try { body = ModuleBody(p); } catch (e) {}
+    if (body == null)
+        body = new ListNode(new Range(start,p.pos),[]);
     return new ModuleNode(new Range(start,p.pos),body);
 }
 
 // ModuleBody
 
-function ModuleBody(p: Parser): ASTNode[] {
+function ModuleBody(p: Parser): ASTNode {
     return ModuleItemList(p);
 }
 
 // ModuleItemList
 
-function ModuleItemList(p: Parser): ASTNode[] {
+function ModuleItemList(p: Parser): ASTNode {
+    const start = p.pos;
     const items: ASTNode[] = [];
     items.push(ModuleItem(p));
     while (true) {
@@ -3015,7 +3041,7 @@ function ModuleItemList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return items;
+            return new ListNode(new Range(start,p.pos),items);
         }
     }
 }
@@ -3144,7 +3170,7 @@ function NamedImports(p: Parser): ASTNode {
     try {
         p.expectPunctuator("{");
         p.skipWhitespace();
-        let imports: ASTNode[] = [];
+        let imports: ASTNode = null;
 
         const start2 = p.pos;
         try {
@@ -3165,6 +3191,8 @@ function NamedImports(p: Parser): ASTNode {
         }
 
         p.expectPunctuator("}");
+        if (imports == null)
+            imports = new ListNode(new Range(start,p.pos),[]);
         return new NamedImportsNode(new Range(start,p.pos),imports);
     }
     catch (e) {
@@ -3189,7 +3217,8 @@ function FromClause(p: Parser): ASTNode {
 
 // ImportsList
 
-function ImportsList(p: Parser): ASTNode[] {
+function ImportsList(p: Parser): ASTNode {
+    const start = p.pos;
     const imports: ASTNode[] = [];
     imports.push(ImportSpecifier(p));
     while (true) {
@@ -3202,7 +3231,7 @@ function ImportsList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return imports;
+            return new ListNode(new Range(start,p.pos),imports);
         }
     }
 }
@@ -3312,7 +3341,7 @@ function ExportDeclaration(p: Parser): ASTNode {
 function ExportClause(p: Parser): ASTNode {
     const start = p.pos;
     try {
-        let exports: ASTNode[] = [];
+        let exports: ASTNode = null;
 
         p.expectPunctuator("{");
         p.skipWhitespace();
@@ -3336,6 +3365,8 @@ function ExportClause(p: Parser): ASTNode {
         }
 
         p.expectPunctuator("}");
+        if (exports == null)
+            exports = new ListNode(new Range(start,p.pos),[]);
         return new ExportClauseNode(new Range(start,p.pos),exports);
     }
     catch (e) {
@@ -3346,7 +3377,7 @@ function ExportClause(p: Parser): ASTNode {
 
 // ExportsList
 
-function ExportsList(p: Parser): ASTNode[] {
+function ExportsList(p: Parser): ASTNode {
     const start = p.pos;
     const exports: ASTNode[] = [];
     exports.push(ExportSpecifier(p));
@@ -3360,7 +3391,7 @@ function ExportsList(p: Parser): ASTNode[] {
         }
         catch (e) {
             p.pos = start2;
-            return exports;
+            return new ListNode(new Range(start,p.pos),exports);
         }
     }
 }
