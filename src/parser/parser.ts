@@ -156,28 +156,6 @@ export class Parser {
         if (!this.matchPunctuator(str))
             throw new ParseError(this,this.pos,"Expected "+str);
     }
-    //
-    // public lookahead(str: string): boolean {
-    //     if ((this.pos < this.len) && (this.text.substring(this.pos,this.pos + str.length) == str))
-    //         return true;
-    //     return false;
-    // }
-    //
-    // // FIXME: This should be replaced with matchToken(), which matches a full token as specified
-    // // in the lexical syntax, so that we avoid calls like match("==") which would return true even
-    // // if the text at this.pos is "===". The same applies to lookahead() and expect().
-    // public match(str: string): boolean {
-    //     if (this.lookahead(str)) {
-    //         this.pos += str.length;
-    //         return true;
-    //     }
-    //     return false;
-    // }
-    //
-    // public expect(str: string): void {
-    //     if (!this.match(str))
-    //         throw new ParseError(this,this.pos,"Expected "+str);
-    // }
 
     public lookaheadKeyword(keyword: string): boolean {
         if (!isKeyword(keyword))
