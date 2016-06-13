@@ -135,8 +135,8 @@ import {
     ArrayBindingPattern3Node,
     // BindingPropertyListNode,
     // BindingElementListNode,
-    // BindingElisionElementNode,
-    // BindingPropertyNode,
+    BindingElisionElementNode,
+    BindingPropertyNode,
     BindingPatternInitNode,
     SingleNameBindingNode,
     BindingRestElementNode,
@@ -147,7 +147,8 @@ import {
     DoStatementNode,
     WhileStatementNode,
     ForStatementNode,
-    // ForDeclarationNode,
+    LetForDeclarationNode,
+    ConstForDeclarationNode,
     // ForBindingNode,
     ContinueStatementNode,
     BreakStatementNode,
@@ -2074,11 +2075,38 @@ function BindingElementList(p: Parser): ASTNode[] {
 
 // BindingElisionElement
 
-function BindingElisionElement(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingElisionElement(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        const elision = Elision(p);
+        p.skipWhitespace();
+        const element = BindingElement(p);
+        return new BindingElisionElementNode(new Range(start,p.pos),elision,element);
+    }
+    catch (e) {
+        p.pos = start;
+    }
+
+    return BindingElement(p);
+}
 
 // BindingProperty
 
-function BindingProperty(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function BindingProperty(p: Parser): ASTNode {
+    try { return SingleNameBinding(p); } catch (e) {}
+
+    const start = p.pos;
+    try {
+        const name = PropertyName(p);
+        p.skipWhitespace();
+        const element = BindingElement(p);
+        return new BindingPropertyNode(new Range(start,p.pos),name,element);
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // BindingElement
 
@@ -2299,11 +2327,36 @@ function IterationStatement(p: Parser): ASTNode {
 
 // ForDeclaration
 
-function ForDeclaration(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ForDeclaration(p: Parser): ASTNode {
+    const start = p.pos;
+    try {
+        if (p.matchKeyword("let")) {
+            p.skipWhitespace();
+            const binding = ForBinding(p);
+            return new LetForDeclarationNode(new Range(start,p.pos),binding);
+        }
+        else if (p.matchKeyword("const")) {
+            p.skipWhitespace();
+            const binding = ForBinding(p);
+            return new ConstForDeclarationNode(new Range(start,p.pos),binding);
+        }
+        else {
+            throw new ParseError(p,p.pos,"Expected let or const");
+        }
+    }
+    catch (e) {
+        p.pos = start;
+        throw e;
+    }
+}
 
 // ForBinding
 
-function ForBinding(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function ForBinding(p: Parser): ASTNode {
+    try { return BindingIdentifier(p); } catch (e) {}
+    try { return BindingPattern(p); } catch (e) {}
+    throw new ParseError(p,p.pos,"Expected BindingIdentifier or BindingPattern");
+}
 
 // Section 13.8
 
