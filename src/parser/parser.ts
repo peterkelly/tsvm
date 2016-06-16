@@ -66,7 +66,13 @@ const punctuators = arrayToSet([
     "}", // RightBracePunctuator
 ]);
 
-function isKeyword(str: string): boolean {
+let maxPunctuatorLen = 0;
+for (const punc in punctuators) {
+    if (maxPunctuatorLen < punc.length)
+        maxPunctuatorLen = punc.length;
+}
+
+export function isKeyword(str: string): boolean {
     return (keywords[str] === true);
 }
 
@@ -129,12 +135,10 @@ export class Parser {
 
     public upcomingPunctuator(): string {
         let longest: string = null;
-        for (let i = this.pos+1; i < this.len; i++) {
-            const candidate = this.text.substring(this.pos,i);
+        for (let i = 1; i <= maxPunctuatorLen; i++) {
+            const candidate = this.text.substring(this.pos,this.pos+i);
             if (isPunctuator(candidate))
                 longest = candidate;
-            else
-                break;
         }
         return longest;
     }
@@ -158,8 +162,8 @@ export class Parser {
     }
 
     public lookaheadKeyword(keyword: string): boolean {
-        if (!isKeyword(keyword))
-            throw new ParseError(this,this.pos,keyword+" is not a keyword");
+        // if (!isKeyword(keyword))
+        //     throw new ParseError(this,this.pos,keyword+" is not a keyword");
         if ((this.pos < this.len) && (this.text.substring(this.pos,this.pos + keyword.length) == keyword)) {
             if ((this.pos + keyword.length == this.len) || !isIdChar(this.text[this.pos + keyword.length]))
                 return true;
@@ -189,6 +193,14 @@ export class Parser {
             this.pos = start;
             throw e;
         }
+    }
+
+    public get preceding(): string {
+        return JSON.stringify(this.text.substring(0,this.pos));
+    }
+
+    public get following(): string {
+        return JSON.stringify(this.text.substring(this.pos));
     }
 }
 
