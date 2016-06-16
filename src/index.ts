@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import fs = require("fs");
-import { Script } from "./parser/syntax";
-import { Parser } from "./parser/parser";
+import { Script, Module } from "./parser/syntax";
+import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
 
 // console.log("Hello World");
@@ -51,11 +51,14 @@ function main(): void {
         console.log(text);
         try {
             const p = new Parser(text);
-            const root = Script(p);
+            const root = Module(p);
+            p.skipWhitespace();
+            if (p.pos < p.len)
+                throw new ParseError(p,p.pos,"Expected end of file");
             printTree(root);
         }
         catch (e) {
-            console.log(e);
+            console.log(e.toString());
         }
     }
     else {

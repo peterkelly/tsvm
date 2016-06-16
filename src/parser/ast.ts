@@ -59,6 +59,10 @@ export class IdentifierReferenceNode extends ASTNode {
     public get children(): ASTNode[] {
         return [];
     }
+    public get label(): string {
+        // return "IdentifierReference("+JSON.stringify(this.value)+")";
+        return this.value;
+    }
 }
 
 export class BindingIdentifierNode extends ASTNode {
@@ -69,6 +73,10 @@ export class BindingIdentifierNode extends ASTNode {
     }
     public get children(): ASTNode[] {
         return [];
+    }
+    public get label(): string {
+        // return "BindingIdentifier("+JSON.stringify(this.value)+")";
+        return this.value;
     }
 }
 
@@ -81,6 +89,10 @@ export class LabelIdentifierNode extends ASTNode {
     public get children(): ASTNode[] {
         return [];
     }
+    public get label(): string {
+        // return "LabelIdentifier("+JSON.stringify(this.value)+")";
+        return this.value;
+    }
 }
 
 export class IdentifierNode extends ASTNode {
@@ -91,6 +103,10 @@ export class IdentifierNode extends ASTNode {
     }
     public get children(): ASTNode[] {
         return [];
+    }
+    public get label(): string {
+        // return "Identifier("+JSON.stringify(this.value)+")";
+        return this.value;
     }
 }
 
@@ -178,6 +194,10 @@ export class NumericLiteralNode extends ASTNode {
     public get children(): ASTNode[] {
         return [];
     }
+    public get label(): string {
+        // return "NumericLiteral("+this.value+")";
+        return ""+this.value;
+    }
 }
 export class StringLiteralNode extends ASTNode {
     public readonly value: string;
@@ -187,6 +207,10 @@ export class StringLiteralNode extends ASTNode {
     }
     public get children(): ASTNode[] {
         return [];
+    }
+    public get label(): string {
+        // return "StringLiteral("+JSON.stringify(this.value)+")";
+        return JSON.stringify(this.value);
     }
 }
 
@@ -211,6 +235,9 @@ export class ElisionNode extends ASTNode {
     }
     public get children(): ASTNode[] {
         return [];
+    }
+    public get label(): string {
+        return "Elision("+this.count+")";
     }
 }
 
@@ -303,14 +330,25 @@ export class MemberAccessIdentNode extends ASTNode {
     }
 }
 
-export class SuperPropertyNode extends ASTNode {
-    public readonly member: ASTNode;
-    public constructor(range: Range, member: ASTNode) {
-        super(range,"SuperProperty");
-        this.member = member;
+export class SuperPropertyExprNode extends ASTNode {
+    public readonly expr: ASTNode;
+    public constructor(range: Range, expr: ASTNode) {
+        super(range,"SuperPropertyExpr");
+        this.expr = expr;
     }
     public get children(): ASTNode[] {
-        return [this.member];
+        return [this.expr];
+    }
+}
+
+export class SuperPropertyIdentNode extends ASTNode {
+    public readonly ident: ASTNode;
+    public constructor(range: Range, ident: ASTNode) {
+        super(range,"SuperPropertyIdent");
+        this.ident = ident;
+    }
+    public get children(): ASTNode[] {
+        return [this.ident];
     }
 }
 
@@ -1034,13 +1072,13 @@ export class WhileStatementNode extends ASTNode {
     }
 }
 
-export class ForStatementNode extends ASTNode {
+export class ForCNode extends ASTNode {
     public readonly init: ASTNode;
     public readonly condition: ASTNode;
     public readonly update: ASTNode;
     public readonly body: ASTNode;
     public constructor(range: Range, init: ASTNode, condition: ASTNode, update: ASTNode, body: ASTNode) {
-        super(range,"ForStatement");
+        super(range,"ForC");
         this.init = init;
         this.condition = condition;
         this.update = update;
@@ -1048,6 +1086,36 @@ export class ForStatementNode extends ASTNode {
     }
     public get children(): ASTNode[] {
         return [this.init,this.condition,this.update,this.body];
+    }
+}
+
+export class ForInNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public readonly expr: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, binding: ASTNode, expr: ASTNode, body: ASTNode) {
+        super(range,"ForIn");
+        this.binding = binding;
+        this.expr = expr;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding,this.expr,this.body];
+    }
+}
+
+export class ForOfNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public readonly expr: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, binding: ASTNode, expr: ASTNode, body: ASTNode) {
+        super(range,"ForOf");
+        this.binding = binding;
+        this.expr = expr;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding,this.expr,this.body];
     }
 }
 
@@ -1249,12 +1317,27 @@ export class DebuggerStatementNode extends ASTNode {
 
 // // Section 14.1
 
-export class FunctionNode extends ASTNode {
+export class FunctionDeclarationNode extends ASTNode {
     public readonly ident: ASTNode; // may be null
     public readonly params: ASTNode;
     public readonly body: ASTNode;
     public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
-        super(range,"NamedFunctionDeclaration");
+        super(range,"Function");
+        this.ident = ident;
+        this.params = params;
+        this.body = body;
+    }
+    public get children(): ASTNode[] {
+        return [this.ident,this.params,this.body];
+    }
+}
+
+export class FunctionExpressionNode extends ASTNode {
+    public readonly ident: ASTNode; // may be null
+    public readonly params: ASTNode;
+    public readonly body: ASTNode;
+    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+        super(range,"FunctionExpression");
         this.ident = ident;
         this.params = params;
         this.body = body;
@@ -1471,6 +1554,7 @@ export class StaticMethodDefinitionNode extends ASTNode {
     public readonly method: ASTNode;
     public constructor(range: Range, method: ASTNode) {
         super(range,"StaticMethodDefinition");
+        this.method = method;
     }
     public get children(): ASTNode[] {
         return [this.method];
@@ -1612,6 +1696,50 @@ export class ImportAsSpecifierNode extends ASTNode {
 
 // Section 15.2.3
 
+export class ExportDefaultNode extends ASTNode {
+    public readonly decl: ASTNode;
+    public constructor(range: Range, decl: ASTNode) {
+        super(range,"ExportDefault");
+        this.decl = decl;
+    }
+    public get children(): ASTNode[] {
+        return [this.decl];
+    }
+}
+
+export class ExportStarNode extends ASTNode {
+    public readonly from: ASTNode;
+    public constructor(range: Range, from: ASTNode) {
+        super(range,"ExportStar");
+        this.from = from;
+    }
+    public get children(): ASTNode[] {
+        return [this.from];
+    }
+}
+
+export class ExportVariableNode extends ASTNode {
+    public readonly variable: ASTNode;
+    public constructor(range: Range, variable: ASTNode) {
+        super(range,"ExportVariable");
+        this.variable = variable;
+    }
+    public get children(): ASTNode[] {
+        return [this.variable];
+    }
+}
+
+export class ExportDeclarationNode extends ASTNode {
+    public readonly decl: ASTNode;
+    public constructor(range: Range, decl: ASTNode) {
+        super(range,"ExportDeclaration");
+        this.decl = decl;
+    }
+    public get children(): ASTNode[] {
+        return [this.decl];
+    }
+}
+
 export class ExportFromNode extends ASTNode {
     public readonly exportClause: ASTNode;
     public readonly fromClause: ASTNode;
@@ -1663,7 +1791,7 @@ export class ExportAsSpecifierNode extends ASTNode {
 export class ListNode extends ASTNode {
     public readonly elements: ASTNode[];
     public constructor(range: Range, elements: ASTNode[]) {
-        super(range,"[]]");
+        super(range,"[]");
         this.elements = elements;
     }
     public get children(): ASTNode[] {
