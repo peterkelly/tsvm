@@ -60,8 +60,8 @@ export class IdentifierReferenceNode extends ASTNode {
         return [];
     }
     public get label(): string {
-        // return "IdentifierReference("+JSON.stringify(this.value)+")";
-        return this.value;
+        return "IdentifierReference("+JSON.stringify(this.value)+")";
+        // return this.value;
     }
 }
 
@@ -75,8 +75,8 @@ export class BindingIdentifierNode extends ASTNode {
         return [];
     }
     public get label(): string {
-        // return "BindingIdentifier("+JSON.stringify(this.value)+")";
-        return this.value;
+        return "BindingIdentifier("+JSON.stringify(this.value)+")";
+        // return this.value;
     }
 }
 
@@ -90,8 +90,8 @@ export class LabelIdentifierNode extends ASTNode {
         return [];
     }
     public get label(): string {
-        // return "LabelIdentifier("+JSON.stringify(this.value)+")";
-        return this.value;
+        return "LabelIdentifier("+JSON.stringify(this.value)+")";
+        // return this.value;
     }
 }
 
@@ -105,8 +105,8 @@ export class IdentifierNode extends ASTNode {
         return [];
     }
     public get label(): string {
-        // return "Identifier("+JSON.stringify(this.value)+")";
-        return this.value;
+        return "Identifier("+JSON.stringify(this.value)+")";
+        // return this.value;
     }
 }
 
