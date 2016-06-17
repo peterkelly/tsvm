@@ -121,16 +121,61 @@ export class Parser {
         this.len = this.text.length;
     }
 
+    private skipws(allowNewline: boolean): void {
+        while (this.pos < this.len) {
+            const c = this.text[this.pos];
+            switch (c) {
+                case " ":
+                case "\t":
+                case "\r":
+                    this.pos++;
+                    break;
+                case "\n":
+                    if (allowNewline)
+                        this.pos++;
+                    else
+                        return;
+                    break;
+                case "/": {
+                    if (this.pos+1 >= this.len)
+                        return;
+                    if (this.text[this.pos+1] == "*") {
+                        this.pos += 2;
+                        // while ((this.pos+1 < this.len) && ((this.text[this.pos] != "*") || (this.text[this.pos] != "/")))
+                        //     this.pos++;
+
+                        while (this.pos < this.len) {
+                            if ((this.pos+1 < this.len) && (this.text[this.pos] == "*") && (this.text[this.pos+1] == "/")) {
+                                this.pos += 2;
+                                break;
+                            }
+                            else {
+                                this.pos++;
+                            }
+                        }
+                    }
+                    else if (this.text[this.pos+1] == "/") {
+                        this.pos += 2;
+                        while (this.text[this.pos] != "\n")
+                            this.pos++;
+                    }
+                    else {
+                        return;
+                    }
+                    break;
+                }
+                default:
+                    return;
+            }
+        }
+    }
+
     public skipWhitespace(): void {
-        // FIXME: comments, tabs, and other whitespace characters
-        while ((this.pos < this.len) && ((this.text[this.pos] == " ") || (this.text[this.pos] == "\n")))
-            this.pos++;
+        this.skipws(true);
     }
 
     public skipWhitespaceNoNewline(): void {
-        // FIXME: comments, tabs, and other whitespace characters
-        while ((this.pos < this.len) && ((this.text[this.pos] == " ")))
-            this.pos++;
+        this.skipws(false);
     }
 
     public upcomingPunctuator(): string {
