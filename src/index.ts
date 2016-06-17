@@ -18,6 +18,15 @@ import { Script, Module } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode, ListNode } from "./parser/ast";
 
+type CommandFunction = (input: string) => string;
+type CommandSet = { [name: string]: CommandFunction };
+
+interface TestData {
+    input: string;
+    command: string;
+    output: string;
+}
+
 const OUTPUT_START = "/*******************************************************************************";
 const OUTPUT_END = "*******************************************************************************/";
 
@@ -37,7 +46,7 @@ function nodeToPlainTree(node: ASTNode): string {
 
     function recurse(node: ASTNode, indent: string = "") {
         if (node == null) {
-            console.log(indent+"Nil");
+            lines.push(indent+"null");
             return;
         }
 
@@ -72,10 +81,17 @@ function nodeToFancyTree(node: ASTNode): string {
     }
 }
 
-interface TestData {
-    input: string;
-    command: string;
-    output: string;
+const commands: CommandSet = {
+
+    ["ast-module"](input: string): string {
+        const p = new Parser(input);
+        const root = Module(p);
+        p.skipWhitespace();
+        if (p.pos < p.len)
+            throw new ParseError(p,p.pos,"Expected end of file");
+        return nodeToPlainTree(root);
+    }
+
 }
 
 function splitTestData(content: string): TestData {
@@ -119,106 +135,176 @@ function splitTestData(content: string): TestData {
     };
 }
 
-function runTest(relPath: string, content: string) {
-    const { input, command, output } = splitTestData(content);
-}
-
-function joinInputCmdOutput(input: string, command: string, output: string) {
+function joinTestData(data: TestData) {
     return [
-        input,
+        data.input,
         "",
         OUTPUT_START,
-        command,
+        data.command,
         "",
-        output,
+        data.output,
         OUTPUT_END
     ].join("\n");
 }
 
-function genTest(command: string, relPath: string) {
-    let content: string = null;
+function leftpad(str: string, width: number) {
+    if (str.length < width)
+        str += (new Array(width-str.length+1)).join(" ");
+    return str;
+}
 
+function checkTest(relPath: string, content: string): boolean {
     const absPath = path.resolve(process.cwd(),relPath);
     try {
+        const { input, command, output: expected } = splitTestData(content);
+        const fun = commands[command];
+        if (fun == null)
+            throw new Error("Unknown command "+JSON.stringify(command));
+        const actual = fun(input);
+        const pass = (actual == expected);
+        if (pass) {
+            console.log(leftpad(relPath,60)+"PASS");
+            return true;
+        }
+        else {
+            console.log(leftpad(relPath,60)+"FAIL");
+            return false;
+        }
+    }
+    catch (e) {
+        console.log(leftpad(relPath,60)+"FAIL "+e);
+        return false;
+    }
+}
+
+function genTest(command: string, relPath: string, write: boolean) {
+    const absPath = path.resolve(process.cwd(),relPath);
+    try {
+        let content: string = null;
         content = fs.readFileSync(absPath,{ encoding: "utf-8" });
+
+        const { input } = splitTestData(content);
+
+        const fun = commands[command];
+        if (fun == null)
+            throw new Error("Unknown command "+JSON.stringify(command));
+
+        let output: string = null;
+        try {
+            output = fun(input);
+        }
+        catch (e) {
+            output = "Exception: "+e;
+        }
+
+        const joined = joinTestData({ input: input, command: command, output: output });
+
+        if (write) {
+            fs.writeFileSync(relPath,joined+"\n",{ encoding: "utf-8" });
+            console.log("Wrote "+relPath);
+        }
+        else {
+            console.log(joined);
+        }
     }
     catch (e) {
         console.error(absPath+": "+e);
         process.exit(1);
     }
+}
 
-    const { input } = splitTestData(content);
-
-    if (command == "ast-module") {
-        try {
-            const p = new Parser(input);
-            const root = Module(p);
-            p.skipWhitespace();
-            if (p.pos < p.len)
-                throw new ParseError(p,p.pos,"Expected end of file");
-            console.log(joinInputCmdOutput(input,command,nodeToPlainTree(root)));
-        }
-        catch (e) {
-            console.log(joinInputCmdOutput(input,command,"Exception: "+e.toString()));
-        }
+function parse(relFilename: string): void {
+    const text = fs.readFileSync(relFilename,{ encoding: "utf-8" });
+    console.log(text);
+    try {
+        const p = new Parser(text);
+        const root = Module(p);
+        p.skipWhitespace();
+        if (p.pos < p.len)
+            throw new ParseError(p,p.pos,"Expected end of file");
+        console.log(nodeToPlainTree(root));
     }
-    else {
-        console.error("Unknown command: "+command);
+    catch (e) {
+        console.error(e.toString());
         process.exit(1);
     }
 }
 
-function main(): void {
-    if ((process.argv.length == 4) && (process.argv[2] == "parse")) {
-        const text = fs.readFileSync(process.argv[3],{ encoding: "utf-8" });
-        console.log(text);
+function runtests(relRoot: string): void {
+    const absRoot = path.resolve(process.cwd(),relRoot);
+    let passed = 0;
+    let failed = 0;
+    recurse();
+    console.log("Passed: "+passed);
+    console.log("Failed: "+failed);
+
+    function recurse(relPath: string = "") {
+        const absPath = path.join(absRoot,relPath);
         try {
-            const p = new Parser(text);
-            const root = Module(p);
-            p.skipWhitespace();
-            if (p.pos < p.len)
-                throw new ParseError(p,p.pos,"Expected end of file");
-            console.log(nodeToPlainTree(root));
+            // let str = relPath;
+            // while (str.length < 60)
+            //     str += " ";
+            // str += absPath;
+            // console.log(str);
+
+            if (fs.statSync(absPath).isDirectory()) {
+                for (const filename of fs.readdirSync(absPath))
+                    recurse(path.join(relPath,filename));
+            }
+            else {
+                if (relPath.match(/\.js$/)) {
+                    const content = fs.readFileSync(absPath,{ encoding: "utf-8" });
+                    if(checkTest(relPath,content))
+                        passed++;
+                    else
+                        failed++;
+                }
+            }
         }
         catch (e) {
-            console.log(e.toString());
+            console.error(absPath+": "+e);
         }
     }
-    else if ((process.argv.length == 4) && (process.argv[2] == "test")) {
-        const toplevel = path.resolve(process.cwd(),process.argv[3]);
-        // console.log("toplevel = "+toplevel);
-        const recurse = (relPath: string): void => {
-            const absPath = path.join(toplevel,relPath);
-            try {
-                // let str = relPath;
-                // while (str.length < 60)
-                //     str += " ";
-                // str += absPath;
-                // console.log(str);
+}
 
-                if (fs.statSync(absPath).isDirectory()) {
-                    for (const filename of fs.readdirSync(absPath))
-                        recurse(path.join(relPath,filename));
-                }
-                else {
-                    if (relPath.match(/\.js$/)) {
-                        const content = fs.readFileSync(absPath,{ encoding: "utf-8" });
-                        runTest(relPath,content);
-                    }
-                }
-            }
-            catch (e) {
-                console.error(absPath+": "+e);
-            }
-        }
-        recurse("");
+function showUsageAndExit(): void {
+    console.error("Usage:");
+    console.error("    "+path.basename(process.argv[1])+" gentest [-w] <command> <filename>");
+    console.error("    "+path.basename(process.argv[1])+" runtests <path>");
+    process.exit(1);
+}
+
+function main(): void {
+    let i = 2;
+    const argv = process.argv;
+    const argc = process.argv.length;
+
+    if ((process.argv.length == 4) && (process.argv[2] == "runtests")) {
+        runtests(process.argv[3]);
     }
-    else if ((process.argv.length == 5) && (process.argv[2] == "gentest")) {
-        genTest(process.argv[3],process.argv[4]);
+    else if ((i < argc) && (argv[i] == "gentest")) {
+        i++;
+
+        let command: string = null;
+        let filename: string = null;
+        let write: boolean = false;
+
+        for (; i < argc; i++) {
+            if (argv[i] == "-w")
+                write = true;
+            else if (command == null)
+                command = argv[i];
+            else if (filename == null)
+                filename = argv[i];
+        }
+
+        if ((command == null) || (filename == null))
+            showUsageAndExit();
+
+        genTest(command,filename,write);
     }
     else {
-        console.log("Usage: index.js parse FILENAME");
-        process.exit(1);
+        showUsageAndExit();
     }
 }
 
