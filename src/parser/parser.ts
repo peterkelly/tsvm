@@ -240,6 +240,30 @@ export class Parser {
         }
     }
 
+    public opt<T>(f: (start: number) => T): T {
+        const start = this.pos;
+        try {
+            return f(start);
+        }
+        catch (e) {
+            this.pos = start;
+            return null;
+        }
+    }
+
+    public choice<T>(list: ((start: number) => T)[]): T {
+        const start = this.pos;
+        for (const item of list) {
+            try {
+                return item(start);
+            }
+            catch (e) {
+                this.pos = start;
+            }
+        }
+        throw new ParseError(this,this.pos,"No valid alternative found");
+    }
+
     public get preceding(): string {
         return JSON.stringify(this.text.substring(0,this.pos));
     }
