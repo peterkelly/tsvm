@@ -106,12 +106,10 @@ import {
     LexicalIdentifierBindingNode,
     LexicalPatternBindingNode,
     VarNode,
-    VarIdentifierBindingNode,
-    VarPatternBindingNode,
+    VarIdentifierNode,
+    VarPatternNode,
     ObjectBindingPatternNode,
-    ArrayBindingPattern1Node,
-    ArrayBindingPattern2Node,
-    ArrayBindingPattern3Node,
+    ArrayBindingPatternNode,
     BindingElisionElementNode,
     BindingPropertyNode,
     BindingPatternInitNode,
@@ -125,6 +123,7 @@ import {
     ForCNode,
     ForInNode,
     ForOfNode,
+    VarForDeclarationNode,
     LetForDeclarationNode,
     ConstForDeclarationNode,
     ContinueStatementNode,
@@ -165,9 +164,11 @@ import {
     ImportModuleNode,
     DefaultAndNameSpaceImportsNode,
     DefaultAndNamedImportsNode,
+    DefaultImportNode,
     NameSpaceImportNode,
     NamedImportsNode,
     ImportNormalSpecifierNode,
+    ImportSpecifierNode,
     ImportAsSpecifierNode,
     ExportDefaultNode,
     ExportStarNode,
@@ -249,8 +250,9 @@ function PrimaryExpression(p: Parser): ASTNode {
     }
 
     try { return This(p); } catch (e) {}
-    try { return IdentifierReference(p); } catch (e) {}
+    // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
     try { return Literal(p); } catch (e) {}
+    try { return IdentifierReference(p); } catch (e) {}
     try { return ArrayLiteral(p); } catch (e) {}
     try { return ObjectLiteral(p); } catch (e) {}
     try { return FunctionExpression(p); } catch (e) {}
@@ -346,7 +348,8 @@ function StringLiteral(p: Parser): ASTNode {
     // TODO: Complete string literal syntax according to spec
     const start = p.pos;
     try {
-        if (p.cur == "\"") {
+        if ((p.cur == "\"") || (p.cur == "'")) {
+            const quote = p.cur;
             p.next();
             let value = "";
             while (true) {
@@ -354,7 +357,15 @@ function StringLiteral(p: Parser): ASTNode {
                     value += "\"";
                     p.pos += 2;
                 }
-                else if ((p.pos < p.len) && (p.text[p.pos] == "\"")) {
+                else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
+                    value += "'";
+                    p.pos += 2;
+                }
+                else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
+                    p.pos++;
+                    break;
+                }
+                else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
                     p.pos++;
                     break;
                 }
@@ -381,7 +392,6 @@ function StringLiteral(p: Parser): ASTNode {
 // ArrayLiteral
 
 function ArrayLiteral(p: Parser): ASTNode {
-    // TODO: Support elisions
     const start = p.pos;
     try {
         p.expectPunctuator("[");
@@ -390,8 +400,14 @@ function ArrayLiteral(p: Parser): ASTNode {
         const elements: ASTNode[] = [];
         const listStart = p.pos;
         let listEnd = p.pos;
+        let first = true;
 
-        while (true) {
+        while (!p.lookaheadPunctuator("]")) {
+            if (!first) {
+                p.expectPunctuator(",");
+                p.skipWhitespace();
+            }
+
             const start2 = p.pos;
             try {
                 const elision = Elision(p);
@@ -410,6 +426,7 @@ function ArrayLiteral(p: Parser): ASTNode {
             elements.push(item);
             listEnd = p.pos;
             p.skipWhitespace();
+            first = false;
         }
 
         p.expectPunctuator("]");
@@ -1539,9 +1556,9 @@ function Declaration(p: Parser): ASTNode {
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser): ASTNode {
-    try { return FunctionDeclaration(p); } catch (e) {}
-    try { return GeneratorDeclaration(p); } catch (e) {}
+function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
+    try { return FunctionDeclaration(p,flags); } catch (e) {}
+    try { return GeneratorDeclaration(p,flags); } catch (e) {}
     throw new ParseError(p,p.pos,"Expected HoistableDeclaration");
 }
 
@@ -1568,8 +1585,17 @@ function Block(p: Parser): ASTNode {
     try {
         p.expectPunctuator("{");
         p.skipWhitespace();
-        const statements = StatementList(p);
-        p.skipWhitespace();
+        let statements: ASTNode = null;
+        const start2 = p.pos;
+        try {
+            statements = StatementList(p);
+            p.skipWhitespace();
+        }
+        catch (e) {
+            p.pos = start2;
+        }
+        if (statements == null)
+            statements = new ListNode(new Range(p.pos,p.pos),[]);
         p.expectPunctuator("}");
         return new BlockNode(new Range(start,p.pos),statements);
     }
@@ -1756,13 +1782,13 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
         try {
             p.skipWhitespace();
             const initializer = Initializer(p);
-            return new VarIdentifierBindingNode(new Range(start,p.pos),identifier,initializer);
+            return new VarIdentifierNode(new Range(start,p.pos),identifier,initializer);
         }
         catch (e) {
             p.pos = start2;
         }
 
-        return identifier;
+        return new VarIdentifierNode(new Range(start,p.pos),identifier,null);
     }
     catch (e) {
         p.pos = start;
@@ -1778,7 +1804,7 @@ function VariableDeclaration_pattern(p: Parser): ASTNode {
         const pattern = BindingPattern(p);
         p.skipWhitespace();
         const initializer = Initializer(p);
-        return new VarPatternBindingNode(new Range(start,p.pos),pattern,initializer);
+        return new VarPatternNode(new Range(start,p.pos),pattern,initializer);
     }
     catch (e) {
         p.pos = start;
@@ -1872,7 +1898,14 @@ function ArrayBindingPattern_1(p: Parser): ASTNode {
 
         p.expectPunctuator("]");
 
-        return new ArrayBindingPattern1Node(new Range(start,p.pos),elision,rest);
+        const array: ASTNode[] = [];
+        if (elision != null)
+            array.push(elision);
+        if (rest != null)
+            array.push(rest);
+
+        const elements = new ListNode(new Range(start,p.pos),array);
+        return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
     }
     catch (e) {
         p.pos = start;
@@ -1890,7 +1923,7 @@ function ArrayBindingPattern_2(p: Parser): ASTNode {
         const elements = BindingElementList(p);
         p.skipWhitespace();
         p.expectPunctuator("]");
-        return new ArrayBindingPattern2Node(new Range(start,p.pos),elements);
+        return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
     }
     catch (e) {
         p.pos = start;
@@ -1931,7 +1964,15 @@ function ArrayBindingPattern_3(p: Parser): ASTNode {
         }
 
         p.expectPunctuator("]");
-        return new ArrayBindingPattern3Node(new Range(start,p.pos),elements,elision,rest);
+
+        const array: ASTNode[] = [].concat(elements.elements);
+        if (elision != null)
+            array.push(elision);
+        if (rest != null)
+            array.push(rest);
+
+        const allElements = new ListNode(new Range(start,p.pos),array);
+        return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
     }
     catch (e) {
         p.pos = start;
@@ -1971,7 +2012,7 @@ function BindingPropertyList(p: Parser): ASTNode {
 
 // BindingElementList
 
-function BindingElementList(p: Parser): ASTNode {
+function BindingElementList(p: Parser): ListNode {
     const start = p.pos;
     const elements: ASTNode[] = [];
     elements.push(BindingElisionElement(p));
@@ -2010,8 +2051,6 @@ function BindingElisionElement(p: Parser): ASTNode {
 // BindingProperty
 
 function BindingProperty(p: Parser): ASTNode {
-    try { return SingleNameBinding(p); } catch (e) {}
-
     const start = p.pos;
     try {
         const name = PropertyName(p);
@@ -2023,8 +2062,11 @@ function BindingProperty(p: Parser): ASTNode {
     }
     catch (e) {
         p.pos = start;
-        throw e;
     }
+
+    // This has to come after the colon version above, since both SingleNameBinding and
+    // PropertyName will match an identifier at the start of a colon binding
+    return SingleNameBinding(p);
 }
 
 // BindingElement
@@ -2044,7 +2086,10 @@ function BindingElement(p: Parser): ASTNode {
         catch (e) {
             p.pos = start2;
         }
-        return new BindingPatternInitNode(new Range(start,p.pos),pattern,init);
+        if (init == null)
+            return pattern;
+        else
+            return new BindingPatternInitNode(new Range(start,p.pos),pattern,init);
     }
     catch (e) {
         p.pos = start;
@@ -2254,6 +2299,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
             }
             catch (e) {
                 p.pos = start2;
+                init = null;
             }
         }
 
@@ -2261,24 +2307,32 @@ function IterationStatement_for_c(p: Parser): ASTNode {
             try {
                 p.expectKeyword("var");
                 p.skipWhitespace();
-                init = VariableDeclarationList(p);
+                const declarations = VariableDeclarationList(p);
+                init = new VarNode(new Range(start,p.pos),declarations);
                 p.skipWhitespace();
                 p.expectPunctuator(";");
                 p.skipWhitespace();
             }
             catch (e) {
                 p.pos = start2;
+                init = null;
             }
         }
 
+       if (init == null) {
+           try {
+               init = LexicalDeclaration(p);
+               p.skipWhitespace();
+           }
+           catch (e) {
+               p.pos = start2;
+               init = null;
+           }
+       }
+
         if (init == null) {
-            try {
-                init = LexicalDeclaration(p);
-                p.skipWhitespace();
-            }
-            catch (e) {
-                p.pos = start2;
-            }
+            // initializer part can be empty, but need to distinguish this from an error
+            p.expectPunctuator(";");
         }
 
         const p1 = p.pos;
@@ -2345,7 +2399,8 @@ function IterationStatement_for_in(p: Parser): ASTNode {
             try {
                 p.expectKeyword("var");
                 p.skipWhitespace();
-                binding = ForBinding(p);
+                const bindingInner = ForBinding(p);
+                binding = new VarForDeclarationNode(new Range(start2,p.pos),bindingInner);
             }
             catch (e) {
                 p.pos = start2;
@@ -2411,7 +2466,8 @@ function IterationStatement_for_of(p: Parser): ASTNode {
             try {
                 p.expectKeyword("var");
                 p.skipWhitespace();
-                binding = ForBinding(p);
+                const bindingInner = ForBinding(p);
+                binding = new VarForDeclarationNode(new Range(start2,p.pos),bindingInner);
             }
             catch (e) {
                 p.pos = start2;
@@ -2893,7 +2949,7 @@ function Finally(p: Parser): ASTNode {
 
 function CatchParameter(p: Parser): ASTNode {
     try { return BindingIdentifier(p); } catch (e) {}
-    // try { return BindingPattern(p); } catch (e) {}
+    try { return BindingPattern(p); } catch (e) {}
     throw new ParseError(p,p.pos,"Expected BindingIdentifier or BindingPattern");
 }
 
@@ -2976,9 +3032,12 @@ function FunctionDeclaration_unnamed(p: Parser): ASTNode {
 
 // FunctionDeclaration
 
-function FunctionDeclaration(p: Parser): ASTNode {
+function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
+    if (flags === undefined)
+        flags = {};
     try { return FunctionDeclaration_named(p); } catch (e) {}
-    try { return FunctionDeclaration_unnamed(p); } catch (e) {}
+    if (flags.Default)
+        try { return FunctionDeclaration_unnamed(p); } catch (e) {}
     throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
 }
 
@@ -3393,9 +3452,12 @@ function GeneratorDeclaration_2(p: Parser): ASTNode {
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser): ASTNode {
+function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
+    if (flags === undefined)
+        flags = {};
     try { return GeneratorDeclaration_1(p); } catch (e) {}
-    try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
+    if (flags.Default)
+        try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
     throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
 }
 
@@ -3533,9 +3595,12 @@ function ClassDeclaration_2(p: Parser): ASTNode {
 
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser): ASTNode {
+function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
+    if (flags === undefined)
+        flags = {};
     try { return ClassDeclaration_1(p); } catch (e) {}
-    try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
+    if (flags.Default)
+        try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
     throw new ParseError(p,p.pos,"Expected ClassDeclaration");
 }
 
@@ -3833,7 +3898,7 @@ function ImportClause(p: Parser): ASTNode {
             p.pos = start2;
         }
 
-        return defaultBinding;
+        return new DefaultImportNode(new Range(start,p.pos),defaultBinding);
     }
     catch (e) {
         p.pos = start;
@@ -3956,7 +4021,8 @@ function ImportSpecifier(p: Parser): ASTNode {
     }
 
     try {
-        return ImportedBinding(p);
+        const binding = ImportedBinding(p);
+        return new ImportSpecifierNode(new Range(start,p.pos),binding);
     }
     catch (e) {
         p.pos = start;
@@ -3992,12 +4058,12 @@ function ExportDeclaration(p: Parser): ASTNode {
 
             // FIXME: Not sure about the order of these
             try {
-                const node = HoistableDeclaration(p);
+                const node = HoistableDeclaration(p,{ Default: true });
                 return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
             } catch (e) { }
 
             try {
-                const node = ClassDeclaration(p);
+                const node = ClassDeclaration(p,{ Default: true });
                 return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
             } catch (e) { }
 
