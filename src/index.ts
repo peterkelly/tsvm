@@ -14,9 +14,10 @@
 
 import fs = require("fs");
 import path = require("path");
-import { Script, Module } from "./parser/syntax";
+import { Module } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode, ListNode } from "./parser/ast";
+import { compileModule } from "./compiler";
 
 type CommandFunction = (input: string) => string;
 type CommandSet = { [name: string]: CommandFunction };
@@ -274,6 +275,28 @@ function showUsageAndExit(): void {
     process.exit(1);
 }
 
+function compile(relFilename: string) {
+    const absFilename = path.resolve(process.cwd(),relFilename);
+    try {
+        let content: string = null;
+        content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
+
+        const { input } = splitTestData(content);
+
+        const p = new Parser(input);
+        const root = Module(p);
+        p.skipWhitespace();
+        if (p.pos < p.len)
+            throw new ParseError(p,p.pos,"Expected end of file");
+
+        compileModule(root);
+    }
+    catch (e) {
+        console.error(absFilename+": "+e);
+        process.exit(1);
+    }
+}
+
 function main(): void {
     let i = 2;
     const argv = process.argv;
@@ -281,6 +304,9 @@ function main(): void {
 
     if ((process.argv.length == 4) && (process.argv[2] == "runtests")) {
         runtests(process.argv[3]);
+    }
+    else if ((i < argc) && (argv[i] == "compile")) {
+        compile(argv[i]);
     }
     else if ((i < argc) && (argv[i] == "gentest")) {
         i++;

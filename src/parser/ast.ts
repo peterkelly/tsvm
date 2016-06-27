@@ -183,6 +183,9 @@ export class BooleanLiteralNode extends ASTNode {
     public get children(): ASTNode[] {
         return [];
     }
+    public get label(): string {
+        return this.value ? "true" : "false";
+    }
 }
 
 export class NumericLiteralNode extends ASTNode {
@@ -804,7 +807,7 @@ export class BlockNode extends ASTNode {
 export class LetNode extends ASTNode {
     public bindings: ASTNode;
     public constructor(range: Range, bindings: ASTNode) {
-        super(range,"LetNode");
+        super(range,"Let");
         this.bindings = bindings;
     }
     public get children(): ASTNode[] {
@@ -862,11 +865,11 @@ export class VarNode extends ASTNode {
     }
 }
 
-export class VarIdentifierBindingNode extends ASTNode {
+export class VarIdentifierNode extends ASTNode {
     public identifier: ASTNode;
     public initializer: ASTNode;
     public constructor(range: Range, identifier: ASTNode, initializer: ASTNode) {
-        super(range,"VarIdentifierBinding");
+        super(range,"VarIdentifier");
         this.identifier = identifier;
         this.initializer = initializer;
     }
@@ -875,11 +878,11 @@ export class VarIdentifierBindingNode extends ASTNode {
     }
 }
 
-export class VarPatternBindingNode extends ASTNode {
+export class VarPatternNode extends ASTNode {
     public pattern: ASTNode;
     public initializer: ASTNode;
     public constructor(range: Range, pattern: ASTNode, initializer: ASTNode) {
-        super(range,"VarPatternBinding");
+        super(range,"VarPattern");
         this.pattern = pattern;
         this.initializer = initializer;
     }
@@ -901,42 +904,14 @@ export class ObjectBindingPatternNode extends ASTNode {
     }
 }
 
-export class ArrayBindingPattern1Node extends ASTNode {
-    public readonly elision: ASTNode;
-    public readonly rest: ASTNode;
-    public constructor(range: Range, elision: ASTNode, rest: ASTNode) {
-        super(range,"ArrayBindingPattern1");
-        this.elision = elision;
-        this.rest = rest;
-    }
-    public get children(): ASTNode[] {
-        return [this.elision,this.rest];
-    }
-}
-
-export class ArrayBindingPattern2Node extends ASTNode {
+export class ArrayBindingPatternNode extends ASTNode {
     public readonly elements: ASTNode;
     public constructor(range: Range, elements: ASTNode) {
-        super(range,"ArrayBindingPattern2");
+        super(range,"ArrayBindingPattern");
         this.elements = elements;
     }
     public get children(): ASTNode[] {
         return [this.elements];
-    }
-}
-
-export class ArrayBindingPattern3Node extends ASTNode {
-    public readonly elements: ASTNode;
-    public readonly elision: ASTNode;
-    public readonly rest: ASTNode;
-    public constructor(range: Range, elements: ASTNode, elision: ASTNode, rest: ASTNode) {
-        super(range,"ArrayBindingPattern3");
-        this.elements = elements;
-        this.elision = elision;
-        this.rest = rest;
-    }
-    public get children(): ASTNode[] {
-        return [this.elements,this.elision,this.rest];
     }
 }
 
@@ -1116,6 +1091,17 @@ export class ForOfNode extends ASTNode {
     }
     public get children(): ASTNode[] {
         return [this.binding,this.expr,this.body];
+    }
+}
+
+export class VarForDeclarationNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public constructor(range: Range, binding: ASTNode) {
+        super(range,"VarForDeclaration");
+        this.binding = binding;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding];
     }
 }
 
@@ -1648,6 +1634,17 @@ export class DefaultAndNamedImportsNode extends ASTNode {
     }
 }
 
+export class DefaultImportNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public constructor(range: Range, binding: ASTNode) {
+        super(range,"DefaultImport");
+        this.binding = binding;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding];
+    }
+}
+
 export class NameSpaceImportNode extends ASTNode {
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
@@ -1674,6 +1671,17 @@ export class ImportNormalSpecifierNode extends ASTNode {
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"ImportNormalSpecifier");
+        this.binding = binding;
+    }
+    public get children(): ASTNode[] {
+        return [this.binding];
+    }
+}
+
+export class ImportSpecifierNode extends ASTNode {
+    public readonly binding: ASTNode;
+    public constructor(range: Range, binding: ASTNode) {
+        super(range,"ImportSpecifier");
         this.binding = binding;
     }
     public get children(): ASTNode[] {
