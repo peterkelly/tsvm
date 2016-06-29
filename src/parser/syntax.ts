@@ -262,19 +262,20 @@ function PrimaryExpression(p: Parser): ASTNode {
         return new ThisNode(range);
     }
 
-    try { return This(p); } catch (e) {}
-    // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
-    try { return Literal(p); } catch (e) {}
-    try { return IdentifierReference(p); } catch (e) {}
-    try { return ArrayLiteral(p); } catch (e) {}
-    try { return ObjectLiteral(p); } catch (e) {}
-    try { return FunctionExpression(p); } catch (e) {}
-    try { return ClassExpression(p); } catch (e) {}
-    try { return GeneratorExpression(p); } catch (e) {}
-    // try { return RegularExpressionLiteral(p); } catch (e) {} // TODO
-    // try { return TemplateLiteral(p); } catch (e) {} // TODO
-    try { return ParenthesizedExpression(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected PrimaryExpression");
+    return p.choice([
+        This,
+        // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
+        Literal,
+        IdentifierReference,
+        ArrayLiteral,
+        ObjectLiteral,
+        FunctionExpression,
+        ClassExpression,
+        GeneratorExpression,
+        // RegularExpressionLiteral, // TODO
+        // TemplateLiteral, // TODO
+        ParenthesizedExpression,
+    ]);
 }
 
 // ParenthesizedExpression
@@ -298,11 +299,12 @@ function ParenthesizedExpression(p: Parser): ASTNode {
 // Literal
 
 function Literal(p: Parser): ASTNode {
-    try { return NullLiteral(p); } catch (e) {}
-    try { return BooleanLiteral(p); } catch (e) {}
-    try { return NumericLiteral(p); } catch (e) {}
-    try { return StringLiteral(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected null, true, false, number, or string");
+    return p.choice([
+        NullLiteral,
+        BooleanLiteral,
+        NumericLiteral,
+        StringLiteral,
+    ]);
 }
 
 // NullLiteral
@@ -560,29 +562,31 @@ function PropertyDefinition_colon(p: Parser): ASTNode {
 // PropertyDefinition
 
 function PropertyDefinition(p: Parser): ASTNode {
-    const start = p.pos;
-    try { return PropertyDefinition_colon(p); } catch (e) {}
-    try { return CoverInitializedName(p); } catch (e) {}
-    try { return MethodDefinition(p); } catch (e) {}
-    try { return IdentifierReference(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected PropertyDefinition");
+    return p.choice([
+        PropertyDefinition_colon,
+        CoverInitializedName,
+        MethodDefinition,
+        IdentifierReference,
+    ]);
 }
 
 // PropertyName
 
 function PropertyName(p: Parser): ASTNode {
-    try { return LiteralPropertyName(p); } catch (e) {}
-    try { return ComputedPropertyName(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected identifier, string, number, or computed name");
+    return p.choice([
+        LiteralPropertyName,
+        ComputedPropertyName,
+    ]);
 }
 
 // LiteralPropertyName
 
 function LiteralPropertyName(p: Parser): ASTNode {
-    try { return IdentifierName(p); } catch (e) {}
-    try { return StringLiteral(p); } catch (e) {}
-    try { return NumericLiteral(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected identifier, string, or number");
+    return p.choice([
+        IdentifierName,
+        StringLiteral,
+        NumericLiteral,
+    ]);
 }
 
 // ComputedPropertyName
@@ -659,11 +663,12 @@ function MemberExpression_new(p: Parser): ASTNode {
 // MemberExpression_start
 
 function MemberExpression_start(p: Parser): ASTNode {
-    try { return PrimaryExpression(p); } catch (e) {}
-    try { return SuperProperty(p); } catch (e) {}
-    try { return MetaProperty(p); } catch (e) {}
-    try { return MemberExpression_new(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected MemberExpression");
+    return p.choice([
+        PrimaryExpression,
+        SuperProperty,
+        MetaProperty,
+        MemberExpression_new,
+    ]);
 }
 
 // MemberExpression
@@ -963,9 +968,10 @@ function ArgumentList(p: Parser): ASTNode {
 function LeftHandSideExpression(p: Parser): ASTNode {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
-    try { return CallExpression(p); } catch (e) {}
-    try { return NewExpression(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected LeftHandSideExpression");
+    return p.choice([
+        CallExpression,
+        NewExpression,
+    ]);
 }
 
 // Section 12.4
@@ -1640,16 +1646,13 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
 // AssignmentExpression
 
 function AssignmentExpression(p: Parser): ASTNode {
-    // FIXME: Some of the match calls here will not work, because they will be caught by
-    // expressions further down, e.g. * will match instead of *=. We need a matchToken() method
-    // which knows about all the tokens and only checks the longest one.
-
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
-    try { return ArrowFunction(p); } catch (e) {}
-    try { return AssignmentExpression_plain(p); } catch (e) {}
-    try { return ConditionalExpression(p); } catch (e) {}
-    try { return YieldExpression(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected AssignmentExpression");
+    return p.choice([
+        ArrowFunction,
+        AssignmentExpression_plain,
+        ConditionalExpression,
+        YieldExpression,
+    ]);
 }
 
 // Section 12.15
@@ -1683,46 +1686,50 @@ function Expression(p: Parser): ASTNode {
 // Statement
 
 function Statement(p: Parser): ASTNode {
-    try { return BlockStatement(p); } catch (e) {}
-    try { return VariableStatement(p); } catch (e) {}
-    try { return EmptyStatement(p); } catch(e) {}
-    try { return ExpressionStatement(p); } catch(e) {}
-    try { return IfStatement(p); } catch(e) {}
-    try { return BreakableStatement(p); } catch(e) {}
-    try { return ContinueStatement(p); } catch (e) {}
-    try { return BreakStatement(p); } catch (e) {}
-    try { return ReturnStatement(p); } catch (e) {}
-    try { return WithStatement(p); } catch (e) {}
-    try { return LabelledStatement(p); } catch (e) {}
-    try { return ThrowStatement(p); } catch (e) {}
-    try { return TryStatement(p); } catch (e) {}
-    try { return DebuggerStatement(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected Statement");
+    return p.choice([
+        BlockStatement,
+        VariableStatement,
+        EmptyStatement,
+        ExpressionStatement,
+        IfStatement,
+        BreakableStatement,
+        ContinueStatement,
+        BreakStatement,
+        ReturnStatement,
+        WithStatement,
+        LabelledStatement,
+        ThrowStatement,
+        TryStatement,
+        DebuggerStatement,
+    ]);
 }
 
 // Declaration
 
 function Declaration(p: Parser): ASTNode {
-    try { return HoistableDeclaration(p); } catch (e) {}
-    try { return ClassDeclaration(p); } catch (e) {}
-    try { return LexicalDeclaration(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected Declaration");
+    return p.choice([
+        HoistableDeclaration,
+        ClassDeclaration,
+        LexicalDeclaration,
+    ]);
 }
 
 // HoistableDeclaration
 
 function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
-    try { return FunctionDeclaration(p,flags); } catch (e) {}
-    try { return GeneratorDeclaration(p,flags); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected HoistableDeclaration");
+    return p.choice([
+        () => FunctionDeclaration(p,flags),
+        () => GeneratorDeclaration(p,flags),
+    ]);
 }
 
 // BreakableStatement
 
 function BreakableStatement(p: Parser): ASTNode {
-    try { return IterationStatement(p); } catch (e) {}
-    try { return SwitchStatement(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected BreakableStatement");
+    return p.choice([
+        IterationStatement,
+        SwitchStatement,
+    ]);
 }
 
 // Section 13.2
@@ -1786,9 +1793,10 @@ function StatementList(p: Parser): ASTNode {
 // StatementListItem
 
 function StatementListItem(p: Parser): ASTNode {
-    try { return Statement(p); } catch (e) {}
-    try { return Declaration(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected Statement or Declaration");
+    return p.choice([
+        Statement,
+        Declaration,
+    ]);
 }
 
 // Section 13.3.1
@@ -1886,9 +1894,10 @@ function LexicalBinding_pattern(p: Parser): ASTNode {
 // LexicalBinding
 
 function LexicalBinding(p: Parser): ASTNode {
-    try { return LexicalBinding_identifier(p); } catch (e) {}
-    try { return LexicalBinding_pattern(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected LexicalBinding");
+    return p.choice([
+        LexicalBinding_identifier,
+        LexicalBinding_pattern,
+    ]);
 }
 
 // Section 13.3.2
@@ -1971,9 +1980,10 @@ function VariableDeclaration_pattern(p: Parser): ASTNode {
 // VariableDeclaration
 
 function VariableDeclaration(p: Parser): ASTNode {
-    try { return VariableDeclaration_identifier(p); } catch (e) {}
-    try { return VariableDeclaration_pattern(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected VariableDeclaration");
+    return p.choice([
+        VariableDeclaration_identifier,
+        VariableDeclaration_pattern,
+    ]);
 }
 
 // Section 13.3.3
@@ -1981,9 +1991,10 @@ function VariableDeclaration(p: Parser): ASTNode {
 // BindingPattern
 
 function BindingPattern(p: Parser): ASTNode {
-    try { return ObjectBindingPattern(p); } catch (e) {}
-    try { return ArrayBindingPattern(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected BindingPattern");
+    return p.choice([
+        ObjectBindingPattern,
+        ArrayBindingPattern,
+    ]);
 }
 
 // ObjectBindingPattern
@@ -2116,10 +2127,11 @@ function ArrayBindingPattern_3(p: Parser): ASTNode {
 // ArrayBindingPattern
 
 function ArrayBindingPattern(p: Parser): ASTNode {
-    try { return ArrayBindingPattern_1(p); } catch (e) {}
-    try { return ArrayBindingPattern_2(p); } catch (e) {}
-    try { return ArrayBindingPattern_3(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected ArrayBindingPattern");
+    return p.choice([
+        ArrayBindingPattern_1,
+        ArrayBindingPattern_2,
+        ArrayBindingPattern_3,
+    ]);
 }
 
 // BindingPropertyList
@@ -2636,10 +2648,11 @@ function IterationStatement_for_of(p: Parser): ASTNode {
 // IterationStatement_for
 
 function IterationStatement_for(p: Parser): ASTNode {
-    try { return IterationStatement_for_c(p); } catch (e) {}
-    try { return IterationStatement_for_in(p); } catch (e) {}
-    try { return IterationStatement_for_of(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected for statement");
+    return p.choice([
+        IterationStatement_for_c,
+        IterationStatement_for_in,
+        IterationStatement_for_of,
+    ]);
 }
 
 // IterationStatement
@@ -2684,9 +2697,10 @@ function ForDeclaration(p: Parser): ASTNode {
 // ForBinding
 
 function ForBinding(p: Parser): ASTNode {
-    try { return BindingIdentifier(p); } catch (e) {}
-    try { return BindingPattern(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected BindingIdentifier or BindingPattern");
+    return p.choice([
+        BindingIdentifier,
+        BindingPattern, // FIXME: Need test cases for this
+    ]);
 }
 
 // Section 13.8
@@ -2865,9 +2879,10 @@ function CaseBlock_2(p: Parser): ASTNode {
 // CaseBlock
 
 function CaseBlock(p: Parser): ASTNode {
-    try { return CaseBlock_1(p); } catch (e) {}
-    try { return CaseBlock_2(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected CaseBlock");
+    return p.choice([
+        CaseBlock_1,
+        CaseBlock_2,
+    ]);
 }
 
 // CaseClauses
@@ -2942,9 +2957,10 @@ function LabelledStatement(p: Parser): ASTNode {
 // LabelledItem
 
 function LabelledItem(p: Parser): ASTNode {
-    try { return Statement(p); } catch (e) {}
-    try { return FunctionDeclaration(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected Statement or FunctionDeclaration");
+    return p.choice([
+        Statement,
+        FunctionDeclaration,
+    ]);
 }
 
 // Section 13.14
@@ -3044,9 +3060,10 @@ function Finally(p: Parser): ASTNode {
 // CatchParameter
 
 function CatchParameter(p: Parser): ASTNode {
-    try { return BindingIdentifier(p); } catch (e) {}
-    try { return BindingPattern(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected BindingIdentifier or BindingPattern");
+    return p.choice([
+        BindingIdentifier,
+        BindingPattern,
+    ]);
 }
 
 // Section 13.16
@@ -3169,8 +3186,10 @@ function StrictFormalParameters(p: Parser): ASTNode {
 // FormalParameters
 
 function FormalParameters(p: Parser): ListNode {
-    try { return FormalParameterList(p); } catch (e) {}
-    return new ListNode(new Range(p.pos,p.pos),[]);
+    return p.choice([
+        FormalParameterList,
+        () => new ListNode(new Range(p.pos,p.pos),[]),
+    ]);
 }
 
 // FormalParameterList
@@ -3252,8 +3271,10 @@ function FunctionBody(p: Parser): ASTNode {
 // FunctionStatementList
 
 function FunctionStatementList(p: Parser): ASTNode {
-    try { return StatementList(p); } catch (e) {}
-    return new ListNode(new Range(p.pos,p.pos),[]);
+    return p.choice([
+        StatementList,
+        () => new ListNode(new Range(p.pos,p.pos),[]),
+    ]);
 }
 
 // Section 14.2
@@ -3277,9 +3298,10 @@ function ArrowFunction(p: Parser): ASTNode {
 // ArrowParameters
 
 function ArrowParameters(p: Parser): ASTNode {
-    try { return BindingIdentifier(p); } catch (e) {}
-    try { return ArrowFormalParameters(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected ArrowParameters");
+    return p.choice([
+        BindingIdentifier,
+        ArrowFormalParameters,
+    ]);
 }
 
 // ConciseBody_1
@@ -3307,9 +3329,10 @@ function ConciseBody_2(p: Parser): ASTNode {
 // ConciseBody
 
 function ConciseBody(p: Parser): ASTNode {
-    try { return ConciseBody_1(p); } catch (e) {}
-    try { return ConciseBody_2(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected ConciseBody");
+    return p.choice([
+        ConciseBody_1,
+        ConciseBody_2,
+    ]);
 }
 
 // ArrowFormalParameters
@@ -3423,11 +3446,12 @@ function MethodDefinition_4(p: Parser): ASTNode {
 // MethodDefinition
 
 function MethodDefinition(p: Parser): ASTNode {
-    try { return MethodDefinition_1(p); } catch (e) {}
-    try { return MethodDefinition_2(p); } catch (e) {}
-    try { return MethodDefinition_3(p); } catch (e) {}
-    try { return MethodDefinition_4(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected MethodDefinition");
+    return p.choice([
+        MethodDefinition_1,
+        MethodDefinition_2,
+        MethodDefinition_3,
+        MethodDefinition_4,
+    ]);
 }
 
 // PropertySetParameterList
@@ -3613,10 +3637,11 @@ function YieldExpression_3(p: Parser): ASTNode {
 // YieldExpression
 
 function YieldExpression(p: Parser): ASTNode {
-    try { return YieldExpression_1(p); } catch (e) {}
-    try { return YieldExpression_2(p); } catch (e) {}
-    try { return YieldExpression_3(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected YieldExpression");
+    return p.choice([
+        YieldExpression_1,
+        YieldExpression_2,
+        YieldExpression_3,
+    ]);
 }
 
 // Section 14.5
@@ -3797,10 +3822,11 @@ function ClassElement_3(p: Parser): ASTNode {
 // ClassElement
 
 function ClassElement(p: Parser): ASTNode {
-    try { return ClassElement_1(p); } catch (e) {}
-    try { return ClassElement_2(p); } catch (e) {}
-    try { return ClassElement_3(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected ClassElement");
+    return p.choice([
+        ClassElement_1,
+        ClassElement_2,
+        ClassElement_3,
+    ]);
 }
 
 // Section 15.1
@@ -3867,10 +3893,11 @@ function ModuleItemList(p: Parser): ASTNode {
 // ModuleItem
 
 function ModuleItem(p: Parser): ASTNode {
-    try { return ImportDeclaration(p); } catch (e) {}
-    try { return ExportDeclaration(p); } catch (e) {}
-    try { return StatementListItem(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected ModuleItem");
+    return p.choice([
+        ImportDeclaration,
+        ExportDeclaration,
+        StatementListItem,
+    ]);
 }
 
 // Section 15.2.2
@@ -3911,9 +3938,10 @@ function ImportDeclaration_module(p: Parser): ASTNode {
 // ImportDeclaration
 
 function ImportDeclaration(p: Parser): ASTNode {
-    try { return ImportDeclaration_from(p); } catch (e) {}
-    try { return ImportDeclaration_module(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected ImportDeclaration");
+    return p.choice([
+        ImportDeclaration_from,
+        ImportDeclaration_module,
+    ]);
 }
 
 // ImportClause
