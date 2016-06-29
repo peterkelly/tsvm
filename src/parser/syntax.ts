@@ -190,6 +190,28 @@ function punctuator(str: string): (p: Parser) => void {
     return (p: Parser): void => p.expectPunctuator(str);
 }
 
+function notKeyword(str: string) {
+    return (p: Parser): void => {
+        if (p.lookaheadKeyword(str))
+            throw new ParseError(p,p.pos,"Unexpected "+str);
+    };
+}
+
+function notPunctuator(str: string) {
+    return (p: Parser): void => {
+        if (p.lookaheadPunctuator(str))
+            throw new ParseError(p,p.pos,"Unexpected "+str);
+    };
+}
+
+function identifier(str: string) {
+    return (p: Parser): void => {
+        const ident = Identifier(p);
+        if (ident.value != str)
+            throw new ParseIgnore();
+    };
+}
+
 function whitespace(p: Parser): void {
     p.skipWhitespace();
 }
@@ -460,13 +482,11 @@ function Elision(p: Parser): ASTNode {
     let count = 1;
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                ]);
-                count++;
-            });
+            p.sequence([
+                whitespace,
+                punctuator(","),
+            ]);
+            count++;
         }
         catch (e) {
             return new ElisionNode(new Range(start,p.pos),count);
@@ -526,16 +546,14 @@ function PropertyDefinitionList(p: Parser): ASTNode {
     properties.push(PropertyDefinition(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let defn: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => defn = PropertyDefinition(p),
-                ]);
-                properties.push(defn);
-            });
+            let defn: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => defn = PropertyDefinition(p),
+            ]);
+            properties.push(defn);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),properties);
@@ -678,34 +696,31 @@ function MemberExpression(p: Parser): ASTNode {
         let left = MemberExpression_start(p);
         while (true) {
             try {
-                p.attempt(() => {
-                    p.sequence([
-                        whitespace,
-                    ]);
-                    if (p.matchPunctuator("[")) {
+                p.choice([
+                    () => {
                         let expr: ASTNode;
                         p.sequence([
+                            whitespace,
+                            punctuator("["),
                             whitespace,
                             () => expr = Expression(p),
                             whitespace,
                             punctuator("]"),
                         ]);
                         left = new MemberAccessExprNode(new Range(start,p.pos),left,expr);
-                    }
-                    else if (p.matchPunctuator(".")) {
+                    },
+                    () => {
                         let ident: IdentifierNode;
                         p.sequence([
+                            whitespace,
+                            punctuator("."),
                             whitespace,
                             () => ident = IdentifierName(p),
                             whitespace,
                         ]);
                         left = new MemberAccessIdentNode(new Range(start,p.pos),left,ident);
-                    }
-                    else {
-                        // FIXME: TemplateLiteral
-                        throw new ParseError(p,p.pos,"No more parts to MemberExpression");
-                    }
-                });
+                    },
+                ]);
             }
             catch (e) {
                 return left;
@@ -717,33 +732,34 @@ function MemberExpression(p: Parser): ASTNode {
 // SuperProperty
 
 function SuperProperty(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        p.sequence([
-            keyword("super"),
-            whitespace,
-        ]);
-        if (p.matchPunctuator("[")) {
+    return p.choice([
+        (): ASTNode => {
+            const start = p.pos;
             let expr: ASTNode;
             p.sequence([
+                keyword("super"),
+                whitespace,
+                punctuator("["),
                 whitespace,
                 () => expr = Expression(p),
                 whitespace,
                 punctuator("]"),
             ]);
             return new SuperPropertyExprNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator(".")) {
+        },
+        (): ASTNode => {
+            const start = p.pos;
             let ident: IdentifierNode;
             p.sequence([
+                keyword("super"),
+                whitespace,
+                punctuator("."),
                 whitespace,
                 () => ident = Identifier(p),
             ]);
             return new SuperPropertyIdentNode(new Range(start,p.pos),ident);
-        }
-        else {
-            throw new ParseError(p,p.pos,"Expected SuperProperty");
-        }
-    });
+        },
+    ]);
 }
 
 // MetaProperty
@@ -775,38 +791,38 @@ function NewTarget(p: Parser): ASTNode {
 // NewExpression
 
 function NewExpression(p: Parser): ASTNode {
-    try { return MemberExpression(p); } catch (e) {}
-    const result = p.opt((): ASTNode => {
-        const start = p.pos;
-        let expr: ASTNode;
-        p.sequence([
-            keyword("new"),
-            whitespace,
-            () => expr = NewExpression(p),
-        ]);
-        return new NewExpressionNode(new Range(start,p.pos),expr,null);
-    });
-    if (result != null)
-        return result;
-    else
-        throw new ParseError(p,p.pos,"Expected MemberExpression or new");
+    return p.choice([
+        MemberExpression,
+        () => {
+            const start = p.pos;
+            let expr: ASTNode;
+            p.sequence([
+                keyword("new"),
+                whitespace,
+                () => expr = NewExpression(p),
+            ]);
+            return new NewExpressionNode(new Range(start,p.pos),expr,null);
+        },
+    ]);
 }
 
 // CallExpression_start
 
 function CallExpression_start(p: Parser): ASTNode {
-    try { return SuperCall(p); } catch (e) {}
-
-    return p.attempt((start): ASTNode => {
-        let fun: ASTNode;
-        let args: ASTNode;
-        p.sequence([
-            () => fun = MemberExpression(p),
-            whitespace,
-            () => args = Arguments(p),
-        ]);
-        return new CallNode(new Range(start,p.pos),fun,args);
-    });
+    return p.choice([
+        SuperCall,
+        () => {
+            const start = p.pos;
+            let fun: ASTNode;
+            let args: ASTNode;
+            p.sequence([
+                () => fun = MemberExpression(p),
+                whitespace,
+                () => args = Arguments(p),
+            ]);
+            return new CallNode(new Range(start,p.pos),fun,args);
+        },
+    ]);
 }
 
 // CallExpression
@@ -816,59 +832,42 @@ function CallExpression(p: Parser): ASTNode {
     let left = CallExpression_start(p);
     while (true) {
         try {
-            p.attempt(() => {
-                let right = p.opt(() => {
+            p.choice([
+                () => {
                     let args: ASTNode;
                     p.sequence([
                         whitespace,
                         () => args = Arguments(p),
                     ]);
-                    return args;
-                });
-                if (right != null) {
-                    left = new CallNode(new Range(start,p.pos),left,right);
-                    return;
-                }
-
-                right = p.opt(() => {
-                    let innerRight: ASTNode;
+                    left = new CallNode(new Range(start,p.pos),left,args);
+                },
+                () => {
+                    let expr: ASTNode;
                     p.sequence([
                         whitespace,
                         punctuator("["),
                         whitespace,
-                        () => innerRight = Expression(p),
+                        () => expr = Expression(p),
                         whitespace,
                         punctuator("]"),
                     ]);
-                    return innerRight;
-                });
-                if (right != null) {
-                    left = new MemberAccessExprNode(new Range(start,p.pos),left,right);
-                    return;
-                }
-
-                right = p.opt(() => {
+                    left = new MemberAccessExprNode(new Range(start,p.pos),left,expr);
+                },
+                () => {
                     let idname: IdentifierNode;
                     p.sequence([
+                        whitespace,
                         punctuator("."),
                         whitespace,
                         () => idname = IdentifierName(p),
                     ]);
-                    return idname;
-                });
-                if (right != null) {
-                    left = new MemberAccessIdentNode(new Range(start,p.pos),left,right);
-                    return;
-                }
-
-                // try {
+                    left = new MemberAccessIdentNode(new Range(start,p.pos),left,idname);
+                },
+                // () => {
+                //     // TODO
                 //     left = TemplateLiteral(p);
-                //     continue;
-                // }
-                // catch (e) {}
-
-                throw new ParseIgnore();
-            });
+                // },
+            ]);
         }
         catch (e) {
             return left;
@@ -932,9 +931,7 @@ function ArgumentList_item(p: Parser): ASTNode {
             ]);
             return new SpreadElementNode(new Range(start,p.pos),expr);
         },
-        (): ASTNode => {
-            return AssignmentExpression(p);
-        },
+        AssignmentExpression,
     ]);
 }
 
@@ -946,16 +943,14 @@ function ArgumentList(p: Parser): ASTNode {
     items.push(ArgumentList_item(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let arg: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => arg = ArgumentList_item(p),
-                ]);
-                items.push(arg);
-            });
+            let arg: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => arg = ArgumentList_item(p),
+            ]);
+            items.push(arg);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),items);
@@ -979,24 +974,30 @@ function LeftHandSideExpression(p: Parser): ASTNode {
 // PostfixExpression
 
 function PostfixExpression(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        const expr = LeftHandSideExpression(p);
-        const start2 = p.pos;
-
-        p.sequence([
-            whitespaceNoNewline,
-        ]);
-        if (p.matchPunctuator("++")) {
-            return new PostIncrementNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("--")) {
-            return new PostDecrementNode(new Range(start,p.pos),expr);
-        }
-        else {
-            p.pos = start2;
-            return expr;
-        }
-    });
+    const start = p.pos;
+    let expr: ASTNode;
+    let result: ASTNode;
+    p.sequence([
+        () => expr = LeftHandSideExpression(p),
+        () => result = p.choice([
+            () => {
+                p.sequence([
+                    whitespaceNoNewline,
+                    punctuator("++"),
+                ]);
+                return new PostIncrementNode(new Range(start,p.pos),expr);
+            },
+            () => {
+                p.sequence([
+                    whitespaceNoNewline,
+                    punctuator("--"),
+                ]);
+                return new PostDecrementNode(new Range(start,p.pos),expr);
+            },
+            () => expr,
+        ]),
+    ]);
+    return result;
 }
 
 // Section 12.5
@@ -1004,83 +1005,91 @@ function PostfixExpression(p: Parser): ASTNode {
 // UnaryExpression
 
 function UnaryExpression(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        if (p.matchKeyword("delete")) {
+    const start = p.pos;
+    return p.choice([
+        () => {
             let expr: ASTNode;
             p.sequence([
+                keyword("delete"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new DeleteNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchKeyword("void")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                keyword("void"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new VoidNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchKeyword("typeof")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                keyword("typeof"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new TypeOfNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("++")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                punctuator("++"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new PreIncrementNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("--")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                punctuator("--"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new PreDecrementNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("+")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                punctuator("+"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new UnaryPlusNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("-")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                punctuator("-"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new UnaryMinusNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("~")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                punctuator("~"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new UnaryBitwiseNotNode(new Range(start,p.pos),expr);
-        }
-        else if (p.matchPunctuator("!")) {
+        },
+        () => {
             let expr: ASTNode;
             p.sequence([
+                punctuator("!"),
                 whitespace,
                 () => expr = UnaryExpression(p),
             ]);
             return new UnaryLogicalNotNode(new Range(start,p.pos),expr);
-        }
-        else {
-            return PostfixExpression(p);
-        }
-    });
+        },
+        PostfixExpression,
+    ]);
 }
 
 // Section 12.6
@@ -1092,39 +1101,38 @@ function MultiplicativeExpression(p: Parser): ASTNode {
     let left = UnaryExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("*")) {
+            p.choice([
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("*"),
                         whitespace,
                         () => right = UnaryExpression(p),
                     ]);
                     left = new MultiplyNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.lookaheadPunctuator("/")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
                         punctuator("/"),
                         whitespace,
                         () => right = UnaryExpression(p),
                     ]);
                     left = new DivideNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator("%")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("%"),
                         whitespace,
                         () => right = UnaryExpression(p),
                     ]);
                     left = new ModuloNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+                },
+            ]);
         }
         catch (e) {
             return left;
@@ -1141,30 +1149,28 @@ function AdditiveExpression(p: Parser): ASTNode {
     let left = MultiplicativeExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("+")) {
+            p.choice([
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("+"),
                         whitespace,
                         () => right = MultiplicativeExpression(p),
                     ]);
                     left = new AddNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator("-")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("-"),
                         whitespace,
                         () => right = MultiplicativeExpression(p),
                     ]);
                     left = new SubtractNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+                },
+            ]);
         }
         catch (e) {
             return left;
@@ -1181,38 +1187,38 @@ function ShiftExpression(p: Parser): ASTNode {
     let left = AdditiveExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("<<")) {
+            p.choice([
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("<<"),
                         whitespace,
                         () => right = AdditiveExpression(p),
                     ]);
                     left = new LeftShiftNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator(">>>")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator(">>>"),
                         whitespace,
                         () => right = AdditiveExpression(p),
                     ]);
                     left = new UnsignedRightShiftNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator(">>")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator(">>"),
                         whitespace,
                         () => right = AdditiveExpression(p),
                     ]);
                     left = new SignedRightShiftNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+                },
+            ]);
         }
         catch (e) {
             return left;
@@ -1229,62 +1235,68 @@ function RelationalExpression(p: Parser): ASTNode {
     let left = ShiftExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("<=")) {
+            p.choice([
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("<="),
                         whitespace,
                         () => right = ShiftExpression(p),
                     ]);
                     left = new LessEqualNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator(">=")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator(">="),
                         whitespace,
                         () => right = ShiftExpression(p),
                     ]);
                     left = new GreaterEqualNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator("<")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("<"),
                         whitespace,
                         () => right = ShiftExpression(p),
                     ]);
                     left = new LessThanNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator(">")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator(">"),
                         whitespace,
                         () => right = ShiftExpression(p),
                     ]);
                     left = new GreaterThanNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchKeyword("instanceof")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        keyword("instanceof"),
                         whitespace,
                         () => right = ShiftExpression(p),
                     ]);
                     left = new InstanceOfNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchKeyword("in")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        keyword("in"),
                         whitespace,
                         () => right = ShiftExpression(p),
                     ]);
                     left = new InNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+                },
+            ]);
         }
         catch (e) {
             return left;
@@ -1301,46 +1313,48 @@ function EqualityExpression(p: Parser): ASTNode {
     let left = RelationalExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("===")) {
+            p.choice([
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("==="),
                         whitespace,
                         () => right = RelationalExpression(p),
                     ]);
                     left = new StrictEqualsNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator("!==")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("!=="),
                         whitespace,
                         () => right = RelationalExpression(p),
                     ]);
                     left = new StrictNotEqualsNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator("==")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("=="),
                         whitespace,
                         () => right = RelationalExpression(p),
                     ]);
                     left = new AbstractEqualsNode(new Range(start,p.pos),left,right);
-                }
-                else if (p.matchPunctuator("!=")) {
+                },
+                () => {
                     let right: ASTNode;
                     p.sequence([
+                        whitespace,
+                        punctuator("!="),
                         whitespace,
                         () => right = RelationalExpression(p),
                     ]);
                     left = new AbstractNotEqualsNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+                },
+            ]);
         }
         catch (e) {
             return left;
@@ -1357,22 +1371,14 @@ function BitwiseANDExpression(p: Parser): ASTNode {
     let left = EqualityExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("&")) {
-                    let right: ASTNode;
-                    p.sequence([
-                        whitespace,
-                        () => right = EqualityExpression(p),
-                    ]);
-                    left = new BitwiseANDNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+            let right: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator("&"),
+                whitespace,
+                () => right = EqualityExpression(p),
+            ]);
+            left = new BitwiseANDNode(new Range(start,p.pos),left,right);
         }
         catch (e) {
             return left;
@@ -1387,22 +1393,14 @@ function BitwiseXORExpression(p: Parser): ASTNode {
     let left = BitwiseANDExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("^")) {
-                    let right: ASTNode;
-                    p.sequence([
-                        whitespace,
-                        () => right = BitwiseANDExpression(p),
-                    ]);
-                    left = new BitwiseXORNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+            let right: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator("^"),
+                whitespace,
+                () => right = BitwiseANDExpression(p),
+            ]);
+            left = new BitwiseXORNode(new Range(start,p.pos),left,right);
         }
         catch (e) {
             return left;
@@ -1417,22 +1415,14 @@ function BitwiseORExpression(p: Parser): ASTNode {
     let left = BitwiseXORExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("|")) {
-                    let right: ASTNode;
-                    p.sequence([
-                        whitespace,
-                        () => right = BitwiseXORExpression(p),
-                    ]);
-                    left = new BitwiseORNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+            let right: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator("|"),
+                whitespace,
+                () => right = BitwiseXORExpression(p),
+            ]);
+            left = new BitwiseORNode(new Range(start,p.pos),left,right);
         }
         catch (e) {
             return left;
@@ -1449,22 +1439,14 @@ function LogicalANDExpression(p: Parser): ASTNode {
     let left = BitwiseORExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("&&")) {
-                    let right: ASTNode;
-                    p.sequence([
-                        whitespace,
-                        () => right = BitwiseORExpression(p),
-                    ]);
-                    left = new LogicalANDNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+            let right: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator("&&"),
+                whitespace,
+                () => right = BitwiseORExpression(p),
+            ]);
+            left = new LogicalANDNode(new Range(start,p.pos),left,right);
         }
         catch (e) {
             return left;
@@ -1479,22 +1461,14 @@ function LogicalORExpression(p: Parser): ASTNode {
     let left = LogicalANDExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                ]);
-                if (p.matchPunctuator("||")) {
-                    let right: ASTNode;
-                    p.sequence([
-                        whitespace,
-                        () => right = LogicalANDExpression(p),
-                    ]);
-                    left = new LogicalORNode(new Range(start,p.pos),left,right);
-                }
-                else {
-                    throw new ParseIgnore();
-                }
-            });
+            let right: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator("||"),
+                whitespace,
+                () => right = LogicalANDExpression(p),
+            ]);
+            left = new LogicalORNode(new Range(start,p.pos),left,right);
         }
         catch (e) {
             return left;
@@ -1509,8 +1483,8 @@ function LogicalORExpression(p: Parser): ASTNode {
 function ConditionalExpression(p: Parser): ASTNode {
     const start = p.pos;
     let condition = LogicalORExpression(p);
-    try {
-        return p.attempt(() => {
+    return p.choice([
+        () => {
             let trueExpr: ASTNode;
             let falseExpr: ASTNode;
             p.sequence([
@@ -1524,11 +1498,9 @@ function ConditionalExpression(p: Parser): ASTNode {
                 () => falseExpr = AssignmentExpression(p),
             ]);
             return new ConditionalNode(new Range(start,p.pos),condition,trueExpr,falseExpr);
-        });
-    }
-    catch (e) {
-        return condition;
-    }
+        },
+        () => condition,
+    ]);
 }
 
 // Section 12.14
@@ -1536,111 +1508,135 @@ function ConditionalExpression(p: Parser): ASTNode {
 // AssignmentExpression_plain
 
 function AssignmentExpression_plain(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        const left = LeftHandSideExpression(p);
-        p.sequence([
-            whitespace,
-        ]);
-        if (p.matchPunctuator("=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("*=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignMultiplyNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("/=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignDivideNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("%=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignModuloNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("+=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignAddNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("-=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignSubtractNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("<<=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignLeftShiftNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator(">>=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignSignedRightShiftNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator(">>>=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("&=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignBitwiseANDNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("^=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignBitwiseXORNode(new Range(start,p.pos),left,right);
-        }
-        else if (p.matchPunctuator("|=")) {
-            let right: ASTNode;
-            p.sequence([
-                whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            return new AssignBitwiseORNode(new Range(start,p.pos),left,right);
-        }
-        else {
-            throw new ParseError(p,p.pos,"Invalid assignment expression");
-        }
-    });
+    const start = p.pos;
+    let left: ASTNode;
+    let result: ASTNode;
+    p.sequence([
+        () => left = LeftHandSideExpression(p),
+        () => result = p.choice([
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("*="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignMultiplyNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("/="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignDivideNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("%="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignModuloNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("+="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignAddNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("-="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignSubtractNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("<<="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignLeftShiftNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator(">>="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignSignedRightShiftNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator(">>>="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("&="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignBitwiseANDNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("^="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignBitwiseXORNode(new Range(start,p.pos),left,right);
+            },
+            () => {
+                let right: ASTNode;
+                p.sequence([
+                    whitespace,
+                    punctuator("|="),
+                    whitespace,
+                    () => right = AssignmentExpression(p),
+                ]);
+                return new AssignBitwiseORNode(new Range(start,p.pos),left,right);
+            },
+        ]),
+    ]);
+    return result;
 }
 
 // AssignmentExpression
@@ -1664,16 +1660,14 @@ function Expression(p: Parser): ASTNode {
     let left = AssignmentExpression(p);
     while (true) {
         try {
-            p.attempt(() => {
-                let right: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                left = new CommaNode(new Range(start,p.pos),left,right);
-            });
+            let right: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => right = AssignmentExpression(p),
+            ]);
+            left = new CommaNode(new Range(start,p.pos),left,right);
         }
         catch (e) {
             return left;
@@ -1743,27 +1737,25 @@ function BlockStatement(p: Parser): ASTNode {
 // Block
 
 function Block(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        let statements: ASTNode;
-        p.sequence([
-            punctuator("{"),
-            whitespace,
-            () => statements = p.opt(() => {
+    const start = p.pos;
+    let statements: ASTNode;
+    p.sequence([
+        punctuator("{"),
+        whitespace,
+        () => statements = p.choice([
+            () => {
                 let inner: ASTNode;
                 p.sequence([
                     () => inner = StatementList(p),
                     whitespace,
                 ]);
                 return inner;
-            }),
-        ]);
-        if (statements == null)
-            statements = new ListNode(new Range(p.pos,p.pos),[]);
-        p.sequence([
-            punctuator("}"),
-        ]);
-        return new BlockNode(new Range(start,p.pos),statements);
-    });
+            },
+            () => new ListNode(new Range(p.pos,p.pos),[]),
+        ]),
+        punctuator("}"),
+    ]);
+    return new BlockNode(new Range(start,p.pos),statements);
 }
 
 // StatementList
@@ -1804,31 +1796,32 @@ function StatementListItem(p: Parser): ASTNode {
 // LexicalDeclaration
 
 function LexicalDeclaration(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        if (p.matchKeyword("let")) {
+    return p.choice([
+        () => {
+            const start = p.pos;
             let bindings: ASTNode;
             p.sequence([
+                keyword("let"),
                 whitespace,
                 () => bindings = BindingList(p),
                 whitespace,
                 punctuator(";"),
             ]);
             return new LetNode(new Range(start,p.pos),bindings);
-        }
-        else if (p.matchKeyword("const")) {
+        },
+        () => {
+            const start = p.pos;
             let bindings: ASTNode;
             p.sequence([
+                keyword("const"),
                 whitespace,
                 () => bindings = BindingList(p),
                 whitespace,
                 punctuator(";"),
             ]);
             return new ConstNode(new Range(start,p.pos),bindings);
-        }
-        else {
-            throw new ParseError(p,p.pos,"Expected let or const");
-        }
-    });
+        },
+    ]);
 }
 
 // BindingList
@@ -1839,16 +1832,14 @@ function BindingList(p: Parser): ASTNode {
     bindings.push(LexicalBinding(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let lexbnd: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => lexbnd = LexicalBinding(p),
-                ]);
-                bindings.push(lexbnd);
-            });
+            let lexbnd: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => lexbnd = LexicalBinding(p),
+            ]);
+            bindings.push(lexbnd);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),bindings);
@@ -1925,16 +1916,14 @@ function VariableDeclarationList(p: Parser): ASTNode {
     declarations.push(VariableDeclaration(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let decl: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => decl = VariableDeclaration(p),
-                ]);
-                declarations.push(decl);
-            });
+            let decl: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => decl = VariableDeclaration(p),
+            ]);
+            declarations.push(decl);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),declarations);
@@ -1945,9 +1934,12 @@ function VariableDeclarationList(p: Parser): ASTNode {
 // VariableDeclaration_identifier
 
 function VariableDeclaration_identifier(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        const identifier = BindingIdentifier(p);
-        return p.choice([
+    let identifier: ASTNode;
+    let result: VarIdentifierNode;
+    const start = p.pos;
+    p.sequence([
+        () => identifier = BindingIdentifier(p),
+        () => result = p.choice([
             () => {
                 let initializer: ASTNode;
                 p.sequence([
@@ -1959,8 +1951,9 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
             () => {
                 return new VarIdentifierNode(new Range(start,p.pos),identifier,null);
             }
-        ]);
-    });
+        ]),
+    ]);
+    return result;
 }
 
 // VariableDeclaration_pattern
@@ -2005,64 +1998,64 @@ function ObjectBindingPattern(p: Parser): ASTNode {
     p.sequence([
         punctuator("{"),
         whitespace,
-        () => properties = p.opt(() => {
-            let inner: ASTNode;
-            p.sequence([
-                () => inner = BindingPropertyList(p),
-                whitespace,
-                () => p.opt(() => {
-                    p.sequence([
-                        punctuator(","),
-                        whitespace,
-                    ]);
-                }),
-            ]);
-            return inner;
-        }),
+        () => properties = p.choice([
+            () => {
+                let inner: ASTNode;
+                p.sequence([
+                    () => inner = BindingPropertyList(p),
+                    whitespace,
+                    () => p.opt(() => {
+                        p.sequence([
+                            punctuator(","),
+                            whitespace,
+                        ]);
+                    }),
+                ]);
+                return inner;
+            },
+            () => new ListNode(new Range(start,p.pos),[]),
+        ]),
         punctuator("}"),
     ]);
-    if (properties == null)
-        properties = new ListNode(new Range(start,p.pos),[]);
     return new ObjectBindingPatternNode(new Range(start,p.pos),properties);
 }
 
 // ArrayBindingPattern_1
 
 function ArrayBindingPattern_1(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        let elision: ASTNode;
-        let rest: ASTNode;
-        p.sequence([
-            punctuator("["),
-            whitespace,
-            () => elision = p.opt(() => {
-                let inner: ASTNode;
-                p.sequence([
-                    () => inner = Elision(p),
-                    whitespace,
-                ]);
-                return inner;
-            }),
-            () => rest = p.opt(() => {
-                let inner: ASTNode;
-                p.sequence([
-                    () => inner = BindingRestElement(p),
-                    whitespace,
-                ]);
-                return inner;
-            }),
-            punctuator("]"),
-        ]);
+    const start = p.pos;
+    let elision: ASTNode;
+    let rest: ASTNode;
+    p.sequence([
+        punctuator("["),
+        whitespace,
+        () => elision = p.opt(() => {
+            let inner: ASTNode;
+            p.sequence([
+                () => inner = Elision(p),
+                whitespace,
+            ]);
+            return inner;
+        }),
+        () => rest = p.opt(() => {
+            let inner: ASTNode;
+            p.sequence([
+                () => inner = BindingRestElement(p),
+                whitespace,
+            ]);
+            return inner;
+        }),
+        punctuator("]"),
+    ]);
 
-        const array: ASTNode[] = [];
-        if (elision != null)
-            array.push(elision);
-        if (rest != null)
-            array.push(rest);
+    const array: ASTNode[] = [];
+    if (elision != null)
+        array.push(elision);
+    if (rest != null)
+        array.push(rest);
 
-        const elements = new ListNode(new Range(start,p.pos),array);
-        return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
-    });
+    const elements = new ListNode(new Range(start,p.pos),array);
+    return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
 }
 
 // ArrayBindingPattern_2
@@ -2083,45 +2076,44 @@ function ArrayBindingPattern_2(p: Parser): ASTNode {
 // ArrayBindingPattern_3
 
 function ArrayBindingPattern_3(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        let elements: ListNode;
-        let elision: ASTNode;
-        let rest: ASTNode;
-        p.sequence([
-            punctuator("["),
-            whitespace,
-            () => elements = BindingElementList(p),
-            whitespace,
-            punctuator(","),
-            whitespace,
-            () => elision = p.opt(() => {
-                let inner: ASTNode;
-                p.sequence([
-                    () => inner = Elision(p),
-                    whitespace,
-                ]);
-                return inner;
-            }),
-            () => rest = p.opt(() => {
-                let inner: ASTNode;
-                p.sequence([
-                    () => inner = BindingRestElement(p),
-                    whitespace,
-                ]);
-                return inner;
-            }),
-            punctuator("]"),
-        ]);
+    const start = p.pos;
+    let elements: ListNode;
+    let elision: ASTNode;
+    let rest: ASTNode;
+    p.sequence([
+        punctuator("["),
+        whitespace,
+        () => elements = BindingElementList(p),
+        whitespace,
+        punctuator(","),
+        whitespace,
+        () => elision = p.opt(() => {
+            let inner: ASTNode;
+            p.sequence([
+                () => inner = Elision(p),
+                whitespace,
+            ]);
+            return inner;
+        }),
+        () => rest = p.opt(() => {
+            let inner: ASTNode;
+            p.sequence([
+                () => inner = BindingRestElement(p),
+                whitespace,
+            ]);
+            return inner;
+        }),
+        punctuator("]"),
+    ]);
 
-        const array: ASTNode[] = [].concat(elements.elements);
-        if (elision != null)
-            array.push(elision);
-        if (rest != null)
-            array.push(rest);
+    const array: ASTNode[] = [].concat(elements.elements);
+    if (elision != null)
+        array.push(elision);
+    if (rest != null)
+        array.push(rest);
 
-        const allElements = new ListNode(new Range(start,p.pos),array);
-        return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
-    });
+    const allElements = new ListNode(new Range(start,p.pos),array);
+    return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
 }
 
 // ArrayBindingPattern
@@ -2142,16 +2134,14 @@ function BindingPropertyList(p: Parser): ASTNode {
     properties.push(BindingProperty(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let prop: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => prop = BindingProperty(p),
-                ]);
-                properties.push(prop);
-            });
+            let prop: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => prop = BindingProperty(p),
+            ]);
+            properties.push(prop);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),properties);
@@ -2167,16 +2157,14 @@ function BindingElementList(p: Parser): ListNode {
     elements.push(BindingElisionElement(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let elem: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => elem = BindingElisionElement(p),
-                ]);
-                elements.push(elem);
-            });
+            let elem: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => elem = BindingElisionElement(p),
+            ]);
+            elements.push(elem);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),elements);
@@ -2199,9 +2187,7 @@ function BindingElisionElement(p: Parser): ASTNode {
             ]);
             return new BindingElisionElementNode(new Range(start,p.pos),elision,element);
         },
-        (): ASTNode => {
-            return BindingElement(p);
-        },
+        BindingElement,
     ]);
 }
 
@@ -2222,43 +2208,44 @@ function BindingProperty(p: Parser): ASTNode {
             ]);
             return new BindingPropertyNode(new Range(start,p.pos),name,element);
         },
-        (): ASTNode => {
-            // This has to come after the colon version above, since both SingleNameBinding and
-            // PropertyName will match an identifier at the start of a colon binding
-            return SingleNameBinding(p);
-        },
+        // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
+        // and PropertyName will match an identifier at the start of a colon binding
+        SingleNameBinding,
     ]);
 }
 
 // BindingElement
 
 function BindingElement(p: Parser): ASTNode {
-    try { return SingleNameBinding(p); } catch (e) {}
-
-    return p.attempt((start): ASTNode => {
-        const pattern = BindingPattern(p);
-        return p.choice([
-            () => {
-                let init: ASTNode;
-                p.sequence([
-                    whitespace,
-                    () => init = Initializer(p),
-                ]);
-                return new BindingPatternInitNode(new Range(start,p.pos),pattern,init);
-            },
-            () => {
-                return pattern;
-            },
-        ]);
-    });
+    return p.choice([
+        SingleNameBinding,
+        () => {
+            const start = p.pos;
+            const pattern = BindingPattern(p);
+            return p.choice([
+                () => {
+                    let init: ASTNode;
+                    p.sequence([
+                        whitespace,
+                        () => init = Initializer(p),
+                    ]);
+                    return new BindingPatternInitNode(new Range(start,p.pos),pattern,init);
+                },
+                () => pattern,
+            ]);
+        },
+    ]);
 }
 
 // SingleNameBinding
 
 function SingleNameBinding(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        const ident = BindingIdentifier(p);
-        return p.choice([
+    const start = p.pos;
+    let ident: ASTNode;
+    let result: ASTNode;
+    p.sequence([
+        () => ident = BindingIdentifier(p),
+        () => result = p.choice([
             () => {
                 let init: ASTNode;
                 p.sequence([
@@ -2267,11 +2254,10 @@ function SingleNameBinding(p: Parser): ASTNode {
                 ]);
                 return new SingleNameBindingNode(new Range(start,p.pos),ident,init);
             },
-            () => {
-                return ident;
-            },
-        ])
-    });
+            () => ident,
+        ]),
+    ]);
+    return result;
 }
 
 // BindingRestElement
@@ -2322,15 +2308,14 @@ function ExpressionStatement(p: Parser): ASTNode {
     }
     p.pos = start2;
 
-    return p.attempt((start) => {
-        let expr: ASTNode;
-        p.sequence([
-            () => expr = Expression(p),
-            whitespace,
-            punctuator(";"),
-        ]);
-        return new ExpressionStatementNode(new Range(start,p.pos),expr);
-    });
+    const start = p.pos;
+    let expr: ASTNode;
+    p.sequence([
+        () => expr = Expression(p),
+        whitespace,
+        punctuator(";"),
+    ]);
+    return new ExpressionStatementNode(new Range(start,p.pos),expr);
 }
 
 // Section 13.6
@@ -2338,37 +2323,32 @@ function ExpressionStatement(p: Parser): ASTNode {
 // IfStatement
 
 function IfStatement(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        let condition: ASTNode;
-        let trueBranch: ASTNode;
-        p.sequence([
-            keyword("if"),
-            whitespace,
-            punctuator("("),
-            whitespace,
-            () => condition = Expression(p),
-            whitespace,
-            punctuator(")"),
-            whitespace,
-            () => trueBranch = Statement(p),
-        ]);
-
-        return p.choice([
-            () => {
-                let falseBranch: ASTNode;
-                p.sequence([
-                    whitespace,
-                    keyword("else"),
-                    whitespace,
-                    () => falseBranch = Statement(p),
-                ]);
-                return new IfStatementNode(new Range(start,p.pos),condition,trueBranch,falseBranch);
-            },
-            () => {
-                return new IfStatementNode(new Range(start,p.pos),condition,trueBranch,null);
-            },
-        ]);
-    });
+    const start = p.pos;
+    let condition: ASTNode;
+    let trueBranch: ASTNode;
+    let falseBranch: ASTNode;
+    p.sequence([
+        keyword("if"),
+        whitespace,
+        punctuator("("),
+        whitespace,
+        () => condition = Expression(p),
+        whitespace,
+        punctuator(")"),
+        whitespace,
+        () => trueBranch = Statement(p),
+        () => falseBranch = p.opt(() => {
+            let fb: ASTNode;
+            p.sequence([
+                whitespace,
+                keyword("else"),
+                whitespace,
+                () => fb = Statement(p),
+            ]);
+            return fb;
+        }),
+    ]);
+    return new IfStatementNode(new Range(start,p.pos),condition,trueBranch,falseBranch);
 }
 
 // Section 13.7
@@ -2424,99 +2404,80 @@ function IterationStatement_for_c(p: Parser): ASTNode {
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
-    return p.attempt((start): ASTNode => {
-
-        p.sequence([
-            keyword("for"),
-            whitespace,
-            punctuator("("),
-            whitespace,
-        ]);
-
-        const start2 = p.pos;
-
-        let init: ASTNode = null;
-
-        if (!p.lookaheadKeyword("let") && !p.lookaheadPunctuator("[")) {
-            init = p.opt(() => {
-                let innerInit: ASTNode = null;
-
+    const start = p.pos;
+    let init: ASTNode;
+    let condition: ASTNode;
+    let update: ASTNode;
+    let body: ASTNode;
+    p.sequence([
+        keyword("for"),
+        whitespace,
+        punctuator("("),
+        whitespace,
+        () => init = p.choice([
+            () => {
+                let inner: ASTNode = null;
                 p.sequence([
-                    () => innerInit = Expression(p),
+                    notKeyword("let"), // FIXME: need tests for this
+                    notPunctuator("["), // FIXME: need tests for this
+                    () => inner = Expression(p),
                     whitespace,
                     punctuator(";"),
                     whitespace,
                 ]);
-
-                return innerInit;
-            });
-        }
-
-        if (init == null) {
-            init = p.opt(() => {
-                let declarations: ASTNode = null;
-                let inner: ASTNode = null;
+                return inner;
+            },
+            () => {
+                const start2 = p.pos;
+                let inner: ASTNode;
                 p.sequence([
                     keyword("var"),
                     whitespace,
                     () => {
-                        declarations = VariableDeclarationList(p);
-                        inner = new VarNode(new Range(start,p.pos),declarations);
+                        const declarations = VariableDeclarationList(p);
+                        inner = new VarNode(new Range(start2,p.pos),declarations);
                     },
                     whitespace,
                     punctuator(";"),
                     whitespace,
                 ]);
                 return inner;
-            });
-        }
-
-       if (init == null) {
-           init = p.opt(() => {
+            },
+            () => {
                let inner: ASTNode = null;
                p.sequence([
                    () => inner = LexicalDeclaration(p),
                    whitespace,
                ]);
                return inner;
-           });
-       }
-
-        if (init == null) {
-            // initializer part can be empty, but need to distinguish this from an error
-            p.sequence([
-                punctuator(";"),
-            ]);
-        }
-
-        const condition = p.opt(() => {
+           },
+           () => {
+                // initializer part can be empty, but need to distinguish this from an error
+                p.sequence([
+                    punctuator(";"),
+                ]);
+                return <ASTNode>null;
+            }
+        ]),
+        () => condition = p.opt(() => {
             return Expression(p);
-        });
-
-        p.sequence([
-            whitespace,
-            punctuator(";"),
-            whitespace,
-        ]);
-
-        const update = p.opt(() => {
+        }),
+        whitespace,
+        punctuator(";"),
+        whitespace,
+        () => update = p.opt(() => {
             let inner: ASTNode = null;
             p.sequence([
                 () => inner = Expression(p),
                 whitespace,
             ]);
             return inner;
-        });
-
-        p.sequence([
-            punctuator(")"),
-            whitespace,
-        ]);
-
-        const body = Statement(p);
-        const range = new Range(start,p.pos);
-        return new ForCNode(range,init,condition,update,body);
-    });
+        }),
+        punctuator(")"),
+        whitespace,
+        () => body = Statement(p),
+    ]);
+    return new ForCNode(new Range(start,p.pos),init,condition,update,body);
 }
 
 // IterationStatement_for_in
@@ -2526,60 +2487,48 @@ function IterationStatement_for_in(p: Parser): ASTNode {
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
-    return p.attempt((start): ASTNode => {
-        let binding: ASTNode = null;
-
-        p.sequence([
-            keyword("for"),
-            whitespace,
-            punctuator("("),
-            whitespace,
-        ]);
-
-        const start2 = p.pos;
-        if (!p.lookaheadKeyword("let") && !p.lookaheadPunctuator("[")) {
-            binding = p.opt(() => {
-                return LeftHandSideExpression(p);
-            });
-        }
-
-        if (binding == null) {
-            binding = p.opt(() => {
-                let bindingInner: ASTNode = null;
+    const start = p.pos;
+    let binding: ASTNode;
+    let expr: ASTNode;
+    let body: ASTNode;
+    p.sequence([
+        keyword("for"),
+        whitespace,
+        punctuator("("),
+        whitespace,
+        () => binding = p.choice([
+            () => {
+                let inner: ASTNode;
+                p.sequence([
+                    notKeyword("let"), // FIXME: need tests for this
+                    notPunctuator("["), // FIXME: need tests for this
+                    () => inner = LeftHandSideExpression(p),
+                ]);
+                return inner;
+            },
+            () => {
+                const start2 = p.pos;
+                let inner: ASTNode = null;
                 p.sequence([
                     keyword("var"),
                     whitespace,
-                    () => bindingInner = ForBinding(p),
+                    () => inner = ForBinding(p),
                 ]);
-                return new VarForDeclarationNode(new Range(start2,p.pos),bindingInner);
-            });
-        }
+                return new VarForDeclarationNode(new Range(start2,p.pos),inner);
+            },
+            ForDeclaration,
+        ]),
+        whitespace,
+        keyword("in"),
+        whitespace,
+        () => expr = Expression(p),
+        whitespace,
+        punctuator(")"),
+        whitespace,
+        () => body = Statement(p),
+    ]);
 
-        if (binding == null) {
-            binding = p.opt(() => {
-                return ForDeclaration(p);
-            });
-        }
-
-        if (binding == null)
-            throw new ParseError(p,p.pos,"Expected for-in binding");
-
-        let expr: ASTNode = null;
-        let body: ASTNode = null;
-
-        p.sequence([
-            whitespace,
-            keyword("in"),
-            whitespace,
-            () => expr = Expression(p),
-            whitespace,
-            punctuator(")"),
-            whitespace,
-            () => body = Statement(p),
-        ]);
-
-        return new ForInNode(new Range(start,p.pos),binding,expr,body);
-    });
+    return new ForInNode(new Range(start,p.pos),binding,expr,body);
 }
 
 // IterationStatement_for_of
@@ -2589,60 +2538,47 @@ function IterationStatement_for_of(p: Parser): ASTNode {
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
-    return p.attempt((start): ASTNode => {
-        let binding: ASTNode = null;
-
-        p.sequence([
-            keyword("for"),
-            whitespace,
-            punctuator("("),
-            whitespace,
-        ]);
-
-        const start2 = p.pos;
-        if (!p.lookaheadKeyword("let") && !p.lookaheadPunctuator("[")) {
-            binding = p.opt(() => {
-                return LeftHandSideExpression(p);
-            });
-        }
-
-        if (binding == null) {
-            binding = p.opt(() => {
-                let bindingInner: ASTNode = null;
+    const start = p.pos;
+    let binding: ASTNode;
+    let expr: ASTNode;
+    let body: ASTNode;
+    p.sequence([
+        keyword("for"),
+        whitespace,
+        punctuator("("),
+        whitespace,
+        () => binding = p.choice([
+            () => {
+                let inner: ASTNode;
+                p.sequence([
+                    notKeyword("let"), // FIXME: need tests for this
+                    notPunctuator("["), // FIXME: need tests for this
+                    () => inner = LeftHandSideExpression(p),
+                ]);
+                return inner;
+            },
+            () => {
+                const start2 = p.pos;
+                let inner: ASTNode = null;
                 p.sequence([
                     keyword("var"),
                     whitespace,
-                    () => bindingInner = ForBinding(p),
+                    () => inner = ForBinding(p),
                 ]);
-                return new VarForDeclarationNode(new Range(start2,p.pos),bindingInner);
-            });
-        }
-
-        if (binding == null) {
-            binding = p.opt(() => {
-                return ForDeclaration(p);
-            });
-        }
-
-        if (binding == null)
-            throw new ParseError(p,p.pos,"Expected for-in binding");
-
-        let expr: ASTNode = null;
-        let body: ASTNode = null;
-
-        p.sequence([
-            whitespace,
-            keyword("of"),
-            whitespace,
-            () => expr = Expression(p),
-            whitespace,
-            punctuator(")"),
-            whitespace,
-            () => body = Statement(p),
-        ]);
-
-        return new ForOfNode(new Range(start,p.pos),binding,expr,body);
-    });
+                return new VarForDeclarationNode(new Range(start2,p.pos),inner);
+            },
+            ForDeclaration,
+        ]),
+        whitespace,
+        keyword("of"),
+        whitespace,
+        () => expr = Expression(p),
+        whitespace,
+        punctuator(")"),
+        whitespace,
+        () => body = Statement(p),
+    ]);
+    return new ForOfNode(new Range(start,p.pos),binding,expr,body);
 }
 
 // IterationStatement_for
@@ -2658,40 +2594,38 @@ function IterationStatement_for(p: Parser): ASTNode {
 // IterationStatement
 
 function IterationStatement(p: Parser): ASTNode {
-    if (p.lookaheadKeyword("do"))
-        return IterationStatement_do(p);
-    else if (p.lookaheadKeyword("while"))
-        return IterationStatement_while(p);
-    else if (p.lookaheadKeyword("for"))
-        return IterationStatement_for(p);
-    else
-        throw new ParseError(p,p.pos,"Expected do, while, or for");
+    return p.choice([
+        IterationStatement_do,
+        IterationStatement_while,
+        IterationStatement_for,
+    ]);
 }
 
 // ForDeclaration
 
 function ForDeclaration(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        if (p.matchKeyword("let")) {
+    return p.choice([
+        () => {
+            const start = p.pos;
             let binding: ASTNode = null;
             p.sequence([
+                keyword("let"),
                 whitespace,
                 () => binding = ForBinding(p),
             ]);
             return new LetForDeclarationNode(new Range(start,p.pos),binding);
-        }
-        else if (p.matchKeyword("const")) {
+        },
+        () => {
+            const start = p.pos;
             let binding: ASTNode = null;
             p.sequence([
+                keyword("const"),
                 whitespace,
                 () => binding = ForBinding(p),
             ]);
             return new ConstForDeclarationNode(new Range(start,p.pos),binding);
-        }
-        else {
-            throw new ParseError(p,p.pos,"Expected let or const");
-        }
-    });
+        },
+    ]);
 }
 
 // ForBinding
@@ -2845,12 +2779,13 @@ function CaseBlock_1(p: Parser): ASTNode {
     p.sequence([
         punctuator("{"),
         whitespace,
-        () => { try { clauses = CaseClauses(p); } catch (e) {} },
+        () => clauses = p.choice([
+            CaseClauses,
+            () => new ListNode(new Range(start,p.pos),[]),
+        ]),
         whitespace,
         punctuator("}"),
     ]);
-    if (clauses == null)
-        clauses = new ListNode(new Range(start,p.pos),[]);
     return clauses;
 }
 
@@ -2858,21 +2793,23 @@ function CaseBlock_1(p: Parser): ASTNode {
 
 function CaseBlock_2(p: Parser): ASTNode {
     const start = p.pos;
-    let clauses1: ASTNode[] = [];
-    let clauses2: ASTNode[] = [];
-    let defaultClause: ASTNode = null;
+    let clauses1: ListNode;
+    let clauses2: ListNode;
+    let defaultClause: ASTNode;
     p.sequence([
         punctuator("{"),
         whitespace,
-        () => { try { clauses1 = CaseClauses(p).elements; } catch (e) {} },
+        () => clauses1 = p.opt(CaseClauses),
         whitespace,
         () => defaultClause = DefaultClause(p),
         whitespace,
-        () => { try { clauses2 = CaseClauses(p).elements; } catch (e) {} },
+        () => clauses2 = p.opt(CaseClauses),
         whitespace,
         punctuator("}"),
     ]);
-    const combined = [].concat(clauses1,defaultClause,clauses2);
+    const elements1 = (clauses1 != null) ? clauses1.elements : [];
+    const elements2 = (clauses2 != null) ? clauses2.elements : [];
+    const combined = [].concat(elements1,defaultClause,elements2);
     return new ListNode(new Range(start,p.pos),combined);
 }
 
@@ -2893,9 +2830,11 @@ function CaseClauses(p: Parser): ListNode {
     clauses.push(CaseClause(p));
     while (true) {
         try {
-            p.attempt(() => {
-                clauses.push(CaseClause(p));
-            });
+            let clause: ASTNode;
+            p.sequence([
+                () => clause = CaseClause(p),
+            ]);
+            clauses.push(clause);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),clauses);
@@ -3219,9 +3158,7 @@ function FormalParameterList(p: Parser): ListNode {
                     ]);
                     return new ListNode(new Range(start,p.pos),elements);
                 },
-                () => {
-                    return formals;
-                },
+                () => formals,
             ]);
         },
     ]);
@@ -3235,14 +3172,14 @@ function FormalsList(p: Parser): ListNode {
     elements.push(FormalParameter(p));
     while (true) {
         try {
-            p.attempt(() => {
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                ]);
-                elements.push(FormalParameter(p));
-            });
+            let param: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => param = FormalParameter(p),
+            ]);
+            elements.push(param);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),elements);
@@ -3390,11 +3327,7 @@ function MethodDefinition_3(p: Parser): ASTNode {
     let name: ASTNode = null;
     let body: ASTNode = null;
     p.sequence([
-        () => {
-            const getIdent = Identifier(p);
-            if (getIdent.value != "get")
-                throw new ParseIgnore();
-        },
+        identifier("get"),
         whitespace,
         () => name = PropertyName(p),
         whitespace,
@@ -3420,11 +3353,7 @@ function MethodDefinition_4(p: Parser): ASTNode {
     let param: ASTNode = null;
     let body: ASTNode = null;
     p.sequence([
-        () => {
-            const setIdent = Identifier(p);
-            if (setIdent.value != "set")
-                throw new ParseIgnore();
-        },
+        identifier("set"),
         whitespace,
         () => name = PropertyName(p),
         whitespace,
@@ -3711,41 +3640,37 @@ function ClassExpression(p: Parser): ASTNode {
 // ClassTail
 
 function ClassTail(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        let heritage: ASTNode;
-        let body: ASTNode;
-
-        p.sequence([
-            () => heritage = p.opt(() => {
-                let inner: ASTNode;
-                p.sequence([
-                    () => inner = ClassHeritage(p),
-                    whitespace,
-                ]);
-                return inner;
-            }),
-            punctuator("{"),
-            whitespace,
-        ]);
-
-        const start2 = p.pos;
-
-        p.sequence([
-            () => body = p.opt(() => {
+    const start = p.pos;
+    let heritage: ASTNode;
+    let body: ASTNode;
+    p.sequence([
+        () => heritage = p.opt(() => {
+            let inner: ASTNode;
+            p.sequence([
+                () => inner = ClassHeritage(p),
+                whitespace,
+            ]);
+            return inner;
+        }),
+        punctuator("{"),
+        whitespace,
+        () => body = p.choice([
+            () => {
+                const start2 = p.pos;
                 let inner: ASTNode;
                 p.sequence([
                     () => inner = ClassBody(p),
                     whitespace,
                 ]);
                 return inner;
-            }),
-            punctuator("}"),
-        ]);
-
-        if (body == null)
-            body = new ListNode(new Range(start2,start2),[]);
-        return new ClassTailNode(new Range(start,p.pos),heritage,body);
-    });
+            },
+            () => {
+                return new ListNode(new Range(p.pos,p.pos),[]);
+            },
+        ]),
+        punctuator("}"),
+    ]);
+    return new ClassTailNode(new Range(start,p.pos),heritage,body);
 }
 
 // ClassHeritage
@@ -3775,14 +3700,12 @@ function ClassElementList(p: Parser): ASTNode {
     elements.push(ClassElement(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let elem: ASTNode;
-                p.sequence([
-                    whitespace,
-                    () => elem = ClassElement(p),
-                ]);
-                elements.push(elem);
-            });
+            let elem: ASTNode;
+            p.sequence([
+                whitespace,
+                () => elem = ClassElement(p),
+            ]);
+            elements.push(elem);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),elements);
@@ -3875,14 +3798,12 @@ function ModuleItemList(p: Parser): ASTNode {
     items.push(ModuleItem(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let mod: ASTNode;
-                p.sequence([
-                    whitespace,
-                    () => mod = ModuleItem(p),
-                ]);
-                items.push(mod);
-            });
+            let mod: ASTNode;
+            p.sequence([
+                whitespace,
+                () => mod = ModuleItem(p),
+            ]);
+            items.push(mod);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),items);
@@ -3948,13 +3869,9 @@ function ImportDeclaration(p: Parser): ASTNode {
 
 function ImportClause(p: Parser): ASTNode {
     return p.choice([
-        (): ASTNode => {
-            return NameSpaceImport(p);
-        },
-        (): ASTNode => {
-            return NamedImports(p);
-        },
-        (): ASTNode => {
+        NameSpaceImport,
+        NamedImports,
+        () => {
             const start = p.pos;
             const defaultBinding = ImportedDefaultBinding(p);
             return p.choice([
@@ -4015,24 +3932,27 @@ function NamedImports(p: Parser): ASTNode {
     p.sequence([
         punctuator("{"),
         whitespace,
-        () => imports = p.opt(() => {
-            let inner: ASTNode;
-            p.sequence([
-                () => inner = ImportsList(p),
-                whitespace,
-                () => p.opt(() => {
-                    p.sequence([
-                        punctuator(","),
-                        whitespace,
-                    ]);
-                }),
-            ]);
-            return inner;
-        }),
+        () => imports = p.choice([
+            () => {
+                let inner: ASTNode;
+                p.sequence([
+                    () => inner = ImportsList(p),
+                    whitespace,
+                    () => p.opt(() => {
+                        p.sequence([
+                            punctuator(","),
+                            whitespace,
+                        ]);
+                    }),
+                ]);
+                return inner;
+            },
+            () => {
+                return new ListNode(new Range(start,p.pos),[]);
+            },
+        ]),
         punctuator("}"),
     ]);
-    if (imports == null)
-        imports = new ListNode(new Range(start,p.pos),[]);
     return new NamedImportsNode(new Range(start,p.pos),imports);
 }
 
@@ -4054,16 +3974,14 @@ function ImportsList(p: Parser): ASTNode {
     imports.push(ImportSpecifier(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let specifier: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => specifier = ImportSpecifier(p),
-                ]);
-                imports.push(specifier);
-            });
+            let specifier: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => specifier = ImportSpecifier(p),
+            ]);
+            imports.push(specifier);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),imports);
@@ -4122,73 +4040,89 @@ function ExportDeclaration(p: Parser): ASTNode {
             whitespace,
         ]);
 
-        if (p.matchKeyword("default")) {
-            p.sequence([
-                whitespace,
-            ]);
-
-            // FIXME: Not sure about the order of these
-            try {
-                const node = HoistableDeclaration(p,{ Default: true });
+        let res: ASTNode;
+        return p.choice([
+            () => {
+                let node: ASTNode;
+                p.sequence([
+                    keyword("default"),
+                    whitespace,
+                    () => node = HoistableDeclaration(p,{ Default: true }),
+                ]);
                 return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
-            } catch (e) { }
-
-            try {
-                const node = ClassDeclaration(p,{ Default: true });
+            },
+            () => {
+                let node: ASTNode;
+                p.sequence([
+                    keyword("default"),
+                    whitespace,
+                    () => node = ClassDeclaration(p,{ Default: true }),
+                ]);
                 return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
-            } catch (e) { }
-
-            if (!p.lookaheadKeyword("function") && !p.lookaheadKeyword("class")) {
-                try {
-                    const node = AssignmentExpression(p);
-                    return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
-                } catch (e) {}
-            }
-        }
-        else if (p.matchPunctuator("*")) {
-            let from: ASTNode;
-            p.sequence([
-                whitespace,
-                () => from = FromClause(p),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new ExportStarNode(new Range(start,p.pos),from);
-        }
-        else {
-            return p.choice([
-                (): ASTNode => {
-                    let exportClause: ASTNode;
-                    let fromClause: ASTNode;
-                    p.sequence([
-                        () => exportClause = ExportClause(p),
-                        whitespace,
-                        () => fromClause = FromClause(p),
-                        whitespace,
-                        punctuator(";"),
-                    ]);
-                    return new ExportFromNode(new Range(start,p.pos),exportClause,fromClause);
-                },
-                (): ASTNode => {
-                    let exportClause: ASTNode;
-                    p.sequence([
-                        () => exportClause = ExportClause(p),
-                        whitespace,
-                        punctuator(";"),
-                    ]);
-                    return exportClause;
-                },
-                (): ASTNode => {
-                    const node = VariableStatement(p);
-                    return new ExportVariableNode(new Range(node.range.start,node.range.end),node);
-                },
-                (): ASTNode => {
-                    const node = Declaration(p);
-                    return new ExportDeclarationNode(new Range(node.range.start,node.range.end),node);
-                },
-            ]);
-        }
-        throw new ParseError(p,p.pos,"Expected ExportDeclaration");
+            },
+            () => {
+                let node: ASTNode;
+                p.sequence([
+                    keyword("default"),
+                    whitespace,
+                    notKeyword("function"), // FIXME: need tests for this
+                    notKeyword("class"), // FIXME: need tests for this
+                    () => node = AssignmentExpression(p),
+                ]);
+                return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
+            },
+            () => {
+                p.sequence([
+                    punctuator("*"),
+                    () => {
+                        let from: ASTNode;
+                        p.sequence([
+                            whitespace,
+                            () => from = FromClause(p),
+                            whitespace,
+                            punctuator(";"),
+                        ]);
+                        res = new ExportStarNode(new Range(start,p.pos),from);
+                    },
+                ]);
+                return res;
+            },
+            (): ASTNode => {
+                let exportClause: ASTNode;
+                let fromClause: ASTNode;
+                p.sequence([
+                    () => exportClause = ExportClause(p),
+                    whitespace,
+                    () => fromClause = FromClause(p),
+                    whitespace,
+                    punctuator(";"),
+                ]);
+                return new ExportFromNode(new Range(start,p.pos),exportClause,fromClause);
+            },
+            (): ASTNode => {
+                let exportClause: ASTNode;
+                p.sequence([
+                    () => exportClause = ExportClause(p),
+                    whitespace,
+                    punctuator(";"),
+                ]);
+                return exportClause;
+            },
+            (): ASTNode => {
+                let node: ASTNode;
+                p.sequence([
+                    () => node = VariableStatement(p),
+                ]);
+                return new ExportVariableNode(new Range(node.range.start,node.range.end),node);
+            },
+            (): ASTNode => {
+                let node: ASTNode;
+                p.sequence([
+                    () => node = Declaration(p),
+                ]);
+                return new ExportDeclarationNode(new Range(node.range.start,node.range.end),node);
+            },
+        ]);
     });
 }
 
@@ -4200,24 +4134,25 @@ function ExportClause(p: Parser): ASTNode {
     p.sequence([
         punctuator("{"),
         whitespace,
-        () => exports = p.opt(() => {
-            let inner: ASTNode;
-            p.sequence([
-                () => inner = ExportsList(p),
-                whitespace,
-                () => p.opt(() => {
-                    p.sequence([
-                        punctuator(","),
-                        whitespace,
-                    ]);
-                }),
-            ]);
-            return inner;
-        }),
+        () => exports = p.choice([
+            () => {
+                let inner: ASTNode;
+                p.sequence([
+                    () => inner = ExportsList(p),
+                    whitespace,
+                    () => p.opt(() => {
+                        p.sequence([
+                            punctuator(","),
+                            whitespace,
+                        ]);
+                    }),
+                ]);
+                return inner;
+            },
+            () => new ListNode(new Range(start,p.pos),[]),
+        ]),
         punctuator("}"),
     ]);
-    if (exports == null)
-        exports = new ListNode(new Range(start,p.pos),[]);
     return new ExportClauseNode(new Range(start,p.pos),exports);
 }
 
@@ -4229,16 +4164,14 @@ function ExportsList(p: Parser): ASTNode {
     exports.push(ExportSpecifier(p));
     while (true) {
         try {
-            p.attempt(() => {
-                let specifier: ASTNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    () => specifier = ExportSpecifier(p),
-                ]);
-                exports.push(specifier);
-            });
+            let specifier: ASTNode;
+            p.sequence([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                () => specifier = ExportSpecifier(p),
+            ]);
+            exports.push(specifier);
         }
         catch (e) {
             return new ListNode(new Range(start,p.pos),exports);
@@ -4249,9 +4182,12 @@ function ExportsList(p: Parser): ASTNode {
 // ExportSpecifier
 
 function ExportSpecifier(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        const ident = IdentifierName(p);
-        return p.choice([
+    const start = p.pos;
+    let ident: IdentifierNode;
+    let result: ASTNode;
+    p.sequence([
+        () => ident = IdentifierName(p),
+        () => result = p.choice([
             (): ASTNode => {
                 let asIdent: IdentifierNode;
                 p.sequence([
@@ -4265,6 +4201,7 @@ function ExportSpecifier(p: Parser): ASTNode {
             (): ASTNode => {
                 return new ExportNormalSpecifierNode(new Range(start,p.pos),ident);
             },
-        ]);
-    });
+        ]),
+    ]);
+    return result;
 }
