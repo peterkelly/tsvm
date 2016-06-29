@@ -240,10 +240,10 @@ export class Parser {
         }
     }
 
-    public opt<T>(f: (start: number) => T): T {
+    public opt<T>(f: () => T): T {
         const start = this.pos;
         try {
-            return f(start);
+            return f();
         }
         catch (e) {
             this.pos = start;
@@ -265,11 +265,11 @@ export class Parser {
         }
     }
 
-    public choice<T>(list: ((start: number) => T)[]): T {
+    public choice<T>(list: (() => T)[]): T {
         const start = this.pos;
         for (const item of list) {
             try {
-                return item(start);
+                return item();
             }
             catch (e) {
                 this.pos = start;

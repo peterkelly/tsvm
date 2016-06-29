@@ -412,7 +412,7 @@ function ArrayLiteral(p: Parser): ASTNode {
                 ]);
             }
 
-            const elision = p.opt((start2): ASTNode => {
+            const elision = p.opt((): ASTNode => {
                 let inner: ASTNode;
                 p.sequence([
                     () => inner = Elision(p),
@@ -495,7 +495,7 @@ function ObjectLiteral(p: Parser): ASTNode {
     p.sequence([
         punctuator("{"),
         whitespace,
-        () => properties = p.opt((start2: number): ASTNode => {
+        () => properties = p.opt((): ASTNode => {
             let inner: ASTNode;
             p.sequence([
                 () => inner = PropertyDefinitionList(p),
@@ -771,7 +771,8 @@ function NewTarget(p: Parser): ASTNode {
 
 function NewExpression(p: Parser): ASTNode {
     try { return MemberExpression(p); } catch (e) {}
-    const result = p.opt((start: number): ASTNode => {
+    const result = p.opt((): ASTNode => {
+        const start = p.pos;
         let expr: ASTNode;
         p.sequence([
             keyword("new"),
@@ -887,7 +888,8 @@ function SuperCall(p: Parser): ASTNode {
 
 function Arguments(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             p.sequence([
                 punctuator("("),
                 whitespace,
@@ -896,7 +898,8 @@ function Arguments(p: Parser): ASTNode {
             const args = new ListNode(new Range(start,p.pos),[]);
             return new ArgumentsNode(new Range(start,p.pos),args);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let args: ASTNode;
             p.sequence([
                 punctuator("("),
@@ -914,7 +917,8 @@ function Arguments(p: Parser): ASTNode {
 
 function ArgumentList_item(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let expr: ASTNode;
             p.sequence([
                 punctuator("..."),
@@ -923,7 +927,7 @@ function ArgumentList_item(p: Parser): ASTNode {
             ]);
             return new SpreadElementNode(new Range(start,p.pos),expr);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
             return AssignmentExpression(p);
         },
     ]);
@@ -2172,7 +2176,8 @@ function BindingElementList(p: Parser): ListNode {
 
 function BindingElisionElement(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let elision: ASTNode;
             let element: ASTNode;
             p.sequence([
@@ -2182,7 +2187,7 @@ function BindingElisionElement(p: Parser): ASTNode {
             ]);
             return new BindingElisionElementNode(new Range(start,p.pos),elision,element);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
             return BindingElement(p);
         },
     ]);
@@ -2192,7 +2197,8 @@ function BindingElisionElement(p: Parser): ASTNode {
 
 function BindingProperty(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let name: ASTNode;
             let element: ASTNode;
             p.sequence([
@@ -2204,7 +2210,7 @@ function BindingProperty(p: Parser): ASTNode {
             ]);
             return new BindingPropertyNode(new Range(start,p.pos),name,element);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
             // This has to come after the colon version above, since both SingleNameBinding and
             // PropertyName will match an identifier at the start of a colon binding
             return SingleNameBinding(p);
@@ -2689,7 +2695,8 @@ function ForBinding(p: Parser): ASTNode {
 
 function ContinueStatement(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             p.sequence([
                 keyword("continue"),
                 whitespace,
@@ -2697,7 +2704,8 @@ function ContinueStatement(p: Parser): ASTNode {
             ]);
             return new ContinueStatementNode(new Range(start,p.pos),null);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let labelIdentifier: ASTNode = null;
             p.sequence([
                 keyword("continue"),
@@ -2717,7 +2725,8 @@ function ContinueStatement(p: Parser): ASTNode {
 
 function BreakStatement(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             p.sequence([
                 keyword("break"),
                 whitespace,
@@ -2725,7 +2734,8 @@ function BreakStatement(p: Parser): ASTNode {
             ]);
             return new BreakStatementNode(new Range(start,p.pos),null);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let labelIdentifier: ASTNode = null;
             p.sequence([
                 keyword("break"),
@@ -2745,7 +2755,8 @@ function BreakStatement(p: Parser): ASTNode {
 
 function ReturnStatement(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             p.sequence([
                 keyword("return"),
                 whitespace,
@@ -2753,7 +2764,8 @@ function ReturnStatement(p: Parser): ASTNode {
             ]);
             return new ReturnStatementNode(new Range(start,p.pos),null);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let expr: ASTNode = null;
             p.sequence([
                 keyword("return"),
@@ -3164,15 +3176,15 @@ function FormalParameters(p: Parser): ListNode {
 // FormalParameterList
 
 function FormalParameterList(p: Parser): ListNode {
-    const start = p.pos;
     return p.choice([
-        (start: number): ListNode => {
+        (): ListNode => {
+            const start = p.pos;
             const rest = FunctionRestParameter(p);
             return new ListNode(new Range(start,p.pos),[rest]);
         },
-        (start: number): ListNode => {
+        (): ListNode => {
+            const start = p.pos;
             const formals = FormalsList(p);
-
             return p.choice([
                 () => {
                     let elements: ASTNode[] = null;
@@ -3914,7 +3926,8 @@ function ImportClause(p: Parser): ASTNode {
         (): ASTNode => {
             return NamedImports(p);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             const defaultBinding = ImportedDefaultBinding(p);
             return p.choice([
                 (): ASTNode => {
@@ -4034,7 +4047,8 @@ function ImportsList(p: Parser): ASTNode {
 
 function ImportSpecifier(p: Parser): ASTNode {
     return p.choice([
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let name: IdentifierNode;
             let binding: ASTNode;
             p.sequence([
@@ -4046,7 +4060,8 @@ function ImportSpecifier(p: Parser): ASTNode {
             ]);
             return new ImportAsSpecifierNode(new Range(start,p.pos),name,binding);
         },
-        (start: number): ASTNode => {
+        (): ASTNode => {
+            const start = p.pos;
             let binding: ASTNode;
             p.sequence([
                 () => binding = ImportedBinding(p),
@@ -4114,7 +4129,7 @@ function ExportDeclaration(p: Parser): ASTNode {
         }
         else {
             return p.choice([
-                (start2: number): ASTNode => {
+                (): ASTNode => {
                     let exportClause: ASTNode;
                     let fromClause: ASTNode;
                     p.sequence([
@@ -4126,7 +4141,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     ]);
                     return new ExportFromNode(new Range(start,p.pos),exportClause,fromClause);
                 },
-                (start2: number): ASTNode => {
+                (): ASTNode => {
                     let exportClause: ASTNode;
                     p.sequence([
                         () => exportClause = ExportClause(p),
@@ -4135,11 +4150,11 @@ function ExportDeclaration(p: Parser): ASTNode {
                     ]);
                     return exportClause;
                 },
-                (start2: number): ASTNode => {
+                (): ASTNode => {
                     const node = VariableStatement(p);
                     return new ExportVariableNode(new Range(node.range.start,node.range.end),node);
                 },
-                (start2: number): ASTNode => {
+                (): ASTNode => {
                     const node = Declaration(p);
                     return new ExportDeclarationNode(new Range(node.range.start,node.range.end),node);
                 },
@@ -4209,7 +4224,7 @@ function ExportSpecifier(p: Parser): ASTNode {
     return p.attempt((start): ASTNode => {
         const ident = IdentifierName(p);
         return p.choice([
-            (start2: number): ASTNode => {
+            (): ASTNode => {
                 let asIdent: IdentifierNode;
                 p.sequence([
                     whitespace,
@@ -4219,7 +4234,7 @@ function ExportSpecifier(p: Parser): ASTNode {
                 ]);
                 return new ExportAsSpecifierNode(new Range(start,p.pos),ident,asIdent);
             },
-            (start2: number): ASTNode => {
+            (): ASTNode => {
                 return new ExportNormalSpecifierNode(new Range(start,p.pos),ident);
             },
         ]);
