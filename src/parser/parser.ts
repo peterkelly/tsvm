@@ -251,6 +251,20 @@ export class Parser {
         }
     }
 
+    // Execute all of the functions in list, or throw an exception. In the latter case, restore
+    // the current position to what it was at the start of the sequence.
+    public sequence(list: ((p: Parser) => void)[]): void {
+        const start = this.pos;
+        try {
+            for (const item of list)
+                item(this);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
     public choice<T>(list: ((start: number) => T)[]): T {
         const start = this.pos;
         for (const item of list) {
