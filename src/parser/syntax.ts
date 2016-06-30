@@ -1513,7 +1513,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
     let result: ASTNode;
     p.sequence([
         () => left = LeftHandSideExpression(p),
-        () => result = p.choice([
+        () => result = p.choice<ASTNode>([
             () => {
                 let right: ASTNode;
                 p.sequence([
@@ -1796,7 +1796,7 @@ function StatementListItem(p: Parser): ASTNode {
 // LexicalDeclaration
 
 function LexicalDeclaration(p: Parser): ASTNode {
-    return p.choice([
+    return p.choice<ASTNode>([
         () => {
             const start = p.pos;
             let bindings: ASTNode;
@@ -2604,7 +2604,7 @@ function IterationStatement(p: Parser): ASTNode {
 // ForDeclaration
 
 function ForDeclaration(p: Parser): ASTNode {
-    return p.choice([
+    return p.choice<ASTNode>([
         () => {
             const start = p.pos;
             let binding: ASTNode = null;
