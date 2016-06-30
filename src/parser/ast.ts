@@ -34,6 +34,7 @@ export abstract class ASTNode {
 
 
 export class BinaryNode extends ASTNode {
+    _nominal_type_BinaryNode: any;
     public readonly left: ASTNode;
     public readonly right: ASTNode;
     public readonly _children: ASTNode[];
@@ -51,6 +52,7 @@ export class BinaryNode extends ASTNode {
 // Section 12.1
 
 export class IdentifierReferenceNode extends ASTNode {
+    _nominal_type_IdentifierReferenceNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"IdentifierReference");
@@ -66,6 +68,7 @@ export class IdentifierReferenceNode extends ASTNode {
 }
 
 export class BindingIdentifierNode extends ASTNode {
+    _nominal_type_BindingIdentifierNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"BindingIdentifier");
@@ -81,6 +84,7 @@ export class BindingIdentifierNode extends ASTNode {
 }
 
 export class LabelIdentifierNode extends ASTNode {
+    _nominal_type_LabelIdentifierNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"LabelIdentifier");
@@ -96,6 +100,7 @@ export class LabelIdentifierNode extends ASTNode {
 }
 
 export class IdentifierNode extends ASTNode {
+    _nominal_type_IdentifierNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"Identifier");
@@ -113,6 +118,7 @@ export class IdentifierNode extends ASTNode {
 // Section 12.2
 
 export class ThisNode extends ASTNode {
+    _nominal_type_ThisNode: any;
     public constructor(range: Range) {
         super(range,"This");
     }
@@ -122,6 +128,7 @@ export class ThisNode extends ASTNode {
 }
 
 export class CoverExpr1Node extends ASTNode {
+    _nominal_type_CoverExpr1Node: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"CoverExpr1");
@@ -133,6 +140,7 @@ export class CoverExpr1Node extends ASTNode {
 }
 
 export class CoverExpr2Node extends ASTNode {
+    _nominal_type_CoverExpr2Node: any;
     public constructor(range: Range) {
         super(range,"CoverExpr2");
     }
@@ -142,6 +150,7 @@ export class CoverExpr2Node extends ASTNode {
 }
 
 export class CoverExpr3Node extends ASTNode {
+    _nominal_type_CoverExpr3Node: any;
     public readonly ident: ASTNode;
     public constructor(range: Range, ident: ASTNode) {
         super(range,"CoverExpr3");
@@ -153,6 +162,7 @@ export class CoverExpr3Node extends ASTNode {
 }
 
 export class CoverExpr4Node extends ASTNode {
+    _nominal_type_CoverExpr4Node: any;
     public readonly expr: ASTNode;
     public readonly ident: ASTNode;
     public constructor(range: Range, expr: ASTNode, ident: ASTNode) {
@@ -166,6 +176,7 @@ export class CoverExpr4Node extends ASTNode {
 }
 
 export class NullLiteralNode extends ASTNode {
+    _nominal_type_NullLiteralNode: any;
     public constructor(range: Range) {
         super(range,"NullLiteral");
     }
@@ -175,6 +186,7 @@ export class NullLiteralNode extends ASTNode {
 }
 
 export class BooleanLiteralNode extends ASTNode {
+    _nominal_type_BooleanLiteralNode: any;
     public readonly value: boolean;
     public constructor(range: Range, value: boolean) {
         super(range,"BooleanLiteral");
@@ -189,6 +201,7 @@ export class BooleanLiteralNode extends ASTNode {
 }
 
 export class NumericLiteralNode extends ASTNode {
+    _nominal_type_NumericLiteralNode: any;
     public readonly value: number;
     public constructor(range: Range, value: number) {
         super(range,"NumericLiteral");
@@ -203,6 +216,7 @@ export class NumericLiteralNode extends ASTNode {
     }
 }
 export class StringLiteralNode extends ASTNode {
+    _nominal_type_StringLiteralNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"StringLiteral");
@@ -220,6 +234,7 @@ export class StringLiteralNode extends ASTNode {
 // // Section 12.2.5
 
 export class ArrayLiteralNode extends ASTNode {
+    _nominal_type_ArrayLiteralNode: any;
     private readonly elements: ASTNode;
     public constructor(range: Range, elements: ASTNode) {
         super(range,"ArrayLiteral");
@@ -231,6 +246,7 @@ export class ArrayLiteralNode extends ASTNode {
 }
 
 export class ElisionNode extends ASTNode {
+    _nominal_type_ElisionNode: any;
     public readonly count: number;
     public constructor(range: Range, count: number) {
         super(range,"Elision");
@@ -245,6 +261,7 @@ export class ElisionNode extends ASTNode {
 }
 
 export class SpreadElementNode extends ASTNode {
+    _nominal_type_SpreadElementNode: any;
     public readonly child: ASTNode;
     public constructor(range: Range, child: ASTNode) {
         super(range,"SpreadElement");
@@ -258,6 +275,7 @@ export class SpreadElementNode extends ASTNode {
 // Section 12.2.6
 
 export class ObjectLiteralNode extends ASTNode {
+    _nominal_type_ObjectLiteralNode: any;
     public readonly properties: ASTNode;
     public constructor(range: Range, properties: ASTNode) {
         super(range,"ObjectLiteral");
@@ -269,6 +287,7 @@ export class ObjectLiteralNode extends ASTNode {
 }
 
 export class ColonPropertyDefinitionNode extends ASTNode {
+    _nominal_type_ColonPropertyDefinitionNode: any;
     public readonly name: ASTNode;
     public readonly init: ASTNode;
     public constructor(range: Range, name: ASTNode, init: ASTNode) {
@@ -282,6 +301,7 @@ export class ColonPropertyDefinitionNode extends ASTNode {
 }
 
 export class ComputedPropertyNameNode extends ASTNode {
+    _nominal_type_ComputedPropertyNameNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"ComputedPropertyName");
@@ -293,6 +313,7 @@ export class ComputedPropertyNameNode extends ASTNode {
 }
 
 export class CoverInitializedNameNode extends ASTNode {
+    _nominal_type_CoverInitializedNameNode: any;
     public readonly ident: ASTNode;
     public readonly init: ASTNode;
     public constructor(range: Range, ident: ASTNode, init: ASTNode) {
@@ -308,6 +329,7 @@ export class CoverInitializedNameNode extends ASTNode {
 // Section 12.3
 
 export class MemberAccessExprNode extends ASTNode {
+    _nominal_type_MemberAccessExprNode: any;
     public readonly obj: ASTNode;
     public readonly expr: ASTNode;
     public constructor(range: Range, obj: ASTNode, expr: ASTNode) {
@@ -321,6 +343,7 @@ export class MemberAccessExprNode extends ASTNode {
 }
 
 export class MemberAccessIdentNode extends ASTNode {
+    _nominal_type_MemberAccessIdentNode: any;
     public readonly obj: ASTNode;
     public readonly ident: ASTNode;
     public constructor(range: Range, obj: ASTNode, ident: ASTNode) {
@@ -334,6 +357,7 @@ export class MemberAccessIdentNode extends ASTNode {
 }
 
 export class SuperPropertyExprNode extends ASTNode {
+    _nominal_type_SuperPropertyExprNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"SuperPropertyExpr");
@@ -345,6 +369,7 @@ export class SuperPropertyExprNode extends ASTNode {
 }
 
 export class SuperPropertyIdentNode extends ASTNode {
+    _nominal_type_SuperPropertyIdentNode: any;
     public readonly ident: ASTNode;
     public constructor(range: Range, ident: ASTNode) {
         super(range,"SuperPropertyIdent");
@@ -356,6 +381,7 @@ export class SuperPropertyIdentNode extends ASTNode {
 }
 
 export class NewTargetNode extends ASTNode {
+    _nominal_type_NewTargetNode: any;
     public constructor(range: Range) {
         super(range,"NewTarget");
     }
@@ -365,6 +391,7 @@ export class NewTargetNode extends ASTNode {
 }
 
 export class NewExpressionNode extends ASTNode {
+    _nominal_type_NewExpressionNode: any;
     public readonly expr: ASTNode;
     public readonly args: ASTNode;
     public constructor(range: Range, expr: ASTNode, args: ASTNode) {
@@ -378,6 +405,7 @@ export class NewExpressionNode extends ASTNode {
 }
 
 export class CallNode extends ASTNode {
+    _nominal_type_CallNode: any;
     public readonly fun: ASTNode;
     public readonly args: ASTNode;
     public constructor(range: Range, fun: ASTNode, args: ASTNode) {
@@ -391,6 +419,7 @@ export class CallNode extends ASTNode {
 }
 
 export class SuperCallNode extends ASTNode {
+    _nominal_type_SuperCallNode: any;
     public readonly args: ASTNode;
     public constructor(range: Range, args: ASTNode) {
         super(range,"SuperCall");
@@ -402,6 +431,7 @@ export class SuperCallNode extends ASTNode {
 }
 
 export class ArgumentsNode extends ASTNode {
+    _nominal_type_ArgumentsNode: any;
     public readonly items: ASTNode;
     public constructor(range: Range, items: ASTNode) {
         super(range,"Arguments");
@@ -415,6 +445,7 @@ export class ArgumentsNode extends ASTNode {
 // Section 12.4
 
 export class PostIncrementNode extends ASTNode {
+    _nominal_type_PostIncrementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"PostIncrement");
@@ -426,6 +457,7 @@ export class PostIncrementNode extends ASTNode {
 }
 
 export class PostDecrementNode extends ASTNode {
+    _nominal_type_PostDecrementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"PostDecrement");
@@ -439,6 +471,7 @@ export class PostDecrementNode extends ASTNode {
 // Section 12.5
 
 export class DeleteNode extends ASTNode {
+    _nominal_type_DeleteNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"Delete");
@@ -450,6 +483,7 @@ export class DeleteNode extends ASTNode {
 }
 
 export class VoidNode extends ASTNode {
+    _nominal_type_VoidNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"Void");
@@ -461,6 +495,7 @@ export class VoidNode extends ASTNode {
 }
 
 export class TypeOfNode extends ASTNode {
+    _nominal_type_TypeOfNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"TypeOf");
@@ -472,6 +507,7 @@ export class TypeOfNode extends ASTNode {
 }
 
 export class PreIncrementNode extends ASTNode {
+    _nominal_type_PreIncrementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"PreIncrement");
@@ -483,6 +519,7 @@ export class PreIncrementNode extends ASTNode {
 }
 
 export class PreDecrementNode extends ASTNode {
+    _nominal_type_PreDecrementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"PreDecrement");
@@ -494,6 +531,7 @@ export class PreDecrementNode extends ASTNode {
 }
 
 export class UnaryPlusNode extends ASTNode {
+    _nominal_type_UnaryPlusNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"UnaryPlus");
@@ -505,6 +543,7 @@ export class UnaryPlusNode extends ASTNode {
 }
 
 export class UnaryMinusNode extends ASTNode {
+    _nominal_type_UnaryMinusNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"UnaryMinus");
@@ -516,6 +555,7 @@ export class UnaryMinusNode extends ASTNode {
 }
 
 export class UnaryBitwiseNotNode extends ASTNode {
+    _nominal_type_UnaryBitwiseNotNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"UnaryBitwiseNot");
@@ -527,6 +567,7 @@ export class UnaryBitwiseNotNode extends ASTNode {
 }
 
 export class UnaryLogicalNotNode extends ASTNode {
+    _nominal_type_UnaryLogicalNotNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"UnaryLogicalNot");
@@ -540,18 +581,21 @@ export class UnaryLogicalNotNode extends ASTNode {
 // Section 12.6
 
 export class MultiplyNode extends BinaryNode {
+    _nominal_type_MultiplyNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Multiply",left,right);
     }
 }
 
 export class DivideNode extends BinaryNode {
+    _nominal_type_DivideNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Divide",left,right);
     }
 }
 
 export class ModuloNode extends BinaryNode {
+    _nominal_type_ModuloNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Modulo",left,right);
     }
@@ -560,12 +604,14 @@ export class ModuloNode extends BinaryNode {
 // Section 12.7
 
 export class AddNode extends BinaryNode {
+    _nominal_type_AddNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Add",left,right);
     }
 }
 
 export class SubtractNode extends BinaryNode {
+    _nominal_type_SubtractNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Subtract",left,right);
     }
@@ -574,18 +620,21 @@ export class SubtractNode extends BinaryNode {
 // Section 12.8
 
 export class LeftShiftNode extends BinaryNode {
+    _nominal_type_LeftShiftNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"LeftShift",left,right);
     }
 }
 
 export class SignedRightShiftNode extends BinaryNode {
+    _nominal_type_SignedRightShiftNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"SignedRightShift",left,right);
     }
 }
 
 export class UnsignedRightShiftNode extends BinaryNode {
+    _nominal_type_UnsignedRightShiftNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"UnsignedRightShift",left,right);
     }
@@ -594,36 +643,42 @@ export class UnsignedRightShiftNode extends BinaryNode {
 // Section 12.9
 
 export class LessThanNode extends BinaryNode {
+    _nominal_type_LessThanNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"LessThan",left,right);
     }
 }
 
 export class GreaterThanNode extends BinaryNode {
+    _nominal_type_GreaterThanNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"GreaterThan",left,right);
     }
 }
 
 export class LessEqualNode extends BinaryNode {
+    _nominal_type_LessEqualNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"LessEqual",left,right);
     }
 }
 
 export class GreaterEqualNode extends BinaryNode {
+    _nominal_type_GreaterEqualNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"GreaterEqual",left,right);
     }
 }
 
 export class InstanceOfNode extends BinaryNode {
+    _nominal_type_InstanceOfNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"InstanceOf",left,right);
     }
 }
 
 export class InNode extends BinaryNode {
+    _nominal_type_InNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"In",left,right);
     }
@@ -632,24 +687,28 @@ export class InNode extends BinaryNode {
 // Section 12.10
 
 export class AbstractEqualsNode extends BinaryNode {
+    _nominal_type_AbstractEqualsNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AbstractEquals",left,right);
     }
 }
 
 export class AbstractNotEqualsNode extends BinaryNode {
+    _nominal_type_AbstractNotEqualsNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AbstractNotEquals",left,right);
     }
 }
 
 export class StrictEqualsNode extends BinaryNode {
+    _nominal_type_StrictEqualsNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"StrictEquals",left,right);
     }
 }
 
 export class StrictNotEqualsNode extends BinaryNode {
+    _nominal_type_StrictNotEqualsNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"StrictNotEquals",left,right);
     }
@@ -658,18 +717,21 @@ export class StrictNotEqualsNode extends BinaryNode {
 // Section 12.11
 
 export class BitwiseANDNode extends BinaryNode {
+    _nominal_type_BitwiseANDNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"BitwiseAND",left,right);
     }
 }
 
 export class BitwiseXORNode extends BinaryNode {
+    _nominal_type_BitwiseXORNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"BitwiseXOR",left,right);
     }
 }
 
 export class BitwiseORNode extends BinaryNode {
+    _nominal_type_BitwiseORNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"BitwiseOR",left,right);
     }
@@ -678,12 +740,14 @@ export class BitwiseORNode extends BinaryNode {
 // Section 12.12
 
 export class LogicalANDNode extends BinaryNode {
+    _nominal_type_LogicalANDNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"LogicalAND",left,right);
     }
 }
 
 export class LogicalORNode extends BinaryNode {
+    _nominal_type_LogicalORNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"LogicalORNode",left,right);
     }
@@ -692,6 +756,7 @@ export class LogicalORNode extends BinaryNode {
 // Section 12.13
 
 export class ConditionalNode extends ASTNode {
+    _nominal_type_ConditionalNode: any;
     public readonly condition: ASTNode;
     public readonly trueExpr: ASTNode;
     public readonly falseExpr: ASTNode;
@@ -709,72 +774,84 @@ export class ConditionalNode extends ASTNode {
 // Section 12.14
 
 export class AssignNode extends BinaryNode {
+    _nominal_type_AssignNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Assign",left,right);
     }
 }
 
 export class AssignMultiplyNode extends BinaryNode {
+    _nominal_type_AssignMultiplyNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignMultiply",left,right);
     }
 }
 
 export class AssignDivideNode extends BinaryNode {
+    _nominal_type_AssignDivideNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignDivide",left,right);
     }
 }
 
 export class AssignModuloNode extends BinaryNode {
+    _nominal_type_AssignModuloNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignModulo",left,right);
     }
 }
 
 export class AssignAddNode extends BinaryNode {
+    _nominal_type_AssignAddNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignAdd",left,right);
     }
 }
 
 export class AssignSubtractNode extends BinaryNode {
+    _nominal_type_AssignSubtractNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignSubtract",left,right);
     }
 }
 
 export class AssignLeftShiftNode extends BinaryNode {
+    _nominal_type_AssignLeftShiftNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignLeftShift",left,right);
     }
 }
 
 export class AssignSignedRightShiftNode extends BinaryNode {
+    _nominal_type_AssignSignedRightShiftNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignSignedRightShift",left,right);
     }
 }
 
 export class AssignUnsignedRightShiftNode extends BinaryNode {
+    _nominal_type_AssignUnsignedRightShiftNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignUnsignedRightShift",left,right);
     }
 }
 
 export class AssignBitwiseANDNode extends BinaryNode {
+    _nominal_type_AssignBitwiseANDNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignBitwiseAND",left,right);
     }
 }
 
 export class AssignBitwiseXORNode extends BinaryNode {
+    _nominal_type_AssignBitwiseXORNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignBitwiseXOR",left,right);
     }
 }
 
 export class AssignBitwiseORNode extends BinaryNode {
+    _nominal_type_AssignBitwiseORNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"AssignBitwiseOR",left,right);
     }
@@ -784,6 +861,7 @@ export class AssignBitwiseORNode extends BinaryNode {
 // Section 12.15
 
 export class CommaNode extends BinaryNode {
+    _nominal_type_CommaNode: any;
     public constructor(range: Range, left: ASTNode, right: ASTNode) {
         super(range,"Comma",left,right);
     }
@@ -792,6 +870,7 @@ export class CommaNode extends BinaryNode {
 // Section 13
 
 export class BlockNode extends ASTNode {
+    _nominal_type_BlockNode: any;
     public statements: ASTNode;
     public constructor(range: Range, statements: ASTNode) {
         super(range,"Block");
@@ -805,6 +884,7 @@ export class BlockNode extends ASTNode {
 // Section 13.3.1
 
 export class LetNode extends ASTNode {
+    _nominal_type_LetNode: any;
     public bindings: ASTNode;
     public constructor(range: Range, bindings: ASTNode) {
         super(range,"Let");
@@ -816,6 +896,7 @@ export class LetNode extends ASTNode {
 }
 
 export class ConstNode extends ASTNode {
+    _nominal_type_ConstNode: any;
     public bindings: ASTNode;
     public constructor(range: Range, bindings: ASTNode) {
         super(range,"Const");
@@ -827,6 +908,7 @@ export class ConstNode extends ASTNode {
 }
 
 export class LexicalIdentifierBindingNode extends ASTNode {
+    _nominal_type_LexicalIdentifierBindingNode: any;
     public identifier: ASTNode;
     public initializer: ASTNode;
     public constructor(range: Range, identifier: ASTNode, initializer: ASTNode) {
@@ -840,6 +922,7 @@ export class LexicalIdentifierBindingNode extends ASTNode {
 }
 
 export class LexicalPatternBindingNode extends ASTNode {
+    _nominal_type_LexicalPatternBindingNode: any;
     public pattern: ASTNode;
     public initializer: ASTNode;
     public constructor(range: Range, pattern: ASTNode, initializer: ASTNode) {
@@ -855,6 +938,7 @@ export class LexicalPatternBindingNode extends ASTNode {
 // Section 13.3.2
 
 export class VarNode extends ASTNode {
+    _nominal_type_VarNode: any;
     public declarations: ASTNode;
     public constructor(range: Range, declarations: ASTNode) {
         super(range,"Var");
@@ -866,6 +950,7 @@ export class VarNode extends ASTNode {
 }
 
 export class VarIdentifierNode extends ASTNode {
+    _nominal_type_VarIdentifierNode: any;
     public identifier: ASTNode;
     public initializer: ASTNode;
     public constructor(range: Range, identifier: ASTNode, initializer: ASTNode) {
@@ -879,6 +964,7 @@ export class VarIdentifierNode extends ASTNode {
 }
 
 export class VarPatternNode extends ASTNode {
+    _nominal_type_VarPatternNode: any;
     public pattern: ASTNode;
     public initializer: ASTNode;
     public constructor(range: Range, pattern: ASTNode, initializer: ASTNode) {
@@ -894,6 +980,7 @@ export class VarPatternNode extends ASTNode {
 // Section 13.3.3
 
 export class ObjectBindingPatternNode extends ASTNode {
+    _nominal_type_ObjectBindingPatternNode: any;
     public readonly properties: ASTNode;
     public constructor(range: Range, properties: ASTNode) {
         super(range,"ObjectBindingPattern");
@@ -905,6 +992,7 @@ export class ObjectBindingPatternNode extends ASTNode {
 }
 
 export class ArrayBindingPatternNode extends ASTNode {
+    _nominal_type_ArrayBindingPatternNode: any;
     public readonly elements: ASTNode;
     public constructor(range: Range, elements: ASTNode) {
         super(range,"ArrayBindingPattern");
@@ -916,6 +1004,7 @@ export class ArrayBindingPatternNode extends ASTNode {
 }
 
 export class BindingElisionElementNode extends ASTNode {
+    _nominal_type_BindingElisionElementNode: any;
     public readonly elision: ASTNode;
     public readonly element: ASTNode;
     public constructor(range: Range, elision: ASTNode, element: ASTNode) {
@@ -929,6 +1018,7 @@ export class BindingElisionElementNode extends ASTNode {
 }
 
 export class BindingPropertyNode extends ASTNode {
+    _nominal_type_BindingPropertyNode: any;
     public readonly name: ASTNode;
     public readonly element: ASTNode;
     public constructor(range: Range, name: ASTNode, element: ASTNode) {
@@ -942,6 +1032,7 @@ export class BindingPropertyNode extends ASTNode {
 }
 
 export class BindingPatternInitNode extends ASTNode {
+    _nominal_type_BindingPatternInitNode: any;
     public readonly pattern: ASTNode;
     public readonly init: ASTNode;
     public constructor(range: Range, pattern: ASTNode, init: ASTNode) {
@@ -955,6 +1046,7 @@ export class BindingPatternInitNode extends ASTNode {
 }
 
 export class SingleNameBindingNode extends ASTNode {
+    _nominal_type_SingleNameBindingNode: any;
     public readonly ident: ASTNode;
     public readonly init: ASTNode;
     public constructor(range: Range, ident: ASTNode, init: ASTNode) {
@@ -968,6 +1060,7 @@ export class SingleNameBindingNode extends ASTNode {
 }
 
 export class BindingRestElementNode extends ASTNode {
+    _nominal_type_BindingRestElementNode: any;
     public readonly ident: ASTNode;
     public constructor(range: Range, ident: ASTNode) {
         super(range,"BindingRestElement");
@@ -981,6 +1074,7 @@ export class BindingRestElementNode extends ASTNode {
 // Section 13.4
 
 export class EmptyStatementNode extends ASTNode {
+    _nominal_type_EmptyStatementNode: any;
     public constructor(range: Range) {
         super(range,"EmptyStatement");
     }
@@ -992,6 +1086,7 @@ export class EmptyStatementNode extends ASTNode {
 // Section 13.5
 
 export class ExpressionStatementNode extends ASTNode {
+    _nominal_type_ExpressionStatementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"ExpressionStatement");
@@ -1005,6 +1100,7 @@ export class ExpressionStatementNode extends ASTNode {
 // Section 13.6
 
 export class IfStatementNode extends ASTNode {
+    _nominal_type_IfStatementNode: any;
     public readonly condition: ASTNode;
     public readonly trueBranch: ASTNode;
     public readonly falseBranch: ASTNode;
@@ -1022,6 +1118,7 @@ export class IfStatementNode extends ASTNode {
 // Section 13.7
 
 export class DoStatementNode extends ASTNode {
+    _nominal_type_DoStatementNode: any;
     public readonly body: ASTNode;
     public readonly condition: ASTNode;
     public constructor(range: Range, body: ASTNode, condition: ASTNode) {
@@ -1035,6 +1132,7 @@ export class DoStatementNode extends ASTNode {
 }
 
 export class WhileStatementNode extends ASTNode {
+    _nominal_type_WhileStatementNode: any;
     public readonly body: ASTNode;
     public readonly condition: ASTNode;
     public constructor(range: Range, condition: ASTNode, body: ASTNode) {
@@ -1048,6 +1146,7 @@ export class WhileStatementNode extends ASTNode {
 }
 
 export class ForCNode extends ASTNode {
+    _nominal_type_ForCNode: any;
     public readonly init: ASTNode;
     public readonly condition: ASTNode;
     public readonly update: ASTNode;
@@ -1065,6 +1164,7 @@ export class ForCNode extends ASTNode {
 }
 
 export class ForInNode extends ASTNode {
+    _nominal_type_ForInNode: any;
     public readonly binding: ASTNode;
     public readonly expr: ASTNode;
     public readonly body: ASTNode;
@@ -1080,6 +1180,7 @@ export class ForInNode extends ASTNode {
 }
 
 export class ForOfNode extends ASTNode {
+    _nominal_type_ForOfNode: any;
     public readonly binding: ASTNode;
     public readonly expr: ASTNode;
     public readonly body: ASTNode;
@@ -1095,6 +1196,7 @@ export class ForOfNode extends ASTNode {
 }
 
 export class VarForDeclarationNode extends ASTNode {
+    _nominal_type_VarForDeclarationNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"VarForDeclaration");
@@ -1106,6 +1208,7 @@ export class VarForDeclarationNode extends ASTNode {
 }
 
 export class LetForDeclarationNode extends ASTNode {
+    _nominal_type_LetForDeclarationNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"LetForDeclaration");
@@ -1117,6 +1220,7 @@ export class LetForDeclarationNode extends ASTNode {
 }
 
 export class ConstForDeclarationNode extends ASTNode {
+    _nominal_type_ConstForDeclarationNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"ConstForDeclaration");
@@ -1131,6 +1235,7 @@ export class ConstForDeclarationNode extends ASTNode {
 // Section 13.8
 
 export class ContinueStatementNode extends ASTNode {
+    _nominal_type_ContinueStatementNode: any;
     public readonly labelIdentifier: ASTNode;
     public constructor(range: Range, labelIdentifier: ASTNode) {
         super(range,"ContinueStatement");
@@ -1144,6 +1249,7 @@ export class ContinueStatementNode extends ASTNode {
 // Section 13.9
 
 export class BreakStatementNode extends ASTNode {
+    _nominal_type_BreakStatementNode: any;
     public readonly labelIdentifier: ASTNode;
     public constructor(range: Range, labelIdentifier: ASTNode) {
         super(range,"BreakStatement");
@@ -1157,6 +1263,7 @@ export class BreakStatementNode extends ASTNode {
 // Section 13.10
 
 export class ReturnStatementNode extends ASTNode {
+    _nominal_type_ReturnStatementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"ReturnStatement");
@@ -1170,6 +1277,7 @@ export class ReturnStatementNode extends ASTNode {
 // Section 13.11
 
 export class WithStatementNode extends ASTNode {
+    _nominal_type_WithStatementNode: any;
     public expr: ASTNode;
     public body: ASTNode;
     public constructor(range: Range, expr: ASTNode, body: ASTNode) {
@@ -1185,6 +1293,7 @@ export class WithStatementNode extends ASTNode {
 // Section 13.12
 
 export class SwitchStatementNode extends ASTNode {
+    _nominal_type_SwitchStatementNode: any;
     public readonly expr: ASTNode;
     public readonly cases: ASTNode;
     public constructor(range: Range, expr: ASTNode, cases: ASTNode) {
@@ -1198,6 +1307,7 @@ export class SwitchStatementNode extends ASTNode {
 }
 
 export class CaseClauseNode extends ASTNode {
+    _nominal_type_CaseClauseNode: any;
     public readonly expr: ASTNode;
     public readonly statements: ASTNode;
     public constructor(range: Range, expr: ASTNode, statements: ASTNode) {
@@ -1211,6 +1321,7 @@ export class CaseClauseNode extends ASTNode {
 }
 
 export class DefaultClauseNode extends ASTNode {
+    _nominal_type_DefaultClauseNode: any;
     public readonly statements: ASTNode;
     public constructor(range: Range, statements: ASTNode) {
         super(range,"DefaultClause");
@@ -1224,6 +1335,7 @@ export class DefaultClauseNode extends ASTNode {
 // Section 13.13
 
 export class LabelledStatementNode extends ASTNode {
+    _nominal_type_LabelledStatementNode: any;
     public readonly ident: ASTNode;
     public readonly item: ASTNode;
     public constructor(range: Range, ident: ASTNode, item: ASTNode) {
@@ -1239,6 +1351,7 @@ export class LabelledStatementNode extends ASTNode {
 // Section 13.14
 
 export class ThrowStatementNode extends ASTNode {
+    _nominal_type_ThrowStatementNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"ThrowStatement");
@@ -1252,6 +1365,7 @@ export class ThrowStatementNode extends ASTNode {
 // Section 13.15
 
 export class TryStatementNode extends ASTNode {
+    _nominal_type_TryStatementNode: any;
     public tryNode: ASTNode;
     public catchNode: ASTNode;
     public finallyNode: ASTNode;
@@ -1267,6 +1381,7 @@ export class TryStatementNode extends ASTNode {
 }
 
 export class CatchNode extends ASTNode {
+    _nominal_type_CatchNode: any;
     public readonly param: ASTNode;
     public readonly block: ASTNode;
     public constructor(range: Range, param: ASTNode, block: ASTNode) {
@@ -1280,6 +1395,7 @@ export class CatchNode extends ASTNode {
 }
 
 export class FinallyNode extends ASTNode {
+    _nominal_type_FinallyNode: any;
     public readonly block: ASTNode;
     public constructor(range: Range, block: ASTNode) {
         super(range,"Finally");
@@ -1293,6 +1409,7 @@ export class FinallyNode extends ASTNode {
 // Section 13.16
 
 export class DebuggerStatementNode extends ASTNode {
+    _nominal_type_DebuggerStatementNode: any;
     public constructor(range: Range) {
         super(range,"DebuggerStatement");
     }
@@ -1304,6 +1421,7 @@ export class DebuggerStatementNode extends ASTNode {
 // // Section 14.1
 
 export class FunctionDeclarationNode extends ASTNode {
+    _nominal_type_FunctionDeclarationNode: any;
     public readonly ident: ASTNode; // may be null
     public readonly params: ASTNode;
     public readonly body: ASTNode;
@@ -1319,6 +1437,7 @@ export class FunctionDeclarationNode extends ASTNode {
 }
 
 export class FunctionExpressionNode extends ASTNode {
+    _nominal_type_FunctionExpressionNode: any;
     public readonly ident: ASTNode; // may be null
     public readonly params: ASTNode;
     public readonly body: ASTNode;
@@ -1336,6 +1455,7 @@ export class FunctionExpressionNode extends ASTNode {
 // Section 14.2
 
 export class ArrowFunctionNode extends ASTNode {
+    _nominal_type_ArrowFunctionNode: any;
     public readonly params: ASTNode;
     public readonly body: ASTNode;
     public constructor(range: Range, params: ASTNode, body: ASTNode) {
@@ -1351,6 +1471,7 @@ export class ArrowFunctionNode extends ASTNode {
 // Section 14.3
 
 export class MethodNode extends ASTNode {
+    _nominal_type_MethodNode: any;
     public readonly name: ASTNode;
     public readonly params: ASTNode;
     public readonly body: ASTNode;
@@ -1366,6 +1487,7 @@ export class MethodNode extends ASTNode {
 }
 
 export class GetterNode extends ASTNode {
+    _nominal_type_GetterNode: any;
     public readonly name: ASTNode;
     public readonly body: ASTNode;
     public constructor(range: Range, name: ASTNode, body: ASTNode) {
@@ -1379,6 +1501,7 @@ export class GetterNode extends ASTNode {
 }
 
 export class SetterNode extends ASTNode {
+    _nominal_type_SetterNode: any;
     public readonly name: ASTNode;
     public readonly param: ASTNode;
     public readonly body: ASTNode;
@@ -1396,6 +1519,7 @@ export class SetterNode extends ASTNode {
 // Section 14.4
 
 export class GeneratorMethodNode extends ASTNode {
+    _nominal_type_GeneratorMethodNode: any;
     public readonly name: ASTNode;
     public readonly params: ASTNode;
     public readonly body: ASTNode;
@@ -1411,6 +1535,7 @@ export class GeneratorMethodNode extends ASTNode {
 }
 
 export class GeneratorDeclarationNode extends ASTNode {
+    _nominal_type_GeneratorDeclarationNode: any;
     public readonly ident: ASTNode;
     public readonly params: ASTNode;
     public readonly body: ASTNode;
@@ -1426,6 +1551,7 @@ export class GeneratorDeclarationNode extends ASTNode {
 }
 
 export class DefaultGeneratorDeclarationNode extends ASTNode {
+    _nominal_type_DefaultGeneratorDeclarationNode: any;
     public readonly params: ASTNode;
     public readonly body: ASTNode;
     public constructor(range: Range, params: ASTNode, body: ASTNode) {
@@ -1439,6 +1565,7 @@ export class DefaultGeneratorDeclarationNode extends ASTNode {
 }
 
 export class GeneratorExpressionNode extends ASTNode {
+    _nominal_type_GeneratorExpressionNode: any;
     public readonly ident: ASTNode;
     public readonly params: ASTNode;
     public readonly body: ASTNode;
@@ -1454,6 +1581,7 @@ export class GeneratorExpressionNode extends ASTNode {
 }
 
 export class YieldExprNode extends ASTNode {
+    _nominal_type_YieldExprNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"YieldExpr");
@@ -1465,6 +1593,7 @@ export class YieldExprNode extends ASTNode {
 }
 
 export class YieldStarNode extends ASTNode {
+    _nominal_type_YieldStarNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"YieldStar");
@@ -1476,6 +1605,7 @@ export class YieldStarNode extends ASTNode {
 }
 
 export class YieldNothingNode extends ASTNode {
+    _nominal_type_YieldNothingNode: any;
     public constructor(range: Range) {
         super(range,"YieldNothing");
     }
@@ -1487,6 +1617,7 @@ export class YieldNothingNode extends ASTNode {
 // Section 14.5
 
 export class ClassDeclarationNode extends ASTNode {
+    _nominal_type_ClassDeclarationNode: any;
     public readonly ident: ASTNode;
     public readonly tail: ASTNode;
     public constructor(range: Range, ident: ASTNode, tail: ASTNode) {
@@ -1500,6 +1631,7 @@ export class ClassDeclarationNode extends ASTNode {
 }
 
 export class ClassExpressionNode extends ASTNode {
+    _nominal_type_ClassExpressionNode: any;
     public readonly ident: ASTNode;
     public readonly tail: ASTNode;
     public constructor(range: Range, ident: ASTNode, tail: ASTNode) {
@@ -1513,6 +1645,7 @@ export class ClassExpressionNode extends ASTNode {
 }
 
 export class ClassTailNode extends ASTNode {
+    _nominal_type_ClassTailNode: any;
     public readonly heritage: ASTNode;
     public readonly body: ASTNode;
     public constructor(range: Range, heritage: ASTNode, body: ASTNode) {
@@ -1526,6 +1659,7 @@ export class ClassTailNode extends ASTNode {
 }
 
 export class ExtendsNode extends ASTNode {
+    _nominal_type_ExtendsNode: any;
     public readonly expr: ASTNode;
     public constructor(range: Range, expr: ASTNode) {
         super(range,"Extends");
@@ -1537,6 +1671,7 @@ export class ExtendsNode extends ASTNode {
 }
 
 export class StaticMethodDefinitionNode extends ASTNode {
+    _nominal_type_StaticMethodDefinitionNode: any;
     public readonly method: ASTNode;
     public constructor(range: Range, method: ASTNode) {
         super(range,"StaticMethodDefinition");
@@ -1548,6 +1683,7 @@ export class StaticMethodDefinitionNode extends ASTNode {
 }
 
 export class EmptyClassElementNode extends ASTNode {
+    _nominal_type_EmptyClassElementNode: any;
     public constructor(range: Range) {
         super(range,"EmptyClassElement");
     }
@@ -1559,6 +1695,7 @@ export class EmptyClassElementNode extends ASTNode {
 // Section 15.1
 
 export class ScriptNode extends ASTNode {
+    _nominal_type_ScriptNode: any;
     public readonly body: ASTNode;
     public constructor(range: Range, body: ASTNode) {
         super(range,"Script");
@@ -1572,6 +1709,7 @@ export class ScriptNode extends ASTNode {
 // Section 15.2
 
 export class ModuleNode extends ASTNode {
+    _nominal_type_ModuleNode: any;
     public readonly body: ASTNode;
     public constructor(range: Range, body: ASTNode) {
         super(range,"Module");
@@ -1585,6 +1723,7 @@ export class ModuleNode extends ASTNode {
 // Section 15.2.2
 
 export class ImportFromNode extends ASTNode {
+    _nominal_type_ImportFromNode: any;
     public readonly importClause: ASTNode;
     public readonly fromClause: ASTNode;
     public constructor(range: Range, importClause: ASTNode, fromClause: ASTNode) {
@@ -1598,6 +1737,7 @@ export class ImportFromNode extends ASTNode {
 }
 
 export class ImportModuleNode extends ASTNode {
+    _nominal_type_ImportModuleNode: any;
     public readonly specifier: ASTNode;
     public constructor(range: Range, specifier: ASTNode) {
         super(range,"ImportModule");
@@ -1609,6 +1749,7 @@ export class ImportModuleNode extends ASTNode {
 }
 
 export class DefaultAndNameSpaceImportsNode extends ASTNode {
+    _nominal_type_DefaultAndNameSpaceImportsNode: any;
     public readonly defaultBinding: ASTNode;
     public readonly nameSpaceImport: ASTNode;
     public constructor(range: Range, defaultBinding: ASTNode, nameSpaceImport: ASTNode) {
@@ -1622,6 +1763,7 @@ export class DefaultAndNameSpaceImportsNode extends ASTNode {
 }
 
 export class DefaultAndNamedImportsNode extends ASTNode {
+    _nominal_type_DefaultAndNamedImportsNode: any;
     public readonly defaultBinding: ASTNode;
     public readonly namedImports: ASTNode;
     public constructor(range: Range, defaultBinding: ASTNode, namedImports: ASTNode) {
@@ -1635,6 +1777,7 @@ export class DefaultAndNamedImportsNode extends ASTNode {
 }
 
 export class DefaultImportNode extends ASTNode {
+    _nominal_type_DefaultImportNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"DefaultImport");
@@ -1646,6 +1789,7 @@ export class DefaultImportNode extends ASTNode {
 }
 
 export class NameSpaceImportNode extends ASTNode {
+    _nominal_type_NameSpaceImportNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"NameSpaceImport");
@@ -1657,6 +1801,7 @@ export class NameSpaceImportNode extends ASTNode {
 }
 
 export class NamedImportsNode extends ASTNode {
+    _nominal_type_NamedImportsNode: any;
     public readonly imports: ASTNode;
     public constructor(range: Range, imports: ASTNode) {
         super(range,"NamedImports");
@@ -1668,6 +1813,7 @@ export class NamedImportsNode extends ASTNode {
 }
 
 export class ImportNormalSpecifierNode extends ASTNode {
+    _nominal_type_ImportNormalSpecifierNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"ImportNormalSpecifier");
@@ -1679,6 +1825,7 @@ export class ImportNormalSpecifierNode extends ASTNode {
 }
 
 export class ImportSpecifierNode extends ASTNode {
+    _nominal_type_ImportSpecifierNode: any;
     public readonly binding: ASTNode;
     public constructor(range: Range, binding: ASTNode) {
         super(range,"ImportSpecifier");
@@ -1690,6 +1837,7 @@ export class ImportSpecifierNode extends ASTNode {
 }
 
 export class ImportAsSpecifierNode extends ASTNode {
+    _nominal_type_ImportAsSpecifierNode: any;
     public readonly name: ASTNode;
     public readonly binding: ASTNode;
     public constructor(range: Range, name: ASTNode, binding: ASTNode) {
@@ -1705,6 +1853,7 @@ export class ImportAsSpecifierNode extends ASTNode {
 // Section 15.2.3
 
 export class ExportDefaultNode extends ASTNode {
+    _nominal_type_ExportDefaultNode: any;
     public readonly decl: ASTNode;
     public constructor(range: Range, decl: ASTNode) {
         super(range,"ExportDefault");
@@ -1716,6 +1865,7 @@ export class ExportDefaultNode extends ASTNode {
 }
 
 export class ExportStarNode extends ASTNode {
+    _nominal_type_ExportStarNode: any;
     public readonly from: ASTNode;
     public constructor(range: Range, from: ASTNode) {
         super(range,"ExportStar");
@@ -1727,6 +1877,7 @@ export class ExportStarNode extends ASTNode {
 }
 
 export class ExportVariableNode extends ASTNode {
+    _nominal_type_ExportVariableNode: any;
     public readonly variable: ASTNode;
     public constructor(range: Range, variable: ASTNode) {
         super(range,"ExportVariable");
@@ -1738,6 +1889,7 @@ export class ExportVariableNode extends ASTNode {
 }
 
 export class ExportDeclarationNode extends ASTNode {
+    _nominal_type_ExportDeclarationNode: any;
     public readonly decl: ASTNode;
     public constructor(range: Range, decl: ASTNode) {
         super(range,"ExportDeclaration");
@@ -1749,6 +1901,7 @@ export class ExportDeclarationNode extends ASTNode {
 }
 
 export class ExportFromNode extends ASTNode {
+    _nominal_type_ExportFromNode: any;
     public readonly exportClause: ASTNode;
     public readonly fromClause: ASTNode;
     public constructor(range: Range, exportClause: ASTNode, fromClause: ASTNode) {
@@ -1762,6 +1915,7 @@ export class ExportFromNode extends ASTNode {
 }
 
 export class ExportClauseNode extends ASTNode {
+    _nominal_type_ExportClauseNode: any;
     public readonly items: ASTNode;
     public constructor(range: Range, items: ASTNode) {
         super(range,"ExportClause");
@@ -1773,6 +1927,7 @@ export class ExportClauseNode extends ASTNode {
 }
 
 export class ExportNormalSpecifierNode extends ASTNode {
+    _nominal_type_ExportNormalSpecifierNode: any;
     public readonly ident: ASTNode;
     public constructor(range: Range, ident: ASTNode) {
         super(range,"ExportNormalSpecifier");
@@ -1784,6 +1939,7 @@ export class ExportNormalSpecifierNode extends ASTNode {
 }
 
 export class ExportAsSpecifierNode extends ASTNode {
+    _nominal_type_ExportAsSpecifierNode: any;
     public readonly ident: ASTNode;
     public readonly asIdent: ASTNode;
     public constructor(range: Range, ident: ASTNode, asIdent: ASTNode) {
@@ -1797,6 +1953,7 @@ export class ExportAsSpecifierNode extends ASTNode {
 }
 
 export class ListNode extends ASTNode {
+    _nominal_type_ListNode: any;
     public readonly elements: ASTNode[];
     public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
@@ -1808,6 +1965,7 @@ export class ListNode extends ASTNode {
 }
 
 export class ErrorNode extends ASTNode {
+    _nominal_type_ErrorNode: any;
     public readonly message: string;
     public constructor(range: Range, message: string) {
         super(range,"Error");
