@@ -66,6 +66,8 @@ const punctuators = arrayToSet([
     "}", // RightBracePunctuator
 ]);
 
+type PF<T> = (p: Parser) => T;
+
 let maxPunctuatorLen = 0;
 for (const punc in punctuators) {
     if (maxPunctuatorLen < punc.length)
@@ -284,6 +286,440 @@ export class Parser {
 
     public get following(): string {
         return JSON.stringify(this.text.substring(this.pos));
+    }
+
+    public seq1<T1,R>(
+        elements: [ PF<T1> ],
+        cb: (nodes: [T1]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            return cb([v1]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq2<T1,T2,R>(
+        elements: [ PF<T1>, PF<T2> ],
+        cb: (nodes: [T1,T2]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            return cb([v1,v2]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq3<T1,T2,T3,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3> ],
+        cb: (nodes: [T1,T2,T3]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            return cb([v1,v2,v3]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq4<T1,T2,T3,T4,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4> ],
+        cb: (nodes: [T1,T2,T3,T4]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            return cb([v1,v2,v3,v4]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq5<T1,T2,T3,T4,T5,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5> ],
+        cb: (nodes: [T1,T2,T3,T4,T5]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            return cb([v1,v2,v3,v4,v5]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq6<T1,T2,T3,T4,T5,T6,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            return cb([v1,v2,v3,v4,v5,v6]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq7<T1,T2,T3,T4,T5,T6,T7,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+    public seq8<T1,T2,T3,T4,T5,T6,T7,T8,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq9<T1,T2,T3,T4,T5,T6,T7,T8,T9,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq10<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq11<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq12<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq13<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            const v13 = elements[12](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq14<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            const v13 = elements[12](this);
+            const v14 = elements[13](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq15<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            const v13 = elements[12](this);
+            const v14 = elements[13](this);
+            const v15 = elements[14](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq16<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15>, PF<T16> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            const v13 = elements[12](this);
+            const v14 = elements[13](this);
+            const v15 = elements[14](this);
+            const v16 = elements[15](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq17<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15>, PF<T16>,
+                    PF<T17> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            const v13 = elements[12](this);
+            const v14 = elements[13](this);
+            const v15 = elements[14](this);
+            const v16 = elements[15](this);
+            const v17 = elements[16](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,v17]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
+    }
+
+    public seq18<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,R>(
+        elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
+                    PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15>, PF<T16>,
+                    PF<T17>, PF<T18> ],
+        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18]) => R
+    ): R {
+        const start = this.pos;
+        try {
+            const v1 = elements[0](this);
+            const v2 = elements[1](this);
+            const v3 = elements[2](this);
+            const v4 = elements[3](this);
+            const v5 = elements[4](this);
+            const v6 = elements[5](this);
+            const v7 = elements[6](this);
+            const v8 = elements[7](this);
+            const v9 = elements[8](this);
+            const v10 = elements[9](this);
+            const v11 = elements[10](this);
+            const v12 = elements[11](this);
+            const v13 = elements[12](this);
+            const v14 = elements[13](this);
+            const v15 = elements[14](this);
+            const v16 = elements[15](this);
+            const v17 = elements[16](this);
+            const v18 = elements[17](this);
+            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,v17,v18]);
+        }
+        catch (e) {
+            this.pos = start;
+            throw e;
+        }
     }
 }
 
