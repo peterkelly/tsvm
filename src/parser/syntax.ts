@@ -204,6 +204,14 @@ import {
     ErrorNode,
 } from "./ast";
 
+function opt<T>(f: (p: Parser) => T): (p: Parser) => T {
+    return (p: Parser): T => p.opt(f);
+}
+
+function pos(p: Parser) {
+    return p.pos;
+}
+
 function keyword(str: string): ((p: Parser) => void) {
     return (p: Parser): void => p.expectKeyword(str);
 }
@@ -309,16 +317,13 @@ function Identifier(p: Parser): IdentifierNode | ErrorNode {
 function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
 
     function This(p: Parser): ThisNode | ErrorNode {
-        const start = p.pos;
-        p.sequence([
-            keyword("this"),
-        ]);
-        const range = new Range(start,p.pos);
-        return new ThisNode(range);
+        return p.seq2([
+            pos,
+            keyword("this")],
+            ([start,]) => new ThisNode(new Range(start,p.pos)));
     }
 
     return p.choice<ExpressionNode | ErrorNode>([
-    // return p.choice([
         This,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
         Literal,
@@ -337,17 +342,13 @@ function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
 // ParenthesizedExpression
 
 function ParenthesizedExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    p.sequence([
+    return p.seq5([
         punctuator("("),
         whitespace,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
-        punctuator(")"),
-    ]);
-    expr.range = new Range(start,p.pos);
-    return expr;
+        punctuator(")")],
+        ([,,expr,,]) => expr);
 }
 
 // Section 12.2.4
@@ -366,11 +367,11 @@ function Literal(p: Parser): ExpressionNode | ErrorNode {
 // NullLiteral
 
 function NullLiteral(p: Parser): NullLiteralNode | ErrorNode {
-    const start = p.pos;
-    p.sequence([
-        keyword("null"),
-    ]);
-    return new NullLiteralNode(new Range(start,p.pos));
+    return p.seq2([
+        pos,
+        keyword("null")],
+        ([start,]) => new NullLiteralNode(new Range(start,p.pos))
+    );
 }
 
 // BooleanLiteral
@@ -531,14 +532,12 @@ function Elision(p: Parser): ElisionNode | ErrorNode {
 // SpreadElement
 
 function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
-    const start = p.pos;
-    let assign: ExpressionNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         punctuator("..."),
         whitespace,
-        () => assign = AssignmentExpression(p),
-    ]);
-    return new SpreadElementNode(new Range(start,p.pos),assign);
+        AssignmentExpression],
+        ([start,,,assign]) => new SpreadElementNode(new Range(start,p.pos),assign));
 }
 
 // Section 12.2.6
@@ -546,30 +545,20 @@ function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
 // ObjectLiteral
 
 function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
-    const start = p.pos;
-    let properties: ListNode | ErrorNode;
-    p.sequence([
+    return p.seq5([
+        pos,
         punctuator("{"),
         whitespace,
-        () => properties = p.opt(() => {
-            let inner: ListNode | ErrorNode;
-            p.sequence([
-                () => inner = PropertyDefinitionList(p),
+        () => p.choice([
+            () => p.seq3([
+                PropertyDefinitionList,
                 whitespace,
-                () => p.opt((): void => {
-                    p.sequence([
-                        punctuator(","),
-                        whitespace,
-                    ]);
-                }),
-            ]);
-            return inner;
-        }),
-        punctuator("}"),
-    ]);
-    if (properties == null)
-        properties = new ListNode(new Range(start,p.pos),[]);
-    return new ObjectLiteralNode(new Range(start,p.pos),properties);
+                opt(() => p.seq2([punctuator(","),whitespace,],() => {}))],
+                ([inner,,]) => inner),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
+        ]),
+        punctuator("}")],
+        ([start,,,properties,]) => new ObjectLiteralNode(new Range(start,p.pos),properties));
 }
 
 // PropertyDefinitionList
@@ -580,13 +569,12 @@ function PropertyDefinitionList(p: Parser): ListNode | ErrorNode {
     properties.push(PropertyDefinition(p));
     while (true) {
         try {
-            let defn: PropertyDefinitionType | ErrorNode;
-            p.sequence([
+            const defn = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => defn = PropertyDefinition(p),
-            ]);
+                PropertyDefinition],
+                ([,,,propdef]) => propdef);
             properties.push(defn);
         }
         catch (e) {
@@ -598,17 +586,14 @@ function PropertyDefinitionList(p: Parser): ListNode | ErrorNode {
 // PropertyDefinition_colon
 
 function PropertyDefinition_colon(p: Parser): ColonPropertyDefinitionNode | ErrorNode {
-    const start = p.pos;
-    let name: PropertyNameType | ErrorNode;
-    let init: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => name = PropertyName(p),
+    return p.seq6([
+        pos,
+        PropertyName,
         whitespace,
         punctuator(":"),
         whitespace,
-        () => init = AssignmentExpression(p),
-    ]);
-    return new ColonPropertyDefinitionNode(new Range(start,p.pos),name,init);
+        AssignmentExpression],
+        ([start,name,,,,init]) => new ColonPropertyDefinitionNode(new Range(start,p.pos),name,init));
 }
 
 // PropertyDefinition
@@ -644,40 +629,36 @@ function LiteralPropertyName(p: Parser): LiteralPropertyNameType | ErrorNode {
 // ComputedPropertyName
 
 function ComputedPropertyName(p: Parser): ComputedPropertyNameNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         punctuator("["),
         whitespace,
-        () => expr = AssignmentExpression(p),
+        AssignmentExpression,
         whitespace,
-        punctuator("]"),
-    ]);
-    return new ComputedPropertyNameNode(new Range(start,p.pos),expr);
+        punctuator("]")],
+        ([start,,,expr,,]) => new ComputedPropertyNameNode(new Range(start,p.pos),expr));
 }
 
 // CoverInitializedName
 
 function CoverInitializedName(p: Parser): CoverInitializedNameNode | ErrorNode {
-    const start = p.pos;
-    let ident: IdentifierReferenceNode | ErrorNode;
-    let init: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => ident = IdentifierReference(p),
+    return p.seq4([
+        pos,
+        IdentifierReference,
         whitespace,
-        () => init = Initializer(p),
-    ]);
-    return new CoverInitializedNameNode(new Range(start,p.pos),ident,init);
+        Initializer],
+        ([start,ident,,init]) => new CoverInitializedNameNode(new Range(start,p.pos),ident,init)
+    );
 }
 
 // Initializer
 
 function Initializer(p: Parser): ExpressionNode | ErrorNode {
-    p.sequence([
+    return p.seq3([
         punctuator("="),
         whitespace,
-    ]);
-    return AssignmentExpression(p);
+        AssignmentExpression],
+        ([,,expr]) => expr);
 }
 
 // Section 12.2.9
@@ -699,17 +680,15 @@ function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"
 // MemberExpression_new
 
 function MemberExpression_new(p: Parser): NewExpressionNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    let args: ArgumentsNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("new"),
         whitespace,
-        () => expr = MemberExpression(p),
+        MemberExpression,
         whitespace,
-        () => args = Arguments(p),
-    ]);
-    return new NewExpressionNode(new Range(start,p.pos),expr,args);
+        Arguments],
+        ([start,,,expr,,args]) => new NewExpressionNode(new Range(start,p.pos),expr,args)
+    );
 }
 
 // MemberExpression_start
@@ -730,30 +709,22 @@ function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
         let left = MemberExpression_start(p);
         while (true) {
             try {
-                p.choice([
-                    () => {
-                        let expr: ExpressionNode | ErrorNode;
-                        p.sequence([
-                            whitespace,
-                            punctuator("["),
-                            whitespace,
-                            () => expr = Expression(p),
-                            whitespace,
-                            punctuator("]"),
-                        ]);
-                        left = new MemberAccessExprNode(new Range(start,p.pos),left,expr);
-                    },
-                    () => {
-                        let ident: IdentifierNode | ErrorNode;
-                        p.sequence([
-                            whitespace,
-                            punctuator("."),
-                            whitespace,
-                            () => ident = IdentifierName(p),
-                            whitespace,
-                        ]);
-                        left = new MemberAccessIdentNode(new Range(start,p.pos),left,ident);
-                    },
+                left = p.choice<ExpressionNode | ErrorNode>([
+                    () => p.seq6([
+                        whitespace,
+                        punctuator("["),
+                        whitespace,
+                        Expression,
+                        whitespace,
+                        punctuator("]")],
+                        ([,,,expr,,]) => new MemberAccessExprNode(new Range(start,p.pos),left,expr)),
+                    () => p.seq5([
+                        whitespace,
+                        punctuator("."),
+                        whitespace,
+                        IdentifierName,
+                        whitespace],
+                        ([,,,ident,]) => new MemberAccessIdentNode(new Range(start,p.pos),left,ident)),
                 ]);
             }
             catch (e) {
@@ -767,32 +738,24 @@ function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
 
 function SuperProperty(p: Parser): SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode {
     return p.choice<SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                keyword("super"),
-                whitespace,
-                punctuator("["),
-                whitespace,
-                () => expr = Expression(p),
-                whitespace,
-                punctuator("]"),
-            ]);
-            return new SuperPropertyExprNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            const start = p.pos;
-            let ident: IdentifierNode | ErrorNode;
-            p.sequence([
-                keyword("super"),
-                whitespace,
-                punctuator("."),
-                whitespace,
-                () => ident = Identifier(p),
-            ]);
-            return new SuperPropertyIdentNode(new Range(start,p.pos),ident);
-        },
+        () => p.seq8([
+            pos,
+            keyword("super"),
+            whitespace,
+            punctuator("["),
+            whitespace,
+            Expression,
+            whitespace,
+            punctuator("]")],
+            ([start,,,,,expr,,]) => new SuperPropertyExprNode(new Range(start,p.pos),expr)),
+        () => p.seq6([
+            pos,
+            keyword("super"),
+            whitespace,
+            punctuator("."),
+            whitespace,
+            Identifier],
+            ([start,,,,,ident]) => new SuperPropertyIdentNode(new Range(start,p.pos),ident)),
     ]);
 }
 
@@ -805,23 +768,15 @@ function MetaProperty(p: Parser): NewTargetNode | ErrorNode {
 // NewTarget
 
 function NewTarget(p: Parser): NewTargetNode | ErrorNode {
-    const start = p.pos;
-    let target: IdentifierNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("new"),
         whitespace,
         punctuator("."),
         whitespace,
-        () => {
-            // "target" is not a reserved word, so we can't use expectKeyword here
-            target = Identifier(p);
-            if (target instanceof ErrorNode)
-                throw new ParseError(p,p.pos,"Expected target");
-            else if (target.value != "target")
-                throw new ParseError(p,p.pos,"Expected target");
-        },
-    ]);
-    return new NewTargetNode(new Range(start,p.pos));
+        identifier("target")], // "target" is not a reserved word, so we can't use keyword here
+        ([start,arg2,arg3,arg4,arg5,arg6]) => new NewTargetNode(new Range(start,p.pos))
+    );
 }
 
 // NewExpression
@@ -829,16 +784,12 @@ function NewTarget(p: Parser): NewTargetNode | ErrorNode {
 function NewExpression(p: Parser): ExpressionNode | ErrorNode {
     return p.choice<ExpressionNode | ErrorNode>([
         MemberExpression,
-        () => {
-            const start = p.pos;
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                keyword("new"),
-                whitespace,
-                () => expr = NewExpression(p),
-            ]);
-            return new NewExpressionNode(new Range(start,p.pos),expr,null);
-        },
+        () => p.seq4([
+            pos,
+            keyword("new"),
+            whitespace,
+            NewExpression],
+            ([start,,,expr]) => new NewExpressionNode(new Range(start,p.pos),expr,null)),
     ]);
 }
 
@@ -847,17 +798,12 @@ function NewExpression(p: Parser): ExpressionNode | ErrorNode {
 function CallExpression_start(p: Parser): ExpressionNode | ErrorNode {
     return p.choice<ExpressionNode | ErrorNode>([
         SuperCall,
-        () => {
-            const start = p.pos;
-            let fun: ExpressionNode | ErrorNode;
-            let args: ArgumentsNode | ErrorNode;
-            p.sequence([
-                () => fun = MemberExpression(p),
-                whitespace,
-                () => args = Arguments(p),
-            ]);
-            return new CallNode(new Range(start,p.pos),fun,args);
-        },
+        () => p.seq4([
+            pos,
+            MemberExpression,
+            whitespace,
+            Arguments],
+            ([start,fun,,args]) => new CallNode(new Range(start,p.pos),fun,args)),
     ]);
 }
 
@@ -868,37 +814,25 @@ function CallExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = CallExpression_start(p);
     while (true) {
         try {
-            p.choice([
-                () => {
-                    let args: ArgumentsNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        () => args = Arguments(p),
-                    ]);
-                    left = new CallNode(new Range(start,p.pos),left,args);
-                },
-                () => {
-                    let expr: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("["),
-                        whitespace,
-                        () => expr = Expression(p),
-                        whitespace,
-                        punctuator("]"),
-                    ]);
-                    left = new MemberAccessExprNode(new Range(start,p.pos),left,expr);
-                },
-                () => {
-                    let idname: IdentifierNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("."),
-                        whitespace,
-                        () => idname = IdentifierName(p),
-                    ]);
-                    left = new MemberAccessIdentNode(new Range(start,p.pos),left,idname);
-                },
+            left = p.choice<ExpressionNode | ErrorNode>([
+                () => p.seq2([
+                    whitespace,
+                    Arguments],
+                    ([,args]) => new CallNode(new Range(start,p.pos),left,args)),
+                () => p.seq6([
+                    whitespace,
+                    punctuator("["),
+                    whitespace,
+                    Expression,
+                    whitespace,
+                    punctuator("]")],
+                    ([,,,expr,,]) => new MemberAccessExprNode(new Range(start,p.pos),left,expr)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("."),
+                    whitespace,
+                    IdentifierName],
+                    ([,,,idname]) => new MemberAccessIdentNode(new Range(start,p.pos),left,idname)),
                 // () => {
                 //     // TODO
                 //     left = TemplateLiteral(p);
@@ -914,42 +848,35 @@ function CallExpression(p: Parser): ExpressionNode | ErrorNode {
 // SuperCall
 
 function SuperCall(p: Parser): SuperCallNode | ErrorNode {
-    const start = p.pos;
-    let args: ArgumentsNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("super"),
         whitespace,
-        () => args = Arguments(p),
-    ]);
-    return new SuperCallNode(new Range(start,p.pos),args);
+        Arguments],
+        ([start,,,args]) => new SuperCallNode(new Range(start,p.pos),args));
 }
 
 // Arguments
 
 function Arguments(p: Parser): ArgumentsNode | ErrorNode {
     return p.choice<ArgumentsNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            p.sequence([
-                punctuator("("),
-                whitespace,
-                punctuator(")"),
-            ]);
-            const args = new ListNode(new Range(start,p.pos),[]);
-            return new ArgumentsNode(new Range(start,p.pos),args);
-        },
-        () => {
-            const start = p.pos;
-            let args: ListNode | ErrorNode;
-            p.sequence([
-                punctuator("("),
-                whitespace,
-                () => args = ArgumentList(p),
-                whitespace,
-                punctuator(")"),
-            ]);
-            return new ArgumentsNode(new Range(start,p.pos),args);
-        },
+        () => p.seq4([
+            pos,
+            punctuator("("),
+            whitespace,
+            punctuator(")")],
+            ([start,,,]) => {
+                const args = new ListNode(new Range(start,p.pos),[]);
+                return new ArgumentsNode(new Range(start,p.pos),args);
+            }),
+        () => p.seq6([
+            pos,
+            punctuator("("),
+            whitespace,
+            ArgumentList,
+            whitespace,
+            punctuator(")")],
+            ([start,,,args,,]) => new ArgumentsNode(new Range(start,p.pos),args)),
     ]);
 }
 
@@ -957,16 +884,12 @@ function Arguments(p: Parser): ArgumentsNode | ErrorNode {
 
 function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
     return p.choice<ArgumentType | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("..."),
-                whitespace,
-                () => expr = AssignmentExpression(p),
-            ]);
-            return new SpreadElementNode(new Range(start,p.pos),expr);
-        },
+        () => p.seq4([
+            pos,
+            punctuator("..."),
+            whitespace,
+            AssignmentExpression],
+            ([start,,,expr]) => new SpreadElementNode(new Range(start,p.pos),expr)),
         AssignmentExpression,
     ]);
 }
@@ -979,13 +902,12 @@ function ArgumentList(p: Parser): ListNode | ErrorNode {
     items.push(ArgumentList_item(p));
     while (true) {
         try {
-            let arg: ArgumentType | ErrorNode;
-            p.sequence([
+            const arg = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => arg = ArgumentList_item(p),
-            ]);
+                ArgumentList_item],
+                ([,,,item]) => item);
             items.push(arg);
         }
         catch (e) {
@@ -1016,20 +938,14 @@ function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
     p.sequence([
         () => expr = LeftHandSideExpression(p),
         () => result = p.choice<ExpressionNode | ErrorNode>([
-            () => {
-                p.sequence([
-                    whitespaceNoNewline,
-                    punctuator("++"),
-                ]);
-                return new PostIncrementNode(new Range(start,p.pos),expr);
-            },
-            () => {
-                p.sequence([
-                    whitespaceNoNewline,
-                    punctuator("--"),
-                ]);
-                return new PostDecrementNode(new Range(start,p.pos),expr);
-            },
+            () => p.seq2([
+                whitespaceNoNewline,
+                punctuator("++")],
+                () => new PostIncrementNode(new Range(start,p.pos),expr)),
+            () => p.seq2([
+                whitespaceNoNewline,
+                punctuator("--")],
+                () => new PostDecrementNode(new Range(start,p.pos),expr)),
             () => expr,
         ]),
     ]);
@@ -1041,89 +957,61 @@ function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
 // UnaryExpression
 
 function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
     return p.choice([
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                keyword("delete"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new DeleteNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                keyword("void"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new VoidNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                keyword("typeof"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new TypeOfNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("++"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new PreIncrementNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("--"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new PreDecrementNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("+"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new UnaryPlusNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("-"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new UnaryMinusNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("~"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new UnaryBitwiseNotNode(new Range(start,p.pos),expr);
-        },
-        () => {
-            let expr: ExpressionNode | ErrorNode;
-            p.sequence([
-                punctuator("!"),
-                whitespace,
-                () => expr = UnaryExpression(p),
-            ]);
-            return new UnaryLogicalNotNode(new Range(start,p.pos),expr);
-        },
+        () => p.seq4([
+            pos,
+            keyword("delete"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new DeleteNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            keyword("void"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new VoidNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            keyword("typeof"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new TypeOfNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            punctuator("++"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new PreIncrementNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            punctuator("--"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new PreDecrementNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            punctuator("+"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new UnaryPlusNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            punctuator("-"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new UnaryMinusNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            punctuator("~"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new UnaryBitwiseNotNode(new Range(start,p.pos),expr)),
+        () => p.seq4([
+            pos,
+            punctuator("!"),
+            whitespace,
+            UnaryExpression],
+            ([start,,,expr]) => new UnaryLogicalNotNode(new Range(start,p.pos),expr)),
         PostfixExpression,
     ]);
 }
@@ -1137,37 +1025,25 @@ function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = UnaryExpression(p);
     while (true) {
         try {
-            p.choice([
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("*"),
-                        whitespace,
-                        () => right = UnaryExpression(p),
-                    ]);
-                    left = new MultiplyNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("/"),
-                        whitespace,
-                        () => right = UnaryExpression(p),
-                    ]);
-                    left = new DivideNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("%"),
-                        whitespace,
-                        () => right = UnaryExpression(p),
-                    ]);
-                    left = new ModuloNode(new Range(start,p.pos),left,right);
-                },
+            left = p.choice<ExpressionNode | ErrorNode>([
+                () => p.seq4([
+                    whitespace,
+                    punctuator("*"),
+                    whitespace,
+                    UnaryExpression],
+                    ([,,,right]) => new MultiplyNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("/"),
+                    whitespace,
+                    UnaryExpression],
+                    ([,,,right]) => new DivideNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("%"),
+                    whitespace,
+                    UnaryExpression],
+                    ([,,,right]) => new ModuloNode(new Range(start,p.pos),left,right)),
             ]);
         }
         catch (e) {
@@ -1185,27 +1061,19 @@ function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = MultiplicativeExpression(p);
     while (true) {
         try {
-            p.choice([
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("+"),
-                        whitespace,
-                        () => right = MultiplicativeExpression(p),
-                    ]);
-                    left = new AddNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("-"),
-                        whitespace,
-                        () => right = MultiplicativeExpression(p),
-                    ]);
-                    left = new SubtractNode(new Range(start,p.pos),left,right);
-                },
+            left = p.choice<ExpressionNode | ErrorNode>([
+                () => p.seq4([
+                    whitespace,
+                    punctuator("+"),
+                    whitespace,
+                    MultiplicativeExpression],
+                    ([,,,right]) => new AddNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("-"),
+                    whitespace,
+                    MultiplicativeExpression],
+                    ([,,,right]) => new SubtractNode(new Range(start,p.pos),left,right)),
             ]);
         }
         catch (e) {
@@ -1223,37 +1091,25 @@ function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = AdditiveExpression(p);
     while (true) {
         try {
-            p.choice([
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("<<"),
-                        whitespace,
-                        () => right = AdditiveExpression(p),
-                    ]);
-                    left = new LeftShiftNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator(">>>"),
-                        whitespace,
-                        () => right = AdditiveExpression(p),
-                    ]);
-                    left = new UnsignedRightShiftNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator(">>"),
-                        whitespace,
-                        () => right = AdditiveExpression(p),
-                    ]);
-                    left = new SignedRightShiftNode(new Range(start,p.pos),left,right);
-                },
+            left = p.choice<ExpressionNode | ErrorNode>([
+                () => p.seq4([
+                    whitespace,
+                    punctuator("<<"),
+                    whitespace,
+                    AdditiveExpression],
+                    ([,,,right]) => new LeftShiftNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator(">>>"),
+                    whitespace,
+                    AdditiveExpression],
+                    ([,,,right]) => new UnsignedRightShiftNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator(">>"),
+                    whitespace,
+                    AdditiveExpression],
+                    ([,,,right]) => new SignedRightShiftNode(new Range(start,p.pos),left,right)),
             ]);
         }
         catch (e) {
@@ -1271,67 +1127,43 @@ function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = ShiftExpression(p);
     while (true) {
         try {
-            p.choice([
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("<="),
-                        whitespace,
-                        () => right = ShiftExpression(p),
-                    ]);
-                    left = new LessEqualNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator(">="),
-                        whitespace,
-                        () => right = ShiftExpression(p),
-                    ]);
-                    left = new GreaterEqualNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("<"),
-                        whitespace,
-                        () => right = ShiftExpression(p),
-                    ]);
-                    left = new LessThanNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator(">"),
-                        whitespace,
-                        () => right = ShiftExpression(p),
-                    ]);
-                    left = new GreaterThanNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        keyword("instanceof"),
-                        whitespace,
-                        () => right = ShiftExpression(p),
-                    ]);
-                    left = new InstanceOfNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        keyword("in"),
-                        whitespace,
-                        () => right = ShiftExpression(p),
-                    ]);
-                    left = new InNode(new Range(start,p.pos),left,right);
-                },
+            left = p.choice<ExpressionNode | ErrorNode>([
+                () => p.seq4([
+                    whitespace,
+                    punctuator("<="),
+                    whitespace,
+                    ShiftExpression],
+                    ([,,,right]) => new LessEqualNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator(">="),
+                    whitespace,
+                    ShiftExpression],
+                    ([,,,right]) => new GreaterEqualNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("<"),
+                    whitespace,
+                    ShiftExpression],
+                    ([,,,right]) => new LessThanNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator(">"),
+                    whitespace,
+                    ShiftExpression],
+                    ([,,,right]) => new GreaterThanNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    keyword("instanceof"),
+                    whitespace,
+                    ShiftExpression],
+                    ([,,,right]) => new InstanceOfNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    keyword("in"),
+                    whitespace,
+                    ShiftExpression],
+                    ([,,,right]) => new InNode(new Range(start,p.pos),left,right)),
             ]);
         }
         catch (e) {
@@ -1349,47 +1181,31 @@ function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = RelationalExpression(p);
     while (true) {
         try {
-            p.choice([
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("==="),
-                        whitespace,
-                        () => right = RelationalExpression(p),
-                    ]);
-                    left = new StrictEqualsNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("!=="),
-                        whitespace,
-                        () => right = RelationalExpression(p),
-                    ]);
-                    left = new StrictNotEqualsNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("=="),
-                        whitespace,
-                        () => right = RelationalExpression(p),
-                    ]);
-                    left = new AbstractEqualsNode(new Range(start,p.pos),left,right);
-                },
-                () => {
-                    let right: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator("!="),
-                        whitespace,
-                        () => right = RelationalExpression(p),
-                    ]);
-                    left = new AbstractNotEqualsNode(new Range(start,p.pos),left,right);
-                },
+            left = p.choice<ExpressionNode | ErrorNode>([
+                () => p.seq4([
+                    whitespace,
+                    punctuator("==="),
+                    whitespace,
+                    RelationalExpression],
+                    ([,,,right]) => new StrictEqualsNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("!=="),
+                    whitespace,
+                    RelationalExpression],
+                    ([,,,right]) => new StrictNotEqualsNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("=="),
+                    whitespace,
+                    RelationalExpression],
+                    ([,,,right]) => new AbstractEqualsNode(new Range(start,p.pos),left,right)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator("!="),
+                    whitespace,
+                    RelationalExpression],
+                    ([,,,right]) => new AbstractNotEqualsNode(new Range(start,p.pos),left,right)),
             ]);
         }
         catch (e) {
@@ -1407,14 +1223,12 @@ function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = EqualityExpression(p);
     while (true) {
         try {
-            let right: ExpressionNode | ErrorNode;
-            p.sequence([
+            left = p.seq4([
                 whitespace,
                 punctuator("&"),
                 whitespace,
-                () => right = EqualityExpression(p),
-            ]);
-            left = new BitwiseANDNode(new Range(start,p.pos),left,right);
+                EqualityExpression],
+                ([,,,right]) => new BitwiseANDNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
             return left;
@@ -1429,14 +1243,12 @@ function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = BitwiseANDExpression(p);
     while (true) {
         try {
-            let right: ExpressionNode | ErrorNode;
-            p.sequence([
+            left = p.seq4([
                 whitespace,
                 punctuator("^"),
                 whitespace,
-                () => right = BitwiseANDExpression(p),
-            ]);
-            left = new BitwiseXORNode(new Range(start,p.pos),left,right);
+                BitwiseANDExpression],
+                ([,,,right]) => new BitwiseXORNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
             return left;
@@ -1451,14 +1263,12 @@ function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = BitwiseXORExpression(p);
     while (true) {
         try {
-            let right: ExpressionNode | ErrorNode;
-            p.sequence([
+            left = p.seq4([
                 whitespace,
                 punctuator("|"),
                 whitespace,
-                () => right = BitwiseXORExpression(p),
-            ]);
-            left = new BitwiseORNode(new Range(start,p.pos),left,right);
+                BitwiseXORExpression],
+                ([,,,right]) => new BitwiseORNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
             return left;
@@ -1475,14 +1285,12 @@ function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = BitwiseORExpression(p);
     while (true) {
         try {
-            let right: ExpressionNode | ErrorNode;
-            p.sequence([
+            left = p.seq4([
                 whitespace,
                 punctuator("&&"),
                 whitespace,
-                () => right = BitwiseORExpression(p),
-            ]);
-            left = new LogicalANDNode(new Range(start,p.pos),left,right);
+                BitwiseORExpression],
+                ([,,,right]) => new LogicalANDNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
             return left;
@@ -1497,14 +1305,12 @@ function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
     let left = LogicalANDExpression(p);
     while (true) {
         try {
-            let right: ExpressionNode | ErrorNode;
-            p.sequence([
+            left = p.seq4([
                 whitespace,
                 punctuator("||"),
                 whitespace,
-                () => right = LogicalANDExpression(p),
-            ]);
-            left = new LogicalORNode(new Range(start,p.pos),left,right);
+                LogicalANDExpression],
+                ([,,,right]) => new LogicalORNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
             return left;
@@ -1520,21 +1326,17 @@ function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
     const start = p.pos;
     let condition = LogicalORExpression(p);
     return p.choice([
-        () => {
-            let trueExpr: ExpressionNode | ErrorNode;
-            let falseExpr: ExpressionNode | ErrorNode;
-            p.sequence([
-                whitespace,
-                punctuator("?"),
-                whitespace,
-                () => trueExpr = AssignmentExpression(p),
-                whitespace,
-                punctuator(":"),
-                whitespace,
-                () => falseExpr = AssignmentExpression(p),
-            ]);
-            return new ConditionalNode(new Range(start,p.pos),condition,trueExpr,falseExpr);
-        },
+        () => p.seq8([
+            whitespace,
+            punctuator("?"),
+            whitespace,
+            AssignmentExpression,
+            whitespace,
+            punctuator(":"),
+            whitespace,
+            AssignmentExpression],
+            ([,,,trueExpr,,,,falseExpr]) =>
+                new ConditionalNode(new Range(start,p.pos),condition,trueExpr,falseExpr)),
         () => condition,
     ]);
 }
@@ -1550,126 +1352,78 @@ function AssignmentExpression_plain(p: Parser): ExpressionNode | ErrorNode {
     p.sequence([
         () => left = LeftHandSideExpression(p),
         () => result = p.choice<ExpressionNode | ErrorNode>([
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("*="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignMultiplyNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("/="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignDivideNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("%="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignModuloNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("+="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignAddNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("-="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignSubtractNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("<<="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignLeftShiftNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(">>="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignSignedRightShiftNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator(">>>="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("&="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignBitwiseANDNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("^="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignBitwiseXORNode(new Range(start,p.pos),left,right);
-            },
-            () => {
-                let right: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    punctuator("|="),
-                    whitespace,
-                    () => right = AssignmentExpression(p),
-                ]);
-                return new AssignBitwiseORNode(new Range(start,p.pos),left,right);
-            },
+            () => p.seq4([
+                whitespace,
+                punctuator("="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("*="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignMultiplyNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("/="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignDivideNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("%="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignModuloNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("+="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignAddNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("-="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignSubtractNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("<<="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignLeftShiftNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator(">>="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignSignedRightShiftNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator(">>>="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("&="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignBitwiseANDNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("^="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignBitwiseXORNode(new Range(start,p.pos),left,right)),
+            () => p.seq4([
+                whitespace,
+                punctuator("|="),
+                whitespace,
+                AssignmentExpression],
+                ([,,,right]) => new AssignBitwiseORNode(new Range(start,p.pos),left,right)),
         ]),
     ]);
     return result;
@@ -1696,14 +1450,13 @@ function Expression(p: Parser): ExpressionNode | ErrorNode {
     let left = AssignmentExpression(p);
     while (true) {
         try {
-            let right: ExpressionNode | ErrorNode;
-            p.sequence([
+            left = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => right = AssignmentExpression(p),
-            ]);
-            left = new CommaNode(new Range(start,p.pos),left,right);
+                () => AssignmentExpression(p)],
+                ([,,,right]) => new CommaNode(new Range(start,p.pos),left,right)
+            );
         }
         catch (e) {
             return left;
@@ -1774,25 +1527,19 @@ function BlockStatement(p: Parser): BlockNode | ErrorNode {
 // Block
 
 function Block(p: Parser): BlockNode | ErrorNode {
-    const start = p.pos;
-    let statements: ListNode | ErrorNode;
-    p.sequence([
+    return p.seq5([
+        pos,
         punctuator("{"),
         whitespace,
-        () => statements = p.choice([
-            () => {
-                let inner: ListNode | ErrorNode;
-                p.sequence([
-                    () => inner = StatementList(p),
-                    whitespace,
-                ]);
-                return inner;
-            },
+        () => p.choice([
+            () => p.seq2([
+                StatementList,
+                whitespace],
+                ([inner,]) => inner),
             () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}"),
-    ]);
-    return new BlockNode(new Range(start,p.pos),statements);
+        punctuator("}")],
+        ([start,,,statements,]) => new BlockNode(new Range(start,p.pos),statements));
 }
 
 // StatementList
@@ -1803,18 +1550,16 @@ function StatementList(p: Parser): ListNode | ErrorNode {
     statements.push(StatementListItem(p));
     while (true) {
         try {
-            let stmt: StatementListItemType | ErrorNode;
-            p.sequence([
+            const stmt = p.seq2([
                 whitespace,
-                () => stmt = StatementListItem(p),
-            ]);
+                StatementListItem],
+                ([,next]) => next);
             statements.push(stmt);
         }
         catch (e) {
-            p.sequence([
-                whitespace,
-            ]);
-            return new ListNode(new Range(start,p.pos),statements);
+            return p.seq1([
+                whitespace],
+                () => new ListNode(new Range(start,p.pos),statements));
         }
     }
 }
@@ -1834,30 +1579,22 @@ function StatementListItem(p: Parser): StatementListItemType | ErrorNode {
 
 function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
     return p.choice<DeclarationNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let bindings: ListNode | ErrorNode;
-            p.sequence([
-                keyword("let"),
-                whitespace,
-                () => bindings = BindingList(p),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new LetNode(new Range(start,p.pos),bindings);
-        },
-        () => {
-            const start = p.pos;
-            let bindings: ListNode | ErrorNode;
-            p.sequence([
-                keyword("const"),
-                whitespace,
-                () => bindings = BindingList(p),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new ConstNode(new Range(start,p.pos),bindings);
-        },
+        () => p.seq6([
+            pos,
+            keyword("let"),
+            whitespace,
+            BindingList,
+            whitespace,
+            punctuator(";")],
+            ([start,,,bindings,,]) => new LetNode(new Range(start,p.pos),bindings)),
+        () => p.seq6([
+            pos,
+            keyword("const"),
+            whitespace,
+            BindingList,
+            whitespace,
+            punctuator(";")],
+            ([start,,,bindings,,]) => new ConstNode(new Range(start,p.pos),bindings)),
     ]);
 }
 
@@ -1869,13 +1606,12 @@ function BindingList(p: Parser): ListNode | ErrorNode {
     bindings.push(LexicalBinding(p));
     while (true) {
         try {
-            let lexbnd: LexicalIdentifierBindingNode | LexicalPatternBindingNode | ErrorNode;
-            p.sequence([
+            const lexbnd = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => lexbnd = LexicalBinding(p),
-            ]);
+                LexicalBinding],
+                ([,,,bnd]) => bnd);
             bindings.push(lexbnd);
         }
         catch (e) {
@@ -1887,36 +1623,28 @@ function BindingList(p: Parser): ListNode | ErrorNode {
 // LexicalBinding_identifier
 
 function LexicalBinding_identifier(p: Parser): LexicalIdentifierBindingNode | ErrorNode {
-    const start = p.pos;
-    let identifier: BindingIdentifierNode | ErrorNode;
-    let initializer: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => identifier = BindingIdentifier(p),
+    return p.seq4([
+        pos,
+        BindingIdentifier,
         whitespace,
-        () => initializer = p.opt(() => {
-            let inner: ExpressionNode | ErrorNode;
-            p.sequence([
-                () => inner = Initializer(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
-    ]);
-    return new LexicalIdentifierBindingNode(new Range(start,p.pos),identifier,initializer);
+        opt(() => p.seq2([
+            Initializer,
+            whitespace],
+            ([inner,]) => inner))],
+        ([start,identifier,,initializer]) =>
+            new LexicalIdentifierBindingNode(new Range(start,p.pos),identifier,initializer));
 }
 
 // LexicalBinding_pattern
 
 function LexicalBinding_pattern(p: Parser): LexicalPatternBindingNode | ErrorNode {
-    const start = p.pos;
-    let pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
-    let initializer: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => pattern = BindingPattern(p),
+    return p.seq4([
+        pos,
+        BindingPattern,
         whitespace,
-        () => initializer = Initializer(p),
-    ]);
-    return new LexicalPatternBindingNode(new Range(start,p.pos),pattern,initializer);
+        Initializer],
+        ([start,pattern,,initializer]) =>
+            new LexicalPatternBindingNode(new Range(start,p.pos),pattern,initializer));
 }
 
 // LexicalBinding
@@ -1933,16 +1661,14 @@ function LexicalBinding(p: Parser): LexicalIdentifierBindingNode | LexicalPatter
 // VariableStatement
 
 function VariableStatement(p: Parser): VarNode | ErrorNode {
-    const start = p.pos;
-    let declarations: ListNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("var"),
         whitespace,
-        () => declarations = VariableDeclarationList(p),
+        VariableDeclarationList,
         whitespace,
-        punctuator(";"),
-    ]);
-    return new VarNode(new Range(start,p.pos),declarations);
+        punctuator(";")],
+        ([start,,,declarations,,]) => new VarNode(new Range(start,p.pos),declarations));
 }
 
 // VariableDeclarationList
@@ -1953,13 +1679,12 @@ function VariableDeclarationList(p: Parser): ListNode | ErrorNode {
     declarations.push(VariableDeclaration(p));
     while (true) {
         try {
-            let decl: VarIdentifierNode | VarPatternNode | ErrorNode;
-            p.sequence([
+            const decl = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => decl = VariableDeclaration(p),
-            ]);
+                VariableDeclaration],
+                ([,,,d]) => d);
             declarations.push(decl);
         }
         catch (e) {
@@ -1977,17 +1702,12 @@ function VariableDeclaration_identifier(p: Parser): VarIdentifierNode | ErrorNod
     p.sequence([
         () => identifier = BindingIdentifier(p),
         () => result = p.choice([
-            () => {
-                let initializer: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    () => initializer = Initializer(p),
-                ]);
-                return new VarIdentifierNode(new Range(start,p.pos),identifier,initializer);
-            },
-            () => {
-                return new VarIdentifierNode(new Range(start,p.pos),identifier,null);
-            }
+            () => p.seq2([
+                whitespace,
+                Initializer],
+                ([,initializer]) =>
+                    new VarIdentifierNode(new Range(start,p.pos),identifier,initializer)),
+            () => new VarIdentifierNode(new Range(start,p.pos),identifier,null),
         ]),
     ]);
     return result;
@@ -1996,15 +1716,12 @@ function VariableDeclaration_identifier(p: Parser): VarIdentifierNode | ErrorNod
 // VariableDeclaration_pattern
 
 function VariableDeclaration_pattern(p: Parser): VarPatternNode | ErrorNode {
-    const start = p.pos;
-    let pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
-    let initializer: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => pattern = BindingPattern(p),
+    return p.seq4([
+        pos,
+        BindingPattern,
         whitespace,
-        () => initializer = Initializer(p),
-    ]);
-    return new VarPatternNode(new Range(start,p.pos),pattern,initializer);
+        Initializer],
+        ([start,pattern,,initializer]) => new VarPatternNode(new Range(start,p.pos),pattern,initializer));
 }
 
 // VariableDeclaration
@@ -2030,129 +1747,104 @@ function BindingPattern(p: Parser): BindingPatternType | ErrorNode {
 // ObjectBindingPattern
 
 function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
-    const start = p.pos;
-    let properties: ListNode | ErrorNode;
-    p.sequence([
+    return p.seq5([
+        pos,
         punctuator("{"),
         whitespace,
-        () => properties = p.choice([
-            () => {
-                let inner: ListNode | ErrorNode;
-                p.sequence([
-                    () => inner = BindingPropertyList(p),
-                    whitespace,
-                    () => p.opt(() => {
-                        p.sequence([
-                            punctuator(","),
-                            whitespace,
-                        ]);
-                    }),
-                ]);
-                return inner;
-            },
-            () => new ListNode(new Range(start,p.pos),[]),
+        () => p.choice([
+            () => p.seq3([
+                BindingPropertyList,
+                whitespace,
+                opt(() => {
+                    p.sequence([
+                        punctuator(","),
+                        whitespace,
+                    ]);
+                })],
+                ([inner,,]) => inner),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}"),
-    ]);
-    return new ObjectBindingPatternNode(new Range(start,p.pos),properties);
+        punctuator("}")],
+        ([start,,,properties,]) => new ObjectBindingPatternNode(new Range(start,p.pos),properties));
 }
 
 // ArrayBindingPattern_1
 
 function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    const start = p.pos;
-    let elision: ElisionNode | ErrorNode;
-    let rest: BindingRestElementNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         punctuator("["),
         whitespace,
-        () => elision = p.opt(() => {
-            let inner: ElisionNode | ErrorNode;
-            p.sequence([
-                () => inner = Elision(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
-        () => rest = p.opt(() => {
-            let inner: BindingRestElementNode | ErrorNode;
-            p.sequence([
-                () => inner = BindingRestElement(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
-        punctuator("]"),
-    ]);
+        opt(() => p.seq2([
+            Elision,
+            whitespace],
+            ([inner,]) => inner)),
+        opt(() => p.seq2([
+            BindingRestElement,
+            whitespace],
+            ([inner,]) => inner)),
+        punctuator("]")],
+        ([start,,,elision,rest,]) => {
+            const array: ASTNode[] = [];
+            if (elision != null)
+                array.push(elision);
+            if (rest != null)
+                array.push(rest);
 
-    const array: ASTNode[] = [];
-    if (elision != null)
-        array.push(elision);
-    if (rest != null)
-        array.push(rest);
-
-    const elements = new ListNode(new Range(start,p.pos),array);
-    return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
+            const elements = new ListNode(new Range(start,p.pos),array);
+            return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
+        });
 }
 
 // ArrayBindingPattern_2
 
 function ArrayBindingPattern_2(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    const start = p.pos;
-    let elements: ListNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         punctuator("["),
         whitespace,
-        () => elements = BindingElementList(p),
+        BindingElementList,
         whitespace,
-        punctuator("]"),
-    ]);
-    return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
+        punctuator("]")],
+        ([start,,,elements,,]) => new ArrayBindingPatternNode(new Range(start,p.pos),elements));
 }
 
 // ArrayBindingPattern_3
 
 function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    const start = p.pos;
-    let elements: ListNode | ErrorNode;
-    let elision: ElisionNode | ErrorNode;
-    let rest: BindingRestElementNode | ErrorNode;
-    p.sequence([
+    return p.seq10([
+        pos,
         punctuator("["),
         whitespace,
-        () => elements = BindingElementList(p),
+        BindingElementList,
         whitespace,
         punctuator(","),
         whitespace,
-        () => elision = p.opt(() => {
-            let inner: ElisionNode | ErrorNode;
-            p.sequence([
-                () => inner = Elision(p),
-                whitespace,
-            ]);
-            return inner;
+        () => p.opt(() => {
+            return p.seq2([
+                Elision,
+                whitespace],
+                ([inner,]) => inner);
         }),
-        () => rest = p.opt(() => {
-            let inner: BindingRestElementNode | ErrorNode;
-            p.sequence([
-                () => inner = BindingRestElement(p),
-                whitespace,
-            ]);
-            return inner;
+        () => p.opt(() => {
+            return p.seq2([
+                BindingRestElement,
+                whitespace],
+                ([inner,]) => inner);
         }),
-        punctuator("]"),
-    ]);
+        punctuator("]")],
+        ([start,,,elements,,,,elision,rest,]) => {
+            let array: ASTNode[] = [];
+            if (!(elements instanceof ErrorNode))
+                array = array.concat(elements.elements);
+            if (elision != null)
+                array.push(elision);
+            if (rest != null)
+                array.push(rest);
 
-    let array: ASTNode[] = [];
-    if (!(elements instanceof ErrorNode))
-        array = array.concat(elements.elements);
-    if (elision != null)
-        array.push(elision);
-    if (rest != null)
-        array.push(rest);
-
-    const allElements = new ListNode(new Range(start,p.pos),array);
-    return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
+            const allElements = new ListNode(new Range(start,p.pos),array);
+            return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
+        });
 }
 
 // ArrayBindingPattern
@@ -2173,13 +1865,12 @@ function BindingPropertyList(p: Parser): ListNode | ErrorNode {
     properties.push(BindingProperty(p));
     while (true) {
         try {
-            let prop: BindingPropertyType | ErrorNode;
-            p.sequence([
+            const prop = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => prop = BindingProperty(p),
-            ]);
+                BindingProperty],
+                ([,,,p]) => p);
             properties.push(prop);
         }
         catch (e) {
@@ -2196,13 +1887,12 @@ function BindingElementList(p: Parser): ListNode | ErrorNode {
     elements.push(BindingElisionElement(p));
     while (true) {
         try {
-            let elem: BindingElementType | ErrorNode;
-            p.sequence([
+            const elem = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => elem = BindingElisionElement(p),
-            ]);
+                BindingElisionElement],
+                ([,,,e]) => e);
             elements.push(elem);
         }
         catch (e) {
@@ -2215,17 +1905,13 @@ function BindingElementList(p: Parser): ListNode | ErrorNode {
 
 function BindingElisionElement(p: Parser): BindingElementType | ErrorNode {
     return p.choice<BindingElementType | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let elision: ElisionNode | ErrorNode;
-            let element: BindingElementType | ErrorNode;
-            p.sequence([
-                () => elision = Elision(p),
-                whitespace,
-                () => element = BindingElement(p),
-            ]);
-            return new BindingElisionElementNode(new Range(start,p.pos),elision,element);
-        },
+        () => p.seq4([
+            pos,
+            Elision,
+            whitespace,
+            BindingElement],
+            ([start,elision,,element]) =>
+                new BindingElisionElementNode(new Range(start,p.pos),elision,element)),
         BindingElement,
     ]);
 }
@@ -2234,19 +1920,15 @@ function BindingElisionElement(p: Parser): BindingElementType | ErrorNode {
 
 function BindingProperty(p: Parser): BindingPropertyType | ErrorNode {
     return p.choice<BindingPropertyType | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let name: PropertyNameType | ErrorNode;
-            let element: BindingElementType | ErrorNode;
-            p.sequence([
-                () => name = PropertyName(p),
-                whitespace,
-                punctuator(":"),
-                whitespace,
-                () => element = BindingElement(p),
-            ]);
-            return new BindingPropertyNode(new Range(start,p.pos),name,element);
-        },
+        () => p.seq6([
+            pos,
+            PropertyName,
+            whitespace,
+            punctuator(":"),
+            whitespace,
+            BindingElement],
+            ([start,name,,,,element]) =>
+                new BindingPropertyNode(new Range(start,p.pos),name,element)),
         // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
         // and PropertyName will match an identifier at the start of a colon binding
         SingleNameBinding,
@@ -2262,14 +1944,10 @@ function BindingElement(p: Parser): BindingElementType | ErrorNode {
             const start = p.pos;
             const pattern = BindingPattern(p);
             return p.choice<BindingElementType | ErrorNode>([
-                () => {
-                    let init: ExpressionNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        () => init = Initializer(p),
-                    ]);
-                    return new BindingPatternInitNode(new Range(start,p.pos),pattern,init);
-                },
+                () => p.seq2([
+                    whitespace,
+                    Initializer],
+                    ([,init]) => new BindingPatternInitNode(new Range(start,p.pos),pattern,init)),
                 () => pattern,
             ]);
         },
@@ -2285,14 +1963,10 @@ function SingleNameBinding(p: Parser): SingleNameBindingType | ErrorNode {
     p.sequence([
         () => ident = BindingIdentifier(p),
         () => result = p.choice<BindingIdentifierNode | SingleNameBindingNode | ErrorNode>([
-            () => {
-                let init: ExpressionNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    () => init = Initializer(p),
-                ]);
-                return new SingleNameBindingNode(new Range(start,p.pos),ident,init);
-            },
+            () => p.seq2([
+                whitespace,
+                Initializer],
+                ([,init]) => new SingleNameBindingNode(new Range(start,p.pos),ident,init)),
             () => ident,
         ]),
     ]);
@@ -2302,14 +1976,12 @@ function SingleNameBinding(p: Parser): SingleNameBindingType | ErrorNode {
 // BindingRestElement
 
 function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         punctuator("..."),
         whitespace,
-        () => ident = BindingIdentifier(p),
-    ]);
-    return new BindingRestElementNode(new Range(start,p.pos),ident);
+        BindingIdentifier],
+        ([start,,,ident]) => new BindingRestElementNode(new Range(start,p.pos),ident));
 }
 
 // Section 13.4
@@ -2317,11 +1989,10 @@ function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
 // EmptyStatement
 
 function EmptyStatement(p: Parser): EmptyStatementNode | ErrorNode {
-    const start = p.pos;
-    p.sequence([
-        punctuator(";"),
-    ]);
-    return new EmptyStatementNode(new Range(start,p.pos));
+    return p.seq2([
+        pos,
+        punctuator(";")],
+        ([start,]) => new EmptyStatementNode(new Range(start,p.pos)));
 }
 
 // Section 13.5
@@ -2347,14 +2018,12 @@ function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
     }
     p.pos = start2;
 
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => expr = Expression(p),
+    return p.seq4([
+        pos,
+        Expression,
         whitespace,
-        punctuator(";"),
-    ]);
-    return new ExpressionStatementNode(new Range(start,p.pos),expr);
+        punctuator(";")],
+        ([start,expr,,,]) => new ExpressionStatementNode(new Range(start,p.pos),expr));
 }
 
 // Section 13.6
@@ -2362,32 +2031,26 @@ function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
 // IfStatement
 
 function IfStatement(p: Parser): IfStatementNode | ErrorNode {
-    const start = p.pos;
-    let condition: ExpressionNode | ErrorNode;
-    let trueBranch: StatementNode | ErrorNode;
-    let falseBranch: StatementNode | ErrorNode;
-    p.sequence([
+    return p.seq11([
+        pos,
         keyword("if"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => condition = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => trueBranch = Statement(p),
-        () => falseBranch = p.opt(() => {
-            let fb: StatementNode | ErrorNode;
-            p.sequence([
-                whitespace,
-                keyword("else"),
-                whitespace,
-                () => fb = Statement(p),
-            ]);
-            return fb;
-        }),
-    ]);
-    return new IfStatementNode(new Range(start,p.pos),condition,trueBranch,falseBranch);
+        Statement,
+        opt(() => p.seq4([
+            whitespace,
+            keyword("else"),
+            whitespace,
+            Statement],
+            ([,,,fb]) => fb))],
+        ([start,arg2,arg3,arg4,arg5,condition,arg7,arg8,arg9,trueBranch,falseBranch]) =>
+            new IfStatementNode(new Range(start,p.pos),condition,trueBranch,falseBranch)
+    );
 }
 
 // Section 13.7
@@ -2395,45 +2058,44 @@ function IfStatement(p: Parser): IfStatementNode | ErrorNode {
 // IterationStatement_do
 
 function IterationStatement_do(p: Parser): DoStatementNode | ErrorNode {
-    const start = p.pos;
-    let body: StatementNode | ErrorNode = null;
-    let condition: ExpressionNode | ErrorNode = null;
-    p.sequence([
+    return p.seq14([
+        pos,
         keyword("do"),
         whitespace,
-        () => body = Statement(p),
+        Statement,
         whitespace,
         keyword("while"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => condition = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        punctuator(";"),
-    ]);
-    return new DoStatementNode(new Range(start,p.pos),body,condition);
+        punctuator(";")],
+        ([start,,,body,,,,,,condition,,,,]) =>
+            new DoStatementNode(new Range(start,p.pos),body,condition)
+    );
+
 }
 
 // IterationStatement_while
 
 function IterationStatement_while(p: Parser): WhileStatementNode | ErrorNode {
-    const start = p.pos;
-    let condition: ExpressionNode | ErrorNode = null;
-    let body: StatementNode | ErrorNode = null;
-    p.sequence([
+    return p.seq10([
+        pos,
         keyword("while"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => condition = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => body = Statement(p),
-    ]);
-    return new WhileStatementNode(new Range(start,p.pos),condition,body);
+        Statement],
+        ([start,,,,,condition,,,,body]) => {
+            return new WhileStatementNode(new Range(start,p.pos),condition,body);
+    });
 }
 
 // IterationStatement_for_c
@@ -2443,80 +2105,46 @@ function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
-    const start = p.pos;
-    let init: ForCInitType | ErrorNode;
-    let condition: ExpressionNode | ErrorNode;
-    let update: ExpressionNode | ErrorNode;
-    let body: StatementNode | ErrorNode;
-    p.sequence([
+    return p.seq14([
+        pos,
         keyword("for"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => init = p.choice<ForCInitType | ErrorNode>([
-            () => {
-                let inner: ExpressionNode | ErrorNode = null;
-                p.sequence([
-                    notKeyword("let"), // FIXME: need tests for this
-                    notPunctuator("["), // FIXME: need tests for this
-                    () => inner = Expression(p),
-                    whitespace,
-                    punctuator(";"),
-                    whitespace,
-                ]);
-                return inner;
-            },
-            () => {
-                const start2 = p.pos;
-                let inner: VarNode | ErrorNode;
-                p.sequence([
-                    keyword("var"),
-                    whitespace,
-                    () => {
-                        const declarations = VariableDeclarationList(p);
-                        inner = new VarNode(new Range(start2,p.pos),declarations);
-                    },
-                    whitespace,
-                    punctuator(";"),
-                    whitespace,
-                ]);
-                return inner;
-            },
-            () => {
-               let inner: DeclarationNode | ErrorNode = null;
-               p.sequence([
-                   () => inner = LexicalDeclaration(p),
-                   whitespace,
-               ]);
-               return inner;
-           },
-           () => {
-                // initializer part can be empty, but need to distinguish this from an error
-                p.sequence([
-                    punctuator(";"),
-                ]);
-                return null;
-            }
+        () => p.choice<ForCInitType | ErrorNode>([
+            () => p.seq6([
+                notKeyword("let"), // FIXME: need tests for this
+                notPunctuator("["), // FIXME: need tests for this
+                Expression,
+                whitespace,
+                punctuator(";"),
+                whitespace],
+                ([,,inner,,,]) => inner),
+            () => p.seq7([
+                pos,
+                keyword("var"),
+                whitespace,
+                VariableDeclarationList,
+                whitespace,
+                punctuator(";"),
+                whitespace],
+                ([start2,two,three,declarations,five,six,seven]) =>
+                    new VarNode(new Range(start2,p.pos),declarations)),
+            () => p.seq2([LexicalDeclaration,whitespace],([decl,]) => decl),
+            // initializer part can be empty, but need to distinguish this from an error
+            () => p.seq1([punctuator(";")],() => null),
         ]),
-        () => condition = p.opt(() => {
-            return Expression(p);
-        }),
+        opt(Expression),
         whitespace,
         punctuator(";"),
         whitespace,
-        () => update = p.opt(() => {
-            let inner: ExpressionNode | ErrorNode;
-            p.sequence([
-                () => inner = Expression(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
+        opt(() => p.seq2([Expression,whitespace],([inner,]) => inner)),
         punctuator(")"),
         whitespace,
-        () => body = Statement(p),
-    ]);
-    return new ForCNode(new Range(start,p.pos),init,condition,update,body);
+        Statement,
+    ],([start,,,,,init,condition,,,,update,,,body]) => {
+        return new ForCNode(new Range(start,p.pos),init,condition,update,body);
+    });
 }
 
 // IterationStatement_for_in
@@ -2526,48 +2154,37 @@ function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
-    const start = p.pos;
-    let binding: ForInBindingType | ErrorNode;
-    let expr: ExpressionNode | ErrorNode;
-    let body: StatementNode | ErrorNode;
-    p.sequence([
+    return p.seq14([
+        pos,
         keyword("for"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => binding = p.choice<ForInBindingType | ErrorNode>([
-            () => {
-                let inner: ExpressionNode | ErrorNode;
-                p.sequence([
-                    notKeyword("let"), // FIXME: need tests for this
-                    notPunctuator("["), // FIXME: need tests for this
-                    () => inner = LeftHandSideExpression(p),
-                ]);
-                return inner;
-            },
-            () => {
-                const start2 = p.pos;
-                let inner: ForBindingType | ErrorNode;
-                p.sequence([
-                    keyword("var"),
-                    whitespace,
-                    () => inner = ForBinding(p),
-                ]);
-                return new VarForDeclarationNode(new Range(start2,p.pos),inner);
-            },
+        () => p.choice<ForInBindingType | ErrorNode>([
+            () => p.seq3([
+                notKeyword("let"), // FIXME: need tests for this
+                notPunctuator("["), // FIXME: need tests for this
+                () => LeftHandSideExpression(p)],
+                ([,,inner]) => inner
+            ),
+            () => p.seq4([
+                pos,
+                keyword("var"),
+                whitespace,
+                ForBinding],
+                ([start2,,,inner]) => new VarForDeclarationNode(new Range(start2,p.pos),inner)
+            ),
             ForDeclaration,
         ]),
         whitespace,
         keyword("in"),
         whitespace,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => body = Statement(p),
-    ]);
-
-    return new ForInNode(new Range(start,p.pos),binding,expr,body);
+        Statement],
+        ([start,,,,,binding,,,,expr,,,,body]) => new ForInNode(new Range(start,p.pos),binding,expr,body));
 }
 
 // IterationStatement_for_of
@@ -2577,47 +2194,36 @@ function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
-    const start = p.pos;
-    let binding: ForOfBindingType | ErrorNode;
-    let expr: ExpressionNode | ErrorNode;
-    let body: StatementNode | ErrorNode;
-    p.sequence([
+    return p.seq14([
+        pos,
         keyword("for"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => binding = p.choice<ForOfBindingType | ErrorNode>([
-            () => {
-                let inner: ExpressionNode | ErrorNode;
-                p.sequence([
-                    notKeyword("let"), // FIXME: need tests for this
-                    notPunctuator("["), // FIXME: need tests for this
-                    () => inner = LeftHandSideExpression(p),
-                ]);
-                return inner;
-            },
-            () => {
-                const start2 = p.pos;
-                let inner: ForBindingType | ErrorNode;
-                p.sequence([
-                    keyword("var"),
-                    whitespace,
-                    () => inner = ForBinding(p),
-                ]);
-                return new VarForDeclarationNode(new Range(start2,p.pos),inner);
-            },
+        () => p.choice<ForOfBindingType | ErrorNode>([
+            () => p.seq3([
+                notKeyword("let"), // FIXME: need tests for this
+                notPunctuator("["), // FIXME: need tests for this
+                LeftHandSideExpression],
+                ([,,inner]) => inner),
+            () => p.seq4([
+                pos,
+                keyword("var"),
+                whitespace,
+                ForBinding],
+                ([start2,,,inner]) => new VarForDeclarationNode(new Range(start2,p.pos),inner)),
             ForDeclaration,
         ]),
         whitespace,
         keyword("of"),
         whitespace,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => body = Statement(p),
-    ]);
-    return new ForOfNode(new Range(start,p.pos),binding,expr,body);
+        Statement],
+        ([start,,,,,binding,,,,expr,,,,body]) =>
+            new ForOfNode(new Range(start,p.pos),binding,expr,body));
 }
 
 // IterationStatement_for
@@ -2644,26 +2250,18 @@ function IterationStatement(p: Parser): BreakableStatementNode | ErrorNode {
 
 function ForDeclaration(p: Parser): LetForDeclarationNode | ConstForDeclarationNode | ErrorNode {
     return p.choice<LetForDeclarationNode | ConstForDeclarationNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let binding: ForBindingType | ErrorNode;
-            p.sequence([
-                keyword("let"),
-                whitespace,
-                () => binding = ForBinding(p),
-            ]);
-            return new LetForDeclarationNode(new Range(start,p.pos),binding);
-        },
-        () => {
-            const start = p.pos;
-            let binding: ForBindingType | ErrorNode;
-            p.sequence([
-                keyword("const"),
-                whitespace,
-                () => binding = ForBinding(p),
-            ]);
-            return new ConstForDeclarationNode(new Range(start,p.pos),binding);
-        },
+        () => p.seq4([
+            pos,
+            keyword("let"),
+            whitespace,
+            ForBinding],
+            ([start,,,binding]) => new LetForDeclarationNode(new Range(start,p.pos),binding)),
+        () => p.seq4([
+            pos,
+            keyword("const"),
+            whitespace,
+            ForBinding],
+            ([start,,,binding]) => new ConstForDeclarationNode(new Range(start,p.pos),binding)),
     ]);
 }
 
@@ -2682,27 +2280,20 @@ function ForBinding(p: Parser): ForBindingType | ErrorNode {
 
 function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
     return p.choice<ContinueStatementNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            p.sequence([
-                keyword("continue"),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new ContinueStatementNode(new Range(start,p.pos),null);
-        },
-        () => {
-            const start = p.pos;
-            let labelIdentifier: LabelIdentifierNode | ErrorNode = null;
-            p.sequence([
-                keyword("continue"),
-                whitespaceNoNewline,
-                () => labelIdentifier = LabelIdentifier(p),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new ContinueStatementNode(new Range(start,p.pos),labelIdentifier);
-        },
+        () => p.seq4([
+            pos,
+            keyword("continue"),
+            whitespace,
+            punctuator(";")],
+            ([start,,,]) => new ContinueStatementNode(new Range(start,p.pos),null)),
+        () => p.seq6([
+            pos,
+            keyword("continue"),
+            whitespaceNoNewline,
+            LabelIdentifier,
+            whitespace,
+            punctuator(";")],
+            ([start,,,ident,,]) => new ContinueStatementNode(new Range(start,p.pos),ident)),
     ]);
 }
 
@@ -2712,27 +2303,20 @@ function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
 
 function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
     return p.choice<BreakStatementNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            p.sequence([
-                keyword("break"),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new BreakStatementNode(new Range(start,p.pos),null);
-        },
-        () => {
-            const start = p.pos;
-            let labelIdentifier: LabelIdentifierNode | ErrorNode = null;
-            p.sequence([
-                keyword("break"),
-                whitespaceNoNewline,
-                () => labelIdentifier = LabelIdentifier(p),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new BreakStatementNode(new Range(start,p.pos),labelIdentifier);
-        },
+        () => p.seq4([
+            pos,
+            keyword("break"),
+            whitespace,
+            punctuator(";")],
+            ([start,,,]) => new BreakStatementNode(new Range(start,p.pos),null)),
+        () => p.seq6([
+            pos,
+            keyword("break"),
+            whitespaceNoNewline,
+            LabelIdentifier,
+            whitespace,
+            punctuator(";")],
+            ([start,,,ident,,]) => new BreakStatementNode(new Range(start,p.pos),ident)),
     ]);
 }
 
@@ -2742,27 +2326,20 @@ function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
 
 function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
     return p.choice<ReturnStatementNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            p.sequence([
-                keyword("return"),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new ReturnStatementNode(new Range(start,p.pos),null);
-        },
-        () => {
-            const start = p.pos;
-            let expr: ExpressionNode | ErrorNode = null;
-            p.sequence([
-                keyword("return"),
-                whitespaceNoNewline,
-                () => expr = Expression(p),
-                whitespace,
-                punctuator(";"),
-            ]);
-            return new ReturnStatementNode(new Range(start,p.pos),expr);
-        },
+        () => p.seq4([
+            pos,
+            keyword("return"),
+            whitespace,
+            punctuator(";")],
+            ([start,,,]) => new ReturnStatementNode(new Range(start,p.pos),null)),
+        () => p.seq6([
+            pos,
+            keyword("return"),
+            whitespaceNoNewline,
+            Expression,
+            whitespace,
+            punctuator(";")],
+            ([start,,,expr,,]) => new ReturnStatementNode(new Range(start,p.pos),expr)),
     ]);
 }
 
@@ -2771,21 +2348,19 @@ function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
 // WithStatement
 
 function WithStatement(p: Parser): WithStatementNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode = null;
-    let body: StatementNode | ErrorNode = null;
-    p.sequence([
+    return p.seq10([
+        pos,
         keyword("with"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => body = Statement(p),
-    ]);
-    return new WithStatementNode(new Range(start,p.pos),expr,body);
+        Statement],
+        ([start,,,,,expr,,,,body]) =>
+            new WithStatementNode(new Range(start,p.pos),expr,body));
 }
 
 // Section 13.12
@@ -2793,75 +2368,72 @@ function WithStatement(p: Parser): WithStatementNode | ErrorNode {
 // SwitchStatement
 
 function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode = null;
-    let cases: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq10([
+        pos,
         keyword("switch"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => cases = CaseBlock(p),
-    ]);
-    return new SwitchStatementNode(new Range(start,p.pos),expr,cases);
+        CaseBlock],
+        ([start,arg2,arg3,arg4,arg5,expr,arg7,arg8,arg9,cases]) =>
+            new SwitchStatementNode(new Range(start,p.pos),expr,cases));
 }
 
 // CaseBlock_1
 
 function CaseBlock_1(p: Parser): ListNode | ErrorNode {
-    const start = p.pos;
-    let clauses: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq6([
+        pos,
         punctuator("{"),
         whitespace,
-        () => clauses = p.choice([
+        () => p.choice([
             CaseClauses,
-            () => new ListNode(new Range(start,p.pos),[]),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
         whitespace,
-        punctuator("}"),
-    ]);
-    return clauses;
+        punctuator("}")],
+        ([start,,,clauses,,]) => {
+            clauses.range = new Range(start,p.pos);
+            return clauses;
+        });
 }
 
 // CaseBlock_2
 
 function CaseBlock_2(p: Parser): ListNode | ErrorNode {
-    const start = p.pos;
-    let clauses1: ListNode | ErrorNode;
-    let clauses2: ListNode | ErrorNode;
-    let defaultClause: DefaultClauseNode | ErrorNode;
-    p.sequence([
+    return p.seq10([
+        pos,
         punctuator("{"),
         whitespace,
-        () => clauses1 = p.opt(CaseClauses),
+        opt(CaseClauses),
         whitespace,
-        () => defaultClause = DefaultClause(p),
+        DefaultClause,
         whitespace,
-        () => clauses2 = p.opt(CaseClauses),
+        opt(CaseClauses),
         whitespace,
-        punctuator("}"),
-    ]);
-    let elements1: ASTNode[] = [];
-    let elements2: ASTNode[] = [];
-    if (clauses1 != null) {
-        if (clauses1 instanceof ErrorNode)
-            elements1 = [clauses1];
-        else
-            elements1 = clauses1.elements;
-    }
-    if (clauses2 != null) {
-        if (clauses2 instanceof ErrorNode)
-            elements2 = [clauses2];
-        else
-            elements2 = clauses2.elements;
-    }
-    const combined = [].concat(elements1,defaultClause,elements2);
-    return new ListNode(new Range(start,p.pos),combined);
+        punctuator("}")],
+        ([start,arg2,arg3,clauses1,arg5,defaultClause,arg7,clauses2,arg9,arg10]) => {
+            let elements1: ASTNode[] = [];
+            let elements2: ASTNode[] = [];
+            if (clauses1 != null) {
+                if (clauses1 instanceof ErrorNode)
+                    elements1 = [clauses1];
+                else
+                    elements1 = clauses1.elements;
+            }
+            if (clauses2 != null) {
+                if (clauses2 instanceof ErrorNode)
+                    elements2 = [clauses2];
+                else
+                    elements2 = clauses2.elements;
+            }
+            const combined = [].concat(elements1,defaultClause,elements2);
+            return new ListNode(new Range(start,p.pos),combined);
+        });
 }
 
 // CaseBlock
@@ -2896,34 +2468,30 @@ function CaseClauses(p: Parser): ListNode | ErrorNode {
 // CaseClause
 
 function CaseClause(p: Parser): CaseClauseNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode = null;
-    let statements: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq8([
+        pos,
         keyword("case"),
         whitespace,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
         punctuator(":"),
         whitespace,
-        () => statements = StatementList(p),
-    ]);
-    return new CaseClauseNode(new Range(start,p.pos),expr,statements);
+        StatementList],
+        ([start,,,expr,,,,statements]) => new CaseClauseNode(new Range(start,p.pos),expr,statements));
 }
 
 // DefaultClause
 
 function DefaultClause(p: Parser): DefaultClauseNode | ErrorNode {
-    const start = p.pos;
-    let statements: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("default"),
         whitespace,
         punctuator(":"),
         whitespace,
-        () => statements = StatementList(p),
-    ]);
-    return new DefaultClauseNode(new Range(start,p.pos),statements);
+        StatementList],
+        ([start,arg2,arg3,arg4,arg5,statements]) =>
+            new DefaultClauseNode(new Range(start,p.pos),statements));
 }
 
 // Section 13.13
@@ -2931,17 +2499,15 @@ function DefaultClause(p: Parser): DefaultClauseNode | ErrorNode {
 // LabelledStatement
 
 function LabelledStatement(p: Parser): LabelledStatementNode | ErrorNode {
-    const start = p.pos;
-    let ident: LabelIdentifierNode | ErrorNode = null;
-    let item: StatementNode | FunctionDeclarationNode | ErrorNode = null;
-    p.sequence([
-        () => ident = LabelIdentifier(p),
+    return p.seq6([
+        pos,
+        LabelIdentifier,
         whitespace,
         punctuator(":"),
         whitespace,
-        () => item = LabelledItem(p),
-    ]);
-    return new LabelledStatementNode(new Range(start,p.pos),ident,item);
+        LabelledItem],
+        ([start,ident,,,,item]) =>
+            new LabelledStatementNode(new Range(start,p.pos),ident,item));
 }
 
 // LabelledItem
@@ -2958,16 +2524,15 @@ function LabelledItem(p: Parser): StatementNode | FunctionDeclarationNode | Erro
 // ThrowStatement
 
 function ThrowStatement(p: Parser): ThrowStatementNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode = null;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("throw"),
         whitespaceNoNewline,
-        () => expr = Expression(p),
+        Expression,
         whitespace,
-        punctuator(";"),
-    ]);
-    return new ThrowStatementNode(new Range(start,p.pos),expr);
+        punctuator(";")],
+        ([start,,,expr,,]) =>
+            new ThrowStatementNode(new Range(start,p.pos),expr));
 }
 
 // Section 13.15
@@ -2976,37 +2541,28 @@ function ThrowStatement(p: Parser): ThrowStatementNode | ErrorNode {
 
 function TryStatement(p: Parser): TryStatementNode | ErrorNode {
     return p.attempt((start) => {
-        let tryBlock: BlockNode | ErrorNode;
         let catchBlock: CatchNode | ErrorNode;
         let finallyBlock: FinallyNode | ErrorNode;
 
-        p.sequence([
+        const tryBlock = p.seq3([
             keyword("try"),
             whitespace,
-            () => tryBlock = Block(p),
-        ]);
+            Block],
+            ([,,block]) => block);
 
-        finallyBlock = p.opt(() => {
-            let inner: FinallyNode | ErrorNode;
-            p.sequence([
-                whitespace,
-                () => inner = Finally(p),
-            ]);
-            return inner;
-        });
+        finallyBlock = p.opt(() => p.seq2([
+            whitespace,
+            Finally],
+            ([,inner]) => inner));
 
         if (finallyBlock == null) {
             p.sequence([
                 whitespace,
                 () => catchBlock = Catch(p),
-                () => finallyBlock = p.opt(() => {
-                    let inner: FinallyNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        () => inner = Finally(p),
-                    ]);
-                    return inner;
-                }),
+                () => finallyBlock = p.opt(() => p.seq2([
+                    whitespace,
+                    Finally],
+                    ([,inner]) => inner)),
             ]);
         }
 
@@ -3017,34 +2573,32 @@ function TryStatement(p: Parser): TryStatementNode | ErrorNode {
 // Catch
 
 function Catch(p: Parser): CatchNode | ErrorNode {
-    const start = p.pos;
-    let param: CatchParameterType | ErrorNode;
-    let block: BlockNode | ErrorNode = null;
-    p.sequence([
+    return p.seq10([
+        pos,
         keyword("catch"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => param = CatchParameter(p),
+        CatchParameter,
         whitespace,
         punctuator(")"),
         whitespace,
-        () => block = Block(p),
-    ]);
-    return new CatchNode(new Range(start,p.pos),param,block);
+        Block],
+        ([start,,,,,param,,,,block]) =>
+            new CatchNode(new Range(start,p.pos),param,block));
 }
 
 // Finally
 
 function Finally(p: Parser): FinallyNode | ErrorNode {
-    const start = p.pos;
-    let block: BlockNode | ErrorNode = null;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("finally"),
         whitespace,
-        () => block = Block(p),
-    ]);
-    return new FinallyNode(new Range(start,p.pos),block);
+        Block],
+        ([start,arg2,arg3,block]) =>
+            new FinallyNode(new Range(start,p.pos),block)
+    );
 }
 
 // CatchParameter
@@ -3061,13 +2615,12 @@ function CatchParameter(p: Parser): CatchParameterType | ErrorNode {
 // DebuggerStatement
 
 function DebuggerStatement(p: Parser): DebuggerStatementNode | ErrorNode {
-    const start = p.pos;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("debugger"),
         whitespace,
-        punctuator(";"),
-    ]);
-    return new DebuggerStatementNode(new Range(start,p.pos));
+        punctuator(";")],
+        ([start,,,]) => new DebuggerStatementNode(new Range(start,p.pos)));
 }
 
 // Section 14.1
@@ -3075,52 +2628,47 @@ function DebuggerStatement(p: Parser): DebuggerStatementNode | ErrorNode {
 // FunctionDeclaration_named
 
 function FunctionDeclaration_named(p: Parser): FunctionDeclarationNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode = null;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq16([
+        pos,
         keyword("function"),
         whitespace,
-        () => ident = BindingIdentifier(p),
+        BindingIdentifier,
         whitespace,
         punctuator("("),
         whitespace,
-        () => params = FormalParameters(p),
+        FormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new FunctionDeclarationNode(new Range(start,p.pos),ident,params,body);
+        punctuator("}")],
+        ([start,,,ident,,,,params,,,,,,body,,]) =>
+            new FunctionDeclarationNode(new Range(start,p.pos),ident,params,body));
 }
 
 // FunctionDeclaration_unnamed
 
 function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | ErrorNode {
-    const start = p.pos;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq14([
+        pos,
         keyword("function"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => params = FormalParameters(p),
+        FormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new FunctionDeclarationNode(new Range(start,p.pos),null,params,body);
+        punctuator("}")],
+        ([start,,,,,params,,,,,,body,,]) =>
+            new FunctionDeclarationNode(new Range(start,p.pos),null,params,body));
 }
 
 // FunctionDeclaration
@@ -3137,34 +2685,27 @@ function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boo
 // FunctionExpression
 
 function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode = null;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq15([
+        pos,
         keyword("function"),
         whitespace,
-        () => ident = p.opt(() => {
-            let inner: BindingIdentifierNode | ErrorNode = null;
-            p.sequence([
-                () => inner = BindingIdentifier(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
+        opt(() => p.seq2([
+            BindingIdentifier,
+            whitespace],
+            ([inner,]) => inner)),
         punctuator("("),
         whitespace,
-        () => params = FormalParameters(p),
+        FormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new FunctionExpressionNode(new Range(start,p.pos),ident,params,body);
+        punctuator("}")],
+        ([start,arg2,arg3,ident,arg5,arg6,params,arg8,arg9,arg10,arg11,arg12,body,arg14,arg15]) =>
+            new FunctionExpressionNode(new Range(start,p.pos),ident,params,body));
 }
 
 // StrictFormalParameters
@@ -3186,35 +2727,31 @@ function FormalParameters(p: Parser): ListNode | ErrorNode {
 
 function FormalParameterList(p: Parser): ListNode | ErrorNode {
     return p.choice([
-        (): ListNode | ErrorNode => {
-            const start = p.pos;
-            const rest = FunctionRestParameter(p);
-            return new ListNode(new Range(start,p.pos),[rest]);
-        },
-        (): ListNode | ErrorNode => {
-            const start = p.pos;
-            const formals = FormalsList(p);
-            return p.choice([
-                (): ListNode | ErrorNode => {
-                    let elements: ASTNode[] = null;
-                    p.sequence([
-                        whitespace,
-                        punctuator(","),
-                        whitespace,
-                        () => {
-                            const rest = FunctionRestParameter(p);
-                            if (formals instanceof ErrorNode)
-                                elements = [formals];
-                            else
-                                elements = formals.elements;
-                            elements.push(rest);
-                        },
-                    ]);
-                    return new ListNode(new Range(start,p.pos),elements);
-                },
-                (): ListNode | ErrorNode => formals,
-            ]);
-        },
+        () => p.seq2([
+            pos,
+            FunctionRestParameter],
+            ([start,rest]) => new ListNode(new Range(start,p.pos),[rest])),
+        () => p.seq3([
+            pos,
+            FormalsList,
+            opt(() => p.seq4([
+                whitespace,
+                punctuator(","),
+                whitespace,
+                FunctionRestParameter],
+                ([,,,rest]) => rest))],
+            ([start,formals,rest]) => {
+                if (rest == null)
+                    return formals;
+
+                let elements: ASTNode[];
+                if (formals instanceof ErrorNode)
+                    elements = [formals];
+                else
+                    elements = formals.elements;
+                elements.push(rest);
+                return new ListNode(new Range(start,p.pos),elements);
+            }),
     ]);
 }
 
@@ -3226,13 +2763,13 @@ function FormalsList(p: Parser): ListNode | ErrorNode {
     elements.push(FormalParameter(p));
     while (true) {
         try {
-            let param: BindingElementType | ErrorNode;
-            p.sequence([
+            // let param: BindingElementType | ErrorNode;
+            const param = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => param = FormalParameter(p),
-            ]);
+                FormalParameter],
+                ([,,,p]) => p);
             elements.push(param);
         }
         catch (e) {
@@ -3273,17 +2810,14 @@ function FunctionStatementList(p: Parser): ListNode | ErrorNode {
 // ArrowFunction
 
 function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
-    const start = p.pos;
-    let params: BindingIdentifierNode | ListNode | ErrorNode = null;
-    let body: ExpressionNode | ListNode | ErrorNode = null;
-    p.sequence([
-        () => params = ArrowParameters(p),
+    return p.seq6([
+        pos,
+        ArrowParameters,
         whitespaceNoNewline,
         punctuator("=>"),
         whitespace,
-        () => body = ConciseBody(p),
-    ]);
-    return new ArrowFunctionNode(new Range(start,p.pos),params,body);
+        ConciseBody],
+        ([start,params,,,,body]) => new ArrowFunctionNode(new Range(start,p.pos),params,body));
 }
 
 // ArrowParameters
@@ -3306,15 +2840,13 @@ function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
 // ConciseBody_2
 
 function ConciseBody_2(p: Parser): ListNode | ErrorNode {
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq5([
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return body;
+        punctuator("}")],
+        ([,,body,,]) => body);
 }
 
 // ConciseBody
@@ -3329,15 +2861,13 @@ function ConciseBody(p: Parser): ExpressionNode | ListNode | ErrorNode {
 // ArrowFormalParameters
 
 function ArrowFormalParameters(p: Parser): ListNode | ErrorNode {
-    let params: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq5([
         punctuator("("),
         whitespace,
-        () => params = StrictFormalParameters(p),
+        StrictFormalParameters,
         whitespace,
-        punctuator(")"),
-    ]);
-    return params;
+        punctuator(")")],
+        ([,,params,,]) => params);
 }
 
 // Section 14.3
@@ -3345,26 +2875,23 @@ function ArrowFormalParameters(p: Parser): ListNode | ErrorNode {
 // MethodDefinition_1
 
 function MethodDefinition_1(p: Parser): MethodNode | ErrorNode {
-    const start = p.pos;
-    let name: PropertyNameType | ErrorNode = null;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
-        () => name = PropertyName(p),
+    return p.seq14([
+        pos,
+        PropertyName,
         whitespace,
         punctuator("("),
         whitespace,
-        () => params = StrictFormalParameters(p),
+        StrictFormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new MethodNode(new Range(start,p.pos),name,params,body);
+        punctuator("}")],
+        ([start,name,,,,params,,,,,,body,,]) =>
+            new MethodNode(new Range(start,p.pos),name,params,body));
 }
 
 // MethodDefinition_2
@@ -3376,14 +2903,11 @@ function MethodDefinition_2(p: Parser): GeneratorMethodNode | ErrorNode {
 // MethodDefinition_3
 
 function MethodDefinition_3(p: Parser): GetterNode | ErrorNode {
-    const start = p.pos;
-    // "get" is not a reserved word, so we can't use expectKeyword here
-    let name: PropertyNameType | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
-        identifier("get"),
+    return p.seq14([
+        pos,
+        identifier("get"), // "get" is not a reserved word, so we can't use keyword here
         whitespace,
-        () => name = PropertyName(p),
+        PropertyName,
         whitespace,
         punctuator("("),
         whitespace,
@@ -3391,39 +2915,35 @@ function MethodDefinition_3(p: Parser): GetterNode | ErrorNode {
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new GetterNode(new Range(start,p.pos),name,body);
+        punctuator("}")],
+        ([start,,,name,,,,,,,,body,,]) =>
+            new GetterNode(new Range(start,p.pos),name,body));
 }
 
 // MethodDefinition_4
 
 function MethodDefinition_4(p: Parser): SetterNode | ErrorNode {
-    const start = p.pos;
-    // "set" is not a reserved word, so we can't use expectKeyword here
-    let name: PropertyNameType | ErrorNode = null;
-    let param: BindingElementType | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq16([
+        pos,
         identifier("set"),
         whitespace,
-        () => name = PropertyName(p),
+        PropertyName,
         whitespace,
         punctuator("("),
         whitespace,
-        () => param = PropertySetParameterList(p),
+        PropertySetParameterList,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = FunctionBody(p),
+        FunctionBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new SetterNode(new Range(start,p.pos),name,param,body);
+        punctuator("}")],
+        ([start,,,name,,,,param,,,,,,body,,]) =>
+            new SetterNode(new Range(start,p.pos),name,param,body));
 }
 
 // MethodDefinition
@@ -3448,83 +2968,75 @@ function PropertySetParameterList(p: Parser): BindingElementType | ErrorNode {
 // GeneratorMethod
 
 function GeneratorMethod(p: Parser): GeneratorMethodNode | ErrorNode {
-    const start = p.pos;
-    let name: PropertyNameType | ErrorNode = null;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq16([
+        pos,
         punctuator("*"),
         whitespace,
-        () => name = PropertyName(p),
+        PropertyName,
         whitespace,
         punctuator("("),
         whitespace,
-        () => params = StrictFormalParameters(p),
+        StrictFormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = GeneratorBody(p),
+        GeneratorBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new GeneratorMethodNode(new Range(start,p.pos),name,params,body);
+        punctuator("}")],
+        ([start,,,name,,,,params,,,,,,body,,]) =>
+            new GeneratorMethodNode(new Range(start,p.pos),name,params,body));
 }
 
 // GeneratorDeclaration_1
 
 function GeneratorDeclaration_1(p: Parser): GeneratorDeclarationNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode = null;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq18([
+        pos,
         keyword("function"),
         whitespace,
         punctuator("*"),
         whitespace,
-        () => ident = BindingIdentifier(p),
+        BindingIdentifier,
         whitespace,
         punctuator("("),
         whitespace,
-        () => params = FormalParameters(p),
+        FormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = GeneratorBody(p),
+        GeneratorBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new GeneratorDeclarationNode(new Range(start,p.pos),ident,params,body);
+        punctuator("}")],
+        ([start,,,,,ident,,,,params,,,,,,body,,]) =>
+            new GeneratorDeclarationNode(new Range(start,p.pos),ident,params,body));
 }
 
 // GeneratorDeclaration_2
 
 function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | ErrorNode {
-    const start = p.pos;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq16([
+        pos,
         keyword("function"),
         whitespace,
         punctuator("*"),
         whitespace,
         punctuator("("),
         whitespace,
-        () => params = FormalParameters(p),
+        FormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = GeneratorBody(p),
+        GeneratorBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new DefaultGeneratorDeclarationNode(new Range(start,p.pos),params,body);
+        punctuator("}")],
+        ([start,,,,,,,params,,,,,,body,,]) =>
+            new DefaultGeneratorDeclarationNode(new Range(start,p.pos),params,body));
 }
 
 // GeneratorDeclaration
@@ -3541,36 +3053,29 @@ function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
 // GeneratorExpression
 
 function GeneratorExpression(p: Parser): GeneratorExpressionNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode;
-    let params: ListNode | ErrorNode = null;
-    let body: ListNode | ErrorNode = null;
-    p.sequence([
+    return p.seq17([
+        pos,
         keyword("function"),
         whitespace,
         punctuator("*"),
         whitespace,
-        () => ident = p.opt(() => {
-            let inner: BindingIdentifierNode | ErrorNode;
-            p.sequence([
-                () => inner = BindingIdentifier(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
+        opt(() => p.seq2([
+            BindingIdentifier,
+            whitespace],
+            ([inner,]) => inner)),
         punctuator("("),
         whitespace,
-        () => params = FormalParameters(p),
+        FormalParameters,
         whitespace,
         punctuator(")"),
         whitespace,
         punctuator("{"),
         whitespace,
-        () => body = GeneratorBody(p),
+        GeneratorBody,
         whitespace,
-        punctuator("}"),
-    ]);
-    return new GeneratorExpressionNode(new Range(start,p.pos),ident,params,body);
+        punctuator("}")],
+        ([start,,,,,ident,,,params,,,,,,body,,]) =>
+            new GeneratorExpressionNode(new Range(start,p.pos),ident,params,body));
 }
 
 // GeneratorBody
@@ -3582,39 +3087,34 @@ function GeneratorBody(p: Parser): ListNode | ErrorNode {
 // YieldExpression_1
 
 function YieldExpression_1(p: Parser): YieldStarNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("yield"),
         whitespaceNoNewline,
         punctuator("*"),
         whitespace,
-        () => expr = AssignmentExpression(p),
-    ]);
-    return new YieldStarNode(new Range(start,p.pos),expr);
+        AssignmentExpression],
+        ([start,,,,,expr]) => new YieldStarNode(new Range(start,p.pos),expr));
 }
 
 // YieldExpression_2
 
 function YieldExpression_2(p: Parser): YieldExprNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("yield"),
         whitespaceNoNewline,
-        () => expr = AssignmentExpression(p),
-    ]);
-    return new YieldExprNode(new Range(start,p.pos),expr);
+        AssignmentExpression],
+        ([start,,,expr]) => new YieldExprNode(new Range(start,p.pos),expr));
 }
 
 // YieldExpression_3
 
 function YieldExpression_3(p: Parser): YieldNothingNode | ErrorNode {
-    const start = p.pos;
-    p.sequence([
-        keyword("yield"),
-    ]);
-    return new YieldNothingNode(new Range(start,p.pos));
+    return p.seq2([
+        pos,
+        keyword("yield")],
+        ([start,]) => new YieldNothingNode(new Range(start,p.pos)));
 }
 
 // YieldExpression
@@ -3632,30 +3132,26 @@ function YieldExpression(p: Parser): ExpressionNode | ErrorNode {
 // ClassDeclaration_1
 
 function ClassDeclaration_1(p: Parser): ClassDeclarationNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode;
-    let tail: ClassTailNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("class"),
         whitespace,
-        () => ident = BindingIdentifier(p),
+        BindingIdentifier,
         whitespace,
-        () => tail = ClassTail(p),
-    ]);
-    return new ClassDeclarationNode(new Range(start,p.pos),ident,tail);
+        ClassTail],
+        ([start,,,ident,,tail]) =>
+            new ClassDeclarationNode(new Range(start,p.pos),ident,tail));
 }
 
 // ClassDeclaration_2
 
 function ClassDeclaration_2(p: Parser): ClassDeclarationNode | ErrorNode {
-    const start = p.pos;
-    let tail: ClassTailNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("class"),
         whitespace,
-        () => tail = ClassTail(p),
-    ]);
-    return new ClassDeclarationNode(new Range(start,p.pos),null,tail);
+        ClassTail],
+        ([start,,,tail]) => new ClassDeclarationNode(new Range(start,p.pos),null,tail));
 }
 
 // ClassDeclaration
@@ -3672,72 +3168,55 @@ function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolea
 // ClassExpression
 
 function ClassExpression(p: Parser): ClassExpressionNode | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode;
-    let tail: ClassTailNode | ErrorNode;
-    p.sequence([
+    return p.seq5([
+        pos,
         keyword("class"),
         whitespace,
-        () => ident = p.opt(() => {
-            let inner: BindingIdentifierNode | ErrorNode;
-            p.sequence([
-                () => inner = BindingIdentifier(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
-        () => tail = ClassTail(p),
-    ]);
-    return new ClassExpressionNode(new Range(start,p.pos),ident,tail);
+        opt(() =>
+            p.seq2([
+                BindingIdentifier,
+                whitespace],
+                ([inner,]) => inner)
+        ),
+        ClassTail],
+        ([start,,,ident,tail]) =>
+            new ClassExpressionNode(new Range(start,p.pos),ident,tail));
 }
 
 // ClassTail
 
 function ClassTail(p: Parser): ClassTailNode | ErrorNode {
-    const start = p.pos;
-    let heritage: ExtendsNode | ErrorNode;
-    let body: ListNode | ErrorNode;
-    p.sequence([
-        () => heritage = p.opt(() => {
-            let inner: ExtendsNode | ErrorNode;
-            p.sequence([
-                () => inner = ClassHeritage(p),
-                whitespace,
-            ]);
-            return inner;
-        }),
+    return p.seq6([
+        pos,
+        opt(() =>
+            p.seq2([
+                ClassHeritage,
+                whitespace
+            ],([inner,]) => inner)
+        ),
         punctuator("{"),
         whitespace,
-        () => body = p.choice([
-            () => {
-                const start2 = p.pos;
-                let inner: ListNode | ErrorNode;
-                p.sequence([
-                    () => inner = ClassBody(p),
-                    whitespace,
-                ]);
-                return inner;
-            },
-            () => {
-                return new ListNode(new Range(p.pos,p.pos),[]);
-            },
+        () => p.choice([
+            () => p.seq2([
+                ClassBody,
+                whitespace],
+                ([inner,]) => inner),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}"),
-    ]);
-    return new ClassTailNode(new Range(start,p.pos),heritage,body);
+        punctuator("}")],
+        ([start,heritage,,,body,]) =>
+            new ClassTailNode(new Range(start,p.pos),heritage,body));
 }
 
 // ClassHeritage
 
 function ClassHeritage(p: Parser): ExtendsNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("extends"),
         whitespace,
-        () => expr = LeftHandSideExpression(p),
-    ]);
-    return new ExtendsNode(new Range(start,p.pos),expr);
+        LeftHandSideExpression],
+        ([start,arg2,arg3,expr]) => new ExtendsNode(new Range(start,p.pos),expr));
 }
 
 // ClassBody
@@ -3754,11 +3233,10 @@ function ClassElementList(p: Parser): ListNode | ErrorNode {
     elements.push(ClassElement(p));
     while (true) {
         try {
-            let elem: ClassElementType | ErrorNode;
-            p.sequence([
+            const elem = p.seq2([
                 whitespace,
-                () => elem = ClassElement(p),
-            ]);
+                ClassElement],
+                ([,e]) => e);
             elements.push(elem);
         }
         catch (e) {
@@ -3776,24 +3254,21 @@ function ClassElement_1(p: Parser): MethodDefinitionNode | ErrorNode {
 // ClassElement_2
 
 function ClassElement_2(p: Parser): StaticMethodDefinitionNode | ErrorNode {
-    const start = p.pos;
-    let method: MethodDefinitionNode | ErrorNode;
-    p.sequence([
+    return p.seq4([
+        pos,
         keyword("static"),
         whitespace,
-        () => method = MethodDefinition(p),
-    ]);
-    return new StaticMethodDefinitionNode(new Range(start,p.pos),method);
+        MethodDefinition],
+        ([start,arg2,arg3,method]) => new StaticMethodDefinitionNode(new Range(start,p.pos),method));
 }
 
 // ClassElement_3
 
 function ClassElement_3(p: Parser): EmptyClassElementNode | ErrorNode {
-    const start = p.pos;
-    p.sequence([
-        punctuator(";"),
-    ]);
-    return new EmptyClassElementNode(new Range(start,p.pos));
+    return p.seq2([
+        pos,
+        punctuator(";")],
+        ([start,]) => new EmptyClassElementNode(new Range(start,p.pos)));
 }
 
 // ClassElement
@@ -3852,11 +3327,10 @@ function ModuleItemList(p: Parser): ListNode | ErrorNode {
     items.push(ModuleItem(p));
     while (true) {
         try {
-            let mod: ModuleItemType | ErrorNode;
-            p.sequence([
+            const mod = p.seq2([
                 whitespace,
-                () => mod = ModuleItem(p),
-            ]);
+                ModuleItem],
+                ([,m]) => m);
             items.push(mod);
         }
         catch (e) {
@@ -3880,34 +3354,31 @@ function ModuleItem(p: Parser): ModuleItemType | ErrorNode {
 // ImportDeclaration_from
 
 function ImportDeclaration_from(p: Parser): ImportFromNode | ErrorNode {
-    const start = p.pos;
-    let importClause: ImportClauseNode | ErrorNode;
-    let fromClause: StringLiteralNode | ErrorNode;
-    p.sequence([
+    return p.seq8([
+        pos,
         keyword("import"),
         whitespace,
-        () => importClause = ImportClause(p),
+        ImportClause,
         whitespace,
-        () => fromClause = FromClause(p),
+        FromClause,
         whitespace,
-        punctuator(";"),
-    ]);
-    return new ImportFromNode(new Range(start,p.pos),importClause,fromClause);
+        punctuator(";")],
+        ([start,,,importClause,,fromClause,,]) =>
+            new ImportFromNode(new Range(start,p.pos),importClause,fromClause));
 }
 
 // ImportDeclaration_module
 
 function ImportDeclaration_module(p: Parser): ImportModuleNode | ErrorNode {
-    const start = p.pos;
-    let specifier: StringLiteralNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         keyword("import"),
         whitespace,
-        () => specifier = ModuleSpecifier(p),
+        ModuleSpecifier,
         whitespace,
-        punctuator(";"),
-    ]);
-    return new ImportModuleNode(new Range(start,p.pos),specifier);
+        punctuator(";")],
+        ([start,,,specifier,,]) =>
+            new ImportModuleNode(new Range(start,p.pos),specifier));
 }
 
 // ImportDeclaration
@@ -3927,31 +3398,21 @@ function ImportClause(p: Parser): ImportClauseNode | ErrorNode {
         NamedImports,
         () => {
             const start = p.pos;
-            const defaultBinding = ImportedDefaultBinding(p);
+            const defbinding = ImportedDefaultBinding(p);
             return p.choice<ImportClauseNode | ErrorNode>([
-                () => {
-                    let nameSpaceImport: NameSpaceImportNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator(","),
-                        whitespace,
-                        () => nameSpaceImport = NameSpaceImport(p),
-                    ]);
-                    return new DefaultAndNameSpaceImportsNode(new Range(start,p.pos),defaultBinding,nameSpaceImport);
-                },
-                () => {
-                    let namedImports: NamedImportsNode | ErrorNode;
-                    p.sequence([
-                        whitespace,
-                        punctuator(","),
-                        whitespace,
-                        () => namedImports = NamedImports(p),
-                    ]);
-                    return new DefaultAndNamedImportsNode(new Range(start,p.pos),defaultBinding,namedImports);
-                },
-                () => {
-                    return new DefaultImportNode(new Range(start,p.pos),defaultBinding);
-                },
+                () => p.seq4([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    NameSpaceImport],
+                    ([,,,nsimport]) => new DefaultAndNameSpaceImportsNode(new Range(start,p.pos),defbinding,nsimport)),
+                () => p.seq4([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    NamedImports],
+                    ([,,,nimports]) => new DefaultAndNamedImportsNode(new Range(start,p.pos),defbinding,nimports)),
+                () => new DefaultImportNode(new Range(start,p.pos),defbinding),
             ]);
         },
     ]);
@@ -3966,58 +3427,44 @@ function ImportedDefaultBinding(p: Parser): BindingIdentifierNode | ErrorNode {
 // NameSpaceImport
 
 function NameSpaceImport(p: Parser): NameSpaceImportNode | ErrorNode {
-    const start = p.pos;
-    let binding: BindingIdentifierNode | ErrorNode;
-    p.sequence([
+    return p.seq6([
+        pos,
         punctuator("*"),
         whitespace,
         keyword("as"),
         whitespace,
-        () => binding = ImportedBinding(p),
-    ]);
-    return new NameSpaceImportNode(new Range(start,p.pos),binding);
+        ImportedBinding],
+        ([start,,,,,binding]) => new NameSpaceImportNode(new Range(start,p.pos),binding));
 }
 
 // NamedImports
 
 function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
-    const start = p.pos;
-    let imports: ListNode | ErrorNode;
-    p.sequence([
+    return p.seq5([
+        pos,
         punctuator("{"),
         whitespace,
-        () => imports = p.choice([
-            () => {
-                let inner: ListNode | ErrorNode;
-                p.sequence([
-                    () => inner = ImportsList(p),
-                    whitespace,
-                    () => p.opt(() => {
-                        p.sequence([
-                            punctuator(","),
-                            whitespace,
-                        ]);
-                    }),
-                ]);
-                return inner;
-            },
-            () => {
-                return new ListNode(new Range(start,p.pos),[]);
-            },
+        () => p.choice([
+            () => p.seq3([
+                ImportsList,
+                whitespace,
+                opt(() =>  p.seq2([punctuator(","),whitespace],() => {}))],
+                ([inner,,]) => inner),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}"),
-    ]);
-    return new NamedImportsNode(new Range(start,p.pos),imports);
+        punctuator("}")],
+        ([start,,,imports,]) =>
+            new NamedImportsNode(new Range(start,p.pos),imports));
 }
 
 // FromClause
 
 function FromClause(p: Parser): StringLiteralNode | ErrorNode {
-    p.sequence([
+    return p.seq3([
         keyword("from"),
         whitespace,
-    ]);
-    return ModuleSpecifier(p);
+        ModuleSpecifier],
+        ([,,spec]) => spec);
 }
 
 // ImportsList
@@ -4028,13 +3475,12 @@ function ImportsList(p: Parser): ListNode | ErrorNode {
     imports.push(ImportSpecifier(p));
     while (true) {
         try {
-            let specifier: ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode;
-            p.sequence([
+            const specifier = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => specifier = ImportSpecifier(p),
-            ]);
+                ImportSpecifier],
+                ([,,,spec]) => spec);
             imports.push(specifier);
         }
         catch (e) {
@@ -4047,27 +3493,18 @@ function ImportsList(p: Parser): ListNode | ErrorNode {
 
 function ImportSpecifier(p: Parser): ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode {
     return p.choice<ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode>([
-        () => {
-            const start = p.pos;
-            let name: IdentifierNode | ErrorNode;
-            let binding: BindingIdentifierNode | ErrorNode;
-            p.sequence([
-                () => name = IdentifierName(p),
-                whitespace,
-                keyword("as"),
-                whitespace,
-                () => binding = ImportedBinding(p),
-            ]);
-            return new ImportAsSpecifierNode(new Range(start,p.pos),name,binding);
-        },
-        () => {
-            const start = p.pos;
-            let binding: BindingIdentifierNode | ErrorNode;
-            p.sequence([
-                () => binding = ImportedBinding(p),
-            ]);
-            return new ImportSpecifierNode(new Range(start,p.pos),binding);
-        },
+        () => p.seq6([
+            pos,
+            IdentifierName,
+            whitespace,
+            keyword("as"),
+            whitespace,
+            ImportedBinding],
+            ([start,name,,,,binding]) => new ImportAsSpecifierNode(new Range(start,p.pos),name,binding)),
+        () => p.seq2([
+            pos,
+            ImportedBinding],
+            ([start,binding]) => new ImportSpecifierNode(new Range(start,p.pos),binding)),
     ]);
 }
 
@@ -4095,87 +3532,48 @@ function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
         ]);
 
         return p.choice<ExportNode | ErrorNode>([
-            () => {
-                let node: DeclarationNode | ErrorNode;
-                p.sequence([
-                    keyword("default"),
-                    whitespace,
-                    () => node = HoistableDeclaration(p,{ Default: true }),
-                ]);
-                return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
-            },
-            () => {
-                let node: ClassDeclarationNode | ErrorNode;
-                p.sequence([
-                    keyword("default"),
-                    whitespace,
-                    () => node = ClassDeclaration(p,{ Default: true }),
-                ]);
-                return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
-            },
-            () => {
-                let node: ExpressionNode | ErrorNode;
-                p.sequence([
-                    keyword("default"),
-                    whitespace,
-                    notKeyword("function"), // FIXME: need tests for this
-                    notKeyword("class"), // FIXME: need tests for this
-                    () => node = AssignmentExpression(p),
-                ]);
-                return new ExportDefaultNode(new Range(node.range.start,node.range.end),node);
-            },
-            () => {
-                let res: ExportNode | ErrorNode;
-                p.sequence([
-                    punctuator("*"),
-                    () => {
-                        let from: StringLiteralNode | ErrorNode;
-                        p.sequence([
-                            whitespace,
-                            () => from = FromClause(p),
-                            whitespace,
-                            punctuator(";"),
-                        ]);
-                        res = new ExportStarNode(new Range(start,p.pos),from);
-                    },
-                ]);
-                return res;
-            },
-            () => {
-                let exportClause: ExportClauseNode | ErrorNode;
-                let fromClause: StringLiteralNode | ErrorNode;
-                p.sequence([
-                    () => exportClause = ExportClause(p),
-                    whitespace,
-                    () => fromClause = FromClause(p),
-                    whitespace,
-                    punctuator(";"),
-                ]);
-                return new ExportFromNode(new Range(start,p.pos),exportClause,fromClause);
-            },
-            () => {
-                let exportClause: ExportClauseNode | ErrorNode;
-                p.sequence([
-                    () => exportClause = ExportClause(p),
-                    whitespace,
-                    punctuator(";"),
-                ]);
-                return exportClause;
-            },
-            () => {
-                let node: VarNode | ErrorNode;
-                p.sequence([
-                    () => node = VariableStatement(p),
-                ]);
-                return new ExportVariableNode(new Range(node.range.start,node.range.end),node);
-            },
-            () => {
-                let node: DeclarationNode | ErrorNode;
-                p.sequence([
-                    () => node = Declaration(p),
-                ]);
-                return new ExportDeclarationNode(new Range(node.range.start,node.range.end),node);
-            },
+            () => p.seq3([
+                keyword("default"),
+                whitespace,
+                () => HoistableDeclaration(p,{ Default: true })],
+                ([,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
+            () => p.seq3([
+                keyword("default"),
+                whitespace,
+                () => ClassDeclaration(p,{ Default: true })],
+                ([,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
+            () => p.seq5([
+                keyword("default"),
+                whitespace,
+                notKeyword("function"), // FIXME: need tests for this
+                notKeyword("class"), // FIXME: need tests for this
+                AssignmentExpression],
+                ([,,,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
+            () => p.seq5([
+                punctuator("*"),
+                whitespace,
+                FromClause,
+                whitespace,
+                punctuator(";")],
+                ([,,from,,]) => new ExportStarNode(new Range(start,p.pos),from)),
+            () => p.seq5([
+                ExportClause,
+                whitespace,
+                FromClause,
+                whitespace,
+                punctuator(";")],
+                ([exportClause,,fromClause,,]) => new ExportFromNode(new Range(start,p.pos),exportClause,fromClause)),
+            () => p.seq3([
+                ExportClause,
+                whitespace,
+                punctuator(";")],
+                ([exportClause,,]) => exportClause),
+            () => p.seq1([
+                VariableStatement],
+                ([node]) => new ExportVariableNode(new Range(start,p.pos),node)),
+            () => p.seq1([
+                Declaration],
+                ([node]) => new ExportDeclarationNode(new Range(start,p.pos),node)),
         ]);
     });
 }
@@ -4190,18 +3588,16 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
         whitespace,
         () => exports = p.choice([
             () => {
-                let inner: ListNode | ErrorNode;
-                p.sequence([
-                    () => inner = ExportsList(p),
+                return p.seq3([
+                    ExportsList,
                     whitespace,
-                    () => p.opt(() => {
+                    opt(() => {
                         p.sequence([
                             punctuator(","),
                             whitespace,
                         ]);
-                    }),
-                ]);
-                return inner;
+                    })],
+                    ([inner,,]) => inner);
             },
             () => new ListNode(new Range(start,p.pos),[]),
         ]),
@@ -4218,13 +3614,12 @@ function ExportsList(p: Parser): ListNode | ErrorNode {
     exports.push(ExportSpecifier(p));
     while (true) {
         try {
-            let specifier: ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode;
-            p.sequence([
+            const specifier = p.seq4([
                 whitespace,
                 punctuator(","),
                 whitespace,
-                () => specifier = ExportSpecifier(p),
-            ]);
+                ExportSpecifier],
+                ([,,,spec]) => spec);
             exports.push(specifier);
         }
         catch (e) {
