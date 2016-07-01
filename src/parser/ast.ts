@@ -12,6 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+export type LiteralPropertyNameType = IdentifierNode | StringLiteralNode | NumericLiteralNode;
+export type PropertyNameType = ComputedPropertyNameNode | LiteralPropertyNameType;
+export type PropertyDefinitionType = ColonPropertyDefinitionNode | CoverInitializedNameNode |
+                                     MethodDefinitionNode | IdentifierReferenceNode;
+export type StatementListItemType = StatementNode | DeclarationNode;
+export type SingleNameBindingType = BindingIdentifierNode | SingleNameBindingNode;
+export type BindingPatternType = ObjectBindingPatternNode | ArrayBindingPatternNode;
+export type BindingElementType = SingleNameBindingType | BindingPatternInitNode | BindingPatternType | BindingElisionElementNode;
+export type ArgumentType = ExpressionNode | SpreadElementNode;
+export type ForBindingType = BindingIdentifierNode | BindingPatternType;
+export type CatchParameterType = BindingIdentifierNode | BindingPatternType;
+export type BindingPropertyType = SingleNameBindingType | BindingPropertyNode;
+export type ClassElementType = MethodDefinitionNode | StaticMethodDefinitionNode | EmptyClassElementNode;
+export type ModuleItemType = ImportNode | ExportNode | StatementListItemType;
+export type ArrayLiteralItemType = ElisionNode | SpreadElementNode | ExpressionNode;
+export type ForCInitType = ExpressionNode | VarNode | LetNode | ConstNode | null;
+export type ForInBindingType = ExpressionNode | VarForDeclarationNode | LetForDeclarationNode | ConstForDeclarationNode;
+export type ForOfBindingType = ExpressionNode | VarForDeclarationNode | LetForDeclarationNode | ConstForDeclarationNode;
+
 export class Range {
     public start: number;
     public end: number;
@@ -32,13 +51,43 @@ export abstract class ASTNode {
     public get label(): string { return this.kind; }
 }
 
+export abstract class StatementNode extends ASTNode {
+    _nominal_type_StatementNode: any;
+}
 
-export class BinaryNode extends ASTNode {
+export abstract class BreakableStatementNode extends StatementNode {
+    _nominal_type_BreakableStatementNode: any;
+}
+
+export abstract class ExpressionNode extends ASTNode {
+    _nominal_type_ExpressionNode: any;
+}
+
+export abstract class ImportClauseNode extends ASTNode {
+    _nominal_type_ImportClauseNode: any;
+}
+
+export abstract class ExportNode extends ASTNode {
+    _nominal_type_ExportNode: any;
+}
+
+export abstract class ImportNode extends ASTNode {
+    _nominal_type_ImportNode: any;
+}
+
+export abstract class MethodDefinitionNode extends ASTNode {
+    _nominal_type_MethodDefinitionNode: any;
+}
+
+export abstract class DeclarationNode extends ASTNode {
+    _nominal_type_DeclarationNode: any;
+}
+export abstract class BinaryNode extends ExpressionNode {
     _nominal_type_BinaryNode: any;
-    public readonly left: ASTNode;
-    public readonly right: ASTNode;
+    public readonly left: ExpressionNode | ErrorNode;
+    public readonly right: ExpressionNode | ErrorNode;
     public readonly _children: ASTNode[];
-    public constructor(range: Range, kind: string, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, kind: string, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,kind);
         this.left = left;
         this.right = right;
@@ -51,7 +100,7 @@ export class BinaryNode extends ASTNode {
 
 // Section 12.1
 
-export class IdentifierReferenceNode extends ASTNode {
+export class IdentifierReferenceNode extends ExpressionNode {
     _nominal_type_IdentifierReferenceNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
@@ -117,7 +166,7 @@ export class IdentifierNode extends ASTNode {
 
 // Section 12.2
 
-export class ThisNode extends ASTNode {
+export class ThisNode extends ExpressionNode {
     _nominal_type_ThisNode: any;
     public constructor(range: Range) {
         super(range,"This");
@@ -127,55 +176,7 @@ export class ThisNode extends ASTNode {
     }
 }
 
-export class CoverExpr1Node extends ASTNode {
-    _nominal_type_CoverExpr1Node: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
-        super(range,"CoverExpr1");
-        this.expr = expr;
-    }
-    public get children(): ASTNode[] {
-        return [this.expr];
-    }
-}
-
-export class CoverExpr2Node extends ASTNode {
-    _nominal_type_CoverExpr2Node: any;
-    public constructor(range: Range) {
-        super(range,"CoverExpr2");
-    }
-    public get children(): ASTNode[] {
-        return [];
-    }
-}
-
-export class CoverExpr3Node extends ASTNode {
-    _nominal_type_CoverExpr3Node: any;
-    public readonly ident: ASTNode;
-    public constructor(range: Range, ident: ASTNode) {
-        super(range,"CoverExpr3");
-        this.ident = ident;
-    }
-    public get children(): ASTNode[] {
-        return [this.ident];
-    }
-}
-
-export class CoverExpr4Node extends ASTNode {
-    _nominal_type_CoverExpr4Node: any;
-    public readonly expr: ASTNode;
-    public readonly ident: ASTNode;
-    public constructor(range: Range, expr: ASTNode, ident: ASTNode) {
-        super(range,"CoverExpr4");
-        this.expr = expr;
-        this.ident = ident;
-    }
-    public get children(): ASTNode[] {
-        return [this.expr,this.ident];
-    }
-}
-
-export class NullLiteralNode extends ASTNode {
+export class NullLiteralNode extends ExpressionNode {
     _nominal_type_NullLiteralNode: any;
     public constructor(range: Range) {
         super(range,"NullLiteral");
@@ -185,7 +186,7 @@ export class NullLiteralNode extends ASTNode {
     }
 }
 
-export class BooleanLiteralNode extends ASTNode {
+export class BooleanLiteralNode extends ExpressionNode {
     _nominal_type_BooleanLiteralNode: any;
     public readonly value: boolean;
     public constructor(range: Range, value: boolean) {
@@ -200,7 +201,7 @@ export class BooleanLiteralNode extends ASTNode {
     }
 }
 
-export class NumericLiteralNode extends ASTNode {
+export class NumericLiteralNode extends ExpressionNode {
     _nominal_type_NumericLiteralNode: any;
     public readonly value: number;
     public constructor(range: Range, value: number) {
@@ -215,7 +216,7 @@ export class NumericLiteralNode extends ASTNode {
         return ""+this.value;
     }
 }
-export class StringLiteralNode extends ASTNode {
+export class StringLiteralNode extends ExpressionNode {
     _nominal_type_StringLiteralNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
@@ -233,10 +234,10 @@ export class StringLiteralNode extends ASTNode {
 
 // // Section 12.2.5
 
-export class ArrayLiteralNode extends ASTNode {
+export class ArrayLiteralNode extends ExpressionNode {
     _nominal_type_ArrayLiteralNode: any;
-    private readonly elements: ASTNode;
-    public constructor(range: Range, elements: ASTNode) {
+    private readonly elements: ListNode;
+    public constructor(range: Range, elements: ListNode) {
         super(range,"ArrayLiteral");
         this.elements = elements;
     }
@@ -262,8 +263,8 @@ export class ElisionNode extends ASTNode {
 
 export class SpreadElementNode extends ASTNode {
     _nominal_type_SpreadElementNode: any;
-    public readonly child: ASTNode;
-    public constructor(range: Range, child: ASTNode) {
+    public readonly child: ExpressionNode | ErrorNode;
+    public constructor(range: Range, child: ExpressionNode | ErrorNode) {
         super(range,"SpreadElement");
         this.child = child;
     }
@@ -274,10 +275,10 @@ export class SpreadElementNode extends ASTNode {
 
 // Section 12.2.6
 
-export class ObjectLiteralNode extends ASTNode {
+export class ObjectLiteralNode extends ExpressionNode {
     _nominal_type_ObjectLiteralNode: any;
-    public readonly properties: ASTNode;
-    public constructor(range: Range, properties: ASTNode) {
+    public readonly properties: ListNode | ErrorNode;
+    public constructor(range: Range, properties: ListNode | ErrorNode) {
         super(range,"ObjectLiteral");
         this.properties = properties;
     }
@@ -288,9 +289,9 @@ export class ObjectLiteralNode extends ASTNode {
 
 export class ColonPropertyDefinitionNode extends ASTNode {
     _nominal_type_ColonPropertyDefinitionNode: any;
-    public readonly name: ASTNode;
-    public readonly init: ASTNode;
-    public constructor(range: Range, name: ASTNode, init: ASTNode) {
+    public readonly name: PropertyNameType | ErrorNode;
+    public readonly init: ExpressionNode | ErrorNode;
+    public constructor(range: Range, name: PropertyNameType | ErrorNode, init: ExpressionNode | ErrorNode) {
         super(range,"ColonPropertyDefinition");
         this.name = name;
         this.init = init;
@@ -302,8 +303,8 @@ export class ColonPropertyDefinitionNode extends ASTNode {
 
 export class ComputedPropertyNameNode extends ASTNode {
     _nominal_type_ComputedPropertyNameNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"ComputedPropertyName");
         this.expr = expr;
     }
@@ -314,9 +315,9 @@ export class ComputedPropertyNameNode extends ASTNode {
 
 export class CoverInitializedNameNode extends ASTNode {
     _nominal_type_CoverInitializedNameNode: any;
-    public readonly ident: ASTNode;
-    public readonly init: ASTNode;
-    public constructor(range: Range, ident: ASTNode, init: ASTNode) {
+    public readonly ident: IdentifierReferenceNode | ErrorNode;
+    public readonly init: ExpressionNode | ErrorNode;
+    public constructor(range: Range, ident: IdentifierReferenceNode | ErrorNode, init: ExpressionNode | ErrorNode) {
         super(range,"CoverInitializedName");
         this.ident = ident;
         this.init = init;
@@ -328,11 +329,11 @@ export class CoverInitializedNameNode extends ASTNode {
 
 // Section 12.3
 
-export class MemberAccessExprNode extends ASTNode {
+export class MemberAccessExprNode extends ExpressionNode {
     _nominal_type_MemberAccessExprNode: any;
-    public readonly obj: ASTNode;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, obj: ASTNode, expr: ASTNode) {
+    public readonly obj: ExpressionNode | ErrorNode;
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, obj: ExpressionNode | ErrorNode, expr: ExpressionNode | ErrorNode) {
         super(range,"MemberAccessExpr");
         this.obj = obj;
         this.expr = expr;
@@ -342,11 +343,11 @@ export class MemberAccessExprNode extends ASTNode {
     }
 }
 
-export class MemberAccessIdentNode extends ASTNode {
+export class MemberAccessIdentNode extends ExpressionNode {
     _nominal_type_MemberAccessIdentNode: any;
-    public readonly obj: ASTNode;
-    public readonly ident: ASTNode;
-    public constructor(range: Range, obj: ASTNode, ident: ASTNode) {
+    public readonly obj: ExpressionNode | ErrorNode;
+    public readonly ident: IdentifierNode | ErrorNode;
+    public constructor(range: Range, obj: ExpressionNode | ErrorNode, ident: IdentifierNode | ErrorNode) {
         super(range,"MemberAccessIdent");
         this.obj = obj;
         this.ident = ident;
@@ -356,10 +357,10 @@ export class MemberAccessIdentNode extends ASTNode {
     }
 }
 
-export class SuperPropertyExprNode extends ASTNode {
+export class SuperPropertyExprNode extends ExpressionNode {
     _nominal_type_SuperPropertyExprNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"SuperPropertyExpr");
         this.expr = expr;
     }
@@ -368,10 +369,10 @@ export class SuperPropertyExprNode extends ASTNode {
     }
 }
 
-export class SuperPropertyIdentNode extends ASTNode {
+export class SuperPropertyIdentNode extends ExpressionNode {
     _nominal_type_SuperPropertyIdentNode: any;
-    public readonly ident: ASTNode;
-    public constructor(range: Range, ident: ASTNode) {
+    public readonly ident: IdentifierNode | ErrorNode;
+    public constructor(range: Range, ident: IdentifierNode | ErrorNode) {
         super(range,"SuperPropertyIdent");
         this.ident = ident;
     }
@@ -380,7 +381,7 @@ export class SuperPropertyIdentNode extends ASTNode {
     }
 }
 
-export class NewTargetNode extends ASTNode {
+export class NewTargetNode extends ExpressionNode {
     _nominal_type_NewTargetNode: any;
     public constructor(range: Range) {
         super(range,"NewTarget");
@@ -390,11 +391,11 @@ export class NewTargetNode extends ASTNode {
     }
 }
 
-export class NewExpressionNode extends ASTNode {
+export class NewExpressionNode extends ExpressionNode {
     _nominal_type_NewExpressionNode: any;
-    public readonly expr: ASTNode;
-    public readonly args: ASTNode;
-    public constructor(range: Range, expr: ASTNode, args: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public readonly args: ArgumentsNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode, args: ArgumentsNode | ErrorNode) {
         super(range,"NewExpression");
         this.expr = expr;
         this.args = args;
@@ -404,11 +405,11 @@ export class NewExpressionNode extends ASTNode {
     }
 }
 
-export class CallNode extends ASTNode {
+export class CallNode extends ExpressionNode {
     _nominal_type_CallNode: any;
-    public readonly fun: ASTNode;
-    public readonly args: ASTNode;
-    public constructor(range: Range, fun: ASTNode, args: ASTNode) {
+    public readonly fun: ExpressionNode | ErrorNode;
+    public readonly args: ArgumentsNode | ErrorNode;
+    public constructor(range: Range, fun: ExpressionNode | ErrorNode, args: ArgumentsNode | ErrorNode) {
         super(range,"Call");
         this.fun = fun;
         this.args = args;
@@ -418,10 +419,10 @@ export class CallNode extends ASTNode {
     }
 }
 
-export class SuperCallNode extends ASTNode {
+export class SuperCallNode extends ExpressionNode {
     _nominal_type_SuperCallNode: any;
-    public readonly args: ASTNode;
-    public constructor(range: Range, args: ASTNode) {
+    public readonly args: ArgumentsNode | ErrorNode;
+    public constructor(range: Range, args: ArgumentsNode | ErrorNode) {
         super(range,"SuperCall");
         this.args = args;
     }
@@ -432,8 +433,8 @@ export class SuperCallNode extends ASTNode {
 
 export class ArgumentsNode extends ASTNode {
     _nominal_type_ArgumentsNode: any;
-    public readonly items: ASTNode;
-    public constructor(range: Range, items: ASTNode) {
+    public readonly items: ListNode | ErrorNode;
+    public constructor(range: Range, items: ListNode | ErrorNode) {
         super(range,"Arguments");
         this.items = items;
     }
@@ -444,10 +445,10 @@ export class ArgumentsNode extends ASTNode {
 
 // Section 12.4
 
-export class PostIncrementNode extends ASTNode {
+export class PostIncrementNode extends ExpressionNode {
     _nominal_type_PostIncrementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"PostIncrement");
         this.expr = expr;
     }
@@ -456,10 +457,10 @@ export class PostIncrementNode extends ASTNode {
     }
 }
 
-export class PostDecrementNode extends ASTNode {
+export class PostDecrementNode extends ExpressionNode {
     _nominal_type_PostDecrementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"PostDecrement");
         this.expr = expr;
     }
@@ -470,10 +471,10 @@ export class PostDecrementNode extends ASTNode {
 
 // Section 12.5
 
-export class DeleteNode extends ASTNode {
+export class DeleteNode extends ExpressionNode {
     _nominal_type_DeleteNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"Delete");
         this.expr = expr;
     }
@@ -482,10 +483,10 @@ export class DeleteNode extends ASTNode {
     }
 }
 
-export class VoidNode extends ASTNode {
+export class VoidNode extends ExpressionNode {
     _nominal_type_VoidNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"Void");
         this.expr = expr;
     }
@@ -494,10 +495,10 @@ export class VoidNode extends ASTNode {
     }
 }
 
-export class TypeOfNode extends ASTNode {
+export class TypeOfNode extends ExpressionNode {
     _nominal_type_TypeOfNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"TypeOf");
         this.expr = expr;
     }
@@ -506,10 +507,10 @@ export class TypeOfNode extends ASTNode {
     }
 }
 
-export class PreIncrementNode extends ASTNode {
+export class PreIncrementNode extends ExpressionNode {
     _nominal_type_PreIncrementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"PreIncrement");
         this.expr = expr;
     }
@@ -518,10 +519,10 @@ export class PreIncrementNode extends ASTNode {
     }
 }
 
-export class PreDecrementNode extends ASTNode {
+export class PreDecrementNode extends ExpressionNode {
     _nominal_type_PreDecrementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"PreDecrement");
         this.expr = expr;
     }
@@ -530,10 +531,10 @@ export class PreDecrementNode extends ASTNode {
     }
 }
 
-export class UnaryPlusNode extends ASTNode {
+export class UnaryPlusNode extends ExpressionNode {
     _nominal_type_UnaryPlusNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"UnaryPlus");
         this.expr = expr;
     }
@@ -542,10 +543,10 @@ export class UnaryPlusNode extends ASTNode {
     }
 }
 
-export class UnaryMinusNode extends ASTNode {
+export class UnaryMinusNode extends ExpressionNode {
     _nominal_type_UnaryMinusNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"UnaryMinus");
         this.expr = expr;
     }
@@ -554,10 +555,10 @@ export class UnaryMinusNode extends ASTNode {
     }
 }
 
-export class UnaryBitwiseNotNode extends ASTNode {
+export class UnaryBitwiseNotNode extends ExpressionNode {
     _nominal_type_UnaryBitwiseNotNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"UnaryBitwiseNot");
         this.expr = expr;
     }
@@ -566,10 +567,10 @@ export class UnaryBitwiseNotNode extends ASTNode {
     }
 }
 
-export class UnaryLogicalNotNode extends ASTNode {
+export class UnaryLogicalNotNode extends ExpressionNode {
     _nominal_type_UnaryLogicalNotNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"UnaryLogicalNot");
         this.expr = expr;
     }
@@ -582,21 +583,21 @@ export class UnaryLogicalNotNode extends ASTNode {
 
 export class MultiplyNode extends BinaryNode {
     _nominal_type_MultiplyNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Multiply",left,right);
     }
 }
 
 export class DivideNode extends BinaryNode {
     _nominal_type_DivideNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Divide",left,right);
     }
 }
 
 export class ModuloNode extends BinaryNode {
     _nominal_type_ModuloNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Modulo",left,right);
     }
 }
@@ -605,14 +606,14 @@ export class ModuloNode extends BinaryNode {
 
 export class AddNode extends BinaryNode {
     _nominal_type_AddNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Add",left,right);
     }
 }
 
 export class SubtractNode extends BinaryNode {
     _nominal_type_SubtractNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Subtract",left,right);
     }
 }
@@ -621,21 +622,21 @@ export class SubtractNode extends BinaryNode {
 
 export class LeftShiftNode extends BinaryNode {
     _nominal_type_LeftShiftNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"LeftShift",left,right);
     }
 }
 
 export class SignedRightShiftNode extends BinaryNode {
     _nominal_type_SignedRightShiftNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"SignedRightShift",left,right);
     }
 }
 
 export class UnsignedRightShiftNode extends BinaryNode {
     _nominal_type_UnsignedRightShiftNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"UnsignedRightShift",left,right);
     }
 }
@@ -644,42 +645,42 @@ export class UnsignedRightShiftNode extends BinaryNode {
 
 export class LessThanNode extends BinaryNode {
     _nominal_type_LessThanNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"LessThan",left,right);
     }
 }
 
 export class GreaterThanNode extends BinaryNode {
     _nominal_type_GreaterThanNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"GreaterThan",left,right);
     }
 }
 
 export class LessEqualNode extends BinaryNode {
     _nominal_type_LessEqualNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"LessEqual",left,right);
     }
 }
 
 export class GreaterEqualNode extends BinaryNode {
     _nominal_type_GreaterEqualNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"GreaterEqual",left,right);
     }
 }
 
 export class InstanceOfNode extends BinaryNode {
     _nominal_type_InstanceOfNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"InstanceOf",left,right);
     }
 }
 
 export class InNode extends BinaryNode {
     _nominal_type_InNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"In",left,right);
     }
 }
@@ -688,28 +689,28 @@ export class InNode extends BinaryNode {
 
 export class AbstractEqualsNode extends BinaryNode {
     _nominal_type_AbstractEqualsNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AbstractEquals",left,right);
     }
 }
 
 export class AbstractNotEqualsNode extends BinaryNode {
     _nominal_type_AbstractNotEqualsNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AbstractNotEquals",left,right);
     }
 }
 
 export class StrictEqualsNode extends BinaryNode {
     _nominal_type_StrictEqualsNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"StrictEquals",left,right);
     }
 }
 
 export class StrictNotEqualsNode extends BinaryNode {
     _nominal_type_StrictNotEqualsNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"StrictNotEquals",left,right);
     }
 }
@@ -718,21 +719,21 @@ export class StrictNotEqualsNode extends BinaryNode {
 
 export class BitwiseANDNode extends BinaryNode {
     _nominal_type_BitwiseANDNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"BitwiseAND",left,right);
     }
 }
 
 export class BitwiseXORNode extends BinaryNode {
     _nominal_type_BitwiseXORNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"BitwiseXOR",left,right);
     }
 }
 
 export class BitwiseORNode extends BinaryNode {
     _nominal_type_BitwiseORNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"BitwiseOR",left,right);
     }
 }
@@ -741,26 +742,31 @@ export class BitwiseORNode extends BinaryNode {
 
 export class LogicalANDNode extends BinaryNode {
     _nominal_type_LogicalANDNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"LogicalAND",left,right);
     }
 }
 
 export class LogicalORNode extends BinaryNode {
     _nominal_type_LogicalORNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"LogicalORNode",left,right);
     }
 }
 
 // Section 12.13
 
-export class ConditionalNode extends ASTNode {
+export class ConditionalNode extends ExpressionNode {
     _nominal_type_ConditionalNode: any;
-    public readonly condition: ASTNode;
-    public readonly trueExpr: ASTNode;
-    public readonly falseExpr: ASTNode;
-    public constructor(range: Range, condition: ASTNode, trueExpr: ASTNode, falseExpr: ASTNode) {
+    public readonly condition: ExpressionNode | ErrorNode;
+    public readonly trueExpr: ExpressionNode | ErrorNode;
+    public readonly falseExpr: ExpressionNode | ErrorNode;
+    public constructor(
+        range: Range,
+        condition: ExpressionNode | ErrorNode,
+        trueExpr: ExpressionNode | ErrorNode,
+        falseExpr: ExpressionNode | ErrorNode
+    ) {
         super(range,"Conditional");
         this.condition = condition;
         this.trueExpr = trueExpr;
@@ -775,84 +781,84 @@ export class ConditionalNode extends ASTNode {
 
 export class AssignNode extends BinaryNode {
     _nominal_type_AssignNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Assign",left,right);
     }
 }
 
 export class AssignMultiplyNode extends BinaryNode {
     _nominal_type_AssignMultiplyNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignMultiply",left,right);
     }
 }
 
 export class AssignDivideNode extends BinaryNode {
     _nominal_type_AssignDivideNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignDivide",left,right);
     }
 }
 
 export class AssignModuloNode extends BinaryNode {
     _nominal_type_AssignModuloNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignModulo",left,right);
     }
 }
 
 export class AssignAddNode extends BinaryNode {
     _nominal_type_AssignAddNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignAdd",left,right);
     }
 }
 
 export class AssignSubtractNode extends BinaryNode {
     _nominal_type_AssignSubtractNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignSubtract",left,right);
     }
 }
 
 export class AssignLeftShiftNode extends BinaryNode {
     _nominal_type_AssignLeftShiftNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignLeftShift",left,right);
     }
 }
 
 export class AssignSignedRightShiftNode extends BinaryNode {
     _nominal_type_AssignSignedRightShiftNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignSignedRightShift",left,right);
     }
 }
 
 export class AssignUnsignedRightShiftNode extends BinaryNode {
     _nominal_type_AssignUnsignedRightShiftNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignUnsignedRightShift",left,right);
     }
 }
 
 export class AssignBitwiseANDNode extends BinaryNode {
     _nominal_type_AssignBitwiseANDNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignBitwiseAND",left,right);
     }
 }
 
 export class AssignBitwiseXORNode extends BinaryNode {
     _nominal_type_AssignBitwiseXORNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignBitwiseXOR",left,right);
     }
 }
 
 export class AssignBitwiseORNode extends BinaryNode {
     _nominal_type_AssignBitwiseORNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"AssignBitwiseOR",left,right);
     }
 }
@@ -862,17 +868,17 @@ export class AssignBitwiseORNode extends BinaryNode {
 
 export class CommaNode extends BinaryNode {
     _nominal_type_CommaNode: any;
-    public constructor(range: Range, left: ASTNode, right: ASTNode) {
+    public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
         super(range,"Comma",left,right);
     }
 }
 
 // Section 13
 
-export class BlockNode extends ASTNode {
+export class BlockNode extends StatementNode {
     _nominal_type_BlockNode: any;
-    public statements: ASTNode;
-    public constructor(range: Range, statements: ASTNode) {
+    public statements: ListNode | ErrorNode;
+    public constructor(range: Range, statements: ListNode | ErrorNode) {
         super(range,"Block");
         this.statements = statements;
     }
@@ -883,10 +889,10 @@ export class BlockNode extends ASTNode {
 
 // Section 13.3.1
 
-export class LetNode extends ASTNode {
+export class LetNode extends DeclarationNode {
     _nominal_type_LetNode: any;
-    public bindings: ASTNode;
-    public constructor(range: Range, bindings: ASTNode) {
+    public bindings: ListNode | ErrorNode;
+    public constructor(range: Range, bindings: ListNode | ErrorNode) {
         super(range,"Let");
         this.bindings = bindings;
     }
@@ -895,10 +901,10 @@ export class LetNode extends ASTNode {
     }
 }
 
-export class ConstNode extends ASTNode {
+export class ConstNode extends DeclarationNode {
     _nominal_type_ConstNode: any;
-    public bindings: ASTNode;
-    public constructor(range: Range, bindings: ASTNode) {
+    public bindings: ListNode | ErrorNode;
+    public constructor(range: Range, bindings: ListNode | ErrorNode) {
         super(range,"Const");
         this.bindings = bindings;
     }
@@ -909,9 +915,13 @@ export class ConstNode extends ASTNode {
 
 export class LexicalIdentifierBindingNode extends ASTNode {
     _nominal_type_LexicalIdentifierBindingNode: any;
-    public identifier: ASTNode;
-    public initializer: ASTNode;
-    public constructor(range: Range, identifier: ASTNode, initializer: ASTNode) {
+    public identifier: BindingIdentifierNode | ErrorNode;
+    public initializer: ExpressionNode | ErrorNode;
+    public constructor(
+        range: Range,
+        identifier: BindingIdentifierNode | ErrorNode,
+        initializer: ExpressionNode | ErrorNode
+    ) {
         super(range,"LexicalIdentifierBinding");
         this.identifier = identifier;
         this.initializer = initializer;
@@ -923,9 +933,13 @@ export class LexicalIdentifierBindingNode extends ASTNode {
 
 export class LexicalPatternBindingNode extends ASTNode {
     _nominal_type_LexicalPatternBindingNode: any;
-    public pattern: ASTNode;
-    public initializer: ASTNode;
-    public constructor(range: Range, pattern: ASTNode, initializer: ASTNode) {
+    public pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
+    public initializer: ExpressionNode | ErrorNode;
+    public constructor(
+        range: Range,
+        pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode,
+        initializer: ExpressionNode | ErrorNode
+    ) {
         super(range,"LexicalPatternBinding");
         this.pattern = pattern;
         this.initializer = initializer;
@@ -937,10 +951,10 @@ export class LexicalPatternBindingNode extends ASTNode {
 
 // Section 13.3.2
 
-export class VarNode extends ASTNode {
+export class VarNode extends StatementNode {
     _nominal_type_VarNode: any;
-    public declarations: ASTNode;
-    public constructor(range: Range, declarations: ASTNode) {
+    public declarations: ListNode | ErrorNode;
+    public constructor(range: Range, declarations: ListNode | ErrorNode) {
         super(range,"Var");
         this.declarations = declarations;
     }
@@ -951,9 +965,13 @@ export class VarNode extends ASTNode {
 
 export class VarIdentifierNode extends ASTNode {
     _nominal_type_VarIdentifierNode: any;
-    public identifier: ASTNode;
-    public initializer: ASTNode;
-    public constructor(range: Range, identifier: ASTNode, initializer: ASTNode) {
+    public identifier: BindingIdentifierNode | ErrorNode;
+    public initializer: ExpressionNode | ErrorNode;
+    public constructor(
+        range: Range,
+        identifier: BindingIdentifierNode | ErrorNode,
+        initializer: ExpressionNode | ErrorNode
+    ) {
         super(range,"VarIdentifier");
         this.identifier = identifier;
         this.initializer = initializer;
@@ -965,9 +983,13 @@ export class VarIdentifierNode extends ASTNode {
 
 export class VarPatternNode extends ASTNode {
     _nominal_type_VarPatternNode: any;
-    public pattern: ASTNode;
-    public initializer: ASTNode;
-    public constructor(range: Range, pattern: ASTNode, initializer: ASTNode) {
+    public pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
+    public initializer: ExpressionNode | ErrorNode;
+    public constructor(
+        range: Range,
+        pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode,
+        initializer: ExpressionNode | ErrorNode
+    ) {
         super(range,"VarPattern");
         this.pattern = pattern;
         this.initializer = initializer;
@@ -981,8 +1003,8 @@ export class VarPatternNode extends ASTNode {
 
 export class ObjectBindingPatternNode extends ASTNode {
     _nominal_type_ObjectBindingPatternNode: any;
-    public readonly properties: ASTNode;
-    public constructor(range: Range, properties: ASTNode) {
+    public readonly properties: ListNode | ErrorNode;
+    public constructor(range: Range, properties: ListNode | ErrorNode) {
         super(range,"ObjectBindingPattern");
         this.properties = properties;
     }
@@ -993,8 +1015,8 @@ export class ObjectBindingPatternNode extends ASTNode {
 
 export class ArrayBindingPatternNode extends ASTNode {
     _nominal_type_ArrayBindingPatternNode: any;
-    public readonly elements: ASTNode;
-    public constructor(range: Range, elements: ASTNode) {
+    public readonly elements: ListNode | ErrorNode;
+    public constructor(range: Range, elements: ListNode | ErrorNode) {
         super(range,"ArrayBindingPattern");
         this.elements = elements;
     }
@@ -1005,9 +1027,9 @@ export class ArrayBindingPatternNode extends ASTNode {
 
 export class BindingElisionElementNode extends ASTNode {
     _nominal_type_BindingElisionElementNode: any;
-    public readonly elision: ASTNode;
-    public readonly element: ASTNode;
-    public constructor(range: Range, elision: ASTNode, element: ASTNode) {
+    public readonly elision: ElisionNode | ErrorNode;
+    public readonly element: BindingElementType | ErrorNode;
+    public constructor(range: Range, elision: ElisionNode | ErrorNode, element: BindingElementType | ErrorNode) {
         super(range,"BindingElisionElement");
         this.elision = elision;
         this.element = element;
@@ -1019,9 +1041,9 @@ export class BindingElisionElementNode extends ASTNode {
 
 export class BindingPropertyNode extends ASTNode {
     _nominal_type_BindingPropertyNode: any;
-    public readonly name: ASTNode;
-    public readonly element: ASTNode;
-    public constructor(range: Range, name: ASTNode, element: ASTNode) {
+    public readonly name: PropertyNameType | ErrorNode;
+    public readonly element: BindingElementType | ErrorNode;
+    public constructor(range: Range, name: PropertyNameType | ErrorNode, element: BindingElementType | ErrorNode) {
         super(range,"BindingProperty");
         this.name = name;
         this.element = element;
@@ -1033,9 +1055,13 @@ export class BindingPropertyNode extends ASTNode {
 
 export class BindingPatternInitNode extends ASTNode {
     _nominal_type_BindingPatternInitNode: any;
-    public readonly pattern: ASTNode;
-    public readonly init: ASTNode;
-    public constructor(range: Range, pattern: ASTNode, init: ASTNode) {
+    public readonly pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
+    public readonly init: ExpressionNode | ErrorNode;
+    public constructor(
+        range: Range,
+        pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode,
+        init: ExpressionNode | ErrorNode
+    ) {
         super(range,"BindingPatternInit");
         this.pattern = pattern;
         this.init = init;
@@ -1047,9 +1073,9 @@ export class BindingPatternInitNode extends ASTNode {
 
 export class SingleNameBindingNode extends ASTNode {
     _nominal_type_SingleNameBindingNode: any;
-    public readonly ident: ASTNode;
-    public readonly init: ASTNode;
-    public constructor(range: Range, ident: ASTNode, init: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode;
+    public readonly init: ExpressionNode | ErrorNode;
+    public constructor(range: Range, ident: BindingIdentifierNode | ErrorNode, init: ExpressionNode | ErrorNode) {
         super(range,"SingleNameBinding");
         this.ident = ident;
         this.init = init;
@@ -1061,8 +1087,8 @@ export class SingleNameBindingNode extends ASTNode {
 
 export class BindingRestElementNode extends ASTNode {
     _nominal_type_BindingRestElementNode: any;
-    public readonly ident: ASTNode;
-    public constructor(range: Range, ident: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode;
+    public constructor(range: Range, ident: BindingIdentifierNode | ErrorNode) {
         super(range,"BindingRestElement");
         this.ident = ident;
     }
@@ -1073,7 +1099,7 @@ export class BindingRestElementNode extends ASTNode {
 
 // Section 13.4
 
-export class EmptyStatementNode extends ASTNode {
+export class EmptyStatementNode extends StatementNode {
     _nominal_type_EmptyStatementNode: any;
     public constructor(range: Range) {
         super(range,"EmptyStatement");
@@ -1085,10 +1111,10 @@ export class EmptyStatementNode extends ASTNode {
 
 // Section 13.5
 
-export class ExpressionStatementNode extends ASTNode {
+export class ExpressionStatementNode extends StatementNode {
     _nominal_type_ExpressionStatementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"ExpressionStatement");
         this.expr = expr;
     }
@@ -1099,12 +1125,17 @@ export class ExpressionStatementNode extends ASTNode {
 
 // Section 13.6
 
-export class IfStatementNode extends ASTNode {
+export class IfStatementNode extends StatementNode {
     _nominal_type_IfStatementNode: any;
-    public readonly condition: ASTNode;
-    public readonly trueBranch: ASTNode;
-    public readonly falseBranch: ASTNode;
-    public constructor(range: Range, condition: ASTNode, trueBranch: ASTNode, falseBranch: ASTNode) {
+    public readonly condition: ExpressionNode | ErrorNode;
+    public readonly trueBranch: StatementNode | ErrorNode;
+    public readonly falseBranch: StatementNode | ErrorNode;
+    public constructor(
+        range: Range,
+        condition: ExpressionNode | ErrorNode,
+        trueBranch: StatementNode | ErrorNode,
+        falseBranch: StatementNode | ErrorNode
+    ) {
         super(range,"IfStatement");
         this.condition = condition;
         this.trueBranch = trueBranch;
@@ -1117,11 +1148,11 @@ export class IfStatementNode extends ASTNode {
 
 // Section 13.7
 
-export class DoStatementNode extends ASTNode {
+export class DoStatementNode extends BreakableStatementNode {
     _nominal_type_DoStatementNode: any;
-    public readonly body: ASTNode;
-    public readonly condition: ASTNode;
-    public constructor(range: Range, body: ASTNode, condition: ASTNode) {
+    public readonly body: StatementNode | ErrorNode;
+    public readonly condition: ExpressionNode | ErrorNode;
+    public constructor(range: Range, body: StatementNode | ErrorNode, condition: ExpressionNode | ErrorNode) {
         super(range,"DoStatement");
         this.body = body;
         this.condition = condition;
@@ -1131,11 +1162,11 @@ export class DoStatementNode extends ASTNode {
     }
 }
 
-export class WhileStatementNode extends ASTNode {
+export class WhileStatementNode extends BreakableStatementNode {
     _nominal_type_WhileStatementNode: any;
-    public readonly body: ASTNode;
-    public readonly condition: ASTNode;
-    public constructor(range: Range, condition: ASTNode, body: ASTNode) {
+    public readonly condition: ExpressionNode | ErrorNode;
+    public readonly body: StatementNode | ErrorNode;
+    public constructor(range: Range, condition: ExpressionNode | ErrorNode, body: StatementNode | ErrorNode) {
         super(range,"WhileStatement");
         this.condition = condition;
         this.body = body;
@@ -1145,13 +1176,19 @@ export class WhileStatementNode extends ASTNode {
     }
 }
 
-export class ForCNode extends ASTNode {
+export class ForCNode extends BreakableStatementNode {
     _nominal_type_ForCNode: any;
-    public readonly init: ASTNode;
-    public readonly condition: ASTNode;
-    public readonly update: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, init: ASTNode, condition: ASTNode, update: ASTNode, body: ASTNode) {
+    public readonly init: ForCInitType | ErrorNode;
+    public readonly condition: ExpressionNode | ErrorNode;
+    public readonly update: ExpressionNode | ErrorNode;
+    public readonly body: StatementNode | ErrorNode;
+    public constructor(
+        range: Range,
+        init: ForCInitType | ErrorNode,
+        condition: ExpressionNode | ErrorNode,
+        update: ExpressionNode | ErrorNode,
+        body: StatementNode | ErrorNode
+    ) {
         super(range,"ForC");
         this.init = init;
         this.condition = condition;
@@ -1163,12 +1200,17 @@ export class ForCNode extends ASTNode {
     }
 }
 
-export class ForInNode extends ASTNode {
+export class ForInNode extends BreakableStatementNode {
     _nominal_type_ForInNode: any;
-    public readonly binding: ASTNode;
-    public readonly expr: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, binding: ASTNode, expr: ASTNode, body: ASTNode) {
+    public readonly binding: ForInBindingType | ErrorNode;
+    public readonly expr: ExpressionNode | ErrorNode;
+    public readonly body: StatementNode | ErrorNode;
+    public constructor(
+        range: Range,
+        binding: ForInBindingType | ErrorNode,
+        expr: ExpressionNode | ErrorNode,
+        body: StatementNode | ErrorNode
+    ) {
         super(range,"ForIn");
         this.binding = binding;
         this.expr = expr;
@@ -1179,12 +1221,17 @@ export class ForInNode extends ASTNode {
     }
 }
 
-export class ForOfNode extends ASTNode {
+export class ForOfNode extends BreakableStatementNode {
     _nominal_type_ForOfNode: any;
-    public readonly binding: ASTNode;
-    public readonly expr: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, binding: ASTNode, expr: ASTNode, body: ASTNode) {
+    public readonly binding: ForOfBindingType | ErrorNode;
+    public readonly expr: ExpressionNode | ErrorNode;
+    public readonly body: StatementNode | ErrorNode;
+    public constructor(
+        range: Range,
+        binding: ForOfBindingType | ErrorNode,
+        expr: ExpressionNode | ErrorNode,
+        body: StatementNode | ErrorNode
+    ) {
         super(range,"ForOf");
         this.binding = binding;
         this.expr = expr;
@@ -1197,8 +1244,8 @@ export class ForOfNode extends ASTNode {
 
 export class VarForDeclarationNode extends ASTNode {
     _nominal_type_VarForDeclarationNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
+    public readonly binding: ForBindingType | ErrorNode;
+    public constructor(range: Range, binding: ForBindingType | ErrorNode) {
         super(range,"VarForDeclaration");
         this.binding = binding;
     }
@@ -1209,8 +1256,8 @@ export class VarForDeclarationNode extends ASTNode {
 
 export class LetForDeclarationNode extends ASTNode {
     _nominal_type_LetForDeclarationNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
+    public readonly binding: ForBindingType | ErrorNode;
+    public constructor(range: Range, binding: ForBindingType | ErrorNode) {
         super(range,"LetForDeclaration");
         this.binding = binding;
     }
@@ -1221,8 +1268,8 @@ export class LetForDeclarationNode extends ASTNode {
 
 export class ConstForDeclarationNode extends ASTNode {
     _nominal_type_ConstForDeclarationNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
+    public readonly binding: ForBindingType | ErrorNode;
+    public constructor(range: Range, binding: ForBindingType | ErrorNode) {
         super(range,"ConstForDeclaration");
         this.binding = binding;
     }
@@ -1234,10 +1281,10 @@ export class ConstForDeclarationNode extends ASTNode {
 
 // Section 13.8
 
-export class ContinueStatementNode extends ASTNode {
+export class ContinueStatementNode extends StatementNode {
     _nominal_type_ContinueStatementNode: any;
-    public readonly labelIdentifier: ASTNode;
-    public constructor(range: Range, labelIdentifier: ASTNode) {
+    public readonly labelIdentifier: LabelIdentifierNode | ErrorNode;
+    public constructor(range: Range, labelIdentifier: LabelIdentifierNode | ErrorNode) {
         super(range,"ContinueStatement");
         this.labelIdentifier = labelIdentifier;
     }
@@ -1248,10 +1295,10 @@ export class ContinueStatementNode extends ASTNode {
 
 // Section 13.9
 
-export class BreakStatementNode extends ASTNode {
+export class BreakStatementNode extends StatementNode {
     _nominal_type_BreakStatementNode: any;
-    public readonly labelIdentifier: ASTNode;
-    public constructor(range: Range, labelIdentifier: ASTNode) {
+    public readonly labelIdentifier: LabelIdentifierNode | ErrorNode;
+    public constructor(range: Range, labelIdentifier: LabelIdentifierNode | ErrorNode) {
         super(range,"BreakStatement");
         this.labelIdentifier = labelIdentifier;
     }
@@ -1262,10 +1309,10 @@ export class BreakStatementNode extends ASTNode {
 
 // Section 13.10
 
-export class ReturnStatementNode extends ASTNode {
+export class ReturnStatementNode extends StatementNode {
     _nominal_type_ReturnStatementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"ReturnStatement");
         this.expr = expr;
     }
@@ -1276,11 +1323,11 @@ export class ReturnStatementNode extends ASTNode {
 
 // Section 13.11
 
-export class WithStatementNode extends ASTNode {
+export class WithStatementNode extends StatementNode {
     _nominal_type_WithStatementNode: any;
-    public expr: ASTNode;
-    public body: ASTNode;
-    public constructor(range: Range, expr: ASTNode, body: ASTNode) {
+    public expr: ExpressionNode | ErrorNode;
+    public body: StatementNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode, body: StatementNode | ErrorNode) {
         super(range,"WithStatement");
         this.expr = expr;
         this.body = body;
@@ -1292,11 +1339,11 @@ export class WithStatementNode extends ASTNode {
 
 // Section 13.12
 
-export class SwitchStatementNode extends ASTNode {
+export class SwitchStatementNode extends BreakableStatementNode {
     _nominal_type_SwitchStatementNode: any;
-    public readonly expr: ASTNode;
-    public readonly cases: ASTNode;
-    public constructor(range: Range, expr: ASTNode, cases: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public readonly cases: ListNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode, cases: ListNode | ErrorNode) {
         super(range,"SwitchStatement");
         this.expr = expr;
         this.cases = cases;
@@ -1308,9 +1355,9 @@ export class SwitchStatementNode extends ASTNode {
 
 export class CaseClauseNode extends ASTNode {
     _nominal_type_CaseClauseNode: any;
-    public readonly expr: ASTNode;
-    public readonly statements: ASTNode;
-    public constructor(range: Range, expr: ASTNode, statements: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public readonly statements: ListNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode, statements: ListNode | ErrorNode) {
         super(range,"CaseClause");
         this.expr = expr;
         this.statements = statements;
@@ -1322,8 +1369,8 @@ export class CaseClauseNode extends ASTNode {
 
 export class DefaultClauseNode extends ASTNode {
     _nominal_type_DefaultClauseNode: any;
-    public readonly statements: ASTNode;
-    public constructor(range: Range, statements: ASTNode) {
+    public readonly statements: ListNode | ErrorNode;
+    public constructor(range: Range, statements: ListNode | ErrorNode) {
         super(range,"DefaultClause");
         this.statements = statements;
     }
@@ -1334,11 +1381,15 @@ export class DefaultClauseNode extends ASTNode {
 
 // Section 13.13
 
-export class LabelledStatementNode extends ASTNode {
+export class LabelledStatementNode extends StatementNode {
     _nominal_type_LabelledStatementNode: any;
-    public readonly ident: ASTNode;
-    public readonly item: ASTNode;
-    public constructor(range: Range, ident: ASTNode, item: ASTNode) {
+    public readonly ident: LabelIdentifierNode | ErrorNode;
+    public readonly item: StatementNode | FunctionDeclarationNode | ErrorNode;
+    public constructor(
+        range: Range,
+        ident: LabelIdentifierNode | ErrorNode,
+        item: StatementNode | FunctionDeclarationNode | ErrorNode
+    ) {
         super(range,"LabelledStatement");
         this.ident = ident;
         this.item = item;
@@ -1350,10 +1401,10 @@ export class LabelledStatementNode extends ASTNode {
 
 // Section 13.14
 
-export class ThrowStatementNode extends ASTNode {
+export class ThrowStatementNode extends StatementNode {
     _nominal_type_ThrowStatementNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"ThrowStatement");
         this.expr = expr;
     }
@@ -1364,12 +1415,17 @@ export class ThrowStatementNode extends ASTNode {
 
 // Section 13.15
 
-export class TryStatementNode extends ASTNode {
+export class TryStatementNode extends StatementNode {
     _nominal_type_TryStatementNode: any;
-    public tryNode: ASTNode;
-    public catchNode: ASTNode;
-    public finallyNode: ASTNode;
-    public constructor(range: Range, tryNode: ASTNode, catchNode: ASTNode, finallyNode: ASTNode) {
+    public tryNode: BlockNode | ErrorNode;
+    public catchNode: CatchNode | ErrorNode;
+    public finallyNode: FinallyNode | ErrorNode;
+    public constructor(
+        range: Range,
+        tryNode: BlockNode | ErrorNode,
+        catchNode: CatchNode | ErrorNode,
+        finallyNode: FinallyNode | ErrorNode
+    ) {
         super(range,"TryStatement");
         this.tryNode = tryNode;
         this.catchNode = catchNode;
@@ -1382,9 +1438,9 @@ export class TryStatementNode extends ASTNode {
 
 export class CatchNode extends ASTNode {
     _nominal_type_CatchNode: any;
-    public readonly param: ASTNode;
-    public readonly block: ASTNode;
-    public constructor(range: Range, param: ASTNode, block: ASTNode) {
+    public readonly param: CatchParameterType | ErrorNode;
+    public readonly block: BlockNode | ErrorNode;
+    public constructor(range: Range, param: CatchParameterType | ErrorNode, block: BlockNode | ErrorNode) {
         super(range,"Catch");
         this.param = param;
         this.block = block;
@@ -1396,8 +1452,8 @@ export class CatchNode extends ASTNode {
 
 export class FinallyNode extends ASTNode {
     _nominal_type_FinallyNode: any;
-    public readonly block: ASTNode;
-    public constructor(range: Range, block: ASTNode) {
+    public readonly block: BlockNode | ErrorNode;
+    public constructor(range: Range, block: BlockNode | ErrorNode) {
         super(range,"Finally");
         this.block = block;
     }
@@ -1408,7 +1464,7 @@ export class FinallyNode extends ASTNode {
 
 // Section 13.16
 
-export class DebuggerStatementNode extends ASTNode {
+export class DebuggerStatementNode extends StatementNode {
     _nominal_type_DebuggerStatementNode: any;
     public constructor(range: Range) {
         super(range,"DebuggerStatement");
@@ -1420,12 +1476,17 @@ export class DebuggerStatementNode extends ASTNode {
 
 // // Section 14.1
 
-export class FunctionDeclarationNode extends ASTNode {
+export class FunctionDeclarationNode extends DeclarationNode {
     _nominal_type_FunctionDeclarationNode: any;
-    public readonly ident: ASTNode; // may be null
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode; // may be null
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        ident: BindingIdentifierNode | ErrorNode,
+        params: ListNode | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"Function");
         this.ident = ident;
         this.params = params;
@@ -1436,12 +1497,17 @@ export class FunctionDeclarationNode extends ASTNode {
     }
 }
 
-export class FunctionExpressionNode extends ASTNode {
+export class FunctionExpressionNode extends ExpressionNode {
     _nominal_type_FunctionExpressionNode: any;
-    public readonly ident: ASTNode; // may be null
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode; // may be null
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        ident: BindingIdentifierNode | ErrorNode,
+        params: ListNode | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"FunctionExpression");
         this.ident = ident;
         this.params = params;
@@ -1454,11 +1520,15 @@ export class FunctionExpressionNode extends ASTNode {
 
 // Section 14.2
 
-export class ArrowFunctionNode extends ASTNode {
+export class ArrowFunctionNode extends ExpressionNode {
     _nominal_type_ArrowFunctionNode: any;
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, params: ASTNode, body: ASTNode) {
+    public readonly params: BindingIdentifierNode | ListNode | ErrorNode;
+    public readonly body: ExpressionNode | ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        params: BindingIdentifierNode | ListNode | ErrorNode,
+        body: ExpressionNode | ListNode | ErrorNode
+    ) {
         super(range,"ArrowFunction");
         this.params = params;
         this.body = body;
@@ -1470,12 +1540,17 @@ export class ArrowFunctionNode extends ASTNode {
 
 // Section 14.3
 
-export class MethodNode extends ASTNode {
+export class MethodNode extends MethodDefinitionNode {
     _nominal_type_MethodNode: any;
-    public readonly name: ASTNode;
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, name: ASTNode, params: ASTNode, body: ASTNode) {
+    public readonly name: PropertyNameType | ErrorNode;
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        name: PropertyNameType | ErrorNode,
+        params: ListNode | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"Method");
         this.name = name;
         this.params = params;
@@ -1486,11 +1561,11 @@ export class MethodNode extends ASTNode {
     }
 }
 
-export class GetterNode extends ASTNode {
+export class GetterNode extends MethodDefinitionNode {
     _nominal_type_GetterNode: any;
-    public readonly name: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, name: ASTNode, body: ASTNode) {
+    public readonly name: PropertyNameType | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(range: Range, name: PropertyNameType | ErrorNode, body: ListNode | ErrorNode) {
         super(range,"Getter");
         this.name = name;
         this.body = body;
@@ -1500,12 +1575,17 @@ export class GetterNode extends ASTNode {
     }
 }
 
-export class SetterNode extends ASTNode {
+export class SetterNode extends MethodDefinitionNode {
     _nominal_type_SetterNode: any;
-    public readonly name: ASTNode;
-    public readonly param: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, name: ASTNode, param: ASTNode, body: ASTNode) {
+    public readonly name: PropertyNameType | ErrorNode;
+    public readonly param: BindingElementType | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        name: PropertyNameType | ErrorNode,
+        param: BindingElementType | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"Setter");
         this.name = name;
         this.param = param;
@@ -1518,12 +1598,17 @@ export class SetterNode extends ASTNode {
 
 // Section 14.4
 
-export class GeneratorMethodNode extends ASTNode {
+export class GeneratorMethodNode extends MethodDefinitionNode {
     _nominal_type_GeneratorMethodNode: any;
-    public readonly name: ASTNode;
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, name: ASTNode, params: ASTNode, body: ASTNode) {
+    public readonly name: PropertyNameType | ErrorNode;
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        name: PropertyNameType | ErrorNode,
+        params: ListNode | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"GeneratorMethod");
         this.name = name;
         this.params = params;
@@ -1534,12 +1619,17 @@ export class GeneratorMethodNode extends ASTNode {
     }
 }
 
-export class GeneratorDeclarationNode extends ASTNode {
+export class GeneratorDeclarationNode extends DeclarationNode {
     _nominal_type_GeneratorDeclarationNode: any;
-    public readonly ident: ASTNode;
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode;
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        ident: BindingIdentifierNode | ErrorNode,
+        params: ListNode | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"GeneratorDeclaration");
         this.ident = ident;
         this.params = params;
@@ -1550,11 +1640,11 @@ export class GeneratorDeclarationNode extends ASTNode {
     }
 }
 
-export class DefaultGeneratorDeclarationNode extends ASTNode {
+export class DefaultGeneratorDeclarationNode extends DeclarationNode {
     _nominal_type_DefaultGeneratorDeclarationNode: any;
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, params: ASTNode, body: ASTNode) {
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(range: Range, params: ListNode | ErrorNode, body: ListNode | ErrorNode) {
         super(range,"GeneratorDeclaration");
         this.params = params;
         this.body = body;
@@ -1564,12 +1654,17 @@ export class DefaultGeneratorDeclarationNode extends ASTNode {
     }
 }
 
-export class GeneratorExpressionNode extends ASTNode {
+export class GeneratorExpressionNode extends ExpressionNode {
     _nominal_type_GeneratorExpressionNode: any;
-    public readonly ident: ASTNode;
-    public readonly params: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, ident: ASTNode, params: ASTNode, body: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode;
+    public readonly params: ListNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        ident: BindingIdentifierNode | ErrorNode,
+        params: ListNode | ErrorNode,
+        body: ListNode | ErrorNode
+    ) {
         super(range,"GeneratorExpression");
         this.ident = ident;
         this.params = params;
@@ -1580,10 +1675,10 @@ export class GeneratorExpressionNode extends ASTNode {
     }
 }
 
-export class YieldExprNode extends ASTNode {
+export class YieldExprNode extends ExpressionNode {
     _nominal_type_YieldExprNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"YieldExpr");
         this.expr = expr;
     }
@@ -1592,10 +1687,10 @@ export class YieldExprNode extends ASTNode {
     }
 }
 
-export class YieldStarNode extends ASTNode {
+export class YieldStarNode extends ExpressionNode {
     _nominal_type_YieldStarNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"YieldStar");
         this.expr = expr;
     }
@@ -1604,7 +1699,7 @@ export class YieldStarNode extends ASTNode {
     }
 }
 
-export class YieldNothingNode extends ASTNode {
+export class YieldNothingNode extends ExpressionNode {
     _nominal_type_YieldNothingNode: any;
     public constructor(range: Range) {
         super(range,"YieldNothing");
@@ -1616,11 +1711,11 @@ export class YieldNothingNode extends ASTNode {
 
 // Section 14.5
 
-export class ClassDeclarationNode extends ASTNode {
+export class ClassDeclarationNode extends DeclarationNode {
     _nominal_type_ClassDeclarationNode: any;
-    public readonly ident: ASTNode;
-    public readonly tail: ASTNode;
-    public constructor(range: Range, ident: ASTNode, tail: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode;
+    public readonly tail: ClassTailNode | ErrorNode;
+    public constructor(range: Range, ident: BindingIdentifierNode | ErrorNode, tail: ClassTailNode | ErrorNode) {
         super(range,"ClassDeclaration");
         this.ident = ident;
         this.tail = tail;
@@ -1630,11 +1725,11 @@ export class ClassDeclarationNode extends ASTNode {
     }
 }
 
-export class ClassExpressionNode extends ASTNode {
+export class ClassExpressionNode extends ExpressionNode {
     _nominal_type_ClassExpressionNode: any;
-    public readonly ident: ASTNode;
-    public readonly tail: ASTNode;
-    public constructor(range: Range, ident: ASTNode, tail: ASTNode) {
+    public readonly ident: BindingIdentifierNode | ErrorNode;
+    public readonly tail: ClassTailNode | ErrorNode;
+    public constructor(range: Range, ident: BindingIdentifierNode | ErrorNode, tail: ClassTailNode | ErrorNode) {
         super(range,"ClassExpression");
         this.ident = ident;
         this.tail = tail;
@@ -1646,9 +1741,9 @@ export class ClassExpressionNode extends ASTNode {
 
 export class ClassTailNode extends ASTNode {
     _nominal_type_ClassTailNode: any;
-    public readonly heritage: ASTNode;
-    public readonly body: ASTNode;
-    public constructor(range: Range, heritage: ASTNode, body: ASTNode) {
+    public readonly heritage: ExtendsNode | ErrorNode;
+    public readonly body: ListNode | ErrorNode;
+    public constructor(range: Range, heritage: ExtendsNode | ErrorNode, body: ListNode | ErrorNode) {
         super(range,"ClassTail");
         this.heritage = heritage;
         this.body = body;
@@ -1660,8 +1755,8 @@ export class ClassTailNode extends ASTNode {
 
 export class ExtendsNode extends ASTNode {
     _nominal_type_ExtendsNode: any;
-    public readonly expr: ASTNode;
-    public constructor(range: Range, expr: ASTNode) {
+    public readonly expr: ExpressionNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode) {
         super(range,"Extends");
         this.expr = expr;
     }
@@ -1672,8 +1767,8 @@ export class ExtendsNode extends ASTNode {
 
 export class StaticMethodDefinitionNode extends ASTNode {
     _nominal_type_StaticMethodDefinitionNode: any;
-    public readonly method: ASTNode;
-    public constructor(range: Range, method: ASTNode) {
+    public readonly method: MethodDefinitionNode | ErrorNode;
+    public constructor(range: Range, method: MethodDefinitionNode | ErrorNode) {
         super(range,"StaticMethodDefinition");
         this.method = method;
     }
@@ -1696,8 +1791,8 @@ export class EmptyClassElementNode extends ASTNode {
 
 export class ScriptNode extends ASTNode {
     _nominal_type_ScriptNode: any;
-    public readonly body: ASTNode;
-    public constructor(range: Range, body: ASTNode) {
+    public readonly body: ListNode | ErrorNode;
+    public constructor(range: Range, body: ListNode | ErrorNode) {
         super(range,"Script");
         this.body = body;
     }
@@ -1710,8 +1805,8 @@ export class ScriptNode extends ASTNode {
 
 export class ModuleNode extends ASTNode {
     _nominal_type_ModuleNode: any;
-    public readonly body: ASTNode;
-    public constructor(range: Range, body: ASTNode) {
+    public readonly body: ListNode | ErrorNode;
+    public constructor(range: Range, body: ListNode | ErrorNode) {
         super(range,"Module");
         this.body = body;
     }
@@ -1722,11 +1817,11 @@ export class ModuleNode extends ASTNode {
 
 // Section 15.2.2
 
-export class ImportFromNode extends ASTNode {
+export class ImportFromNode extends ImportNode {
     _nominal_type_ImportFromNode: any;
-    public readonly importClause: ASTNode;
-    public readonly fromClause: ASTNode;
-    public constructor(range: Range, importClause: ASTNode, fromClause: ASTNode) {
+    public readonly importClause: ImportClauseNode | ErrorNode;
+    public readonly fromClause: StringLiteralNode | ErrorNode;
+    public constructor(range: Range, importClause: ImportClauseNode | ErrorNode, fromClause: StringLiteralNode | ErrorNode) {
         super(range,"ImportFrom");
         this.importClause = importClause;
         this.fromClause = fromClause;
@@ -1736,10 +1831,10 @@ export class ImportFromNode extends ASTNode {
     }
 }
 
-export class ImportModuleNode extends ASTNode {
+export class ImportModuleNode extends ImportNode {
     _nominal_type_ImportModuleNode: any;
-    public readonly specifier: ASTNode;
-    public constructor(range: Range, specifier: ASTNode) {
+    public readonly specifier: StringLiteralNode | ErrorNode;
+    public constructor(range: Range, specifier: StringLiteralNode | ErrorNode) {
         super(range,"ImportModule");
         this.specifier = specifier;
     }
@@ -1748,11 +1843,15 @@ export class ImportModuleNode extends ASTNode {
     }
 }
 
-export class DefaultAndNameSpaceImportsNode extends ASTNode {
+export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
     _nominal_type_DefaultAndNameSpaceImportsNode: any;
-    public readonly defaultBinding: ASTNode;
-    public readonly nameSpaceImport: ASTNode;
-    public constructor(range: Range, defaultBinding: ASTNode, nameSpaceImport: ASTNode) {
+    public readonly defaultBinding: BindingIdentifierNode | ErrorNode;
+    public readonly nameSpaceImport: NameSpaceImportNode | ErrorNode;
+    public constructor(
+        range: Range,
+        defaultBinding: BindingIdentifierNode | ErrorNode,
+        nameSpaceImport: NameSpaceImportNode | ErrorNode
+    ) {
         super(range,"ImportedDefaultBinding");
         this.defaultBinding = defaultBinding;
         this.nameSpaceImport = nameSpaceImport;
@@ -1762,11 +1861,15 @@ export class DefaultAndNameSpaceImportsNode extends ASTNode {
     }
 }
 
-export class DefaultAndNamedImportsNode extends ASTNode {
+export class DefaultAndNamedImportsNode extends ImportClauseNode {
     _nominal_type_DefaultAndNamedImportsNode: any;
-    public readonly defaultBinding: ASTNode;
-    public readonly namedImports: ASTNode;
-    public constructor(range: Range, defaultBinding: ASTNode, namedImports: ASTNode) {
+    public readonly defaultBinding: BindingIdentifierNode | ErrorNode;
+    public readonly namedImports: NamedImportsNode | ErrorNode;
+    public constructor(
+        range: Range,
+        defaultBinding: BindingIdentifierNode | ErrorNode,
+        namedImports: NamedImportsNode | ErrorNode
+    ) {
         super(range,"ImportedDefaultBinding");
         this.defaultBinding = defaultBinding;
         this.namedImports = namedImports;
@@ -1776,10 +1879,10 @@ export class DefaultAndNamedImportsNode extends ASTNode {
     }
 }
 
-export class DefaultImportNode extends ASTNode {
+export class DefaultImportNode extends ImportClauseNode {
     _nominal_type_DefaultImportNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
+    public readonly binding: BindingIdentifierNode | ErrorNode;
+    public constructor(range: Range, binding: BindingIdentifierNode | ErrorNode) {
         super(range,"DefaultImport");
         this.binding = binding;
     }
@@ -1788,10 +1891,10 @@ export class DefaultImportNode extends ASTNode {
     }
 }
 
-export class NameSpaceImportNode extends ASTNode {
+export class NameSpaceImportNode extends ImportClauseNode {
     _nominal_type_NameSpaceImportNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
+    public readonly binding: BindingIdentifierNode | ErrorNode;
+    public constructor(range: Range, binding: BindingIdentifierNode | ErrorNode) {
         super(range,"NameSpaceImport");
         this.binding = binding;
     }
@@ -1800,10 +1903,10 @@ export class NameSpaceImportNode extends ASTNode {
     }
 }
 
-export class NamedImportsNode extends ASTNode {
+export class NamedImportsNode extends ImportClauseNode {
     _nominal_type_NamedImportsNode: any;
-    public readonly imports: ASTNode;
-    public constructor(range: Range, imports: ASTNode) {
+    public readonly imports: ListNode | ErrorNode;
+    public constructor(range: Range, imports: ListNode | ErrorNode) {
         super(range,"NamedImports");
         this.imports = imports;
     }
@@ -1812,22 +1915,10 @@ export class NamedImportsNode extends ASTNode {
     }
 }
 
-export class ImportNormalSpecifierNode extends ASTNode {
-    _nominal_type_ImportNormalSpecifierNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
-        super(range,"ImportNormalSpecifier");
-        this.binding = binding;
-    }
-    public get children(): ASTNode[] {
-        return [this.binding];
-    }
-}
-
 export class ImportSpecifierNode extends ASTNode {
     _nominal_type_ImportSpecifierNode: any;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, binding: ASTNode) {
+    public readonly binding: BindingIdentifierNode | ErrorNode;
+    public constructor(range: Range, binding: BindingIdentifierNode | ErrorNode) {
         super(range,"ImportSpecifier");
         this.binding = binding;
     }
@@ -1838,9 +1929,9 @@ export class ImportSpecifierNode extends ASTNode {
 
 export class ImportAsSpecifierNode extends ASTNode {
     _nominal_type_ImportAsSpecifierNode: any;
-    public readonly name: ASTNode;
-    public readonly binding: ASTNode;
-    public constructor(range: Range, name: ASTNode, binding: ASTNode) {
+    public readonly name: IdentifierNode | ErrorNode;
+    public readonly binding: BindingIdentifierNode | ErrorNode;
+    public constructor(range: Range, name: IdentifierNode | ErrorNode, binding: BindingIdentifierNode | ErrorNode) {
         super(range,"ImportAsSpecifier");
         this.name = name;
         this.binding = binding;
@@ -1852,10 +1943,10 @@ export class ImportAsSpecifierNode extends ASTNode {
 
 // Section 15.2.3
 
-export class ExportDefaultNode extends ASTNode {
+export class ExportDefaultNode extends ExportNode {
     _nominal_type_ExportDefaultNode: any;
-    public readonly decl: ASTNode;
-    public constructor(range: Range, decl: ASTNode) {
+    public readonly decl: DeclarationNode | ExpressionNode | ErrorNode;
+    public constructor(range: Range, decl: DeclarationNode | ExpressionNode | ErrorNode) {
         super(range,"ExportDefault");
         this.decl = decl;
     }
@@ -1864,10 +1955,10 @@ export class ExportDefaultNode extends ASTNode {
     }
 }
 
-export class ExportStarNode extends ASTNode {
+export class ExportStarNode extends ExportNode {
     _nominal_type_ExportStarNode: any;
-    public readonly from: ASTNode;
-    public constructor(range: Range, from: ASTNode) {
+    public readonly from: StringLiteralNode | ErrorNode;
+    public constructor(range: Range, from: StringLiteralNode | ErrorNode) {
         super(range,"ExportStar");
         this.from = from;
     }
@@ -1876,10 +1967,10 @@ export class ExportStarNode extends ASTNode {
     }
 }
 
-export class ExportVariableNode extends ASTNode {
+export class ExportVariableNode extends ExportNode {
     _nominal_type_ExportVariableNode: any;
-    public readonly variable: ASTNode;
-    public constructor(range: Range, variable: ASTNode) {
+    public readonly variable: VarNode | ErrorNode;
+    public constructor(range: Range, variable: VarNode | ErrorNode) {
         super(range,"ExportVariable");
         this.variable = variable;
     }
@@ -1888,10 +1979,10 @@ export class ExportVariableNode extends ASTNode {
     }
 }
 
-export class ExportDeclarationNode extends ASTNode {
+export class ExportDeclarationNode extends ExportNode {
     _nominal_type_ExportDeclarationNode: any;
-    public readonly decl: ASTNode;
-    public constructor(range: Range, decl: ASTNode) {
+    public readonly decl: DeclarationNode | ErrorNode;
+    public constructor(range: Range, decl: DeclarationNode | ErrorNode) {
         super(range,"ExportDeclaration");
         this.decl = decl;
     }
@@ -1900,11 +1991,15 @@ export class ExportDeclarationNode extends ASTNode {
     }
 }
 
-export class ExportFromNode extends ASTNode {
+export class ExportFromNode extends ExportNode {
     _nominal_type_ExportFromNode: any;
-    public readonly exportClause: ASTNode;
-    public readonly fromClause: ASTNode;
-    public constructor(range: Range, exportClause: ASTNode, fromClause: ASTNode) {
+    public readonly exportClause: ExportClauseNode | ErrorNode;
+    public readonly fromClause: StringLiteralNode | ErrorNode;
+    public constructor(
+        range: Range,
+        exportClause: ExportClauseNode | ErrorNode,
+        fromClause: StringLiteralNode | ErrorNode
+    ) {
         super(range,"ExportFrom");
         this.exportClause = exportClause;
         this.fromClause = fromClause;
@@ -1914,10 +2009,10 @@ export class ExportFromNode extends ASTNode {
     }
 }
 
-export class ExportClauseNode extends ASTNode {
+export class ExportClauseNode extends ExportNode {
     _nominal_type_ExportClauseNode: any;
-    public readonly items: ASTNode;
-    public constructor(range: Range, items: ASTNode) {
+    public readonly items: ListNode | ErrorNode;
+    public constructor(range: Range, items: ListNode | ErrorNode) {
         super(range,"ExportClause");
         this.items = items;
     }
@@ -1928,8 +2023,8 @@ export class ExportClauseNode extends ASTNode {
 
 export class ExportNormalSpecifierNode extends ASTNode {
     _nominal_type_ExportNormalSpecifierNode: any;
-    public readonly ident: ASTNode;
-    public constructor(range: Range, ident: ASTNode) {
+    public readonly ident: IdentifierNode | ErrorNode;
+    public constructor(range: Range, ident: IdentifierNode | ErrorNode) {
         super(range,"ExportNormalSpecifier");
         this.ident = ident;
     }
@@ -1940,9 +2035,9 @@ export class ExportNormalSpecifierNode extends ASTNode {
 
 export class ExportAsSpecifierNode extends ASTNode {
     _nominal_type_ExportAsSpecifierNode: any;
-    public readonly ident: ASTNode;
-    public readonly asIdent: ASTNode;
-    public constructor(range: Range, ident: ASTNode, asIdent: ASTNode) {
+    public readonly ident: IdentifierNode | ErrorNode;
+    public readonly asIdent: IdentifierNode | ErrorNode;
+    public constructor(range: Range, ident: IdentifierNode | ErrorNode, asIdent: IdentifierNode | ErrorNode) {
         super(range,"ExportAsSpecifier");
         this.ident = ident;
         this.asIdent = asIdent;
