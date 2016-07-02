@@ -16,7 +16,7 @@ import fs = require("fs");
 import path = require("path");
 import { Module } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
-import { ASTNode, ListNode } from "./parser/ast";
+import { ASTNode } from "./parser/ast";
 import { compileModule } from "./compiler";
 
 type CommandFunction = (input: string) => string;
