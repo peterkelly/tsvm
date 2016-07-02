@@ -24,7 +24,7 @@ import {
 import {
     ASTNode,
     ModuleNode,
-    ListNode,
+    ModuleItemListNode
 } from "./parser/ast";
 
 class CompileError {
@@ -45,8 +45,8 @@ export function compileModule(root: ASTNode): Assembly {
     if (!(root instanceof ModuleNode))
         throw new CompileError(root,"Root must be a ModuleNode");
     const body = root.body;
-    if (!(body instanceof ListNode))
-        throw new CompileError(root,"Module body must be a ListNode");
+    if (!(body instanceof ModuleItemListNode))
+        throw new CompileError(root,"Module body must be a ModuleItemListNode");
     const statements = body.elements;
     for (const stmt of statements) {
         console.log("stmt = "+stmt);

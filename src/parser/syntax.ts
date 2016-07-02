@@ -44,6 +44,7 @@ import {
     ImportNode,
     MethodDefinitionNode,
     DeclarationNode,
+    LexicalBindingNode,
 
     Range,
     ASTNode,
@@ -200,7 +201,20 @@ import {
     ExportClauseNode,
     ExportNormalSpecifierNode,
     ExportAsSpecifierNode,
-    ListNode,
+    StatementListNode,
+    PropertyDefinitionListNode,
+    ArgumentListNode,
+    BindingListNode,
+    VariableDeclarationListNode,
+    CaseClauseListNode,
+    FormalParameterListNode,
+    ModuleItemListNode,
+    ImportsListNode,
+    ExportsListNode,
+    BindingPropertyListNode,
+    ElementListNode,
+    BindingElementListNode,
+    ClassElementListNode,
     ErrorNode,
 } from "./ast";
 
@@ -500,7 +514,7 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
             punctuator("]"),
         ]);
 
-        const list = new ListNode(new Range(listStart,listEnd),elements);
+        const list = new ElementListNode(new Range(listStart,listEnd),elements);
         return new ArrayLiteralNode(new Range(start,p.pos),list);
     });
 }
@@ -555,7 +569,7 @@ function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
                 whitespace,
                 opt(() => p.seq2([punctuator(","),whitespace,],() => {}))],
                 ([inner,,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
+            () => new PropertyDefinitionListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,,,properties,]) => new ObjectLiteralNode(new Range(start,p.pos),properties));
@@ -563,7 +577,7 @@ function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(p: Parser): ListNode | ErrorNode {
+function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNode {
     const start = p.pos;
     const properties: (PropertyDefinitionType | ErrorNode)[] = [];
     properties.push(PropertyDefinition(p));
@@ -578,7 +592,7 @@ function PropertyDefinitionList(p: Parser): ListNode | ErrorNode {
             properties.push(defn);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),properties);
+            return new PropertyDefinitionListNode(new Range(start,p.pos),properties);
         }
     }
 }
@@ -866,7 +880,7 @@ function Arguments(p: Parser): ArgumentsNode | ErrorNode {
             whitespace,
             punctuator(")")],
             ([start,,,]) => {
-                const args = new ListNode(new Range(start,p.pos),[]);
+                const args = new ArgumentListNode(new Range(start,p.pos),[]);
                 return new ArgumentsNode(new Range(start,p.pos),args);
             }),
         () => p.seq6([
@@ -896,7 +910,7 @@ function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
 
 // ArgumentList
 
-function ArgumentList(p: Parser): ListNode | ErrorNode {
+function ArgumentList(p: Parser): ArgumentListNode | ErrorNode {
     const start = p.pos;
     const items: (ArgumentType | ErrorNode)[] = [];
     items.push(ArgumentList_item(p));
@@ -911,7 +925,7 @@ function ArgumentList(p: Parser): ListNode | ErrorNode {
             items.push(arg);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),items);
+            return new ArgumentListNode(new Range(start,p.pos),items);
         }
     }
 }
@@ -1536,7 +1550,7 @@ function Block(p: Parser): BlockNode | ErrorNode {
                 StatementList,
                 whitespace],
                 ([inner,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
+            () => new StatementListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,,,statements,]) => new BlockNode(new Range(start,p.pos),statements));
@@ -1544,7 +1558,7 @@ function Block(p: Parser): BlockNode | ErrorNode {
 
 // StatementList
 
-function StatementList(p: Parser): ListNode | ErrorNode {
+function StatementList(p: Parser): StatementListNode | ErrorNode {
     const start = p.pos;
     const statements: (StatementListItemType | ErrorNode)[] = [];
     statements.push(StatementListItem(p));
@@ -1559,7 +1573,7 @@ function StatementList(p: Parser): ListNode | ErrorNode {
         catch (e) {
             return p.seq1([
                 whitespace],
-                () => new ListNode(new Range(start,p.pos),statements));
+                () => new StatementListNode(new Range(start,p.pos),statements));
         }
     }
 }
@@ -1600,9 +1614,9 @@ function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
 
 // BindingList
 
-function BindingList(p: Parser): ListNode | ErrorNode {
+function BindingList(p: Parser): BindingListNode | ErrorNode {
     const start = p.pos;
-    const bindings: (LexicalIdentifierBindingNode | LexicalPatternBindingNode | ErrorNode)[] = [];
+    const bindings: (LexicalBindingNode | ErrorNode)[] = [];
     bindings.push(LexicalBinding(p));
     while (true) {
         try {
@@ -1615,7 +1629,7 @@ function BindingList(p: Parser): ListNode | ErrorNode {
             bindings.push(lexbnd);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),bindings);
+            return new BindingListNode(new Range(start,p.pos),bindings);
         }
     }
 }
@@ -1649,8 +1663,8 @@ function LexicalBinding_pattern(p: Parser): LexicalPatternBindingNode | ErrorNod
 
 // LexicalBinding
 
-function LexicalBinding(p: Parser): LexicalIdentifierBindingNode | LexicalPatternBindingNode | ErrorNode {
-    return p.choice<LexicalIdentifierBindingNode | LexicalPatternBindingNode | ErrorNode>([
+function LexicalBinding(p: Parser): LexicalBindingNode | ErrorNode {
+    return p.choice<LexicalBindingNode | ErrorNode>([
         LexicalBinding_identifier,
         LexicalBinding_pattern,
     ]);
@@ -1673,7 +1687,7 @@ function VariableStatement(p: Parser): VarNode | ErrorNode {
 
 // VariableDeclarationList
 
-function VariableDeclarationList(p: Parser): ListNode | ErrorNode {
+function VariableDeclarationList(p: Parser): VariableDeclarationListNode | ErrorNode {
     const start = p.pos;
     const declarations: (VarIdentifierNode | VarPatternNode | ErrorNode)[] = [];
     declarations.push(VariableDeclaration(p));
@@ -1688,7 +1702,7 @@ function VariableDeclarationList(p: Parser): ListNode | ErrorNode {
             declarations.push(decl);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),declarations);
+            return new VariableDeclarationListNode(new Range(start,p.pos),declarations);
         }
     }
 }
@@ -1762,7 +1776,7 @@ function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
                     ]);
                 })],
                 ([inner,,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
+            () => new BindingPropertyListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,,,properties,]) => new ObjectBindingPatternNode(new Range(start,p.pos),properties));
@@ -1785,13 +1799,13 @@ function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
             ([inner,]) => inner)),
         punctuator("]")],
         ([start,,,elision,rest,]) => {
-            const array: ASTNode[] = [];
+            const array: (BindingElementType | ErrorNode)[] = [];
             if (elision != null)
                 array.push(elision);
             if (rest != null)
                 array.push(rest);
 
-            const elements = new ListNode(new Range(start,p.pos),array);
+            const elements = new BindingElementListNode(new Range(start,p.pos),array);
             return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
         });
 }
@@ -1834,7 +1848,7 @@ function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
         }),
         punctuator("]")],
         ([start,,,elements,,,,elision,rest,]) => {
-            let array: ASTNode[] = [];
+            let array: (BindingElementType | ErrorNode)[] = [];
             if (!(elements instanceof ErrorNode))
                 array = array.concat(elements.elements);
             if (elision != null)
@@ -1842,7 +1856,7 @@ function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
             if (rest != null)
                 array.push(rest);
 
-            const allElements = new ListNode(new Range(start,p.pos),array);
+            const allElements = new BindingElementListNode(new Range(start,p.pos),array);
             return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
         });
 }
@@ -1859,7 +1873,7 @@ function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
 
 // BindingPropertyList
 
-function BindingPropertyList(p: Parser): ListNode | ErrorNode {
+function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
     const start = p.pos;
     const properties: (BindingPropertyType | ErrorNode)[] = [];
     properties.push(BindingProperty(p));
@@ -1874,14 +1888,14 @@ function BindingPropertyList(p: Parser): ListNode | ErrorNode {
             properties.push(prop);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),properties);
+            return new BindingPropertyListNode(new Range(start,p.pos),properties);
         }
     }
 }
 
 // BindingElementList
 
-function BindingElementList(p: Parser): ListNode | ErrorNode {
+function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
     const start = p.pos;
     const elements: (BindingElementType | ErrorNode)[] = [];
     elements.push(BindingElisionElement(p));
@@ -1896,7 +1910,7 @@ function BindingElementList(p: Parser): ListNode | ErrorNode {
             elements.push(elem);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),elements);
+            return new BindingElementListNode(new Range(start,p.pos),elements);
         }
     }
 }
@@ -2385,14 +2399,14 @@ function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
 
 // CaseBlock_1
 
-function CaseBlock_1(p: Parser): ListNode | ErrorNode {
+function CaseBlock_1(p: Parser): CaseClauseListNode | ErrorNode {
     return p.seq6([
         pos,
         punctuator("{"),
         whitespace,
         () => p.choice([
             CaseClauses,
-            () => new ListNode(new Range(p.pos,p.pos),[]),
+            () => new CaseClauseListNode(new Range(p.pos,p.pos),[]),
         ]),
         whitespace,
         punctuator("}")],
@@ -2404,7 +2418,7 @@ function CaseBlock_1(p: Parser): ListNode | ErrorNode {
 
 // CaseBlock_2
 
-function CaseBlock_2(p: Parser): ListNode | ErrorNode {
+function CaseBlock_2(p: Parser): CaseClauseListNode | ErrorNode {
     return p.seq10([
         pos,
         punctuator("{"),
@@ -2432,13 +2446,13 @@ function CaseBlock_2(p: Parser): ListNode | ErrorNode {
                     elements2 = clauses2.elements;
             }
             const combined = [].concat(elements1,defaultClause,elements2);
-            return new ListNode(new Range(start,p.pos),combined);
+            return new CaseClauseListNode(new Range(start,p.pos),combined);
         });
 }
 
 // CaseBlock
 
-function CaseBlock(p: Parser): ListNode | ErrorNode {
+function CaseBlock(p: Parser): CaseClauseListNode | ErrorNode {
     return p.choice([
         CaseBlock_1,
         CaseBlock_2,
@@ -2447,9 +2461,9 @@ function CaseBlock(p: Parser): ListNode | ErrorNode {
 
 // CaseClauses
 
-function CaseClauses(p: Parser): ListNode | ErrorNode {
+function CaseClauses(p: Parser): CaseClauseListNode | ErrorNode {
     const start = p.pos;
-    const clauses: (CaseClauseNode | ErrorNode)[] = [];
+    const clauses: (CaseClauseNode | DefaultClauseNode | ErrorNode)[] = [];
     clauses.push(CaseClause(p));
     while (true) {
         try {
@@ -2460,7 +2474,7 @@ function CaseClauses(p: Parser): ListNode | ErrorNode {
             clauses.push(clause);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),clauses);
+            return new CaseClauseListNode(new Range(start,p.pos),clauses);
         }
     }
 }
@@ -2704,33 +2718,33 @@ function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
         FunctionBody,
         whitespace,
         punctuator("}")],
-        ([start,arg2,arg3,ident,arg5,arg6,params,arg8,arg9,arg10,arg11,arg12,body,arg14,arg15]) =>
+        ([start,,,ident,,,params,,,,,,body,,]) =>
             new FunctionExpressionNode(new Range(start,p.pos),ident,params,body));
 }
 
 // StrictFormalParameters
 
-function StrictFormalParameters(p: Parser): ListNode | ErrorNode {
+function StrictFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
     return FormalParameters(p);
 }
 
 // FormalParameters
 
-function FormalParameters(p: Parser): ListNode | ErrorNode {
+function FormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
     return p.choice([
         FormalParameterList,
-        () => new ListNode(new Range(p.pos,p.pos),[]),
+        () => new FormalParameterListNode(new Range(p.pos,p.pos),[]),
     ]);
 }
 
 // FormalParameterList
 
-function FormalParameterList(p: Parser): ListNode | ErrorNode {
+function FormalParameterList(p: Parser): FormalParameterListNode | ErrorNode {
     return p.choice([
         () => p.seq2([
             pos,
             FunctionRestParameter],
-            ([start,rest]) => new ListNode(new Range(start,p.pos),[rest])),
+            ([start,rest]) => new FormalParameterListNode(new Range(start,p.pos),[rest])),
         () => p.seq3([
             pos,
             FormalsList,
@@ -2744,22 +2758,22 @@ function FormalParameterList(p: Parser): ListNode | ErrorNode {
                 if (rest == null)
                     return formals;
 
-                let elements: ASTNode[];
+                let elements: (BindingElementType | BindingRestElementNode | ErrorNode)[];
                 if (formals instanceof ErrorNode)
                     elements = [formals];
                 else
                     elements = formals.elements;
                 elements.push(rest);
-                return new ListNode(new Range(start,p.pos),elements);
+                return new FormalParameterListNode(new Range(start,p.pos),elements);
             }),
     ]);
 }
 
 // FormalsList
 
-function FormalsList(p: Parser): ListNode | ErrorNode {
+function FormalsList(p: Parser): FormalParameterListNode | ErrorNode {
     const start = p.pos;
-    const elements: (BindingElementType | ErrorNode)[] = [];
+    const elements: (BindingElementType | BindingRestElementNode | ErrorNode)[] = [];
     elements.push(FormalParameter(p));
     while (true) {
         try {
@@ -2773,7 +2787,7 @@ function FormalsList(p: Parser): ListNode | ErrorNode {
             elements.push(param);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),elements);
+            return new FormalParameterListNode(new Range(start,p.pos),elements);
         }
     }
 }
@@ -2792,16 +2806,16 @@ function FormalParameter(p: Parser): BindingElementType | ErrorNode {
 
 // FunctionBody
 
-function FunctionBody(p: Parser): ListNode | ErrorNode {
+function FunctionBody(p: Parser): StatementListNode | ErrorNode {
     return FunctionStatementList(p);
 }
 
 // FunctionStatementList
 
-function FunctionStatementList(p: Parser): ListNode | ErrorNode {
+function FunctionStatementList(p: Parser): StatementListNode | ErrorNode {
     return p.choice([
         StatementList,
-        () => new ListNode(new Range(p.pos,p.pos),[]),
+        () => new StatementListNode(new Range(p.pos,p.pos),[]),
     ]);
 }
 
@@ -2822,8 +2836,8 @@ function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
 
 // ArrowParameters
 
-function ArrowParameters(p: Parser): BindingIdentifierNode | ListNode | ErrorNode {
-    return p.choice<BindingIdentifierNode | ListNode | ErrorNode>([
+function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParameterListNode | ErrorNode {
+    return p.choice<BindingIdentifierNode | FormalParameterListNode | ErrorNode>([
         BindingIdentifier,
         ArrowFormalParameters,
     ]);
@@ -2839,7 +2853,7 @@ function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
 
 // ConciseBody_2
 
-function ConciseBody_2(p: Parser): ListNode | ErrorNode {
+function ConciseBody_2(p: Parser): StatementListNode | ErrorNode {
     return p.seq5([
         punctuator("{"),
         whitespace,
@@ -2851,8 +2865,8 @@ function ConciseBody_2(p: Parser): ListNode | ErrorNode {
 
 // ConciseBody
 
-function ConciseBody(p: Parser): ExpressionNode | ListNode | ErrorNode {
-    return p.choice<ExpressionNode | ListNode | ErrorNode>([
+function ConciseBody(p: Parser): ExpressionNode | StatementListNode | ErrorNode {
+    return p.choice<ExpressionNode | StatementListNode | ErrorNode>([
         ConciseBody_1,
         ConciseBody_2,
     ]);
@@ -2860,7 +2874,7 @@ function ConciseBody(p: Parser): ExpressionNode | ListNode | ErrorNode {
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(p: Parser): ListNode | ErrorNode {
+function ArrowFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
     return p.seq5([
         punctuator("("),
         whitespace,
@@ -3080,7 +3094,7 @@ function GeneratorExpression(p: Parser): GeneratorExpressionNode | ErrorNode {
 
 // GeneratorBody
 
-function GeneratorBody(p: Parser): ListNode | ErrorNode {
+function GeneratorBody(p: Parser): StatementListNode | ErrorNode {
     return FunctionBody(p);
 }
 
@@ -3201,7 +3215,7 @@ function ClassTail(p: Parser): ClassTailNode | ErrorNode {
                 ClassBody,
                 whitespace],
                 ([inner,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
+            () => new ClassElementListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,heritage,,,body,]) =>
@@ -3221,13 +3235,13 @@ function ClassHeritage(p: Parser): ExtendsNode | ErrorNode {
 
 // ClassBody
 
-function ClassBody(p: Parser): ListNode | ErrorNode {
+function ClassBody(p: Parser): ClassElementListNode | ErrorNode {
     return ClassElementList(p);
 }
 
 // ClassElementList
 
-function ClassElementList(p: Parser): ListNode | ErrorNode {
+function ClassElementList(p: Parser): ClassElementListNode | ErrorNode {
     const start = p.pos;
     const elements: (ClassElementType | ErrorNode)[] = [];
     elements.push(ClassElement(p));
@@ -3240,7 +3254,7 @@ function ClassElementList(p: Parser): ListNode | ErrorNode {
             elements.push(elem);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),elements);
+            return new ClassElementListNode(new Range(start,p.pos),elements);
         }
     }
 }
@@ -3287,16 +3301,16 @@ function ClassElement(p: Parser): ClassElementType | ErrorNode {
 
 export function Script(p: Parser): ScriptNode | ErrorNode {
     const start = p.pos;
-    let body: ListNode | ErrorNode = null;
+    let body: StatementListNode | ErrorNode = null;
     try { body = ScriptBody(p); } catch (e) {}
     if (body == null)
-        body = new ListNode(new Range(start,p.pos),[]);
+        body = new StatementListNode(new Range(start,p.pos),[]);
     return new ScriptNode(new Range(start,p.pos),body);
 }
 
 // ScriptBody
 
-function ScriptBody(p: Parser): ListNode | ErrorNode {
+function ScriptBody(p: Parser): StatementListNode | ErrorNode {
     return StatementList(p);
 }
 
@@ -3306,22 +3320,22 @@ function ScriptBody(p: Parser): ListNode | ErrorNode {
 
 export function Module(p: Parser): ModuleNode | ErrorNode {
     const start = p.pos;
-    let body: ListNode | ErrorNode = null;
+    let body: ModuleItemListNode | ErrorNode = null;
     try { body = ModuleBody(p); } catch (e) {}
     if (body == null)
-        body = new ListNode(new Range(start,p.pos),[]);
+        body = new ModuleItemListNode(new Range(start,p.pos),[]);
     return new ModuleNode(new Range(start,p.pos),body);
 }
 
 // ModuleBody
 
-function ModuleBody(p: Parser): ListNode | ErrorNode {
+function ModuleBody(p: Parser): ModuleItemListNode | ErrorNode {
     return ModuleItemList(p);
 }
 
 // ModuleItemList
 
-function ModuleItemList(p: Parser): ListNode | ErrorNode {
+function ModuleItemList(p: Parser): ModuleItemListNode | ErrorNode {
     const start = p.pos;
     const items: (ModuleItemType | ErrorNode)[] = [];
     items.push(ModuleItem(p));
@@ -3334,7 +3348,7 @@ function ModuleItemList(p: Parser): ListNode | ErrorNode {
             items.push(mod);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),items);
+            return new ModuleItemListNode(new Range(start,p.pos),items);
         }
     }
 }
@@ -3450,7 +3464,7 @@ function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
                 whitespace,
                 opt(() =>  p.seq2([punctuator(","),whitespace],() => {}))],
                 ([inner,,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
+            () => new ImportsListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,,,imports,]) =>
@@ -3469,7 +3483,7 @@ function FromClause(p: Parser): StringLiteralNode | ErrorNode {
 
 // ImportsList
 
-function ImportsList(p: Parser): ListNode | ErrorNode {
+function ImportsList(p: Parser): ImportsListNode | ErrorNode {
     const start = p.pos;
     const imports: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[] = [];
     imports.push(ImportSpecifier(p));
@@ -3484,7 +3498,7 @@ function ImportsList(p: Parser): ListNode | ErrorNode {
             imports.push(specifier);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),imports);
+            return new ImportsListNode(new Range(start,p.pos),imports);
         }
     }
 }
@@ -3582,7 +3596,7 @@ function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
 
 function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
     const start = p.pos;
-    let exports: ListNode | ErrorNode;
+    let exports: ExportsListNode | ErrorNode;
     p.sequence([
         punctuator("{"),
         whitespace,
@@ -3599,7 +3613,7 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
                     })],
                     ([inner,,]) => inner);
             },
-            () => new ListNode(new Range(start,p.pos),[]),
+            () => new ExportsListNode(new Range(start,p.pos),[]),
         ]),
         punctuator("}"),
     ]);
@@ -3608,7 +3622,7 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
 
 // ExportsList
 
-function ExportsList(p: Parser): ListNode | ErrorNode {
+function ExportsList(p: Parser): ExportsListNode | ErrorNode {
     const start = p.pos;
     const exports: (ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode)[] = [];
     exports.push(ExportSpecifier(p));
@@ -3623,7 +3637,7 @@ function ExportsList(p: Parser): ListNode | ErrorNode {
             exports.push(specifier);
         }
         catch (e) {
-            return new ListNode(new Range(start,p.pos),exports);
+            return new ExportsListNode(new Range(start,p.pos),exports);
         }
     }
 }
