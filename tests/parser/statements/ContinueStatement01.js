@@ -3,8 +3,8 @@ continue ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ContinueStatement
+Module 0-10 "continue ;"
+  [] 0-10 "continue ;"
+    ContinueStatement 0-10 "continue ;"
       null
 *******************************************************************************/

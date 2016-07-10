@@ -3,11 +3,11 @@ let x ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Let
-      []
-        LexicalIdentifierBinding
-          BindingIdentifier("x")
+Module 0-7 "let x ;"
+  [] 0-7 "let x ;"
+    Let 0-7 "let x ;"
+      [] 4-5 "x"
+        LexicalIdentifierBinding 4-5 "x"
+          BindingIdentifier("x") 4-5 "x"
           null
 *******************************************************************************/

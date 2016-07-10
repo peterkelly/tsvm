@@ -3,11 +3,11 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ArrayLiteral
-        []
-          SpreadElement
-            IdentifierReference("x")
+Module 0-11 "[ ... x ] ;"
+  [] 0-11 "[ ... x ] ;"
+    ExpressionStatement 0-11 "[ ... x ] ;"
+      ArrayLiteral 0-9 "[ ... x ]"
+        [] 2-7 "... x"
+          SpreadElement 2-7 "... x"
+            IdentifierReference("x") 6-7 "x"
 *******************************************************************************/

@@ -4,12 +4,12 @@ do {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    DoStatement
-      Block
-        []
-      LessThan
-        IdentifierReference("x")
-        10
+Module 0-25 "do {\n} while ( x < 10 ) ;"
+  [] 0-25 "do {\n} while ( x < 10 ) ;"
+    DoStatement 0-25 "do {\n} while ( x < 10 ) ;"
+      Block 3-6 "{\n}"
+        [] 5-5 ""
+      LessThan 15-21 "x < 10"
+        IdentifierReference("x") 15-16 "x"
+        10 19-21 "10"
 *******************************************************************************/

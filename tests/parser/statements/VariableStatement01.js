@@ -3,11 +3,11 @@ var x ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Var
-      []
-        VarIdentifier
-          BindingIdentifier("x")
+Module 0-7 "var x ;"
+  [] 0-7 "var x ;"
+    Var 0-7 "var x ;"
+      [] 4-5 "x"
+        VarIdentifier 4-5 "x"
+          BindingIdentifier("x") 4-5 "x"
           null
 *******************************************************************************/

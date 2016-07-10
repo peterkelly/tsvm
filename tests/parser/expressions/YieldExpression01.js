@@ -3,8 +3,8 @@ yield ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      YieldNothing
+Module 0-7 "yield ;"
+  [] 0-7 "yield ;"
+    ExpressionStatement 0-7 "yield ;"
+      YieldNothing 0-5 "yield"
 *******************************************************************************/

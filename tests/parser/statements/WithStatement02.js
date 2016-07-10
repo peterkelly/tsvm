@@ -4,10 +4,10 @@ with ( x ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    WithStatement
-      IdentifierReference("x")
-      Block
-        []
+Module 0-14 "with ( x ) {\n}"
+  [] 0-14 "with ( x ) {\n}"
+    WithStatement 0-14 "with ( x ) {\n}"
+      IdentifierReference("x") 7-8 "x"
+      Block 11-14 "{\n}"
+        [] 13-13 ""
 *******************************************************************************/

@@ -1,19 +1,19 @@
 if ( 9 < 99 )
-    1 ;
+  1 ;
 else
-    2 ;
+  2 ;
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    IfStatement
-      LessThan
-        9
-        99
-      ExpressionStatement
-        1
-      ExpressionStatement
-        2
+Module 0-30 "if ( 9 < 99 )\n  1 ;\nelse\n  2 ;"
+  [] 0-30 "if ( 9 < 99 )\n  1 ;\nelse\n  2 ;"
+    IfStatement 0-30 "if ( 9 < 99 )\n  1 ;\nelse\n  2 ;"
+      LessThan 5-11 "9 < 99"
+        9 5-6 "9"
+        99 9-11 "99"
+      ExpressionStatement 16-19 "1 ;"
+        1 16-17 "1"
+      ExpressionStatement 27-30 "2 ;"
+        2 27-28 "2"
 *******************************************************************************/

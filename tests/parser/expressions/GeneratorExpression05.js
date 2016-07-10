@@ -4,13 +4,13 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      GeneratorExpression
+Module 0-32 "( function * ( ...rest ) {\n} ) ;"
+  [] 0-32 "( function * ( ...rest ) {\n} ) ;"
+    ExpressionStatement 0-32 "( function * ( ...rest ) {\n} ) ;"
+      GeneratorExpression 2-28 "function * ( ...rest ) {\n}"
         null
-        []
-          BindingRestElement
-            BindingIdentifier("rest")
-        []
+        [] 15-22 "...rest"
+          BindingRestElement 15-22 "...rest"
+            BindingIdentifier("rest") 18-22 "rest"
+        [] 27-27 ""
 *******************************************************************************/

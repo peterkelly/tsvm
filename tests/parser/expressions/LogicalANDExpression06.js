@@ -1,16 +1,16 @@
-a || ( b && c ) || d;
+a || ( b && c ) || d ;
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      LogicalORNode
-        LogicalORNode
-          IdentifierReference("a")
-          LogicalAND
-            IdentifierReference("b")
-            IdentifierReference("c")
-        IdentifierReference("d")
+Module 0-22 "a || ( b && c ) || d ;"
+  [] 0-22 "a || ( b && c ) || d ;"
+    ExpressionStatement 0-22 "a || ( b && c ) || d ;"
+      LogicalORNode 0-20 "a || ( b && c ) || d"
+        LogicalORNode 0-15 "a || ( b && c )"
+          IdentifierReference("a") 0-1 "a"
+          LogicalAND 7-13 "b && c"
+            IdentifierReference("b") 7-8 "b"
+            IdentifierReference("c") 12-13 "c"
+        IdentifierReference("d") 19-20 "d"
 *******************************************************************************/

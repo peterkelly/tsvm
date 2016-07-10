@@ -3,8 +3,8 @@ null ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      NullLiteral
+Module 0-6 "null ;"
+  [] 0-6 "null ;"
+    ExpressionStatement 0-6 "null ;"
+      NullLiteral 0-4 "null"
 *******************************************************************************/

@@ -3,13 +3,13 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ObjectLiteral
-        []
-          ColonPropertyDefinition
-            ComputedPropertyName
-              "x"
-            1
+Module 0-21 "( { [ \"x\" ] : 1 } ) ;"
+  [] 0-21 "( { [ \"x\" ] : 1 } ) ;"
+    ExpressionStatement 0-21 "( { [ \"x\" ] : 1 } ) ;"
+      ObjectLiteral 2-17 "{ [ \"x\" ] : 1 }"
+        [] 4-15 "[ \"x\" ] : 1"
+          ColonPropertyDefinition 4-15 "[ \"x\" ] : 1"
+            ComputedPropertyName 4-11 "[ \"x\" ]"
+              "x" 6-9 "\"x\""
+            1 14-15 "1"
 *******************************************************************************/

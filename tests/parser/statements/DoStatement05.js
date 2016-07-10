@@ -3,11 +3,11 @@ do ; while ( x < 10 ) ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    DoStatement
-      EmptyStatement
-      LessThan
-        IdentifierReference("x")
-        10
+Module 0-23 "do ; while ( x < 10 ) ;"
+  [] 0-23 "do ; while ( x < 10 ) ;"
+    DoStatement 0-23 "do ; while ( x < 10 ) ;"
+      EmptyStatement 3-4 ";"
+      LessThan 13-19 "x < 10"
+        IdentifierReference("x") 13-14 "x"
+        10 17-19 "10"
 *******************************************************************************/

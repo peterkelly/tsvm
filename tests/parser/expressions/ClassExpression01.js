@@ -4,12 +4,12 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ClassExpression
+Module 0-15 "( class {\n} ) ;"
+  [] 0-15 "( class {\n} ) ;"
+    ExpressionStatement 0-15 "( class {\n} ) ;"
+      ClassExpression 2-11 "class {\n}"
         null
-        ClassTail
+        ClassTail 8-11 "{\n}"
           null
-          []
+          [] 10-10 ""
 *******************************************************************************/

@@ -3,11 +3,11 @@ x => { ; } ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ArrowFunction
-        BindingIdentifier("x")
-        []
-          EmptyStatement
+Module 0-12 "x => { ; } ;"
+  [] 0-12 "x => { ; } ;"
+    ExpressionStatement 0-12 "x => { ; } ;"
+      ArrowFunction 0-10 "x => { ; }"
+        BindingIdentifier("x") 0-1 "x"
+        [] 7-8 ";"
+          EmptyStatement 7-8 ";"
 *******************************************************************************/

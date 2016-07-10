@@ -3,13 +3,13 @@ export default class { } ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExportDefault
-      ClassDeclaration
+Module 0-26 "export default class { } ;"
+  [] 0-26 "export default class { } ;"
+    ExportDefault 0-24 "export default class { }"
+      ClassDeclaration 15-24 "class { }"
         null
-        ClassTail
+        ClassTail 21-24 "{ }"
           null
-          []
-    EmptyStatement
+          [] 23-23 ""
+    EmptyStatement 25-26 ";"
 *******************************************************************************/

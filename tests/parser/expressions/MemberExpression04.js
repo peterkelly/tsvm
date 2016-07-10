@@ -3,14 +3,14 @@ a [ "b" ] [ "c" ] [ "d" ] ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      MemberAccessExpr
-        MemberAccessExpr
-          MemberAccessExpr
-            IdentifierReference("a")
-            "b"
-          "c"
-        "d"
+Module 0-27 "a [ \"b\" ] [ \"c\" ] [ \"d\" ] ;"
+  [] 0-27 "a [ \"b\" ] [ \"c\" ] [ \"d\" ] ;"
+    ExpressionStatement 0-27 "a [ \"b\" ] [ \"c\" ] [ \"d\" ] ;"
+      MemberAccessExpr 0-25 "a [ \"b\" ] [ \"c\" ] [ \"d\" ]"
+        MemberAccessExpr 0-17 "a [ \"b\" ] [ \"c\" ]"
+          MemberAccessExpr 0-9 "a [ \"b\" ]"
+            IdentifierReference("a") 0-1 "a"
+            "b" 4-7 "\"b\""
+          "c" 12-15 "\"c\""
+        "d" 20-23 "\"d\""
 *******************************************************************************/

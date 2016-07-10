@@ -4,12 +4,12 @@ while ( x < 10 ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    WhileStatement
-      LessThan
-        IdentifierReference("x")
-        10
-      Block
-        []
+Module 0-20 "while ( x < 10 ) {\n}"
+  [] 0-20 "while ( x < 10 ) {\n}"
+    WhileStatement 0-20 "while ( x < 10 ) {\n}"
+      LessThan 8-14 "x < 10"
+        IdentifierReference("x") 8-9 "x"
+        10 12-14 "10"
+      Block 17-20 "{\n}"
+        [] 19-19 ""
 *******************************************************************************/

@@ -40,7 +40,7 @@ const OUTPUT_END = "************************************************************
 //     console.log("argv["+i+"] = "+JSON.stringify(process.argv[i]));
 // }
 
-function nodeToPlainTree(node: ASTNode): string {
+function nodeToPlainTree(node: ASTNode, p: Parser): string {
     const lines: string[] = [];
     recurse(node);
     return lines.join("\n");
@@ -51,7 +51,9 @@ function nodeToPlainTree(node: ASTNode): string {
             return;
         }
 
-        lines.push(indent+node.label);
+        const rawText = p.text.substring(node.range.start,node.range.end);
+
+        lines.push(indent+node.label+" "+node.range.start+"-"+node.range.end+" "+JSON.stringify(rawText));
 
         for (const child of node.children)
             recurse(child,indent+"  ");
@@ -90,7 +92,7 @@ const commands: CommandSet = {
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
-        return nodeToPlainTree(root);
+        return nodeToPlainTree(root,p);
     }
 
 }
@@ -223,7 +225,7 @@ function parse(relFilename: string): void {
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
-        console.log(nodeToPlainTree(root));
+        console.log(nodeToPlainTree(root,p));
     }
     catch (e) {
         console.error(e.toString());

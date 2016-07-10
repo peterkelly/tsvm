@@ -3,8 +3,8 @@ return x ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ReturnStatement
-      IdentifierReference("x")
+Module 0-10 "return x ;"
+  [] 0-10 "return x ;"
+    ReturnStatement 0-10 "return x ;"
+      IdentifierReference("x") 7-8 "x"
 *******************************************************************************/

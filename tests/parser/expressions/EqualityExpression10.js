@@ -3,14 +3,14 @@ a == ( b || c ) == d ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      AbstractEquals
-        AbstractEquals
-          IdentifierReference("a")
-          LogicalORNode
-            IdentifierReference("b")
-            IdentifierReference("c")
-        IdentifierReference("d")
+Module 0-22 "a == ( b || c ) == d ;"
+  [] 0-22 "a == ( b || c ) == d ;"
+    ExpressionStatement 0-22 "a == ( b || c ) == d ;"
+      AbstractEquals 0-20 "a == ( b || c ) == d"
+        AbstractEquals 0-15 "a == ( b || c )"
+          IdentifierReference("a") 0-1 "a"
+          LogicalORNode 7-13 "b || c"
+            IdentifierReference("b") 7-8 "b"
+            IdentifierReference("c") 12-13 "c"
+        IdentifierReference("d") 19-20 "d"
 *******************************************************************************/

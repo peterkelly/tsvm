@@ -4,11 +4,11 @@ for ( x of y ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ForOf
-      IdentifierReference("x")
-      IdentifierReference("y")
-      Block
-        []
+Module 0-18 "for ( x of y ) {\n}"
+  [] 0-18 "for ( x of y ) {\n}"
+    ForOf 0-18 "for ( x of y ) {\n}"
+      IdentifierReference("x") 6-7 "x"
+      IdentifierReference("y") 11-12 "y"
+      Block 15-18 "{\n}"
+        [] 17-17 ""
 *******************************************************************************/

@@ -1,18 +1,18 @@
 ( {
-    foo ( ) {
-    }
+  foo ( ) {
+  }
 } ) ;
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ObjectLiteral
-        []
-          Method
-            Identifier("foo")
-            []
-            []
+Module 0-25 "( {\n  foo ( ) {\n  }\n} ) ;"
+  [] 0-25 "( {\n  foo ( ) {\n  }\n} ) ;"
+    ExpressionStatement 0-25 "( {\n  foo ( ) {\n  }\n} ) ;"
+      ObjectLiteral 2-21 "{\n  foo ( ) {\n  }\n}"
+        [] 6-19 "foo ( ) {\n  }"
+          Method 6-19 "foo ( ) {\n  }"
+            Identifier("foo") 6-9 "foo"
+            [] 12-12 ""
+            [] 18-18 ""
 *******************************************************************************/

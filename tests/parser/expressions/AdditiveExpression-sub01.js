@@ -3,10 +3,10 @@ a - b ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Subtract
-        IdentifierReference("a")
-        IdentifierReference("b")
+Module 0-7 "a - b ;"
+  [] 0-7 "a - b ;"
+    ExpressionStatement 0-7 "a - b ;"
+      Subtract 0-5 "a - b"
+        IdentifierReference("a") 0-1 "a"
+        IdentifierReference("b") 4-5 "b"
 *******************************************************************************/

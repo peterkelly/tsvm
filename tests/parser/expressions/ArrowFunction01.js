@@ -3,10 +3,10 @@ a => 1 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ArrowFunction
-        BindingIdentifier("a")
-        1
+Module 0-8 "a => 1 ;"
+  [] 0-8 "a => 1 ;"
+    ExpressionStatement 0-8 "a => 1 ;"
+      ArrowFunction 0-6 "a => 1"
+        BindingIdentifier("a") 0-1 "a"
+        1 5-6 "1"
 *******************************************************************************/

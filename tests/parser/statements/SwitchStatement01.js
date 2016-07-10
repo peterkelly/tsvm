@@ -4,9 +4,10 @@ switch ( x ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    SwitchStatement
-      IdentifierReference("x")
-      []
+Module 0-16 "switch ( x ) {\n}"
+  [] 0-16 "switch ( x ) {\n}"
+    SwitchStatement 0-16 "switch ( x ) {\n}"
+      IdentifierReference("x") 9-10 "x"
+      [] 15-15 ""
 *******************************************************************************/
+

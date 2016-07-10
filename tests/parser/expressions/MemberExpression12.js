@@ -3,9 +3,9 @@ super [ "foo" ] ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      SuperPropertyExpr
-        "foo"
+Module 0-17 "super [ \"foo\" ] ;"
+  [] 0-17 "super [ \"foo\" ] ;"
+    ExpressionStatement 0-17 "super [ \"foo\" ] ;"
+      SuperPropertyExpr 0-15 "super [ \"foo\" ]"
+        "foo" 8-13 "\"foo\""
 *******************************************************************************/

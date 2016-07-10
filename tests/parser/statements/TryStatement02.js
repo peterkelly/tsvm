@@ -6,13 +6,13 @@ finally {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    TryStatement
-      Block
-        []
+Module 0-19 "try {\n}\nfinally {\n}"
+  [] 0-19 "try {\n}\nfinally {\n}"
+    TryStatement 0-19 "try {\n}\nfinally {\n}"
+      Block 4-7 "{\n}"
+        [] 6-6 ""
       null
-      Finally
-        Block
-          []
+      Finally 8-19 "finally {\n}"
+        Block 16-19 "{\n}"
+          [] 18-18 ""
 *******************************************************************************/

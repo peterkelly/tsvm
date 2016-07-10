@@ -3,10 +3,10 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ObjectLiteral
-        []
-          IdentifierReference("x")
+Module 0-11 "( { x } ) ;"
+  [] 0-11 "( { x } ) ;"
+    ExpressionStatement 0-11 "( { x } ) ;"
+      ObjectLiteral 2-7 "{ x }"
+        [] 4-5 "x"
+          IdentifierReference("x") 4-5 "x"
 *******************************************************************************/

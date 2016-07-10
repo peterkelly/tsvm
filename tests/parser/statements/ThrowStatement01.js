@@ -3,8 +3,8 @@ throw x ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ThrowStatement
-      IdentifierReference("x")
+Module 0-9 "throw x ;"
+  [] 0-9 "throw x ;"
+    ThrowStatement 0-9 "throw x ;"
+      IdentifierReference("x") 6-7 "x"
 *******************************************************************************/

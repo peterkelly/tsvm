@@ -3,10 +3,10 @@ x = 2 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Assign
-        IdentifierReference("x")
-        2
+Module 0-7 "x = 2 ;"
+  [] 0-7 "x = 2 ;"
+    ExpressionStatement 0-7 "x = 2 ;"
+      Assign 0-5 "x = 2"
+        IdentifierReference("x") 0-1 "x"
+        2 4-5 "2"
 *******************************************************************************/
