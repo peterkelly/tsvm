@@ -3,10 +3,10 @@ x >>>= 2 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      AssignUnsignedRightShift
-        IdentifierReference("x")
-        2
+Module 0-10 "x >>>= 2 ;"
+  [] 0-10 "x >>>= 2 ;"
+    ExpressionStatement 0-10 "x >>>= 2 ;"
+      AssignUnsignedRightShift 0-8 "x >>>= 2"
+        IdentifierReference("x") 0-1 "x"
+        2 7-8 "2"
 *******************************************************************************/

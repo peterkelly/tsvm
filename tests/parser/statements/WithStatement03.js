@@ -1,16 +1,16 @@
 with ( x ) {
-    1 ;
+  1 ;
 }
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    WithStatement
-      IdentifierReference("x")
-      Block
-        []
-          ExpressionStatement
-            1
+Module 0-20 "with ( x ) {\n  1 ;\n}"
+  [] 0-20 "with ( x ) {\n  1 ;\n}"
+    WithStatement 0-20 "with ( x ) {\n  1 ;\n}"
+      IdentifierReference("x") 7-8 "x"
+      Block 11-20 "{\n  1 ;\n}"
+        [] 15-18 "1 ;"
+          ExpressionStatement 15-18 "1 ;"
+            1 15-16 "1"
 *******************************************************************************/

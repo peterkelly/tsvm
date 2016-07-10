@@ -3,17 +3,17 @@ var x , y , z ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Var
-      []
-        VarIdentifier
-          BindingIdentifier("x")
+Module 0-15 "var x , y , z ;"
+  [] 0-15 "var x , y , z ;"
+    Var 0-15 "var x , y , z ;"
+      [] 4-13 "x , y , z"
+        VarIdentifier 4-5 "x"
+          BindingIdentifier("x") 4-5 "x"
           null
-        VarIdentifier
-          BindingIdentifier("y")
+        VarIdentifier 8-9 "y"
+          BindingIdentifier("y") 8-9 "y"
           null
-        VarIdentifier
-          BindingIdentifier("z")
+        VarIdentifier 12-13 "z"
+          BindingIdentifier("z") 12-13 "z"
           null
 *******************************************************************************/

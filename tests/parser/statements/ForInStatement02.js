@@ -4,11 +4,11 @@ for ( x in y ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ForIn
-      IdentifierReference("x")
-      IdentifierReference("y")
-      Block
-        []
+Module 0-18 "for ( x in y ) {\n}"
+  [] 0-18 "for ( x in y ) {\n}"
+    ForIn 0-18 "for ( x in y ) {\n}"
+      IdentifierReference("x") 6-7 "x"
+      IdentifierReference("y") 11-12 "y"
+      Block 15-18 "{\n}"
+        [] 17-17 ""
 *******************************************************************************/

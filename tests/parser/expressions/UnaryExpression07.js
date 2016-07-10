@@ -3,9 +3,9 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      UnaryMinus
-        IdentifierReference("x")
+Module 0-5 "- x ;"
+  [] 0-5 "- x ;"
+    ExpressionStatement 0-5 "- x ;"
+      UnaryMinus 0-3 "- x"
+        IdentifierReference("x") 2-3 "x"
 *******************************************************************************/

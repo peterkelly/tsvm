@@ -1,18 +1,18 @@
 do {
-    1 ;
+  1 ;
 } while ( x < 10 ) ;
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    DoStatement
-      Block
-        []
-          ExpressionStatement
-            1
-      LessThan
-        IdentifierReference("x")
-        10
+Module 0-31 "do {\n  1 ;\n} while ( x < 10 ) ;"
+  [] 0-31 "do {\n  1 ;\n} while ( x < 10 ) ;"
+    DoStatement 0-31 "do {\n  1 ;\n} while ( x < 10 ) ;"
+      Block 3-12 "{\n  1 ;\n}"
+        [] 7-10 "1 ;"
+          ExpressionStatement 7-10 "1 ;"
+            1 7-8 "1"
+      LessThan 21-27 "x < 10"
+        IdentifierReference("x") 21-22 "x"
+        10 25-27 "10"
 *******************************************************************************/

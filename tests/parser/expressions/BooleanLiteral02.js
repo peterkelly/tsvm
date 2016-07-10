@@ -3,8 +3,8 @@ false ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      false
+Module 0-7 "false ;"
+  [] 0-7 "false ;"
+    ExpressionStatement 0-7 "false ;"
+      false 0-5 "false"
 *******************************************************************************/

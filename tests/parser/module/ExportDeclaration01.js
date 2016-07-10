@@ -3,8 +3,8 @@ export * from "foo.js" ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExportStar
-      "foo.js"
+Module 0-24 "export * from \"foo.js\" ;"
+  [] 0-24 "export * from \"foo.js\" ;"
+    ExportStar 0-24 "export * from \"foo.js\" ;"
+      "foo.js" 14-22 "\"foo.js\""
 *******************************************************************************/

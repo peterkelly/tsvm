@@ -1974,6 +1974,18 @@ export class ExportStarNode extends ExportNode {
     }
 }
 
+export class ExportPlainNode extends ExportNode {
+    _nominal_type_ExportPlainNode: any;
+    public readonly clause: ExportClauseNode | ErrorNode;
+    public constructor(range: Range, clause: ExportClauseNode | ErrorNode) {
+        super(range,"ExportPlain");
+        this.clause = clause;
+    }
+    public get children(): ASTNode[] {
+        return [this.clause];
+    }
+}
+
 export class ExportVariableNode extends ExportNode {
     _nominal_type_ExportVariableNode: any;
     public readonly variable: VarNode | ErrorNode;

@@ -1,17 +1,17 @@
 ( class {
-    ;
+  ;
 } ) ;
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ClassExpression
+Module 0-19 "( class {\n  ;\n} ) ;"
+  [] 0-19 "( class {\n  ;\n} ) ;"
+    ExpressionStatement 0-19 "( class {\n  ;\n} ) ;"
+      ClassExpression 2-15 "class {\n  ;\n}"
         null
-        ClassTail
+        ClassTail 8-15 "{\n  ;\n}"
           null
-          []
-            EmptyClassElement
+          [] 12-13 ";"
+            EmptyClassElement 12-13 ";"
 *******************************************************************************/

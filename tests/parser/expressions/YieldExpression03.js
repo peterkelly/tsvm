@@ -3,9 +3,9 @@ yield * 1 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      YieldStar
-        1
+Module 0-11 "yield * 1 ;"
+  [] 0-11 "yield * 1 ;"
+    ExpressionStatement 0-11 "yield * 1 ;"
+      YieldStar 0-9 "yield * 1"
+        1 8-9 "1"
 *******************************************************************************/

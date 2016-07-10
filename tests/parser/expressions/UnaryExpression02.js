@@ -3,9 +3,9 @@ void x ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Void
-        IdentifierReference("x")
+Module 0-8 "void x ;"
+  [] 0-8 "void x ;"
+    ExpressionStatement 0-8 "void x ;"
+      Void 0-6 "void x"
+        IdentifierReference("x") 5-6 "x"
 *******************************************************************************/

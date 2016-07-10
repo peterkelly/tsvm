@@ -3,9 +3,9 @@ with ( x ) ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    WithStatement
-      IdentifierReference("x")
-      EmptyStatement
+Module 0-12 "with ( x ) ;"
+  [] 0-12 "with ( x ) ;"
+    WithStatement 0-12 "with ( x ) ;"
+      IdentifierReference("x") 7-8 "x"
+      EmptyStatement 11-12 ";"
 *******************************************************************************/

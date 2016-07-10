@@ -3,13 +3,13 @@ var [ x ] = 1 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Var
-      []
-        VarPattern
-          ArrayBindingPattern
-            []
-              BindingIdentifier("x")
-          1
+Module 0-15 "var [ x ] = 1 ;"
+  [] 0-15 "var [ x ] = 1 ;"
+    Var 0-15 "var [ x ] = 1 ;"
+      [] 4-13 "[ x ] = 1"
+        VarPattern 4-13 "[ x ] = 1"
+          ArrayBindingPattern 4-9 "[ x ]"
+            [] 6-7 "x"
+              BindingIdentifier("x") 6-7 "x"
+          1 12-13 "1"
 *******************************************************************************/

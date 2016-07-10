@@ -3,12 +3,12 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ObjectLiteral
-        []
-          ColonPropertyDefinition
-            "x"
-            1
+Module 0-17 "( { \"x\" : 1 } ) ;"
+  [] 0-17 "( { \"x\" : 1 } ) ;"
+    ExpressionStatement 0-17 "( { \"x\" : 1 } ) ;"
+      ObjectLiteral 2-13 "{ \"x\" : 1 }"
+        [] 4-11 "\"x\" : 1"
+          ColonPropertyDefinition 4-11 "\"x\" : 1"
+            "x" 4-7 "\"x\""
+            1 10-11 "1"
 *******************************************************************************/

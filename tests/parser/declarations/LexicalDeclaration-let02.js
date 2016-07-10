@@ -3,17 +3,17 @@ let x , y , z ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Let
-      []
-        LexicalIdentifierBinding
-          BindingIdentifier("x")
+Module 0-15 "let x , y , z ;"
+  [] 0-15 "let x , y , z ;"
+    Let 0-15 "let x , y , z ;"
+      [] 4-13 "x , y , z"
+        LexicalIdentifierBinding 4-5 "x"
+          BindingIdentifier("x") 4-5 "x"
           null
-        LexicalIdentifierBinding
-          BindingIdentifier("y")
+        LexicalIdentifierBinding 8-9 "y"
+          BindingIdentifier("y") 8-9 "y"
           null
-        LexicalIdentifierBinding
-          BindingIdentifier("z")
+        LexicalIdentifierBinding 12-13 "z"
+          BindingIdentifier("z") 12-13 "z"
           null
 *******************************************************************************/

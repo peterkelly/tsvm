@@ -3,10 +3,10 @@ a [ "b" ] ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      MemberAccessExpr
-        IdentifierReference("a")
-        "b"
+Module 0-11 "a [ \"b\" ] ;"
+  [] 0-11 "a [ \"b\" ] ;"
+    ExpressionStatement 0-11 "a [ \"b\" ] ;"
+      MemberAccessExpr 0-9 "a [ \"b\" ]"
+        IdentifierReference("a") 0-1 "a"
+        "b" 4-7 "\"b\""
 *******************************************************************************/

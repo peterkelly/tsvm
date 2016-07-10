@@ -3,11 +3,11 @@ const x = 1 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Const
-      []
-        LexicalIdentifierBinding
-          BindingIdentifier("x")
-          1
+Module 0-13 "const x = 1 ;"
+  [] 0-13 "const x = 1 ;"
+    Const 0-13 "const x = 1 ;"
+      [] 6-11 "x = 1"
+        LexicalIdentifierBinding 6-11 "x = 1"
+          BindingIdentifier("x") 6-7 "x"
+          1 10-11 "1"
 *******************************************************************************/

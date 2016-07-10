@@ -3,11 +3,11 @@ x ? 1 : 2 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Conditional
-        IdentifierReference("x")
-        1
-        2
+Module 0-11 "x ? 1 : 2 ;"
+  [] 0-11 "x ? 1 : 2 ;"
+    ExpressionStatement 0-11 "x ? 1 : 2 ;"
+      Conditional 0-9 "x ? 1 : 2"
+        IdentifierReference("x") 0-1 "x"
+        1 4-5 "1"
+        2 8-9 "2"
 *******************************************************************************/

@@ -4,11 +4,11 @@ function test ( x ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Function
-      BindingIdentifier("test")
-      []
-        BindingIdentifier("x")
-      []
+Module 0-23 "function test ( x ) {\n}"
+  [] 0-23 "function test ( x ) {\n}"
+    Function 0-23 "function test ( x ) {\n}"
+      BindingIdentifier("test") 9-13 "test"
+      [] 16-17 "x"
+        BindingIdentifier("x") 16-17 "x"
+      [] 22-22 ""
 *******************************************************************************/

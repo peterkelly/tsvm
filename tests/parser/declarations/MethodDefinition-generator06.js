@@ -1,23 +1,21 @@
 ( {
-
-    * test ( ) {
-        1 ;
-    }
-
+  * test ( ) {
+    1 ;
+  }
 } ) ;
 
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      ObjectLiteral
-        []
-          GeneratorMethod
-            Identifier("test")
-            []
-            []
-              ExpressionStatement
-                1
+Module 0-36 "( {\n  * test ( ) {\n    1 ;\n  }\n} ) ;"
+  [] 0-36 "( {\n  * test ( ) {\n    1 ;\n  }\n} ) ;"
+    ExpressionStatement 0-36 "( {\n  * test ( ) {\n    1 ;\n  }\n} ) ;"
+      ObjectLiteral 2-32 "{\n  * test ( ) {\n    1 ;\n  }\n}"
+        [] 6-30 "* test ( ) {\n    1 ;\n  }"
+          GeneratorMethod 6-30 "* test ( ) {\n    1 ;\n  }"
+            Identifier("test") 8-12 "test"
+            [] 15-15 ""
+            [] 23-26 "1 ;"
+              ExpressionStatement 23-26 "1 ;"
+                1 23-24 "1"
 *******************************************************************************/

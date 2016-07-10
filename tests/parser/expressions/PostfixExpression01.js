@@ -3,9 +3,9 @@ x ++ ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      PostIncrement
-        IdentifierReference("x")
+Module 0-6 "x ++ ;"
+  [] 0-6 "x ++ ;"
+    ExpressionStatement 0-6 "x ++ ;"
+      PostIncrement 0-4 "x ++"
+        IdentifierReference("x") 0-1 "x"
 *******************************************************************************/

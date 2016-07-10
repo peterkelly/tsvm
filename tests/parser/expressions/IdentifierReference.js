@@ -3,8 +3,8 @@ x ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      IdentifierReference("x")
+Module 0-3 "x ;"
+  [] 0-3 "x ;"
+    ExpressionStatement 0-3 "x ;"
+      IdentifierReference("x") 0-1 "x"
 *******************************************************************************/

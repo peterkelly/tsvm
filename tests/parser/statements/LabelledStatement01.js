@@ -3,9 +3,9 @@ one : ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    LabelledStatement
-      LabelIdentifier("one")
-      EmptyStatement
+Module 0-7 "one : ;"
+  [] 0-7 "one : ;"
+    LabelledStatement 0-7 "one : ;"
+      LabelIdentifier("one") 0-3 "one"
+      EmptyStatement 6-7 ";"
 *******************************************************************************/

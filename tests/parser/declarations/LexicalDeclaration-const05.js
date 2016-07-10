@@ -3,13 +3,13 @@ const [ x ] = 1 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    Const
-      []
-        LexicalPatternBinding
-          ArrayBindingPattern
-            []
-              BindingIdentifier("x")
-          1
+Module 0-17 "const [ x ] = 1 ;"
+  [] 0-17 "const [ x ] = 1 ;"
+    Const 0-17 "const [ x ] = 1 ;"
+      [] 6-15 "[ x ] = 1"
+        LexicalPatternBinding 6-15 "[ x ] = 1"
+          ArrayBindingPattern 6-11 "[ x ]"
+            [] 8-9 "x"
+              BindingIdentifier("x") 8-9 "x"
+          1 14-15 "1"
 *******************************************************************************/

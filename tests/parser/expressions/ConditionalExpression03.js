@@ -3,14 +3,14 @@ x ? 1 : y ? 2 : 3 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Conditional
-        IdentifierReference("x")
-        1
-        Conditional
-          IdentifierReference("y")
-          2
-          3
+Module 0-19 "x ? 1 : y ? 2 : 3 ;"
+  [] 0-19 "x ? 1 : y ? 2 : 3 ;"
+    ExpressionStatement 0-19 "x ? 1 : y ? 2 : 3 ;"
+      Conditional 0-17 "x ? 1 : y ? 2 : 3"
+        IdentifierReference("x") 0-1 "x"
+        1 4-5 "1"
+        Conditional 8-17 "y ? 2 : 3"
+          IdentifierReference("y") 8-9 "y"
+          2 12-13 "2"
+          3 16-17 "3"
 *******************************************************************************/

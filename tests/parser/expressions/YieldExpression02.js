@@ -3,9 +3,9 @@ yield 1 ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      YieldExpr
-        1
+Module 0-9 "yield 1 ;"
+  [] 0-9 "yield 1 ;"
+    ExpressionStatement 0-9 "yield 1 ;"
+      YieldExpr 0-7 "yield 1"
+        1 6-7 "1"
 *******************************************************************************/

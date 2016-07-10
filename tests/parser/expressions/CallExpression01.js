@@ -3,11 +3,11 @@ log ( ) ;
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Call
-        IdentifierReference("log")
-        Arguments
-          []
+Module 0-9 "log ( ) ;"
+  [] 0-9 "log ( ) ;"
+    ExpressionStatement 0-9 "log ( ) ;"
+      Call 0-7 "log ( )"
+        IdentifierReference("log") 0-3 "log"
+        Arguments 4-7 "( )"
+          [] 6-6 ""
 *******************************************************************************/

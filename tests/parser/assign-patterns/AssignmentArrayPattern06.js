@@ -3,17 +3,17 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      Assign
-        ArrayLiteral
-          []
-            IdentifierReference("a")
-            IdentifierReference("b")
-            IdentifierReference("c")
-            Elision(3)
-            SpreadElement
-              IdentifierReference("rest")
-        IdentifierReference("value")
+Module 0-40 "[ a , b , c , , , , ... rest ] = value ;"
+  [] 0-40 "[ a , b , c , , , , ... rest ] = value ;"
+    ExpressionStatement 0-40 "[ a , b , c , , , , ... rest ] = value ;"
+      Assign 0-38 "[ a , b , c , , , , ... rest ] = value"
+        ArrayLiteral 0-30 "[ a , b , c , , , , ... rest ]"
+          [] 2-28 "a , b , c , , , , ... rest"
+            IdentifierReference("a") 2-3 "a"
+            IdentifierReference("b") 6-7 "b"
+            IdentifierReference("c") 10-11 "c"
+            Elision(3) 14-19 ", , ,"
+            SpreadElement 20-28 "... rest"
+              IdentifierReference("rest") 24-28 "rest"
+        IdentifierReference("value") 33-38 "value"
 *******************************************************************************/

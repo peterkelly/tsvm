@@ -4,12 +4,12 @@ one : function test ( ) {
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    LabelledStatement
-      LabelIdentifier("one")
-      Function
-        BindingIdentifier("test")
-        []
-        []
+Module 0-27 "one : function test ( ) {\n}"
+  [] 0-27 "one : function test ( ) {\n}"
+    LabelledStatement 0-27 "one : function test ( ) {\n}"
+      LabelIdentifier("one") 0-3 "one"
+      Function 6-27 "function test ( ) {\n}"
+        BindingIdentifier("test") 15-19 "test"
+        [] 22-22 ""
+        [] 26-26 ""
 *******************************************************************************/

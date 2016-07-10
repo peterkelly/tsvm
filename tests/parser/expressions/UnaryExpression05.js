@@ -3,9 +3,9 @@
 /*******************************************************************************
 ast-module
 
-Module
-  []
-    ExpressionStatement
-      PreDecrement
-        IdentifierReference("x")
+Module 0-6 "-- x ;"
+  [] 0-6 "-- x ;"
+    ExpressionStatement 0-6 "-- x ;"
+      PreDecrement 0-4 "-- x"
+        IdentifierReference("x") 3-4 "x"
 *******************************************************************************/
