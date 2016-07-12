@@ -2254,10 +2254,17 @@ export class GenericNode extends ErrorNode {
     public readonly kind: string;
     public readonly _children: ASTNode[];
     public readonly value: any;
-    public constructor(range: Range, kind: string, children: ASTNode[], value?: any) {
+    public constructor(range: Range, kind: string, children: any[], value?: any) {
         super(range,"GenericNode");
         this.kind = kind;
-        this._children = children.slice();
+        this._children = [];
+        for (const child of children) {
+            if ((child == null) || !(child instanceof ASTNode)) {
+                console.log(kind+": "+child+" is not an ASTNode");
+                process.exit(1);
+            }
+            this._children.push(child);
+        }
         this.value = value;
     }
     public get children(): ASTNode[] {

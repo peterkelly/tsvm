@@ -248,6 +248,8 @@ export class Parser {
             return f(this);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             this.pos = start;
             return null;
         }
@@ -274,6 +276,8 @@ export class Parser {
                 return item(this);
             }
             catch (e) {
+                if (!(e instanceof ParseFailure))
+                    throw e;
                 this.pos = start;
             }
         }
@@ -723,11 +727,17 @@ export class Parser {
     }
 }
 
-export class ParseError {
+export abstract class ParseFailure {
+    public constructor() {
+    }
+}
+
+export class ParseError extends ParseFailure {
     public readonly parser: Parser;
     public readonly pos: number;
     public readonly message: string;
     public constructor(parser: Parser, pos: number, message: string) {
+        super();
         this.parser = parser;
         this.pos = pos;
         this.message = message;
@@ -739,7 +749,8 @@ export class ParseError {
     }
 }
 
-export class ParseIgnore {
+export class ParseIgnore extends ParseFailure {
     public constructor() {
+        super();
     }
 }
