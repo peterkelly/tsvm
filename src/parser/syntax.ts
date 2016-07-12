@@ -17,6 +17,7 @@ import {
     isIdChar,
     isKeyword,
     Parser,
+    ParseFailure,
     ParseError,
     ParseIgnore,
 } from "./parser";
@@ -502,8 +503,18 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
             }
 
             let item: ArrayLiteralItemType | ErrorNode = null;
-            try { item = AssignmentExpression(p); } catch (e) {}
-            try { item = SpreadElement(p); } catch (e) {}
+            try {
+                item = AssignmentExpression(p);
+            } catch (e) {
+                if (!(e instanceof ParseFailure))
+                    throw e;
+            }
+            try {
+                item = SpreadElement(p);
+            } catch (e) {
+                if (!(e instanceof ParseFailure))
+                    throw e;
+            }
             if (item == null)
                 break;
             elements.push(item);
@@ -542,6 +553,8 @@ function Elision(p: Parser): ElisionNode | ErrorNode {
             count++;
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new ElisionNode(new Range(start,p.pos),count);
         }
     }
@@ -596,6 +609,8 @@ function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNo
             properties.push(defn);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new PropertyDefinitionListNode(new Range(start,p.pos),properties);
         }
     }
@@ -747,6 +762,8 @@ function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
                 ]);
             }
             catch (e) {
+                if (!(e instanceof ParseFailure))
+                    throw e;
                 return left;
             }
         }
@@ -859,6 +876,8 @@ function CallExpression(p: Parser): ExpressionNode | ErrorNode {
             ]);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -931,6 +950,8 @@ function ArgumentList(p: Parser): ArgumentListNode | ErrorNode {
             items.push(arg);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new ArgumentListNode(new Range(start,p.pos),items);
         }
     }
@@ -1067,6 +1088,8 @@ function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
             ]);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1097,6 +1120,8 @@ function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
             ]);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1133,6 +1158,8 @@ function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
             ]);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1187,6 +1214,8 @@ function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
             ]);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1229,6 +1258,8 @@ function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
             ]);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1251,6 +1282,8 @@ function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
                 ([,,,right]) => new BitwiseANDNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1271,6 +1304,8 @@ function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
                 ([,,,right]) => new BitwiseXORNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1291,6 +1326,8 @@ function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
                 ([,,,right]) => new BitwiseORNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1313,6 +1350,8 @@ function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
                 ([,,,right]) => new LogicalANDNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1333,6 +1372,8 @@ function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
                 ([,,,right]) => new LogicalORNode(new Range(start,p.pos),left,right));
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1479,6 +1520,8 @@ function Expression(p: Parser): ExpressionNode | ErrorNode {
             );
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return left;
         }
     }
@@ -1577,6 +1620,8 @@ function StatementList(p: Parser): StatementListNode | ErrorNode {
             statements.push(stmt);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             const end = p.pos;
             return p.seq1([
                 whitespace],
@@ -1636,6 +1681,8 @@ function BindingList(p: Parser): BindingListNode | ErrorNode {
             bindings.push(lexbnd);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new BindingListNode(new Range(start,p.pos),bindings);
         }
     }
@@ -1709,6 +1756,8 @@ function VariableDeclarationList(p: Parser): VariableDeclarationListNode | Error
             declarations.push(decl);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new VariableDeclarationListNode(new Range(start,p.pos),declarations);
         }
     }
@@ -1907,6 +1956,8 @@ function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
             properties.push(prop);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new BindingPropertyListNode(new Range(start,p.pos),properties);
         }
     }
@@ -1929,6 +1980,8 @@ function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
             elements.push(elem);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new BindingElementListNode(new Range(start,p.pos),elements);
         }
     }
@@ -2501,6 +2554,8 @@ function CaseClauses(p: Parser): CaseClauseListNode | ErrorNode {
             end = clause.range.end;
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new CaseClauseListNode(new Range(start,end),clauses);
         }
     }
@@ -2717,9 +2772,20 @@ function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | Error
 function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): FunctionDeclarationNode | ErrorNode {
     if (flags === undefined)
         flags = {};
-    try { return FunctionDeclaration_named(p); } catch (e) {}
-    if (flags.Default)
-        try { return FunctionDeclaration_unnamed(p); } catch (e) {}
+    try {
+        return FunctionDeclaration_named(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
+    }
+    if (flags.Default) {
+        try {
+            return FunctionDeclaration_unnamed(p);
+        } catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
+        }
+    }
     throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
 }
 
@@ -2814,6 +2880,8 @@ function FormalsList(p: Parser): FormalParameterListNode | ErrorNode {
             elements.push(param);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new FormalParameterListNode(new Range(start,p.pos),elements);
         }
     }
@@ -3085,9 +3153,20 @@ function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | Er
 function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): DeclarationNode | ErrorNode {
     if (flags === undefined)
         flags = {};
-    try { return GeneratorDeclaration_1(p); } catch (e) {}
-    if (flags.Default)
-        try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
+    try {
+        return GeneratorDeclaration_1(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
+    }
+    if (flags.Default) {
+        try {
+            return GeneratorDeclaration_2(p);
+        } catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
+        }
+    }
     throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
 }
 
@@ -3200,9 +3279,20 @@ function ClassDeclaration_2(p: Parser): ClassDeclarationNode | ErrorNode {
 function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ClassDeclarationNode | ErrorNode {
     if (flags === undefined)
         flags = {};
-    try { return ClassDeclaration_1(p); } catch (e) {}
-    if (flags.Default)
-        try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
+    try {
+        return ClassDeclaration_1(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
+    }
+    if (flags.Default) {
+        try {
+            return ClassDeclaration_2(p);
+        } catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
+        }
+    }
     throw new ParseError(p,p.pos,"Expected ClassDeclaration");
 }
 
@@ -3281,6 +3371,8 @@ function ClassElementList(p: Parser): ClassElementListNode | ErrorNode {
             elements.push(elem);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new ClassElementListNode(new Range(start,p.pos),elements);
         }
     }
@@ -3329,7 +3421,12 @@ function ClassElement(p: Parser): ClassElementType | ErrorNode {
 export function Script(p: Parser): ScriptNode | ErrorNode {
     const start = p.pos;
     let body: StatementListNode | ErrorNode = null;
-    try { body = ScriptBody(p); } catch (e) {}
+    try {
+        body = ScriptBody(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
+    }
     if (body == null)
         body = new StatementListNode(new Range(start,p.pos),[]);
     return new ScriptNode(new Range(start,p.pos),body);
@@ -3348,7 +3445,12 @@ function ScriptBody(p: Parser): StatementListNode | ErrorNode {
 export function Module(p: Parser): ModuleNode | ErrorNode {
     const start = p.pos;
     let body: ModuleItemListNode | ErrorNode = null;
-    try { body = ModuleBody(p); } catch (e) {}
+    try {
+        body = ModuleBody(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
+    }
     if (body == null)
         body = new ModuleItemListNode(new Range(start,p.pos),[]);
     return new ModuleNode(new Range(start,p.pos),body);
@@ -3375,6 +3477,8 @@ function ModuleItemList(p: Parser): ModuleItemListNode | ErrorNode {
             items.push(mod);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new ModuleItemListNode(new Range(start,p.pos),items);
         }
     }
@@ -3525,6 +3629,8 @@ function ImportsList(p: Parser): ImportsListNode | ErrorNode {
             imports.push(specifier);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new ImportsListNode(new Range(start,p.pos),imports);
         }
     }
@@ -3666,6 +3772,8 @@ function ExportsList(p: Parser): ExportsListNode | ErrorNode {
             exports.push(specifier);
         }
         catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
             return new ExportsListNode(new Range(start,p.pos),exports);
         }
     }
