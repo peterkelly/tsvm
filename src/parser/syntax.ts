@@ -217,6 +217,7 @@ import {
     BindingElementListNode,
     ClassElementListNode,
     ErrorNode,
+    GenericNode,
 } from "./ast";
 
 function opt<T>(f: (p: Parser) => T): (p: Parser) => T {

@@ -2248,3 +2248,22 @@ export class ErrorNode extends ASTNode {
         return "ERROR: "+this.message;
     }
 }
+
+export class GenericNode extends ErrorNode {
+    _nominal_type_GenericNode: any ;
+    public readonly kind: string;
+    public readonly _children: ASTNode[];
+    public readonly value: any;
+    public constructor(range: Range, kind: string, children: ASTNode[], value?: any) {
+        super(range,"GenericNode");
+        this.kind = kind;
+        this._children = children.slice();
+        this.value = value;
+    }
+    public get children(): ASTNode[] {
+        return this._children;
+    }
+    public get label(): string {
+        return this.kind;
+    }
+}
