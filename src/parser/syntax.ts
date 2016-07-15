@@ -204,6 +204,7 @@ import {
     ExportClauseNode,
     ExportNormalSpecifierNode,
     ExportAsSpecifierNode,
+    ListNode,
     StatementListNode,
     PropertyDefinitionListNode,
     ArgumentListNode,

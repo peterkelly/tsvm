@@ -2287,3 +2287,10 @@ export class GenericNode extends ErrorNode {
         return this.kind;
     }
 }
+
+export class ListNode extends GenericNode {
+    _nominal_type_ListNode: any;
+    public constructor(range: Range, elements: ASTNode[]) {
+        super(range,"[]",elements);
+    }
+}
