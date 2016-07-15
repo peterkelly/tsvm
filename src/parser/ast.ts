@@ -1813,8 +1813,8 @@ export class EmptyClassElementNode extends ASTNode {
 
 export class ScriptNode extends ASTNode {
     _nominal_type_ScriptNode: any;
-    public readonly body: StatementListNode | ErrorNode;
-    public constructor(range: Range, body: StatementListNode | ErrorNode) {
+    public readonly body: ASTNode;
+    public constructor(range: Range, body: ASTNode) {
         super(range,"Script");
         this.body = body;
     }
@@ -1827,8 +1827,8 @@ export class ScriptNode extends ASTNode {
 
 export class ModuleNode extends ASTNode {
     _nominal_type_ModuleNode: any;
-    public readonly body: ModuleItemListNode | ErrorNode;
-    public constructor(range: Range, body: ModuleItemListNode | ErrorNode) {
+    public readonly body: ASTNode;
+    public constructor(range: Range, body: ASTNode) {
         super(range,"Module");
         this.body = body;
     }
@@ -2081,10 +2081,22 @@ export class ExportAsSpecifierNode extends ASTNode {
     }
 }
 
+export class ListNode extends ASTNode {
+    _nominal_type_ListNode: any;
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
+        super(range,"[]");
+        this.elements = elements;
+    }
+    public get children(): ASTNode[] {
+        return this.elements;
+    }
+}
+
 export class StatementListNode extends ASTNode {
     _nominal_type_StatementListNode: any;
-    public readonly elements: (StatementNode | DeclarationNode | ErrorNode)[];
-    public constructor(range: Range, elements: (StatementNode | DeclarationNode | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2095,8 +2107,8 @@ export class StatementListNode extends ASTNode {
 
 export class PropertyDefinitionListNode extends ASTNode {
     _nominal_type_PropertyDefinitionListNode: any;
-    public readonly elements: (PropertyDefinitionType | ErrorNode)[];
-    public constructor(range: Range, elements: (PropertyDefinitionType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2107,8 +2119,8 @@ export class PropertyDefinitionListNode extends ASTNode {
 
 export class ArgumentListNode extends ASTNode {
     _nominal_type_ArgumentListNode: any;
-    public readonly elements: (ArgumentType | ErrorNode)[];
-    public constructor(range: Range, elements: (ArgumentType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2119,8 +2131,8 @@ export class ArgumentListNode extends ASTNode {
 
 export class BindingListNode extends ASTNode {
     _nominal_type_BindingListNode: any;
-    public readonly elements: (LexicalBindingNode | ErrorNode)[];
-    public constructor(range: Range, elements: (LexicalBindingNode | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2131,8 +2143,8 @@ export class BindingListNode extends ASTNode {
 
 export class VariableDeclarationListNode extends ASTNode {
     _nominal_type_VariableDeclarationListNode: any;
-    public readonly elements: (VarIdentifierNode | VarPatternNode | ErrorNode)[];
-    public constructor(range: Range, elements: (VarIdentifierNode | VarPatternNode | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2143,8 +2155,8 @@ export class VariableDeclarationListNode extends ASTNode {
 
 export class CaseClauseListNode extends ASTNode {
     _nominal_type_CaseClauseListNode: any;
-    public readonly elements: (CaseClauseNode | DefaultClauseNode | ErrorNode)[];
-    public constructor(range: Range, elements: (CaseClauseNode | DefaultClauseNode | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2155,8 +2167,8 @@ export class CaseClauseListNode extends ASTNode {
 
 export class FormalParameterListNode extends ASTNode {
     _nominal_type_FormalParameterListNode: any;
-    public readonly elements: (BindingElementType | BindingRestElementNode | ErrorNode)[];
-    public constructor(range: Range, elements: (BindingElementType | BindingRestElementNode | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2167,8 +2179,8 @@ export class FormalParameterListNode extends ASTNode {
 
 export class ModuleItemListNode extends ASTNode {
     _nominal_type_ModuleItemListNode: any;
-    public readonly elements: (ModuleItemType | ErrorNode)[];
-    public constructor(range: Range, elements: (ModuleItemType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2179,8 +2191,8 @@ export class ModuleItemListNode extends ASTNode {
 
 export class ImportsListNode extends ASTNode {
     _nominal_type_ImportsListNode: any;
-    public readonly elements: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[];
-    public constructor(range: Range, elements: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2203,8 +2215,8 @@ export class ExportsListNode extends ASTNode {
 
 export class BindingPropertyListNode extends ASTNode {
     _nominal_type_BindingPropertyListNode: any;
-    public readonly elements: (BindingPropertyType | ErrorNode)[];
-    public constructor(range: Range, elements: (BindingPropertyType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2215,8 +2227,8 @@ export class BindingPropertyListNode extends ASTNode {
 
 export class ElementListNode extends ASTNode {
     _nominal_type_ElementListNode: any;
-    public readonly elements: (ArrayLiteralItemType | ErrorNode)[];
-    public constructor(range: Range, elements: (ArrayLiteralItemType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2227,8 +2239,8 @@ export class ElementListNode extends ASTNode {
 
 export class BindingElementListNode extends ASTNode {
     _nominal_type_BindingElementListNode: any;
-    public readonly elements: (BindingElementType | ErrorNode)[];
-    public constructor(range: Range, elements: (BindingElementType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2239,8 +2251,8 @@ export class BindingElementListNode extends ASTNode {
 
 export class ClassElementListNode extends ASTNode {
     _nominal_type_ClassElementListNode: any;
-    public readonly elements: (ClassElementType | ErrorNode)[];
-    public constructor(range: Range, elements: (ClassElementType | ErrorNode)[]) {
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2285,12 +2297,5 @@ export class GenericNode extends ErrorNode {
     }
     public get label(): string {
         return this.kind;
-    }
-}
-
-export class ListNode extends GenericNode {
-    _nominal_type_ListNode: any;
-    public constructor(range: Range, elements: ASTNode[]) {
-        super(range,"[]",elements);
     }
 }
