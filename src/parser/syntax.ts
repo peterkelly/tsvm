@@ -27,7 +27,7 @@ import {
     PropertyDefinitionType,
     StatementListItemType,
     SingleNameBindingType,
-    BindingPatternType,
+    BindingPatternNode,
     BindingElementType,
     ArgumentType,
     ForBindingType,
@@ -47,6 +47,7 @@ import {
     DeclarationNode,
     LexicalBindingNode,
 
+    CastError,
     Range,
     ASTNode,
     StatementNode,
@@ -220,54 +221,30 @@ import {
     ErrorNode,
     GenericNode,
 } from "./ast";
-
-function opt<T>(f: (p: Parser) => T): (p: Parser) => T {
-    return (p: Parser): T => p.opt(f);
-}
-
-function pos(p: Parser) {
-    return p.pos;
-}
-
-function keyword(str: string): ((p: Parser) => void) {
-    return (p: Parser): void => p.expectKeyword(str);
-}
-
-function punctuator(str: string): (p: Parser) => void {
-    return (p: Parser): void => p.expectPunctuator(str);
-}
-
-function notKeyword(str: string) {
-    return (p: Parser): void => {
-        if (p.lookaheadKeyword(str))
-            throw new ParseError(p,p.pos,"Unexpected "+str);
-    };
-}
-
-function notPunctuator(str: string) {
-    return (p: Parser): void => {
-        if (p.lookaheadPunctuator(str))
-            throw new ParseError(p,p.pos,"Unexpected "+str);
-    };
-}
-
-function identifier(str: string) {
-    return (p: Parser): void => {
-        const ident = Identifier(p);
-        if (ident instanceof ErrorNode)
-            throw new ParseError(p,p.pos,"Expected "+str);
-        if (ident.value != str)
-            throw new ParseError(p,p.pos,"Expected "+str);
-    };
-}
-
-function whitespace(p: Parser): void {
-    p.skipWhitespace();
-}
-
-function whitespaceNoNewline(p: Parser): void {
-    p.skipWhitespaceNoNewline();
-}
+import {
+    Builder,
+    opt,
+    pos,
+    keyword,
+    punctuator,
+    notKeyword,
+    notPunctuator,
+    identifier,
+    whitespace,
+    whitespaceNoNewline,
+    isLiteralPropertyNameType,
+    isPropertyNameType,
+    isPropertyDefinitionType,
+    isStatementListItemType,
+    isSingleNameBindingType,
+    checkNode,
+    checkExpressionNode,
+    checkBindingPropertyListNode,
+    checkBindingElementType,
+    checkGenericNode,
+    checkNumber,
+    makeNode,
+} from "./grammar";
 
 // Section 12.1
 
@@ -309,7 +286,7 @@ function IdentifierName(p: Parser): IdentifierNode | ErrorNode {
 
 // Identifier
 
-function Identifier(p: Parser): IdentifierNode | ErrorNode {
+export function Identifier(p: Parser): IdentifierNode | ErrorNode {
     return p.attempt((start) => {
         if ((p.cur != null) && isIdStart(p.cur)) {
             p.next();
@@ -359,13 +336,19 @@ function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
 // ParenthesizedExpression
 
 function ParenthesizedExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.seq5([
-        punctuator("("),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")")],
-        ([,,expr,,]) => expr);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            punctuator("("), // 4
+            whitespace,      // 3
+            Expression,      // 2 = expr
+            whitespace,      // 1
+            punctuator(")"), // 0
+        ]);
+        b.popAboveAndSet(4,b.get(2));
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.2.4
@@ -563,12 +546,19 @@ function Elision(p: Parser): ElisionNode | ErrorNode {
 // SpreadElement
 
 function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
-    return p.seq4([
-        pos,
-        punctuator("..."),
-        whitespace,
-        AssignmentExpression],
-        ([start,,,assign]) => new SpreadElementNode(new Range(start,p.pos),assign));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            punctuator("..."),
+            whitespace,
+            AssignmentExpression,
+            pos,
+        ]);
+        b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // Section 12.2.6
@@ -576,20 +566,33 @@ function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
 // ObjectLiteral
 
 function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
-    return p.seq5([
-        pos,
-        punctuator("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq3([
-                PropertyDefinitionList,
-                whitespace,
-                opt(() => p.seq2([punctuator(","),whitespace,],() => {}))],
-                ([inner,,]) => inner),
-            () => new PropertyDefinitionListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        punctuator("}")],
-        ([start,,,properties,]) => new ObjectLiteralNode(new Range(start,p.pos),properties));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);             // 5
+        b.item(punctuator("{")); // 4
+        b.item(whitespace);      // 3
+        b.choice([               // 2 = properties
+            () => {
+                b.item(PropertyDefinitionList);
+                b.item(whitespace);
+                b.opt(() => {
+                    b.item(punctuator(","));
+                    b.item(whitespace);
+                    b.popAboveAndSet(1,0);
+                });
+                b.popAboveAndSet(2,b.get(2));
+            },
+            () => {
+                b.push(new PropertyDefinitionListNode(new Range(p.pos,p.pos),[]));
+            },
+        ]);
+        b.item(punctuator("}")); // 1
+        b.item(pos);             // 0 = end
+        b.assertLengthIs(6);
+        b.popAboveAndSet(5,makeNode(b,5,0,"ObjectLiteral",[2]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // PropertyDefinitionList
@@ -619,14 +622,22 @@ function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNo
 // PropertyDefinition_colon
 
 function PropertyDefinition_colon(p: Parser): ColonPropertyDefinitionNode | ErrorNode {
-    return p.seq6([
-        pos,
-        PropertyName,
-        whitespace,
-        punctuator(":"),
-        whitespace,
-        AssignmentExpression],
-        ([start,name,,,,init]) => new ColonPropertyDefinitionNode(new Range(start,p.pos),name,init));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                  // 6 = start
+            PropertyName,         // 5 = name
+            whitespace,           // 4
+            punctuator(":"),      // 3
+            whitespace,           // 2
+            AssignmentExpression, // 1 = init
+            pos,                  // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ColonPropertyDefinition",[5,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // PropertyDefinition
@@ -662,36 +673,58 @@ function LiteralPropertyName(p: Parser): LiteralPropertyNameType | ErrorNode {
 // ComputedPropertyName
 
 function ComputedPropertyName(p: Parser): ComputedPropertyNameNode | ErrorNode {
-    return p.seq6([
-        pos,
-        punctuator("["),
-        whitespace,
-        AssignmentExpression,
-        whitespace,
-        punctuator("]")],
-        ([start,,,expr,,]) => new ComputedPropertyNameNode(new Range(start,p.pos),expr));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                  // 6 = start
+            punctuator("["),      // 5
+            whitespace,           // 4
+            AssignmentExpression, // 3 = expr
+            whitespace,           // 2
+            punctuator("]"),      // 1
+            pos,                  // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ComputedPropertyName",[3]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // CoverInitializedName
 
 function CoverInitializedName(p: Parser): CoverInitializedNameNode | ErrorNode {
-    return p.seq4([
-        pos,
-        IdentifierReference,
-        whitespace,
-        Initializer],
-        ([start,ident,,init]) => new CoverInitializedNameNode(new Range(start,p.pos),ident,init)
-    );
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 4 = start
+            IdentifierReference, // 3 = ident
+            whitespace,          // 2
+            Initializer,         // 1 = init
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"CoverInitializedName",[3,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // Initializer
 
 function Initializer(p: Parser): ExpressionNode | ErrorNode {
-    return p.seq3([
-        punctuator("="),
-        whitespace,
-        AssignmentExpression],
-        ([,,expr]) => expr);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            punctuator("="),
+            whitespace,
+            AssignmentExpression,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,b.get(0));
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.2.9
@@ -713,15 +746,22 @@ function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"
 // MemberExpression_new
 
 function MemberExpression_new(p: Parser): NewExpressionNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("new"),
-        whitespace,
-        MemberExpression,
-        whitespace,
-        Arguments],
-        ([start,,,expr,,args]) => new NewExpressionNode(new Range(start,p.pos),expr,args)
-    );
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,              // 6 = start
+            keyword("new"),   // 5
+            whitespace,       // 4
+            MemberExpression, // 3 = expr
+            whitespace,       // 2
+            Arguments,        // 1 = args
+            pos,              // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"NewExpression",[3,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // MemberExpression_start
@@ -773,26 +813,43 @@ function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
 // SuperProperty
 
 function SuperProperty(p: Parser): SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode {
-    return p.choice<SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode>([
-        () => p.seq8([
-            pos,
-            keyword("super"),
-            whitespace,
-            punctuator("["),
-            whitespace,
-            Expression,
-            whitespace,
-            punctuator("]")],
-            ([start,,,,,expr,,]) => new SuperPropertyExprNode(new Range(start,p.pos),expr)),
-        () => p.seq6([
-            pos,
-            keyword("super"),
-            whitespace,
-            punctuator("."),
-            whitespace,
-            Identifier],
-            ([start,,,,,ident]) => new SuperPropertyIdentNode(new Range(start,p.pos),ident)),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,              // 8 = start
+                    keyword("super"), // 7
+                    whitespace,       // 6
+                    punctuator("["),  // 5
+                    whitespace,       // 4
+                    Expression,       // 3 = expr
+                    whitespace,       // 2
+                    punctuator("]"),  // 1
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(9);
+                b.popAboveAndSet(8,makeNode(b,8,0,"SuperPropertyExpr",[3]));
+                b.assertLengthIs(1);
+            },
+            () => {
+                b.items([
+                    pos,              // 6 = start
+                    keyword("super"), // 5
+                    whitespace,       // 4
+                    punctuator("."),  // 3
+                    whitespace,       // 2
+                    Identifier,       // 1 = ident
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"SuperPropertyIdent",[1]));
+                b.assertLengthIs(1);
+            }
+        ]);
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // MetaProperty
@@ -804,43 +861,77 @@ function MetaProperty(p: Parser): NewTargetNode | ErrorNode {
 // NewTarget
 
 function NewTarget(p: Parser): NewTargetNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("new"),
-        whitespace,
-        punctuator("."),
-        whitespace,
-        identifier("target")], // "target" is not a reserved word, so we can't use keyword here
-        ([start,arg2,arg3,arg4,arg5,arg6]) => new NewTargetNode(new Range(start,p.pos))
-    );
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                  // 6
+            keyword("new"),       // 5
+            whitespace,           // 4
+            punctuator("."),      // 3
+            whitespace,           // 2
+            identifier("target"), // 1 ("target" is not a reserved word, so we can't use keyword here)
+            pos,                  // 0
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"NewTarget",[]));
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // NewExpression
 
 function NewExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        MemberExpression,
-        () => p.seq4([
-            pos,
-            keyword("new"),
-            whitespace,
-            NewExpression],
-            ([start,,,expr]) => new NewExpressionNode(new Range(start,p.pos),expr,null)),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.item(MemberExpression);
+            },
+            () => {
+                b.items([
+                    pos,            // 4 = start
+                    keyword("new"), // 3
+                    whitespace,     // 2
+                    NewExpression,  // 1 = expr
+                    pos,            // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                const start = checkNumber(b.get(4));
+                const end = checkNumber(b.get(0));
+                const expr = checkExpressionNode(b.get(1));
+                b.popAboveAndSet(4,new NewExpressionNode(new Range(start,p.pos),expr,null));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // CallExpression_start
 
 function CallExpression_start(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        SuperCall,
-        () => p.seq4([
-            pos,
-            MemberExpression,
-            whitespace,
-            Arguments],
-            ([start,fun,,args]) => new CallNode(new Range(start,p.pos),fun,args)),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.item(SuperCall);
+            },
+            () => {
+                b.items([
+                    pos,              // 4 = start
+                    MemberExpression, // 3 = fun
+                    whitespace,       // 2
+                    Arguments,        // 1 = args
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"Call",[3,1]));
+                // ([start,fun,,args]) => new CallNode(new Range(start,p.pos),fun,args)),
+            },
+        ])
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // CallExpression
@@ -885,52 +976,89 @@ function CallExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // SuperCall
 
-function SuperCall(p: Parser): SuperCallNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("super"),
-        whitespace,
-        Arguments],
-        ([start,,,args]) => new SuperCallNode(new Range(start,p.pos),args));
+function SuperCall(p: Parser): ExpressionNode | ErrorNode {
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,              // 4 = start
+            keyword("super"), // 3
+            whitespace,       // 2
+            Arguments,        // 1 = args
+            pos,              // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"SuperCall",[1]));
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Arguments
 
 function Arguments(p: Parser): ArgumentsNode | ErrorNode {
-    return p.choice<ArgumentsNode | ErrorNode>([
-        () => p.seq5([
-            pos,
-            punctuator("("),
-            whitespace,
-            pos,
-            punctuator(")")],
-            ([start,,,listpos,]) => {
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,             // 5 = start
+                    punctuator("("), // 4
+                    whitespace,      // 3
+                    pos,             // 2 = listpos
+                    punctuator(")"), // 1
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(6);
+                const start = checkNumber(b.get(5));
+                const end = checkNumber(b.get(0));
+                const listpos = checkNumber(b.get(2));
                 const args = new ArgumentListNode(new Range(listpos,listpos),[]);
-                return new ArgumentsNode(new Range(start,p.pos),args);
-            }),
-        () => p.seq6([
-            pos,
-            punctuator("("),
-            whitespace,
-            ArgumentList,
-            whitespace,
-            punctuator(")")],
-            ([start,,,args,,]) => new ArgumentsNode(new Range(start,p.pos),args)),
-    ]);
+                // return new ArgumentsNode(new Range(start,p.pos),args);
+                b.popAboveAndSet(5,new GenericNode(new Range(start,p.pos),"Arguments",[args]));
+            },
+            () => {
+                b.items([
+                    pos,             // 6 = start
+                    punctuator("("), // 5
+                    whitespace,      // 4
+                    ArgumentList,    // 3 = args
+                    whitespace,      // 2
+                    punctuator(")"), // 1
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"Arguments",[3]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // ArgumentList_item
 
 function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
-    return p.choice<ArgumentType | ErrorNode>([
-        () => p.seq4([
-            pos,
-            punctuator("..."),
-            whitespace,
-            AssignmentExpression],
-            ([start,,,expr]) => new SpreadElementNode(new Range(start,p.pos),expr)),
-        AssignmentExpression,
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,                  // 4 = start
+                    punctuator("..."),    // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = expr
+                    pos,                  // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
+            },
+            () => {
+                b.item(AssignmentExpression);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // ArgumentList
@@ -998,63 +1126,115 @@ function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
 // UnaryExpression
 
 function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice([
-        () => p.seq4([
-            pos,
-            keyword("delete"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new DeleteNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("void"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new VoidNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("typeof"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new TypeOfNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            punctuator("++"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new PreIncrementNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            punctuator("--"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new PreDecrementNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            punctuator("+"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryPlusNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            punctuator("-"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryMinusNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            punctuator("~"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryBitwiseNotNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            punctuator("!"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryLogicalNotNode(new Range(start,p.pos),expr)),
-        PostfixExpression,
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,               // 4 = start
+                    keyword("delete"), // 3
+                    whitespace,        // 2
+                    UnaryExpression,   // 1 = expr
+                    pos,               // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"Delete",[1]));
+            },
+            () => {
+                b.items([
+                    pos,             // 4 = start
+                    keyword("void"), // 3
+                    whitespace,      // 2
+                    UnaryExpression, // 1 = expr
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"Void",[1]));
+            },
+            () => {
+                b.items([
+                    pos,               // 4 = start
+                    keyword("typeof"), // 3
+                    whitespace,        // 2
+                    UnaryExpression,   // 1 = expr
+                    pos,               // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"TypeOf",[1]));
+            },
+            () => {
+                b.items([
+                    pos,              // 4 = start
+                    punctuator("++"), // 3
+                    whitespace,       // 2
+                    UnaryExpression,  // 1 = expr
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"PreIncrement",[1]));
+            },
+            () => {
+                b.items([
+                    pos,              // 4 = start
+                    punctuator("--"), // 3
+                    whitespace,       // 2
+                    UnaryExpression,  // 1 = expr
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"PreDecrement",[1]));
+            },
+            () => {
+                b.items([
+                    pos,             // 4 = start
+                    punctuator("+"), // 3
+                    whitespace,      // 2
+                    UnaryExpression, // 1 = expr
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"UnaryPlus",[1]));
+            },
+            () => {
+                b.items([
+                    pos,             // 4 = start
+                    punctuator("-"), // 3
+                    whitespace,      // 2
+                    UnaryExpression, // 1 = expr
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"UnaryMinus",[1]));
+            },
+            () => {
+                b.items([
+                    pos,             // 4 = start
+                    punctuator("~"), // 3
+                    whitespace,      // 2
+                    UnaryExpression, // 1 = expr
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"UnaryBitwiseNot",[1]));
+            },
+            () => {
+                b.items([
+                    pos,             // 4 = start
+                    punctuator("!"), // 3
+                    whitespace,      // 2
+                    UnaryExpression, // 1 = expr
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"UnaryLogicalNot",[1]));
+            },
+            () => {
+                b.item(PostfixExpression);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.6
@@ -1062,37 +1242,46 @@ function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
 // MultiplicativeExpression
 
 function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = UnaryExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    punctuator("*"),
-                    whitespace,
-                    UnaryExpression],
-                    ([,,,right]) => new MultiplyNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("/"),
-                    whitespace,
-                    UnaryExpression],
-                    ([,,,right]) => new DivideNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("%"),
-                    whitespace,
-                    UnaryExpression],
-                    ([,,,right]) => new ModuloNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                  // 6 = start
+        b.item(UnaryExpression);      // 5 = left
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,       // 4
+                    punctuator("*"),  // 3
+                    whitespace,       // 2
+                    UnaryExpression,  // 1 = right
+                    pos,              // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"Multiply",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,       // 4
+                    punctuator("/"),  // 3
+                    whitespace,       // 2
+                    UnaryExpression,  // 1 = right
+                    pos,              // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"Divide",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,       // 4
+                    punctuator("%"),  // 3
+                    whitespace,       // 2
+                    UnaryExpression,  // 1 = right
+                    pos,              // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"Modulo",[5,1]));
+            },
+        ]);
+
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.7
@@ -1100,31 +1289,35 @@ function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
 // AdditiveExpression
 
 function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = MultiplicativeExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    punctuator("+"),
-                    whitespace,
-                    MultiplicativeExpression],
-                    ([,,,right]) => new AddNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("-"),
-                    whitespace,
-                    MultiplicativeExpression],
-                    ([,,,right]) => new SubtractNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                          // 6 = start
+        b.item(MultiplicativeExpression);     // 5 = left
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,               // 4
+                    punctuator("+"),          // 3
+                    whitespace,               // 2
+                    MultiplicativeExpression, // 1 = right
+                    pos,                      // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"Add",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,               // 4
+                    punctuator("-"),          // 3
+                    whitespace,               // 2
+                    MultiplicativeExpression, // 1 = right
+                    pos,                      // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"Subtract",[5,1]));
+            }]);
+
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.8
@@ -1132,37 +1325,46 @@ function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
 // ShiftExpression
 
 function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = AdditiveExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    punctuator("<<"),
-                    whitespace,
-                    AdditiveExpression],
-                    ([,,,right]) => new LeftShiftNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator(">>>"),
-                    whitespace,
-                    AdditiveExpression],
-                    ([,,,right]) => new UnsignedRightShiftNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator(">>"),
-                    whitespace,
-                    AdditiveExpression],
-                    ([,,,right]) => new SignedRightShiftNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                    // 6 = start
+        b.item(AdditiveExpression);     // 5 = left
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,         // 4
+                    punctuator("<<"),   // 3
+                    whitespace,         // 2
+                    AdditiveExpression, // 1 = right
+                    pos,                // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"LeftShift",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,         // 4
+                    punctuator(">>>"),  // 3
+                    whitespace,         // 2
+                    AdditiveExpression, // 1 = right
+                    pos,                // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"UnsignedRightShift",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,         // 4
+                    punctuator(">>"),   // 3
+                    whitespace,         // 2
+                    AdditiveExpression, // 1 = right
+                    pos,                // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"SignedRightShift",[5,1]));
+            },
+        ]);
+
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.9
@@ -1170,55 +1372,87 @@ function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
 // RelationalExpression
 
 function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = ShiftExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    punctuator("<="),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new LessEqualNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator(">="),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new GreaterEqualNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("<"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new LessThanNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator(">"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new GreaterThanNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("instanceof"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new InstanceOfNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("in"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new InNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);             // 6 = start
+        b.item(ShiftExpression); // 5 = left
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,       // 4
+                    punctuator("<="), // 3
+                    whitespace,       // 2
+                    ShiftExpression,  // 1 = right
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"LessEqual",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,       // 4
+                    punctuator(">="), // 3
+                    whitespace,       // 2
+                    ShiftExpression,  // 1 = right
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"GreaterEqual",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,      // 4
+                    punctuator("<"), // 3
+                    whitespace,      // 2
+                    ShiftExpression, // 1 = right
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"LessThan",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,      // 4
+                    punctuator(">"), // 3
+                    whitespace,      // 2
+                    ShiftExpression, // 1 = right
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"GreaterThan",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,            // 4
+                    keyword("instanceof"), // 3
+                    whitespace,            // 2
+                    ShiftExpression,       // 1 = right
+                    pos,                   // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"InstanceOf",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,      // 4
+                    keyword("in"),   // 3
+                    whitespace,      // 2
+                    ShiftExpression, // 1 = right
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"In",[5,1]));
+                b.assertLengthIs(2);
+            },
+        ]);
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.10
@@ -1226,43 +1460,63 @@ function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
 // EqualityExpression
 
 function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = RelationalExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    punctuator("==="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new StrictEqualsNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("!=="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new StrictNotEqualsNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("=="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new AbstractEqualsNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("!="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new AbstractNotEqualsNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                      // 6 = start
+        b.item(RelationalExpression);     // 5 = left
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("==="),    // 3
+                    whitespace,           // 2
+                    RelationalExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"StrictEquals",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("!=="),    // 3
+                    whitespace,           // 2
+                    RelationalExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"StrictNotEquals",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("=="),     // 3
+                    whitespace,           // 2
+                    RelationalExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AbstractEquals",[5,1]));
+                b.assertLengthIs(2);
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("!="),     // 3
+                    whitespace,           // 2
+                    RelationalExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AbstractNotEquals",[5,1]));
+                b.assertLengthIs(2);
+            },
+        ]);
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.11
@@ -1270,67 +1524,68 @@ function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
 // BitwiseANDExpression
 
 function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = EqualityExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                punctuator("&"),
-                whitespace,
-                EqualityExpression],
-                ([,,,right]) => new BitwiseANDNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                // 6 = start
+        b.item(EqualityExpression); // 5 = left
+        b.repeat(() => {
+            b.items([
+                whitespace,         // 4
+                punctuator("&"),    // 3
+                whitespace,         // 2
+                EqualityExpression, // 1 = right
+                pos,                // 0 = end
+            ]);
+            b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseAND",[5,1]));
+        });
+
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // BitwiseXORExpression
 
 function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = BitwiseANDExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                punctuator("^"),
-                whitespace,
-                BitwiseANDExpression],
-                ([,,,right]) => new BitwiseXORNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                  // 6 = start
+        b.item(BitwiseANDExpression); // 5 = left
+        b.repeat(() => {
+            b.items([
+                whitespace,           // 4
+                punctuator("^"),      // 3
+                whitespace,           // 2
+                BitwiseANDExpression, // 1 = right
+                pos,                  // 0 = end
+            ]);
+            b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseXOR",[5,1]));
+        });
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // BitwiseORExpression
 
 function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = BitwiseXORExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                punctuator("|"),
-                whitespace,
-                BitwiseXORExpression],
-                ([,,,right]) => new BitwiseORNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                  // 6 = start
+        b.item(BitwiseXORExpression); // 5 = left
+        b.repeat(() => {
+            b.items([
+                whitespace,           // 4
+                punctuator("|"),      // 3
+                whitespace,           // 2
+                BitwiseXORExpression, // 1 = right
+                pos,                  // 0 = end
+            ]);
+            b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseOR",[5,1]));
+        });
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.12
@@ -1338,45 +1593,45 @@ function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
 // LogicalANDExpression
 
 function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = BitwiseORExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                punctuator("&&"),
-                whitespace,
-                BitwiseORExpression],
-                ([,,,right]) => new LogicalANDNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                 // 6 = start
+        b.item(BitwiseORExpression); // 5 = left
+        b.repeat(() => {
+            b.items([
+                whitespace,          // 4
+                punctuator("&&"),    // 3
+                whitespace,          // 2
+                BitwiseORExpression, // 1 = right
+                pos,                 // 0 = end
+            ]);
+            b.popAboveAndSet(5,makeNode(b,6,0,"LogicalAND",[5,1]));
+        });
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // LogicalORExpression
 
 function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = LogicalANDExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                punctuator("||"),
-                whitespace,
-                LogicalANDExpression],
-                ([,,,right]) => new LogicalORNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                  // 6 = start
+        b.item(LogicalANDExpression); // 5 = left
+        b.repeat(() => {
+            b.items([
+                whitespace,           // 4
+                punctuator("||"),     // 3
+                whitespace,           // 2
+                LogicalANDExpression, // 1 = right
+                pos,                  // 0 = end
+            ]);
+            b.popAboveAndSet(5,makeNode(b,6,0,"LogicalORNode",[5,1]));
+        });
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.13
@@ -1384,22 +1639,30 @@ function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
 // ConditionalExpression
 
 function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let condition = LogicalORExpression(p);
-    return p.choice([
-        () => p.seq8([
-            whitespace,
-            punctuator("?"),
-            whitespace,
-            AssignmentExpression,
-            whitespace,
-            punctuator(":"),
-            whitespace,
-            AssignmentExpression],
-            ([,,,trueExpr,,,,falseExpr]) =>
-                new ConditionalNode(new Range(start,p.pos),condition,trueExpr,falseExpr)),
-        () => condition,
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                      // 10 = start
+        b.item(LogicalORExpression);      // 9 = condition
+        b.choice([
+            () => {
+                b.items([
+                    whitespace,           // 8
+                    punctuator("?"),      // 7
+                    whitespace,           // 6
+                    AssignmentExpression, // 5 = trueExpr
+                    whitespace,           // 4
+                    punctuator(":"),      // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = falseExpr
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(9,makeNode(b,10,0,"Conditional",[9,5,1]));
+            },
+            () => {},
+        ]);
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 12.14
@@ -1407,87 +1670,135 @@ function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
 // AssignmentExpression_plain
 
 function AssignmentExpression_plain(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left: ExpressionNode | ErrorNode;
-    let result: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => left = LeftHandSideExpression(p),
-        () => result = p.choice<ExpressionNode | ErrorNode>([
-            () => p.seq4([
-                whitespace,
-                punctuator("="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("*="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignMultiplyNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("/="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignDivideNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("%="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignModuloNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("+="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignAddNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("-="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignSubtractNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("<<="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignLeftShiftNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator(">>="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignSignedRightShiftNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator(">>>="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("&="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignBitwiseANDNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("^="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignBitwiseXORNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                punctuator("|="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignBitwiseORNode(new Range(start,p.pos),left,right)),
-        ]),
-    ]);
-    return result;
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                      // 6 = start
+        b.item(LeftHandSideExpression);   // 5 = left
+        b.choice([
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("="),      // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"Assign",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("*="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignMultiply",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("/="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignDivide",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("%="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignModulo",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("+="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignAdd",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("-="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignSubtract",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("<<="),    // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignLeftShift",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator(">>="),    // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignSignedRightShift",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator(">>>="),   // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignUnsignedRightShift",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("&="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseAND",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("^="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseXOR",[5,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,           // 4
+                    punctuator("|="),     // 3
+                    whitespace,           // 2
+                    AssignmentExpression, // 1 = right
+                    pos,                  // 0 = end
+                ]);
+                b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseOR",[5,1]));
+            },
+        ])
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // AssignmentExpression
@@ -1507,24 +1818,23 @@ function AssignmentExpression(p: Parser): ExpressionNode | ErrorNode {
 // Expression
 
 function Expression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = AssignmentExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                () => AssignmentExpression(p)],
-                ([,,,right]) => new CommaNode(new Range(start,p.pos),left,right)
-            );
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);                  // 6 = start
+        b.item(AssignmentExpression); // 5 = left
+        b.repeat(() => {
+            b.items([
+                whitespace,           // 4
+                punctuator(","),      // 3
+                whitespace,           // 2
+                AssignmentExpression, // 1 = right
+                pos,                  // 0 = end
+            ]);
+            b.popAboveAndSet(5,makeNode(b,6,0,"Comma",[5,1]));
+        });
+        b.assertLengthIs(2);
+        return checkExpressionNode(b.get(0));
+    });
 }
 
 // Section 13
@@ -1590,19 +1900,26 @@ function BlockStatement(p: Parser): BlockNode | ErrorNode {
 // Block
 
 function Block(p: Parser): BlockNode | ErrorNode {
-    return p.seq5([
-        pos,
-        punctuator("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq2([
-                StatementList,
-                whitespace],
-                ([inner,]) => inner),
-            () => new StatementListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        punctuator("}")],
-        ([start,,,statements,]) => new BlockNode(new Range(start,p.pos),statements));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 5
+            punctuator("{"),   // 4
+            whitespace,        // 3
+            () => p.choice([   // 2 = statements
+                () => p.seq2([
+                    StatementList,
+                    whitespace],
+                    ([inner,]) => inner),
+                () => new StatementListNode(new Range(p.pos,p.pos),[]),
+            ]),
+            punctuator("}"),   // 1
+            pos,               // 0
+        ]);
+        b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // StatementList
@@ -1644,24 +1961,37 @@ function StatementListItem(p: Parser): StatementListItemType | ErrorNode {
 // LexicalDeclaration
 
 function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
-    return p.choice<DeclarationNode | ErrorNode>([
-        () => p.seq6([
-            pos,
-            keyword("let"),
-            whitespace,
-            BindingList,
-            whitespace,
-            punctuator(";")],
-            ([start,,,bindings,,]) => new LetNode(new Range(start,p.pos),bindings)),
-        () => p.seq6([
-            pos,
-            keyword("const"),
-            whitespace,
-            BindingList,
-            whitespace,
-            punctuator(";")],
-            ([start,,,bindings,,]) => new ConstNode(new Range(start,p.pos),bindings)),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,              // 6 = start
+                    keyword("let"),   // 5
+                    whitespace,       // 4
+                    BindingList,      // 3 = bindings
+                    whitespace,       // 2
+                    punctuator(";"),  // 1
+                    pos,              // 0 = end
+                ]);
+                b.popAboveAndSet(6,makeNode(b,6,0,"Let",[3]));
+            },
+            () => {
+                b.items([
+                    pos,              // 6 = start
+                    keyword("const"), // 5
+                    whitespace,       // 4
+                    BindingList,      // 3 = bindings
+                    whitespace,       // 2
+                    punctuator(";"),  // 1
+                    pos,              // 0 = end
+                ]);
+                b.popAboveAndSet(6,makeNode(b,6,0,"Const",[3]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // BindingList
@@ -1706,13 +2036,20 @@ function LexicalBinding_identifier(p: Parser): LexicalIdentifierBindingNode | Er
 // LexicalBinding_pattern
 
 function LexicalBinding_pattern(p: Parser): LexicalPatternBindingNode | ErrorNode {
-    return p.seq4([
-        pos,
-        BindingPattern,
-        whitespace,
-        Initializer],
-        ([start,pattern,,initializer]) =>
-            new LexicalPatternBindingNode(new Range(start,p.pos),pattern,initializer));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,            // 4 = start
+            BindingPattern, // 3 = pattern
+            whitespace,     // 2
+            Initializer,    // 1 = initializer
+            pos,            // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"LexicalPatternBinding",[3,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // LexicalBinding
@@ -1729,14 +2066,22 @@ function LexicalBinding(p: Parser): LexicalBindingNode | ErrorNode {
 // VariableStatement
 
 function VariableStatement(p: Parser): VarNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("var"),
-        whitespace,
-        VariableDeclarationList,
-        whitespace,
-        punctuator(";")],
-        ([start,,,declarations,,]) => new VarNode(new Range(start,p.pos),declarations));
+    return p.attempt(() => {
+        const b = new Builder(p);
+
+        b.items([
+            pos,                     // 6 = start
+            keyword("var"),          // 5
+            whitespace,              // 4
+            VariableDeclarationList, // 3 = declarations
+            whitespace,              // 2
+            punctuator(";"),         // 1
+            pos,                     // 0 = end
+        ]);
+        b.popAboveAndSet(6,makeNode(b,6,0,"Var",[3]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // VariableDeclarationList
@@ -1786,12 +2131,20 @@ function VariableDeclaration_identifier(p: Parser): VarIdentifierNode | ErrorNod
 // VariableDeclaration_pattern
 
 function VariableDeclaration_pattern(p: Parser): VarPatternNode | ErrorNode {
-    return p.seq4([
-        pos,
-        BindingPattern,
-        whitespace,
-        Initializer],
-        ([start,pattern,,initializer]) => new VarPatternNode(new Range(start,p.pos),pattern,initializer));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,            // 4 = start
+            BindingPattern, // 3 = pattern
+            whitespace,     // 2
+            Initializer,    // 1 = initializer
+            pos,            // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"VarPattern",[3,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // VariableDeclaration
@@ -1807,8 +2160,8 @@ function VariableDeclaration(p: Parser): VarIdentifierNode | VarPatternNode | Er
 
 // BindingPattern
 
-function BindingPattern(p: Parser): BindingPatternType | ErrorNode {
-    return p.choice<BindingPatternType | ErrorNode>([
+function BindingPattern(p: Parser): BindingPatternNode | ErrorNode {
+    return p.choice<BindingPatternNode | ErrorNode>([
         ObjectBindingPattern,
         ArrayBindingPattern,
     ]);
@@ -1817,116 +2170,153 @@ function BindingPattern(p: Parser): BindingPatternType | ErrorNode {
 // ObjectBindingPattern
 
 function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
-    return p.seq5([
-        pos,
-        punctuator("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq3([
-                BindingPropertyList,
-                whitespace,
-                opt(() => {
-                    p.sequence([
-                        punctuator(","),
-                        whitespace,
-                    ]);
-                })],
-                ([inner,,]) => inner),
-            () => new BindingPropertyListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        punctuator("}")],
-        ([start,,,properties,]) => new ObjectBindingPatternNode(new Range(start,p.pos),properties));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);              // 6 = start
+        b.item(punctuator("{"));  // 5
+        b.item(whitespace);       // 4
+        b.item(pos);              // 3
+        b.choice([                // 2 = properties
+            () => {
+                b.item(BindingPropertyList),
+                b.item(whitespace),
+                b.opt(() => {
+                    b.item(punctuator(","));
+                    b.item(whitespace);
+                    b.popAboveAndSet(1,null);
+                });
+                b.popAboveAndSet(2,b.get(2));
+            },
+            () => {
+                b.push(new BindingPropertyListNode(new Range(p.pos,p.pos),[]));
+            },
+        ]);
+        b.item(punctuator("}"));  // 1
+        b.item(pos);              // 0 = end
+        b.assertLengthIs(7);
+        const start = checkNumber(b.get(6));
+        const end = checkNumber(b.get(0));
+        b.popAboveAndSet(6,b.get(2));
+        b.assertLengthIs(1);
+        const properties = checkBindingPropertyListNode(b.get(0));
+        return new ObjectBindingPatternNode(new Range(start,end),properties);
+    });
 }
 
 // ArrayBindingPattern_1
 
 function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq7([
-        pos,
-        punctuator("["),
-        whitespace,
-        pos,
-        opt(() => p.seq2([
-            Elision,
-            whitespace],
-            ([inner,]) => inner)),
-        opt(() => p.seq2([
-            BindingRestElement,
-            whitespace],
-            ([inner,]) => inner)),
-        punctuator("]")],
-        ([start,,,start2,elision,rest,]) => {
-            let end = start2;
-            const array: (BindingElementType | ErrorNode)[] = [];
-            if (elision != null) {
-                array.push(elision);
-                end = elision.range.end;
-            }
-            if (rest != null) {
-                array.push(rest);
-                end = rest.range.end;
-            }
+    return p.attempt(() => {
+        const b = new Builder(p);
 
-            const elements = new BindingElementListNode(new Range(start2,end),array);
-            return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
-        });
+        b.items([
+            pos,                       // 7 = start
+            punctuator("["),           // 6
+            whitespace,                // 5
+            pos,                       // 4 = start2
+            opt(() => p.seq2([         // 3 = elision
+                Elision,
+                whitespace],
+                ([inner,]) => inner)),
+            opt(() => p.seq2([         // 2 = rest
+                BindingRestElement,
+                whitespace],
+                ([inner,]) => inner)),
+            punctuator("]"),           // 1
+            pos,                       // 0 (unused)
+        ]);
+
+        const start = checkNumber(b.get(7));
+        const start2 = checkNumber(b.get(4));
+        const elision = checkNode(b.get(3));
+        const rest = checkNode(b.get(2));
+        let end = start2;
+
+        const array: ASTNode[] = [];
+        if (elision != null) {
+            array.push(elision);
+            end = elision.range.end;
+        }
+        if (rest != null) {
+            array.push(rest);
+            end = rest.range.end;
+        }
+
+        const elements = new GenericNode(new Range(start2,end),"[]",array);
+        return new GenericNode(new Range(start,p.pos),"ArrayBindingPattern",[elements]);
+    });
 }
 
 // ArrayBindingPattern_2
 
 function ArrayBindingPattern_2(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq6([
-        pos,
-        punctuator("["),
-        whitespace,
-        BindingElementList,
-        whitespace,
-        punctuator("]")],
-        ([start,,,elements,,]) => new ArrayBindingPatternNode(new Range(start,p.pos),elements));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                // 6 = start
+            punctuator("["),    // 5
+            whitespace,         // 4
+            BindingElementList, // 3 = elements
+            whitespace,         // 2
+            punctuator("]"),    // 1
+            pos,                // 0 = end
+        ]);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ArrayBindingPattern",[3]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // ArrayBindingPattern_3
 
 function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq11([
-        pos,
-        punctuator("["),
-        whitespace,
-        pos,
-        BindingElementList,
-        whitespace,
-        punctuator(","),
-        whitespace,
-        () => p.opt(() => {
-            return p.seq2([
-                Elision,
-                whitespace],
-                ([inner,]) => inner);
-        }),
-        () => p.opt(() => {
-            return p.seq2([
-                BindingRestElement,
-                whitespace],
-                ([inner,]) => inner);
-        }),
-        punctuator("]")],
-        ([start,,,start2,elements,,,,elision,rest,]) => {
-            let end = elements.range.end;
-            let array: (BindingElementType | ErrorNode)[] = [];
-            if (!(elements instanceof ErrorNode))
-                array = array.concat(elements.elements);
-            if (elision != null) {
-                array.push(elision);
-                end = elision.range.end;
-            }
-            if (rest != null) {
-                array.push(rest);
-                end = rest.range.end;
-            }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                // 10 = start
+            punctuator("["),    // 9
+            whitespace,         // 8
+            pos,                // 7 = start2
+            BindingElementList, // 6 = elements
+            whitespace,         // 5
+            punctuator(","),    // 4
+            whitespace,         // 3
+            opt(() => {         // 2 = elision
+                return p.seq2([
+                    Elision,
+                    whitespace],
+                    ([inner,]) => inner);
+            }),
+            opt(() => {         // 1 = rest
+                return p.seq2([
+                    BindingRestElement,
+                    whitespace],
+                    ([inner,]) => inner);
+            }),
+            punctuator("]"),    // 0
+        ]);
+        const start = checkNumber(b.get(10));
+        const start2 = checkNumber(b.get(7));
+        const elements = checkNode(b.get(6));
+        const elision = checkNode(b.get(2));
+        const rest = checkNode(b.get(1));
 
-            const allElements = new BindingElementListNode(new Range(start2,end),array);
-            return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
-        });
+        let end = elements.range.end;
+        let array: ASTNode[] = [];
+        if (!(elements instanceof ErrorNode))
+            array = array.concat(elements.children);
+        if (elision != null) {
+            array.push(elision);
+            end = elision.range.end;
+        }
+        if (rest != null) {
+            array.push(rest);
+            end = rest.range.end;
+        }
+
+        const allElements = new GenericNode(new Range(start2,end),"[]",array);
+        return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
+    });
 }
 
 // ArrayBindingPattern
@@ -1990,16 +2380,27 @@ function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
 // BindingElisionElement
 
 function BindingElisionElement(p: Parser): BindingElementType | ErrorNode {
-    return p.choice<BindingElementType | ErrorNode>([
-        () => p.seq4([
-            pos,
-            Elision,
-            whitespace,
-            BindingElement],
-            ([start,elision,,element]) =>
-                new BindingElisionElementNode(new Range(start,p.pos),elision,element)),
-        BindingElement,
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,            // 4 = start
+                    Elision,        // 3 = elision
+                    whitespace,     // 2
+                    BindingElement, // 1 = element
+                    pos,            // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"BindingElisionElement",[3,1]));
+            },
+            () => {
+                b.item(BindingElement);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkBindingElementType(b.get(0));
+    });
 }
 
 // BindingProperty
@@ -2117,26 +2518,32 @@ function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
 // IfStatement
 
 function IfStatement(p: Parser): IfStatementNode | ErrorNode {
-    return p.seq11([
-        pos,
-        keyword("if"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        Statement,
-        opt(() => p.seq4([
-            whitespace,
-            keyword("else"),
-            whitespace,
-            Statement],
-            ([,,,fb]) => fb))],
-        ([start,arg2,arg3,arg4,arg5,condition,arg7,arg8,arg9,trueBranch,falseBranch]) =>
-            new IfStatementNode(new Range(start,p.pos),condition,trueBranch,falseBranch)
-    );
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 11 = start
+            keyword("if"),     // 10
+            whitespace,        // 9
+            punctuator("("),   // 8
+            whitespace,        // 7
+            Expression,        // 6 = condition
+            whitespace,        // 5
+            punctuator(")"),   // 4
+            whitespace,        // 3
+            Statement,         // 2 = trueBranch
+            opt(() => p.seq4([ // 1 = falseBranch
+                whitespace,
+                keyword("else"),
+                whitespace,
+                Statement],
+                ([,,,fb]) => fb)),
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(12);
+        b.popAboveAndSet(11,makeNode(b,11,0,"IfStatement",[6,2,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // Section 13.7
@@ -2144,43 +2551,54 @@ function IfStatement(p: Parser): IfStatementNode | ErrorNode {
 // IterationStatement_do
 
 function IterationStatement_do(p: Parser): DoStatementNode | ErrorNode {
-    return p.seq14([
-        pos,
-        keyword("do"),
-        whitespace,
-        Statement,
-        whitespace,
-        keyword("while"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator(";")],
-        ([start,,,body,,,,,,condition,,,,]) =>
-            new DoStatementNode(new Range(start,p.pos),body,condition)
-    );
-
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,              // 14
+            keyword("do"),    // 13
+            whitespace,       // 12
+            Statement,        // 11 = body
+            whitespace,       // 10
+            keyword("while"), // 9
+            whitespace,       // 8
+            punctuator("("),  // 7
+            whitespace,       // 6
+            Expression,       // 5 = condition
+            whitespace,       // 4
+            punctuator(")"),  // 3
+            whitespace,       // 2
+            punctuator(";"),  // 1 = end
+            pos,              // 0 = start
+        ]);
+        b.assertLengthIs(15);
+        b.popAboveAndSet(14,makeNode(b,14,0,"DoStatement",[11,5]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // IterationStatement_while
 
 function IterationStatement_while(p: Parser): WhileStatementNode | ErrorNode {
-    return p.seq10([
-        pos,
-        keyword("while"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,condition,,,,body]) => {
-            return new WhileStatementNode(new Range(start,p.pos),condition,body);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                // 10 = start
+            keyword("while"),   // 9
+            whitespace,         // 8
+            punctuator("("),    // 7
+            whitespace,         // 6
+            Expression,         // 5 = condition
+            whitespace,         // 4
+            punctuator(")"),    // 3
+            whitespace,         // 2
+            Statement,          // 1 = body
+            pos,                // 0 = end
+        ]);
+        b.assertLengthIs(11);
+        b.popAboveAndSet(10,makeNode(b,10,0,"WhileStatement",[5,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
     });
 }
 
@@ -2191,46 +2609,72 @@ function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
-    return p.seq14([
-        pos,
-        keyword("for"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        () => p.choice<ForCInitType | ErrorNode>([
-            () => p.seq6([
-                notKeyword("let"), // FIXME: need tests for this
-                notPunctuator("["), // FIXME: need tests for this
-                Expression,
-                whitespace,
-                punctuator(";"),
-                whitespace],
-                ([,,inner,,,]) => inner),
-            () => p.seq8([
-                pos,
-                keyword("var"),
-                whitespace,
-                VariableDeclarationList,
-                pos,
-                whitespace,
-                punctuator(";"),
-                whitespace],
-                ([start2,,,declarations,end,,,]) =>
-                    new VarNode(new Range(start2,end),declarations)),
-            () => p.seq2([LexicalDeclaration,whitespace],([decl,]) => decl),
-            // initializer part can be empty, but need to distinguish this from an error
-            () => p.seq1([punctuator(";")],() => null),
-        ]),
-        opt(Expression),
-        whitespace,
-        punctuator(";"),
-        whitespace,
-        opt(() => p.seq2([Expression,whitespace],([inner,]) => inner)),
-        punctuator(")"),
-        whitespace,
-        Statement,
-    ],([start,,,,,init,condition,,,,update,,,body]) => {
-        return new ForCNode(new Range(start,p.pos),init,condition,update,body);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                                                            // 14 = start
+            keyword("for"),                                                 // 13
+            whitespace,                                                     // 12
+            punctuator("("),                                                // 11
+            whitespace,                                                     // 10
+        ]);
+        b.assertLengthIs(5);
+        b.choice([
+            () => {
+                b.items([
+                    notKeyword("let"), // FIXME: need tests for this
+                    notPunctuator("["), // FIXME: need tests for this
+                    Expression,
+                    whitespace,
+                    punctuator(";"),
+                    whitespace
+                ]);
+                b.popAboveAndSet(5,b.get(3));
+            },
+            () => {
+                b.items([
+                    pos,                     // 7 = start2
+                    keyword("var"),          // 6
+                    whitespace,              // 5
+                    VariableDeclarationList, // 4 = declarations
+                    pos,                     // 3 = end
+                    whitespace,              // 2
+                    punctuator(";"),         // 1
+                    whitespace,              // 0
+                ]);
+                b.popAboveAndSet(7,makeNode(b,7,3,"Var",[4]));
+            },
+            () => {
+                b.items([
+                    LexicalDeclaration,
+                    whitespace,
+                ]);
+                b.popAboveAndSet(1,b.get(1));
+            },
+            () => {
+                // initializer part can be empty, but need to distinguish this from an error
+                b.items([
+                    punctuator(";"),
+                ]);
+                b.popAboveAndSet(0,null);
+            },
+        ]);
+        b.assertLengthIs(6);
+        b.items([
+            opt(Expression),                                                // 8 = condition
+            whitespace,                                                     // 7
+            punctuator(";"),                                                // 6
+            whitespace,                                                     // 5
+            opt(() => p.seq2([Expression,whitespace],([inner,]) => inner)), // 4 = update
+            punctuator(")"),                                                // 3
+            whitespace,                                                     // 2
+            Statement,                                                      // 1 = body
+            pos,
+        ]);
+        b.assertLengthIs(15);
+        b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
     });
 }
 
@@ -2241,37 +2685,56 @@ function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
-    return p.seq14([
-        pos,
-        keyword("for"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        () => p.choice<ForInBindingType | ErrorNode>([
-            () => p.seq3([
-                notKeyword("let"), // FIXME: need tests for this
-                notPunctuator("["), // FIXME: need tests for this
-                () => LeftHandSideExpression(p)],
-                ([,,inner]) => inner
-            ),
-            () => p.seq4([
-                pos,
-                keyword("var"),
-                whitespace,
-                ForBinding],
-                ([start2,,,inner]) => new VarForDeclarationNode(new Range(start2,p.pos),inner)
-            ),
-            ForDeclaration,
-        ]),
-        whitespace,
-        keyword("in"),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,binding,,,,expr,,,,body]) => new ForInNode(new Range(start,p.pos),binding,expr,body));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                                           // 14 = start
+            keyword("for"),                                // 13
+            whitespace,                                    // 12
+            punctuator("("),                               // 11
+            whitespace,                                    // 10
+        ]);
+        b.assertLengthIs(5);
+        b.choice([ // 9 = binding
+            () => {
+                b.items([
+                    notKeyword("let"), // FIXME: need tests for this
+                    notPunctuator("["), // FIXME: need tests for this
+                    LeftHandSideExpression,
+                ]);
+                b.popAboveAndSet(2,b.get(0));
+            },
+            () => {
+                b.items([
+                    pos,
+                    keyword("var"),
+                    whitespace,
+                    ForBinding,
+                    pos,
+                ]);
+                b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
+            },
+            () => {
+                b.item(ForDeclaration);
+            }
+        ]);
+        b.assertLengthIs(6);
+        b.items([
+            whitespace,                                    // 8
+            keyword("in"),                                 // 7
+            whitespace,                                    // 6
+            Expression,                                    // 5 = expr
+            whitespace,                                    // 4
+            punctuator(")"),                               // 3
+            whitespace,                                    // 2
+            Statement,                                     // 1 = body
+            pos,                                           // 0 = end
+        ]);
+        b.assertLengthIs(15);
+        b.popAboveAndSet(14,makeNode(b,14,0,"ForIn",[9,5,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // IterationStatement_for_of
@@ -2281,36 +2744,56 @@ function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
-    return p.seq14([
-        pos,
-        keyword("for"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        () => p.choice<ForOfBindingType | ErrorNode>([
-            () => p.seq3([
-                notKeyword("let"), // FIXME: need tests for this
-                notPunctuator("["), // FIXME: need tests for this
-                LeftHandSideExpression],
-                ([,,inner]) => inner),
-            () => p.seq4([
-                pos,
-                keyword("var"),
-                whitespace,
-                ForBinding],
-                ([start2,,,inner]) => new VarForDeclarationNode(new Range(start2,p.pos),inner)),
-            ForDeclaration,
-        ]),
-        whitespace,
-        keyword("of"),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,binding,,,,expr,,,,body]) =>
-            new ForOfNode(new Range(start,p.pos),binding,expr,body));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                                           // 14 = start
+            keyword("for"),                                // 13
+            whitespace,                                    // 12
+            punctuator("("),                               // 11
+            whitespace,                                    // 10
+        ]);
+        b.assertLengthIs(5);
+        b.choice([
+            () => {
+                b.items([
+                    notKeyword("let"), // FIXME: need tests for this
+                    notPunctuator("["), // FIXME: need tests for this
+                    LeftHandSideExpression
+                ]);
+                b.popAboveAndSet(2,b.get(0));
+            },
+            () => {
+                b.items([
+                    pos,
+                    keyword("var"),
+                    whitespace,
+                    ForBinding,
+                    pos
+                ]);
+                b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
+            },
+            () => {
+                b.item(ForDeclaration);
+            },
+        ]);
+        b.assertLengthIs(6);
+        b.items([
+            whitespace,                                    // 8
+            keyword("of"),                                 // 7
+            whitespace,                                    // 6
+            Expression,                                    // 5 = expr
+            whitespace,                                    // 4
+            punctuator(")"),                               // 3
+            whitespace,                                    // 2
+            Statement,                                     // 1 = body
+            pos,                                           // 0 = end
+        ]);
+        b.assertLengthIs(15);
+        b.popAboveAndSet(14,makeNode(b,14,0,"ForOf",[9,5,1]));
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // IterationStatement_for
@@ -2336,20 +2819,35 @@ function IterationStatement(p: Parser): BreakableStatementNode | ErrorNode {
 // ForDeclaration
 
 function ForDeclaration(p: Parser): LetForDeclarationNode | ConstForDeclarationNode | ErrorNode {
-    return p.choice<LetForDeclarationNode | ConstForDeclarationNode | ErrorNode>([
-        () => p.seq4([
-            pos,
-            keyword("let"),
-            whitespace,
-            ForBinding],
-            ([start,,,binding]) => new LetForDeclarationNode(new Range(start,p.pos),binding)),
-        () => p.seq4([
-            pos,
-            keyword("const"),
-            whitespace,
-            ForBinding],
-            ([start,,,binding]) => new ConstForDeclarationNode(new Range(start,p.pos),binding)),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,              // 4 = start
+                    keyword("let"),   // 3
+                    whitespace,       // 2
+                    ForBinding,       // 1 = binding
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"LetForDeclaration",[1]));
+            },
+            () => {
+                b.items([
+                    pos,              // 4 = start
+                    keyword("const"), // 3
+                    whitespace,       // 2
+                    ForBinding,       // 1 = binding
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"ConstForDeclaration",[1]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkGenericNode(b.get(0));
+    });
 }
 
 // ForBinding
@@ -3782,26 +4280,32 @@ function ExportsList(p: Parser): ExportsListNode | ErrorNode {
 // ExportSpecifier
 
 function ExportSpecifier(p: Parser): ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode {
-    const start = p.pos;
-    let ident: IdentifierNode | ErrorNode;
-    let result: ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode;
-    p.sequence([
-        () => ident = IdentifierName(p),
-        () => result = p.choice<ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode>([
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);
+        b.item(IdentifierName);
+        b.choice([
             () => {
-                let asIdent: IdentifierNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    keyword("as"),
-                    whitespace,
-                    () => asIdent = IdentifierName(p),
+                // let asIdent: IdentifierNode | ErrorNode;
+                b.items([
+                    whitespace,        // 4
+                    keyword("as"),     // 3
+                    whitespace,        // 2
+                    IdentifierName,    // 1
+                    pos,               // 0
                 ]);
-                return new ExportAsSpecifierNode(new Range(start,p.pos),ident,asIdent);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(4,makeNode(b,6,0,"ExportAsSpecifier",[5,1]));
+                b.assertLengthIs(3);
+                // return new ExportAsSpecifierNode(new Range(start,p.pos),ident,asIdent);
             },
             () => {
-                return new ExportNormalSpecifierNode(new Range(start,p.pos),ident);
+                b.item(pos);
+                b.assertLengthIs(3);
+                b.popAboveAndSet(0,makeNode(b,2,0,"ExportNormalSpecifier",[1]));
             },
-        ]),
-    ]);
-    return result;
+        ]);
+        b.assertLengthIs(3);
+        return checkGenericNode(b.get(0));
+    });
 }
