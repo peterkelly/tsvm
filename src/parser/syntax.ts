@@ -40,185 +40,171 @@ import {
     ForInBindingType,
     ForOfBindingType,
 
-    ImportClauseNode,
-    ExportNode,
-    ImportNode,
-    MethodDefinitionNode,
-    DeclarationNode,
-    LexicalBindingNode,
+    // ImportClauseNode,
+    // ExportNode,
+    // ImportNode,
+    // MethodDefinitionNode,
+    // DeclarationNode,
+    // LexicalBindingNode,
 
     CastError,
     Range,
     ASTNode,
-    StatementNode,
-    BreakableStatementNode,
+    // StatementNode,
+    // BreakableStatementNode,
     ExpressionNode,
     IdentifierReferenceNode,
     BindingIdentifierNode,
     LabelIdentifierNode,
     IdentifierNode,
-    ThisNode,
-    NullLiteralNode,
+    // ThisNode,
+    // NullLiteralNode,
     BooleanLiteralNode,
     NumericLiteralNode,
     StringLiteralNode,
-    ArrayLiteralNode,
+    // ArrayLiteralNode,
     ElisionNode,
-    SpreadElementNode,
-    ObjectLiteralNode,
-    ColonPropertyDefinitionNode,
-    ComputedPropertyNameNode,
-    CoverInitializedNameNode,
-    MemberAccessExprNode,
-    MemberAccessIdentNode,
-    SuperPropertyExprNode,
-    SuperPropertyIdentNode,
-    NewTargetNode,
-    NewExpressionNode,
-    CallNode,
-    SuperCallNode,
-    ArgumentsNode,
-    PostIncrementNode,
-    PostDecrementNode,
-    DeleteNode,
-    VoidNode,
-    TypeOfNode,
-    PreIncrementNode,
-    PreDecrementNode,
-    UnaryPlusNode,
-    UnaryMinusNode,
-    UnaryBitwiseNotNode,
-    UnaryLogicalNotNode,
-    MultiplyNode,
-    DivideNode,
-    ModuloNode,
-    AddNode,
-    SubtractNode,
-    LeftShiftNode,
-    SignedRightShiftNode,
-    UnsignedRightShiftNode,
-    LessThanNode,
-    GreaterThanNode,
-    LessEqualNode,
-    GreaterEqualNode,
-    InstanceOfNode,
-    InNode,
-    AbstractEqualsNode,
-    AbstractNotEqualsNode,
-    StrictEqualsNode,
-    StrictNotEqualsNode,
-    BitwiseANDNode,
-    BitwiseXORNode,
-    BitwiseORNode,
-    LogicalANDNode,
-    LogicalORNode,
-    ConditionalNode,
-    AssignNode,
-    AssignMultiplyNode,
-    AssignDivideNode,
-    AssignModuloNode,
-    AssignAddNode,
-    AssignSubtractNode,
-    AssignLeftShiftNode,
-    AssignSignedRightShiftNode,
-    AssignUnsignedRightShiftNode,
-    AssignBitwiseANDNode,
-    AssignBitwiseXORNode,
-    AssignBitwiseORNode,
-    CommaNode,
-    BlockNode,
-    LetNode,
-    ConstNode,
-    LexicalIdentifierBindingNode,
-    LexicalPatternBindingNode,
-    VarNode,
-    VarIdentifierNode,
-    VarPatternNode,
-    ObjectBindingPatternNode,
-    ArrayBindingPatternNode,
-    BindingElisionElementNode,
-    BindingPropertyNode,
-    BindingPatternInitNode,
-    SingleNameBindingNode,
-    BindingRestElementNode,
-    EmptyStatementNode,
-    ExpressionStatementNode,
-    IfStatementNode,
-    DoStatementNode,
-    WhileStatementNode,
-    ForCNode,
-    ForInNode,
-    ForOfNode,
-    VarForDeclarationNode,
-    LetForDeclarationNode,
-    ConstForDeclarationNode,
-    ContinueStatementNode,
-    BreakStatementNode,
-    ReturnStatementNode,
-    WithStatementNode,
-    SwitchStatementNode,
-    CaseClauseNode,
-    DefaultClauseNode,
-    LabelledStatementNode,
-    ThrowStatementNode,
-    TryStatementNode,
-    CatchNode,
-    FinallyNode,
-    DebuggerStatementNode,
-    FunctionDeclarationNode,
-    FunctionExpressionNode,
-    ArrowFunctionNode,
-    MethodNode,
-    GetterNode,
-    SetterNode,
-    GeneratorMethodNode,
-    GeneratorDeclarationNode,
-    DefaultGeneratorDeclarationNode,
-    GeneratorExpressionNode,
-    YieldExprNode,
-    YieldStarNode,
-    YieldNothingNode,
-    ClassDeclarationNode,
-    ClassExpressionNode,
-    ClassTailNode,
-    ExtendsNode,
-    StaticMethodDefinitionNode,
-    EmptyClassElementNode,
+    // SpreadElementNode,
+    // ObjectLiteralNode,
+    // ColonPropertyDefinitionNode,
+    // ComputedPropertyNameNode,
+    // CoverInitializedNameNode,
+    // MemberAccessExprNode,
+    // MemberAccessIdentNode,
+    // SuperPropertyExprNode,
+    // SuperPropertyIdentNode,
+    // NewTargetNode,
+    // NewExpressionNode,
+    // CallNode,
+    // SuperCallNode,
+    // ArgumentsNode,
+    // PostIncrementNode,
+    // PostDecrementNode,
+    // DeleteNode,
+    // VoidNode,
+    // TypeOfNode,
+    // PreIncrementNode,
+    // PreDecrementNode,
+    // UnaryPlusNode,
+    // UnaryMinusNode,
+    // UnaryBitwiseNotNode,
+    // UnaryLogicalNotNode,
+    // MultiplyNode,
+    // DivideNode,
+    // ModuloNode,
+    // AddNode,
+    // SubtractNode,
+    // LeftShiftNode,
+    // SignedRightShiftNode,
+    // UnsignedRightShiftNode,
+    // LessThanNode,
+    // GreaterThanNode,
+    // LessEqualNode,
+    // GreaterEqualNode,
+    // InstanceOfNode,
+    // InNode,
+    // AbstractEqualsNode,
+    // AbstractNotEqualsNode,
+    // StrictEqualsNode,
+    // StrictNotEqualsNode,
+    // BitwiseANDNode,
+    // BitwiseXORNode,
+    // BitwiseORNode,
+    // LogicalANDNode,
+    // LogicalORNode,
+    // ConditionalNode,
+    // AssignNode,
+    // AssignMultiplyNode,
+    // AssignDivideNode,
+    // AssignModuloNode,
+    // AssignAddNode,
+    // AssignSubtractNode,
+    // AssignLeftShiftNode,
+    // AssignSignedRightShiftNode,
+    // AssignUnsignedRightShiftNode,
+    // AssignBitwiseANDNode,
+    // AssignBitwiseXORNode,
+    // AssignBitwiseORNode,
+    // CommaNode,
+    // BlockNode,
+    // LetNode,
+    // ConstNode,
+    // LexicalIdentifierBindingNode,
+    // LexicalPatternBindingNode,
+    // VarNode,
+    // VarIdentifierNode,
+    // VarPatternNode,
+    // ObjectBindingPatternNode,
+    // ArrayBindingPatternNode,
+    // BindingElisionElementNode,
+    // BindingPropertyNode,
+    // BindingPatternInitNode,
+    // SingleNameBindingNode,
+    // BindingRestElementNode,
+    // EmptyStatementNode,
+    // ExpressionStatementNode,
+    // IfStatementNode,
+    // DoStatementNode,
+    // WhileStatementNode,
+    // ForCNode,
+    // ForInNode,
+    // ForOfNode,
+    // VarForDeclarationNode,
+    // LetForDeclarationNode,
+    // ConstForDeclarationNode,
+    // ContinueStatementNode,
+    // BreakStatementNode,
+    // ReturnStatementNode,
+    // WithStatementNode,
+    // SwitchStatementNode,
+    // CaseClauseNode,
+    // DefaultClauseNode,
+    // LabelledStatementNode,
+    // ThrowStatementNode,
+    // TryStatementNode,
+    // CatchNode,
+    // FinallyNode,
+    // DebuggerStatementNode,
+    // FunctionDeclarationNode,
+    // FunctionExpressionNode,
+    // ArrowFunctionNode,
+    // MethodNode,
+    // GetterNode,
+    // SetterNode,
+    // GeneratorMethodNode,
+    // GeneratorDeclarationNode,
+    // DefaultGeneratorDeclarationNode,
+    // GeneratorExpressionNode,
+    // YieldExprNode,
+    // YieldStarNode,
+    // YieldNothingNode,
+    // ClassDeclarationNode,
+    // ClassExpressionNode,
+    // ClassTailNode,
+    // ExtendsNode,
+    // StaticMethodDefinitionNode,
+    // EmptyClassElementNode,
     ScriptNode,
     ModuleNode,
-    ImportFromNode,
-    ImportModuleNode,
-    DefaultAndNameSpaceImportsNode,
-    DefaultAndNamedImportsNode,
-    DefaultImportNode,
-    NameSpaceImportNode,
-    NamedImportsNode,
-    ImportSpecifierNode,
-    ImportAsSpecifierNode,
-    ExportDefaultNode,
-    ExportStarNode,
-    ExportPlainNode,
-    ExportVariableNode,
-    ExportDeclarationNode,
-    ExportFromNode,
-    ExportClauseNode,
-    ExportNormalSpecifierNode,
-    ExportAsSpecifierNode,
+    // ImportFromNode,
+    // ImportModuleNode,
+    // DefaultAndNameSpaceImportsNode,
+    // DefaultAndNamedImportsNode,
+    // DefaultImportNode,
+    // NameSpaceImportNode,
+    // NamedImportsNode,
+    // ImportSpecifierNode,
+    // ImportAsSpecifierNode,
+    // ExportDefaultNode,
+    // ExportStarNode,
+    // ExportPlainNode,
+    // ExportVariableNode,
+    // ExportDeclarationNode,
+    // ExportFromNode,
+    // ExportClauseNode,
+    // ExportNormalSpecifierNode,
+    // ExportAsSpecifierNode,
     ListNode,
-    StatementListNode,
-    PropertyDefinitionListNode,
-    ArgumentListNode,
-    BindingListNode,
-    VariableDeclarationListNode,
-    CaseClauseListNode,
-    FormalParameterListNode,
-    ModuleItemListNode,
-    ImportsListNode,
-    ExportsListNode,
-    BindingPropertyListNode,
-    ElementListNode,
-    BindingElementListNode,
-    ClassElementListNode,
     ErrorNode,
     GenericNode,
 } from "./ast";
@@ -233,15 +219,9 @@ import {
     identifier,
     whitespace,
     whitespaceNoNewline,
-    isLiteralPropertyNameType,
-    isPropertyNameType,
-    isPropertyDefinitionType,
-    isStatementListItemType,
-    isSingleNameBindingType,
     checkNode,
     checkExpressionNode,
-    checkBindingPropertyListNode,
-    checkBindingElementType,
+    checkListNode,
     checkGenericNode,
     checkNumber,
     makeNode,
@@ -251,7 +231,7 @@ import {
 
 // IdentifierReference
 
-function IdentifierReference(p: Parser): IdentifierReferenceNode | ErrorNode {
+function IdentifierReference(p: Parser): ASTNode {
     const ident = Identifier(p);
     if (ident instanceof ErrorNode)
         return ident;
@@ -271,7 +251,7 @@ function BindingIdentifier(p: Parser): BindingIdentifierNode | ErrorNode {
 
 // LabelIdentifier
 
-function LabelIdentifier(p: Parser): LabelIdentifierNode | ErrorNode {
+function LabelIdentifier(p: Parser): ASTNode {
     const ident = Identifier(p);
     if (ident instanceof ErrorNode)
         return ident;
@@ -281,7 +261,7 @@ function LabelIdentifier(p: Parser): LabelIdentifierNode | ErrorNode {
 
 // IdentifierName
 
-function IdentifierName(p: Parser): IdentifierNode | ErrorNode {
+function IdentifierName(p: Parser): ASTNode {
     return Identifier(p);
 }
 
@@ -309,16 +289,16 @@ export function Identifier(p: Parser): IdentifierNode | ErrorNode {
 
 // PrimaryExpression
 
-function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
+function PrimaryExpression(p: Parser): ASTNode {
 
-    function This(p: Parser): ThisNode | ErrorNode {
+    function This(p: Parser): ASTNode {
         return p.seq2([
             pos,
             keyword("this")],
             ([start,]) => new GenericNode(new Range(start,p.pos),"This",[]));
     }
 
-    return p.choice<ExpressionNode | ErrorNode>([
+    return p.choice<ASTNode>([
         This,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
         Literal,
@@ -336,7 +316,7 @@ function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // ParenthesizedExpression
 
-function ParenthesizedExpression(p: Parser): ExpressionNode | ErrorNode {
+function ParenthesizedExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -356,8 +336,8 @@ function ParenthesizedExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // Literal
 
-function Literal(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
+function Literal(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         NullLiteral,
         BooleanLiteral,
         NumericLiteral,
@@ -367,7 +347,7 @@ function Literal(p: Parser): ExpressionNode | ErrorNode {
 
 // NullLiteral
 
-function NullLiteral(p: Parser): NullLiteralNode | ErrorNode {
+function NullLiteral(p: Parser): ASTNode {
     return p.seq2([
         pos,
         keyword("null")],
@@ -377,7 +357,7 @@ function NullLiteral(p: Parser): NullLiteralNode | ErrorNode {
 
 // BooleanLiteral
 
-function BooleanLiteral(p: Parser): BooleanLiteralNode | ErrorNode {
+function BooleanLiteral(p: Parser): ASTNode {
     const start = p.pos;
     if (p.matchKeyword("true"))
         return new BooleanLiteralNode(new Range(start,p.pos),true);
@@ -388,7 +368,7 @@ function BooleanLiteral(p: Parser): BooleanLiteralNode | ErrorNode {
 
 // NumericLiteral
 
-function NumericLiteral(p: Parser): NumericLiteralNode | ErrorNode {
+function NumericLiteral(p: Parser): ASTNode {
     // TODO: Complete numeric literal syntax according to spec
     return p.attempt((start) => {
         while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
@@ -452,14 +432,14 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
 
 // ArrayLiteral
 
-function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
-    return p.attempt((start): ArrayLiteralNode | ErrorNode => {
+function ArrayLiteral(p: Parser): ASTNode {
+    return p.attempt((start) => {
         p.sequence([
             punctuator("["),
             whitespace,
         ]);
 
-        const elements: (ArrayLiteralItemType | ErrorNode)[] = [];
+        const elements: ASTNode[] = [];
         const listStart = p.pos;
         let listEnd = p.pos;
         let first = true;
@@ -473,7 +453,7 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
             }
 
             const elision = p.opt(() => {
-                let inner: ElisionNode | ErrorNode;
+                let inner: ASTNode;
                 p.sequence([
                     () => inner = Elision(p),
                     whitespace,
@@ -486,7 +466,7 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
                 listEnd = elision.range.end;
             }
 
-            let item: ArrayLiteralItemType | ErrorNode = null;
+            let item: ASTNode = null;
             try {
                 item = AssignmentExpression(p);
             } catch (e) {
@@ -513,14 +493,14 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
             punctuator("]"),
         ]);
 
-        const list = new ElementListNode(new Range(listStart,listEnd),elements);
+        const list = new ListNode(new Range(listStart,listEnd),elements);
         return new GenericNode(new Range(start,p.pos),"ArrayLiteral",[list]);
     });
 }
 
 // Elision
 
-function Elision(p: Parser): ElisionNode | ErrorNode {
+function Elision(p: Parser): ASTNode {
     // FIXME: Protect against infinite loops in all "list" functions like these by ensuring that
     // the current position has advanced by at least 1 in each iteration
     const start = p.pos;
@@ -546,7 +526,7 @@ function Elision(p: Parser): ElisionNode | ErrorNode {
 
 // SpreadElement
 
-function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
+function SpreadElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -566,7 +546,7 @@ function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
 
 // ObjectLiteral
 
-function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
+function ObjectLiteral(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);             // 5
@@ -584,7 +564,7 @@ function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
                 b.popAboveAndSet(2,b.get(2));
             },
             () => {
-                b.push(new PropertyDefinitionListNode(new Range(p.pos,p.pos),[]));
+                b.push(new ListNode(new Range(p.pos,p.pos),[]));
             },
         ]);
         b.item(punctuator("}")); // 1
@@ -598,9 +578,9 @@ function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNode {
+function PropertyDefinitionList(p: Parser): ASTNode {
     const start = p.pos;
-    const properties: (PropertyDefinitionType | ErrorNode)[] = [];
+    const properties: ASTNode[] = [];
     properties.push(PropertyDefinition(p));
     while (true) {
         try {
@@ -615,14 +595,14 @@ function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNo
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new PropertyDefinitionListNode(new Range(start,p.pos),properties);
+            return new ListNode(new Range(start,p.pos),properties);
         }
     }
 }
 
 // PropertyDefinition_colon
 
-function PropertyDefinition_colon(p: Parser): ColonPropertyDefinitionNode | ErrorNode {
+function PropertyDefinition_colon(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -643,8 +623,8 @@ function PropertyDefinition_colon(p: Parser): ColonPropertyDefinitionNode | Erro
 
 // PropertyDefinition
 
-function PropertyDefinition(p: Parser): PropertyDefinitionType | ErrorNode {
-    return p.choice<PropertyDefinitionType | ErrorNode>([
+function PropertyDefinition(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         PropertyDefinition_colon,
         CoverInitializedName,
         MethodDefinition,
@@ -654,8 +634,8 @@ function PropertyDefinition(p: Parser): PropertyDefinitionType | ErrorNode {
 
 // PropertyName
 
-function PropertyName(p: Parser): PropertyNameType | ErrorNode {
-    return p.choice<PropertyNameType | ErrorNode>([
+function PropertyName(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         LiteralPropertyName,
         ComputedPropertyName,
     ]);
@@ -663,8 +643,8 @@ function PropertyName(p: Parser): PropertyNameType | ErrorNode {
 
 // LiteralPropertyName
 
-function LiteralPropertyName(p: Parser): LiteralPropertyNameType | ErrorNode {
-    return p.choice<LiteralPropertyNameType | ErrorNode>([
+function LiteralPropertyName(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         IdentifierName,
         StringLiteral,
         NumericLiteral,
@@ -673,7 +653,7 @@ function LiteralPropertyName(p: Parser): LiteralPropertyNameType | ErrorNode {
 
 // ComputedPropertyName
 
-function ComputedPropertyName(p: Parser): ComputedPropertyNameNode | ErrorNode {
+function ComputedPropertyName(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -694,7 +674,7 @@ function ComputedPropertyName(p: Parser): ComputedPropertyNameNode | ErrorNode {
 
 // CoverInitializedName
 
-function CoverInitializedName(p: Parser): CoverInitializedNameNode | ErrorNode {
+function CoverInitializedName(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -713,7 +693,7 @@ function CoverInitializedName(p: Parser): CoverInitializedNameNode | ErrorNode {
 
 // Initializer
 
-function Initializer(p: Parser): ExpressionNode | ErrorNode {
+function Initializer(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -746,7 +726,7 @@ function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"
 
 // MemberExpression_new
 
-function MemberExpression_new(p: Parser): NewExpressionNode | ErrorNode {
+function MemberExpression_new(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -767,8 +747,8 @@ function MemberExpression_new(p: Parser): NewExpressionNode | ErrorNode {
 
 // MemberExpression_start
 
-function MemberExpression_start(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
+function MemberExpression_start(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         PrimaryExpression,
         SuperProperty,
         MetaProperty,
@@ -778,7 +758,7 @@ function MemberExpression_start(p: Parser): ExpressionNode | ErrorNode {
 
 // MemberExpression
 
-function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
+function MemberExpression(p: Parser): ASTNode {
     return p.attempt((start) => {
         let left = MemberExpression_start(p);
         while (true) {
@@ -813,7 +793,7 @@ function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // SuperProperty
 
-function SuperProperty(p: Parser): SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode {
+function SuperProperty(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -855,13 +835,13 @@ function SuperProperty(p: Parser): SuperPropertyExprNode | SuperPropertyIdentNod
 
 // MetaProperty
 
-function MetaProperty(p: Parser): NewTargetNode | ErrorNode {
+function MetaProperty(p: Parser): ASTNode {
     return NewTarget(p);
 }
 
 // NewTarget
 
-function NewTarget(p: Parser): NewTargetNode | ErrorNode {
+function NewTarget(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -881,7 +861,7 @@ function NewTarget(p: Parser): NewTargetNode | ErrorNode {
 
 // NewExpression
 
-function NewExpression(p: Parser): ExpressionNode | ErrorNode {
+function NewExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -910,7 +890,7 @@ function NewExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // CallExpression_start
 
-function CallExpression_start(p: Parser): ExpressionNode | ErrorNode {
+function CallExpression_start(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -936,7 +916,7 @@ function CallExpression_start(p: Parser): ExpressionNode | ErrorNode {
 
 // CallExpression
 
-function CallExpression(p: Parser): ExpressionNode | ErrorNode {
+function CallExpression(p: Parser): ASTNode {
     const start = p.pos;
     let left = CallExpression_start(p);
     while (true) {
@@ -976,7 +956,7 @@ function CallExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // SuperCall
 
-function SuperCall(p: Parser): ExpressionNode | ErrorNode {
+function SuperCall(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -995,7 +975,7 @@ function SuperCall(p: Parser): ExpressionNode | ErrorNode {
 
 // Arguments
 
-function Arguments(p: Parser): ArgumentsNode | ErrorNode {
+function Arguments(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -1012,7 +992,7 @@ function Arguments(p: Parser): ArgumentsNode | ErrorNode {
                 const start = checkNumber(b.get(5));
                 const end = checkNumber(b.get(0));
                 const listpos = checkNumber(b.get(2));
-                const args = new ArgumentListNode(new Range(listpos,listpos),[]);
+                const args = new ListNode(new Range(listpos,listpos),[]);
                 b.popAboveAndSet(5,new GenericNode(new Range(start,p.pos),"Arguments",[args]));
             },
             () => {
@@ -1036,7 +1016,7 @@ function Arguments(p: Parser): ArgumentsNode | ErrorNode {
 
 // ArgumentList_item
 
-function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
+function ArgumentList_item(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -1062,9 +1042,9 @@ function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
 
 // ArgumentList
 
-function ArgumentList(p: Parser): ArgumentListNode | ErrorNode {
+function ArgumentList(p: Parser): ASTNode {
     const start = p.pos;
-    const items: (ArgumentType | ErrorNode)[] = [];
+    const items: ASTNode[] = [];
     items.push(ArgumentList_item(p));
     while (true) {
         try {
@@ -1079,14 +1059,14 @@ function ArgumentList(p: Parser): ArgumentListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new ArgumentListNode(new Range(start,p.pos),items);
+            return new ListNode(new Range(start,p.pos),items);
         }
     }
 }
 
 // LeftHandSideExpression
 
-function LeftHandSideExpression(p: Parser): ExpressionNode | ErrorNode {
+function LeftHandSideExpression(p: Parser): ASTNode {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
     return p.choice([
@@ -1099,13 +1079,13 @@ function LeftHandSideExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // PostfixExpression
 
-function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
+function PostfixExpression(p: Parser): ASTNode {
     const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    let result: ExpressionNode | ErrorNode;
+    let expr: ASTNode;
+    let result: ASTNode;
     p.sequence([
         () => expr = LeftHandSideExpression(p),
-        () => result = p.choice<ExpressionNode | ErrorNode>([
+        () => result = p.choice<ASTNode>([
             () => p.seq2([
                 whitespaceNoNewline,
                 punctuator("++")],
@@ -1124,7 +1104,7 @@ function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // UnaryExpression
 
-function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
+function UnaryExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -1240,7 +1220,7 @@ function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // MultiplicativeExpression
 
-function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
+function MultiplicativeExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                  // 6 = start
@@ -1287,7 +1267,7 @@ function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // AdditiveExpression
 
-function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
+function AdditiveExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                          // 6 = start
@@ -1323,7 +1303,7 @@ function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // ShiftExpression
 
-function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
+function ShiftExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                    // 6 = start
@@ -1370,7 +1350,7 @@ function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // RelationalExpression
 
-function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
+function RelationalExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);             // 6 = start
@@ -1458,7 +1438,7 @@ function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // EqualityExpression
 
-function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
+function EqualityExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                      // 6 = start
@@ -1522,7 +1502,7 @@ function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // BitwiseANDExpression
 
-function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
+function BitwiseANDExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                // 6 = start
@@ -1545,7 +1525,7 @@ function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // BitwiseXORExpression
 
-function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
+function BitwiseXORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                  // 6 = start
@@ -1567,7 +1547,7 @@ function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // BitwiseORExpression
 
-function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
+function BitwiseORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                  // 6 = start
@@ -1591,7 +1571,7 @@ function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // LogicalANDExpression
 
-function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
+function LogicalANDExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                 // 6 = start
@@ -1613,7 +1593,7 @@ function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // LogicalORExpression
 
-function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
+function LogicalORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                  // 6 = start
@@ -1637,7 +1617,7 @@ function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // ConditionalExpression
 
-function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
+function ConditionalExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                      // 10 = start
@@ -1668,7 +1648,7 @@ function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // AssignmentExpression_plain
 
-function AssignmentExpression_plain(p: Parser): ExpressionNode | ErrorNode {
+function AssignmentExpression_plain(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                      // 6 = start
@@ -1802,7 +1782,7 @@ function AssignmentExpression_plain(p: Parser): ExpressionNode | ErrorNode {
 
 // AssignmentExpression
 
-function AssignmentExpression(p: Parser): ExpressionNode | ErrorNode {
+function AssignmentExpression(p: Parser): ASTNode {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
     return p.choice([
         ArrowFunction,
@@ -1816,7 +1796,7 @@ function AssignmentExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // Expression
 
-function Expression(p: Parser): ExpressionNode | ErrorNode {
+function Expression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);                  // 6 = start
@@ -1840,9 +1820,9 @@ function Expression(p: Parser): ExpressionNode | ErrorNode {
 
 // Statement
 
-function Statement(p: Parser): StatementNode | ErrorNode {
+function Statement(p: Parser): ASTNode {
     // return p.choice<StatementNode | ErrorNode>([
-    return p.choice<StatementNode | ErrorNode>([
+    return p.choice<ASTNode>([
         BlockStatement,
         VariableStatement,
         EmptyStatement,
@@ -1862,8 +1842,8 @@ function Statement(p: Parser): StatementNode | ErrorNode {
 
 // Declaration
 
-function Declaration(p: Parser): DeclarationNode | ErrorNode {
-    return p.choice<DeclarationNode | ErrorNode>([
+function Declaration(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         HoistableDeclaration,
         ClassDeclaration,
         LexicalDeclaration,
@@ -1872,8 +1852,8 @@ function Declaration(p: Parser): DeclarationNode | ErrorNode {
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): DeclarationNode | ErrorNode {
-    return p.choice<DeclarationNode | ErrorNode>([
+function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
+    return p.choice<ASTNode>([
         () => FunctionDeclaration(p,flags),
         () => GeneratorDeclaration(p,flags),
     ]);
@@ -1881,8 +1861,8 @@ function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
 
 // BreakableStatement
 
-function BreakableStatement(p: Parser): BreakableStatementNode | ErrorNode {
-    return p.choice<BreakableStatementNode | ErrorNode>([
+function BreakableStatement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         IterationStatement,
         SwitchStatement,
     ]);
@@ -1892,13 +1872,13 @@ function BreakableStatement(p: Parser): BreakableStatementNode | ErrorNode {
 
 // BlockStatement
 
-function BlockStatement(p: Parser): BlockNode | ErrorNode {
+function BlockStatement(p: Parser): ASTNode {
     return Block(p);
 }
 
 // Block
 
-function Block(p: Parser): BlockNode | ErrorNode {
+function Block(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -1910,7 +1890,7 @@ function Block(p: Parser): BlockNode | ErrorNode {
                     StatementList,
                     whitespace],
                     ([inner,]) => inner),
-                () => new StatementListNode(new Range(p.pos,p.pos),[]),
+                () => new ListNode(new Range(p.pos,p.pos),[]),
             ]),
             punctuator("}"),   // 1
             pos,               // 0
@@ -1923,9 +1903,9 @@ function Block(p: Parser): BlockNode | ErrorNode {
 
 // StatementList
 
-function StatementList(p: Parser): StatementListNode | ErrorNode {
+function StatementList(p: Parser): ASTNode {
     const start = p.pos;
-    const statements: (StatementListItemType | ErrorNode)[] = [];
+    const statements: ASTNode[] = [];
     statements.push(StatementListItem(p));
     while (true) {
         try {
@@ -1941,15 +1921,15 @@ function StatementList(p: Parser): StatementListNode | ErrorNode {
             const end = p.pos;
             return p.seq1([
                 whitespace],
-                () => new StatementListNode(new Range(start,end),statements));
+                () => new ListNode(new Range(start,end),statements));
         }
     }
 }
 
 // StatementListItem
 
-function StatementListItem(p: Parser): StatementListItemType | ErrorNode {
-    return p.choice<StatementListItemType | ErrorNode>([
+function StatementListItem(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         Statement,
         Declaration,
     ]);
@@ -1959,7 +1939,7 @@ function StatementListItem(p: Parser): StatementListItemType | ErrorNode {
 
 // LexicalDeclaration
 
-function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
+function LexicalDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -1995,9 +1975,9 @@ function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
 
 // BindingList
 
-function BindingList(p: Parser): BindingListNode | ErrorNode {
+function BindingList(p: Parser): ASTNode {
     const start = p.pos;
-    const bindings: (LexicalBindingNode | ErrorNode)[] = [];
+    const bindings: ASTNode[] = [];
     bindings.push(LexicalBinding(p));
     while (true) {
         try {
@@ -2012,14 +1992,14 @@ function BindingList(p: Parser): BindingListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new BindingListNode(new Range(start,p.pos),bindings);
+            return new ListNode(new Range(start,p.pos),bindings);
         }
     }
 }
 
 // LexicalBinding_identifier
 
-function LexicalBinding_identifier(p: Parser): LexicalIdentifierBindingNode | ErrorNode {
+function LexicalBinding_identifier(p: Parser): ASTNode {
     return p.seq3([
         pos,
         BindingIdentifier,
@@ -2034,7 +2014,7 @@ function LexicalBinding_identifier(p: Parser): LexicalIdentifierBindingNode | Er
 
 // LexicalBinding_pattern
 
-function LexicalBinding_pattern(p: Parser): LexicalPatternBindingNode | ErrorNode {
+function LexicalBinding_pattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2053,8 +2033,8 @@ function LexicalBinding_pattern(p: Parser): LexicalPatternBindingNode | ErrorNod
 
 // LexicalBinding
 
-function LexicalBinding(p: Parser): LexicalBindingNode | ErrorNode {
-    return p.choice<LexicalBindingNode | ErrorNode>([
+function LexicalBinding(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         LexicalBinding_identifier,
         LexicalBinding_pattern,
     ]);
@@ -2064,7 +2044,7 @@ function LexicalBinding(p: Parser): LexicalBindingNode | ErrorNode {
 
 // VariableStatement
 
-function VariableStatement(p: Parser): VarNode | ErrorNode {
+function VariableStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
 
@@ -2085,9 +2065,9 @@ function VariableStatement(p: Parser): VarNode | ErrorNode {
 
 // VariableDeclarationList
 
-function VariableDeclarationList(p: Parser): VariableDeclarationListNode | ErrorNode {
+function VariableDeclarationList(p: Parser): ASTNode {
     const start = p.pos;
-    const declarations: (VarIdentifierNode | VarPatternNode | ErrorNode)[] = [];
+    const declarations: ASTNode[] = [];
     declarations.push(VariableDeclaration(p));
     while (true) {
         try {
@@ -2102,15 +2082,15 @@ function VariableDeclarationList(p: Parser): VariableDeclarationListNode | Error
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new VariableDeclarationListNode(new Range(start,p.pos),declarations);
+            return new ListNode(new Range(start,p.pos),declarations);
         }
     }
 }
 
 // VariableDeclaration_identifier
 
-function VariableDeclaration_identifier(p: Parser): VarIdentifierNode | ErrorNode {
-    let identifier: BindingIdentifierNode | ErrorNode;
+function VariableDeclaration_identifier(p: Parser): ASTNode {
+    let identifier: ASTNode;
     let result: GenericNode;
     const start = p.pos;
     p.sequence([
@@ -2129,7 +2109,7 @@ function VariableDeclaration_identifier(p: Parser): VarIdentifierNode | ErrorNod
 
 // VariableDeclaration_pattern
 
-function VariableDeclaration_pattern(p: Parser): VarPatternNode | ErrorNode {
+function VariableDeclaration_pattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2148,8 +2128,8 @@ function VariableDeclaration_pattern(p: Parser): VarPatternNode | ErrorNode {
 
 // VariableDeclaration
 
-function VariableDeclaration(p: Parser): VarIdentifierNode | VarPatternNode | ErrorNode {
-    return p.choice<VarIdentifierNode | VarPatternNode | ErrorNode>([
+function VariableDeclaration(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         VariableDeclaration_identifier,
         VariableDeclaration_pattern,
     ]);
@@ -2159,8 +2139,8 @@ function VariableDeclaration(p: Parser): VarIdentifierNode | VarPatternNode | Er
 
 // BindingPattern
 
-function BindingPattern(p: Parser): BindingPatternNode | ErrorNode {
-    return p.choice<BindingPatternNode | ErrorNode>([
+function BindingPattern(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         ObjectBindingPattern,
         ArrayBindingPattern,
     ]);
@@ -2168,7 +2148,7 @@ function BindingPattern(p: Parser): BindingPatternNode | ErrorNode {
 
 // ObjectBindingPattern
 
-function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
+function ObjectBindingPattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);              // 6 = start
@@ -2187,7 +2167,7 @@ function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
                 b.popAboveAndSet(2,b.get(2));
             },
             () => {
-                b.push(new BindingPropertyListNode(new Range(p.pos,p.pos),[]));
+                b.push(new ListNode(new Range(p.pos,p.pos),[]));
             },
         ]);
         b.item(punctuator("}"));  // 1
@@ -2197,14 +2177,14 @@ function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
         const end = checkNumber(b.get(0));
         b.popAboveAndSet(6,b.get(2));
         b.assertLengthIs(1);
-        const properties = checkBindingPropertyListNode(b.get(0));
+        const properties = checkListNode(b.get(0));
         return new GenericNode(new Range(start,end),"ObjectBindingPattern",[properties]);
     });
 }
 
 // ArrayBindingPattern_1
 
-function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
+function ArrayBindingPattern_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
 
@@ -2248,7 +2228,7 @@ function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
 
 // ArrayBindingPattern_2
 
-function ArrayBindingPattern_2(p: Parser): ArrayBindingPatternNode | ErrorNode {
+function ArrayBindingPattern_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2268,7 +2248,7 @@ function ArrayBindingPattern_2(p: Parser): ArrayBindingPatternNode | ErrorNode {
 
 // ArrayBindingPattern_3
 
-function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
+function ArrayBindingPattern_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2320,7 +2300,7 @@ function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
 
 // ArrayBindingPattern
 
-function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
+function ArrayBindingPattern(p: Parser): ASTNode {
     return p.choice([
         ArrayBindingPattern_1,
         ArrayBindingPattern_2,
@@ -2330,9 +2310,9 @@ function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
 
 // BindingPropertyList
 
-function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
+function BindingPropertyList(p: Parser): ASTNode {
     const start = p.pos;
-    const properties: (BindingPropertyType | ErrorNode)[] = [];
+    const properties: ASTNode[] = [];
     properties.push(BindingProperty(p));
     while (true) {
         try {
@@ -2347,16 +2327,16 @@ function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new BindingPropertyListNode(new Range(start,p.pos),properties);
+            return new ListNode(new Range(start,p.pos),properties);
         }
     }
 }
 
 // BindingElementList
 
-function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
+function BindingElementList(p: Parser): ASTNode {
     const start = p.pos;
-    const elements: (BindingElementType | ErrorNode)[] = [];
+    const elements: ASTNode[] = [];
     elements.push(BindingElisionElement(p));
     while (true) {
         try {
@@ -2371,14 +2351,14 @@ function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new BindingElementListNode(new Range(start,p.pos),elements);
+            return new ListNode(new Range(start,p.pos),elements);
         }
     }
 }
 
 // BindingElisionElement
 
-function BindingElisionElement(p: Parser): BindingElementType | ErrorNode {
+function BindingElisionElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -2398,14 +2378,14 @@ function BindingElisionElement(p: Parser): BindingElementType | ErrorNode {
             },
         ]);
         b.assertLengthIs(1);
-        return checkBindingElementType(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
 // BindingProperty
 
-function BindingProperty(p: Parser): BindingPropertyType | ErrorNode {
-    return p.choice<BindingPropertyType | ErrorNode>([
+function BindingProperty(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         () => p.seq6([
             pos,
             PropertyName,
@@ -2423,13 +2403,13 @@ function BindingProperty(p: Parser): BindingPropertyType | ErrorNode {
 
 // BindingElement
 
-function BindingElement(p: Parser): BindingElementType | ErrorNode {
-    return p.choice<BindingElementType | ErrorNode>([
+function BindingElement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         SingleNameBinding,
         () => {
             const start = p.pos;
             const pattern = BindingPattern(p);
-            return p.choice<BindingElementType | ErrorNode>([
+            return p.choice<ASTNode>([
                 () => p.seq2([
                     whitespace,
                     Initializer],
@@ -2442,13 +2422,13 @@ function BindingElement(p: Parser): BindingElementType | ErrorNode {
 
 // SingleNameBinding
 
-function SingleNameBinding(p: Parser): SingleNameBindingType | ErrorNode {
+function SingleNameBinding(p: Parser): ASTNode {
     const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode;
-    let result: SingleNameBindingType | ErrorNode;
+    let ident: ASTNode;
+    let result: ASTNode;
     p.sequence([
         () => ident = BindingIdentifier(p),
-        () => result = p.choice<BindingIdentifierNode | SingleNameBindingNode | ErrorNode>([
+        () => result = p.choice<ASTNode>([
             () => p.seq2([
                 whitespace,
                 Initializer],
@@ -2461,7 +2441,7 @@ function SingleNameBinding(p: Parser): SingleNameBindingType | ErrorNode {
 
 // BindingRestElement
 
-function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
+function BindingRestElement(p: Parser): ASTNode {
     return p.seq4([
         pos,
         punctuator("..."),
@@ -2474,7 +2454,7 @@ function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
 
 // EmptyStatement
 
-function EmptyStatement(p: Parser): EmptyStatementNode | ErrorNode {
+function EmptyStatement(p: Parser): ASTNode {
     return p.seq2([
         pos,
         punctuator(";")],
@@ -2485,7 +2465,7 @@ function EmptyStatement(p: Parser): EmptyStatementNode | ErrorNode {
 
 // ExpressionStatement
 
-function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
+function ExpressionStatement(p: Parser): ASTNode {
     const start2 = p.pos;
 
     // Lookahead not in one of the four sequences <{> <function> <class> <let [>
@@ -2516,7 +2496,7 @@ function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
 
 // IfStatement
 
-function IfStatement(p: Parser): IfStatementNode | ErrorNode {
+function IfStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2549,7 +2529,7 @@ function IfStatement(p: Parser): IfStatementNode | ErrorNode {
 
 // IterationStatement_do
 
-function IterationStatement_do(p: Parser): DoStatementNode | ErrorNode {
+function IterationStatement_do(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2578,7 +2558,7 @@ function IterationStatement_do(p: Parser): DoStatementNode | ErrorNode {
 
 // IterationStatement_while
 
-function IterationStatement_while(p: Parser): WhileStatementNode | ErrorNode {
+function IterationStatement_while(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
@@ -2603,7 +2583,7 @@ function IterationStatement_while(p: Parser): WhileStatementNode | ErrorNode {
 
 // IterationStatement_for_c
 
-function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
+function IterationStatement_for_c(p: Parser): ASTNode {
     // for ( [lookahead ∉ {let [}] Expression-opt ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
@@ -2679,7 +2659,7 @@ function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
 
 // IterationStatement_for_in
 
-function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
+function IterationStatement_for_in(p: Parser): ASTNode {
     // for ( [lookahead ∉ {let [}] LeftHandSideExpression in Expression )             Statement[?Yield, ?Return]
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
@@ -2738,7 +2718,7 @@ function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
 
 // IterationStatement_for_of
 
-function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
+function IterationStatement_for_of(p: Parser): ASTNode {
     // for ( [lookahead ≠ let ] LeftHandSideExpression    of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
@@ -2797,8 +2777,8 @@ function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
 
 // IterationStatement_for
 
-function IterationStatement_for(p: Parser): BreakableStatementNode | ErrorNode {
-    return p.choice<BreakableStatementNode | ErrorNode>([
+function IterationStatement_for(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         IterationStatement_for_c,
         IterationStatement_for_in,
         IterationStatement_for_of,
@@ -2807,8 +2787,8 @@ function IterationStatement_for(p: Parser): BreakableStatementNode | ErrorNode {
 
 // IterationStatement
 
-function IterationStatement(p: Parser): BreakableStatementNode | ErrorNode {
-    return p.choice<BreakableStatementNode | ErrorNode>([
+function IterationStatement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         IterationStatement_do,
         IterationStatement_while,
         IterationStatement_for,
@@ -2817,7 +2797,7 @@ function IterationStatement(p: Parser): BreakableStatementNode | ErrorNode {
 
 // ForDeclaration
 
-function ForDeclaration(p: Parser): LetForDeclarationNode | ConstForDeclarationNode | ErrorNode {
+function ForDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.choice([
@@ -2851,8 +2831,8 @@ function ForDeclaration(p: Parser): LetForDeclarationNode | ConstForDeclarationN
 
 // ForBinding
 
-function ForBinding(p: Parser): ForBindingType | ErrorNode {
-    return p.choice<ForBindingType | ErrorNode>([
+function ForBinding(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         BindingIdentifier,
         BindingPattern, // FIXME: Need test cases for this
     ]);
@@ -2862,8 +2842,8 @@ function ForBinding(p: Parser): ForBindingType | ErrorNode {
 
 // ContinueStatement
 
-function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
-    return p.choice<ContinueStatementNode | ErrorNode>([
+function ContinueStatement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         () => p.seq4([
             pos,
             keyword("continue"),
@@ -2885,8 +2865,8 @@ function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
 
 // BreakStatement
 
-function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
-    return p.choice<BreakStatementNode | ErrorNode>([
+function BreakStatement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         () => p.seq4([
             pos,
             keyword("break"),
@@ -2908,8 +2888,8 @@ function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
 
 // ReturnStatement
 
-function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
-    return p.choice<ReturnStatementNode | ErrorNode>([
+function ReturnStatement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         () => p.seq4([
             pos,
             keyword("return"),
@@ -2931,7 +2911,7 @@ function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
 
 // WithStatement
 
-function WithStatement(p: Parser): WithStatementNode | ErrorNode {
+function WithStatement(p: Parser): ASTNode {
     return p.seq10([
         pos,
         keyword("with"),
@@ -2951,7 +2931,7 @@ function WithStatement(p: Parser): WithStatementNode | ErrorNode {
 
 // SwitchStatement
 
-function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
+function SwitchStatement(p: Parser): ASTNode {
     return p.seq10([
         pos,
         keyword("switch"),
@@ -2969,14 +2949,14 @@ function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
 
 // CaseBlock_1
 
-function CaseBlock_1(p: Parser): CaseClauseListNode | ErrorNode {
+function CaseBlock_1(p: Parser): ASTNode {
     return p.seq6([
         pos,
         punctuator("{"),
         whitespace,
         () => p.choice([
             CaseClauses,
-            () => new CaseClauseListNode(new Range(p.pos,p.pos),[]),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
         whitespace,
         punctuator("}")],
@@ -2988,7 +2968,7 @@ function CaseBlock_1(p: Parser): CaseClauseListNode | ErrorNode {
 
 // CaseBlock_2
 
-function CaseBlock_2(p: Parser): CaseClauseListNode | ErrorNode {
+function CaseBlock_2(p: Parser): ASTNode {
     return p.seq10([
         pos,
         punctuator("{"),
@@ -3007,26 +2987,26 @@ function CaseBlock_2(p: Parser): CaseClauseListNode | ErrorNode {
             let elements2: ASTNode[] = [];
             if (clauses1 != null) {
                 listStart = clauses1.range.start;
-                if (clauses1 instanceof ErrorNode)
-                    elements1 = [clauses1];
-                else
+                if (clauses1 instanceof ListNode)
                     elements1 = clauses1.elements;
+                else
+                    elements1 = [clauses1];
             }
             if (clauses2 != null) {
                 listEnd = clauses2.range.end;
-                if (clauses2 instanceof ErrorNode)
-                    elements2 = [clauses2];
-                else
+                if (clauses2 instanceof ListNode)
                     elements2 = clauses2.elements;
+                else
+                    elements2 = [clauses2];
             }
             const combined = [].concat(elements1,defaultClause,elements2);
-            return new CaseClauseListNode(new Range(listStart,listEnd),combined);
+            return new ListNode(new Range(listStart,listEnd),combined);
         });
 }
 
 // CaseBlock
 
-function CaseBlock(p: Parser): CaseClauseListNode | ErrorNode {
+function CaseBlock(p: Parser): ASTNode {
     return p.choice([
         CaseBlock_1,
         CaseBlock_2,
@@ -3035,15 +3015,15 @@ function CaseBlock(p: Parser): CaseClauseListNode | ErrorNode {
 
 // CaseClauses
 
-function CaseClauses(p: Parser): CaseClauseListNode | ErrorNode {
+function CaseClauses(p: Parser): ASTNode {
     const start = p.pos;
-    const clauses: (CaseClauseNode | DefaultClauseNode | ErrorNode)[] = [];
+    const clauses: ASTNode[] = [];
     const first = CaseClause(p);
     clauses.push(first);
     let end = first.range.end;
     while (true) {
         try {
-            let clause: CaseClauseNode | ErrorNode;
+            let clause: ASTNode;
             p.sequence([
                 () => clause = CaseClause(p),
             ]);
@@ -3053,14 +3033,14 @@ function CaseClauses(p: Parser): CaseClauseListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new CaseClauseListNode(new Range(start,end),clauses);
+            return new ListNode(new Range(start,end),clauses);
         }
     }
 }
 
 // CaseClause
 
-function CaseClause(p: Parser): CaseClauseNode | ErrorNode {
+function CaseClause(p: Parser): ASTNode {
     return p.seq8([
         pos,
         keyword("case"),
@@ -3075,7 +3055,7 @@ function CaseClause(p: Parser): CaseClauseNode | ErrorNode {
 
 // DefaultClause
 
-function DefaultClause(p: Parser): DefaultClauseNode | ErrorNode {
+function DefaultClause(p: Parser): ASTNode {
     return p.seq6([
         pos,
         keyword("default"),
@@ -3091,7 +3071,7 @@ function DefaultClause(p: Parser): DefaultClauseNode | ErrorNode {
 
 // LabelledStatement
 
-function LabelledStatement(p: Parser): LabelledStatementNode | ErrorNode {
+function LabelledStatement(p: Parser): ASTNode {
     return p.seq6([
         pos,
         LabelIdentifier,
@@ -3105,8 +3085,8 @@ function LabelledStatement(p: Parser): LabelledStatementNode | ErrorNode {
 
 // LabelledItem
 
-function LabelledItem(p: Parser): StatementNode | FunctionDeclarationNode | ErrorNode {
-    return p.choice<StatementNode | FunctionDeclarationNode | ErrorNode>([
+function LabelledItem(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         Statement,
         FunctionDeclaration,
     ]);
@@ -3116,7 +3096,7 @@ function LabelledItem(p: Parser): StatementNode | FunctionDeclarationNode | Erro
 
 // ThrowStatement
 
-function ThrowStatement(p: Parser): ThrowStatementNode | ErrorNode {
+function ThrowStatement(p: Parser): ASTNode {
     return p.seq6([
         pos,
         keyword("throw"),
@@ -3132,10 +3112,10 @@ function ThrowStatement(p: Parser): ThrowStatementNode | ErrorNode {
 
 // TryStatement
 
-function TryStatement(p: Parser): TryStatementNode | ErrorNode {
+function TryStatement(p: Parser): ASTNode {
     return p.attempt((start) => {
-        let catchBlock: CatchNode | ErrorNode = null;
-        let finallyBlock: FinallyNode | ErrorNode = null;
+        let catchBlock: ASTNode = null;
+        let finallyBlock: ASTNode = null;
 
         const tryBlock = p.seq3([
             keyword("try"),
@@ -3165,7 +3145,7 @@ function TryStatement(p: Parser): TryStatementNode | ErrorNode {
 
 // Catch
 
-function Catch(p: Parser): CatchNode | ErrorNode {
+function Catch(p: Parser): ASTNode {
     return p.seq10([
         pos,
         keyword("catch"),
@@ -3183,7 +3163,7 @@ function Catch(p: Parser): CatchNode | ErrorNode {
 
 // Finally
 
-function Finally(p: Parser): FinallyNode | ErrorNode {
+function Finally(p: Parser): ASTNode {
     return p.seq4([
         pos,
         keyword("finally"),
@@ -3196,8 +3176,8 @@ function Finally(p: Parser): FinallyNode | ErrorNode {
 
 // CatchParameter
 
-function CatchParameter(p: Parser): CatchParameterType | ErrorNode {
-    return p.choice<CatchParameterType | ErrorNode>([
+function CatchParameter(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         BindingIdentifier,
         BindingPattern,
     ]);
@@ -3207,7 +3187,7 @@ function CatchParameter(p: Parser): CatchParameterType | ErrorNode {
 
 // DebuggerStatement
 
-function DebuggerStatement(p: Parser): DebuggerStatementNode | ErrorNode {
+function DebuggerStatement(p: Parser): ASTNode {
     return p.seq4([
         pos,
         keyword("debugger"),
@@ -3220,7 +3200,7 @@ function DebuggerStatement(p: Parser): DebuggerStatementNode | ErrorNode {
 
 // FunctionDeclaration_named
 
-function FunctionDeclaration_named(p: Parser): FunctionDeclarationNode | ErrorNode {
+function FunctionDeclaration_named(p: Parser): ASTNode {
     return p.seq16([
         pos,
         keyword("function"),
@@ -3244,7 +3224,7 @@ function FunctionDeclaration_named(p: Parser): FunctionDeclarationNode | ErrorNo
 
 // FunctionDeclaration_unnamed
 
-function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | ErrorNode {
+function FunctionDeclaration_unnamed(p: Parser): ASTNode {
     return p.seq14([
         pos,
         keyword("function"),
@@ -3266,7 +3246,7 @@ function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | Error
 
 // FunctionDeclaration
 
-function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): FunctionDeclarationNode | ErrorNode {
+function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     if (flags === undefined)
         flags = {};
     try {
@@ -3288,7 +3268,7 @@ function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boo
 
 // FunctionExpression
 
-function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
+function FunctionExpression(p: Parser): ASTNode {
     return p.seq15([
         pos,
         keyword("function"),
@@ -3314,27 +3294,27 @@ function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
 
 // StrictFormalParameters
 
-function StrictFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
+function StrictFormalParameters(p: Parser): ASTNode {
     return FormalParameters(p);
 }
 
 // FormalParameters
 
-function FormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
+function FormalParameters(p: Parser): ASTNode {
     return p.choice([
         FormalParameterList,
-        () => new FormalParameterListNode(new Range(p.pos,p.pos),[]),
+        () => new ListNode(new Range(p.pos,p.pos),[]),
     ]);
 }
 
 // FormalParameterList
 
-function FormalParameterList(p: Parser): FormalParameterListNode | ErrorNode {
+function FormalParameterList(p: Parser): ASTNode {
     return p.choice([
         () => p.seq2([
             pos,
             FunctionRestParameter],
-            ([start,rest]) => new FormalParameterListNode(new Range(start,p.pos),[rest])),
+            ([start,rest]) => new ListNode(new Range(start,p.pos),[rest])),
         () => p.seq3([
             pos,
             FormalsList,
@@ -3348,22 +3328,22 @@ function FormalParameterList(p: Parser): FormalParameterListNode | ErrorNode {
                 if (rest == null)
                     return formals;
 
-                let elements: (BindingElementType | BindingRestElementNode | ErrorNode)[];
-                if (formals instanceof ErrorNode)
-                    elements = [formals];
-                else
+                let elements: ASTNode[];
+                if (formals instanceof ListNode)
                     elements = formals.elements;
+                else
+                    elements = [formals];
                 elements.push(rest);
-                return new FormalParameterListNode(new Range(start,p.pos),elements);
+                return new ListNode(new Range(start,p.pos),elements);
             }),
     ]);
 }
 
 // FormalsList
 
-function FormalsList(p: Parser): FormalParameterListNode | ErrorNode {
+function FormalsList(p: Parser): ASTNode {
     const start = p.pos;
-    const elements: (BindingElementType | BindingRestElementNode | ErrorNode)[] = [];
+    const elements: ASTNode[] = [];
     elements.push(FormalParameter(p));
     while (true) {
         try {
@@ -3379,35 +3359,35 @@ function FormalsList(p: Parser): FormalParameterListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new FormalParameterListNode(new Range(start,p.pos),elements);
+            return new ListNode(new Range(start,p.pos),elements);
         }
     }
 }
 
 // FunctionRestParameter
 
-function FunctionRestParameter(p: Parser): BindingRestElementNode | ErrorNode {
+function FunctionRestParameter(p: Parser): ASTNode {
     return BindingRestElement(p);
 }
 
 // FormalParameter
 
-function FormalParameter(p: Parser): BindingElementType | ErrorNode {
+function FormalParameter(p: Parser): ASTNode {
     return BindingElement(p);
 }
 
 // FunctionBody
 
-function FunctionBody(p: Parser): StatementListNode | ErrorNode {
+function FunctionBody(p: Parser): ASTNode {
     return FunctionStatementList(p);
 }
 
 // FunctionStatementList
 
-function FunctionStatementList(p: Parser): StatementListNode | ErrorNode {
+function FunctionStatementList(p: Parser): ASTNode {
     return p.choice([
         StatementList,
-        () => new StatementListNode(new Range(p.pos,p.pos),[]),
+        () => new ListNode(new Range(p.pos,p.pos),[]),
     ]);
 }
 
@@ -3415,7 +3395,7 @@ function FunctionStatementList(p: Parser): StatementListNode | ErrorNode {
 
 // ArrowFunction
 
-function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
+function ArrowFunction(p: Parser): ASTNode {
     return p.seq6([
         pos,
         ArrowParameters,
@@ -3428,8 +3408,8 @@ function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
 
 // ArrowParameters
 
-function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParameterListNode | ErrorNode {
-    return p.choice<BindingIdentifierNode | FormalParameterListNode | ErrorNode>([
+function ArrowParameters(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         BindingIdentifier,
         ArrowFormalParameters,
     ]);
@@ -3437,7 +3417,7 @@ function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParameterList
 
 // ConciseBody_1
 
-function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
+function ConciseBody_1(p: Parser): ASTNode {
     if (p.lookaheadPunctuator("{"))
         throw new ParseIgnore();
     return AssignmentExpression(p);
@@ -3445,7 +3425,7 @@ function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
 
 // ConciseBody_2
 
-function ConciseBody_2(p: Parser): StatementListNode | ErrorNode {
+function ConciseBody_2(p: Parser): ASTNode {
     return p.seq5([
         punctuator("{"),
         whitespace,
@@ -3457,8 +3437,8 @@ function ConciseBody_2(p: Parser): StatementListNode | ErrorNode {
 
 // ConciseBody
 
-function ConciseBody(p: Parser): ExpressionNode | StatementListNode | ErrorNode {
-    return p.choice<ExpressionNode | StatementListNode | ErrorNode>([
+function ConciseBody(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         ConciseBody_1,
         ConciseBody_2,
     ]);
@@ -3466,7 +3446,7 @@ function ConciseBody(p: Parser): ExpressionNode | StatementListNode | ErrorNode 
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
+function ArrowFormalParameters(p: Parser): ASTNode {
     return p.seq5([
         punctuator("("),
         whitespace,
@@ -3480,7 +3460,7 @@ function ArrowFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
 
 // MethodDefinition_1
 
-function MethodDefinition_1(p: Parser): MethodNode | ErrorNode {
+function MethodDefinition_1(p: Parser): ASTNode {
     return p.seq14([
         pos,
         PropertyName,
@@ -3502,13 +3482,13 @@ function MethodDefinition_1(p: Parser): MethodNode | ErrorNode {
 
 // MethodDefinition_2
 
-function MethodDefinition_2(p: Parser): GeneratorMethodNode | ErrorNode {
+function MethodDefinition_2(p: Parser): ASTNode {
     return GeneratorMethod(p);
 }
 
 // MethodDefinition_3
 
-function MethodDefinition_3(p: Parser): GetterNode | ErrorNode {
+function MethodDefinition_3(p: Parser): ASTNode {
     return p.seq14([
         pos,
         identifier("get"), // "get" is not a reserved word, so we can't use keyword here
@@ -3530,7 +3510,7 @@ function MethodDefinition_3(p: Parser): GetterNode | ErrorNode {
 
 // MethodDefinition_4
 
-function MethodDefinition_4(p: Parser): SetterNode | ErrorNode {
+function MethodDefinition_4(p: Parser): ASTNode {
     return p.seq16([
         pos,
         identifier("set"),
@@ -3554,8 +3534,8 @@ function MethodDefinition_4(p: Parser): SetterNode | ErrorNode {
 
 // MethodDefinition
 
-function MethodDefinition(p: Parser): MethodDefinitionNode | ErrorNode {
-    return p.choice<MethodDefinitionNode | ErrorNode>([
+function MethodDefinition(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         MethodDefinition_1,
         MethodDefinition_2,
         MethodDefinition_3,
@@ -3565,7 +3545,7 @@ function MethodDefinition(p: Parser): MethodDefinitionNode | ErrorNode {
 
 // PropertySetParameterList
 
-function PropertySetParameterList(p: Parser): BindingElementType | ErrorNode {
+function PropertySetParameterList(p: Parser): ASTNode {
     return FormalParameter(p);
 }
 
@@ -3573,7 +3553,7 @@ function PropertySetParameterList(p: Parser): BindingElementType | ErrorNode {
 
 // GeneratorMethod
 
-function GeneratorMethod(p: Parser): GeneratorMethodNode | ErrorNode {
+function GeneratorMethod(p: Parser): ASTNode {
     return p.seq16([
         pos,
         punctuator("*"),
@@ -3597,7 +3577,7 @@ function GeneratorMethod(p: Parser): GeneratorMethodNode | ErrorNode {
 
 // GeneratorDeclaration_1
 
-function GeneratorDeclaration_1(p: Parser): GeneratorDeclarationNode | ErrorNode {
+function GeneratorDeclaration_1(p: Parser): ASTNode {
     return p.seq18([
         pos,
         keyword("function"),
@@ -3623,7 +3603,7 @@ function GeneratorDeclaration_1(p: Parser): GeneratorDeclarationNode | ErrorNode
 
 // GeneratorDeclaration_2
 
-function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | ErrorNode {
+function GeneratorDeclaration_2(p: Parser): ASTNode {
     return p.seq16([
         pos,
         keyword("function"),
@@ -3648,7 +3628,7 @@ function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | Er
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): DeclarationNode | ErrorNode {
+function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     if (flags === undefined)
         flags = {};
     try {
@@ -3670,7 +3650,7 @@ function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
 
 // GeneratorExpression
 
-function GeneratorExpression(p: Parser): GeneratorExpressionNode | ErrorNode {
+function GeneratorExpression(p: Parser): ASTNode {
     return p.seq17([
         pos,
         keyword("function"),
@@ -3698,13 +3678,13 @@ function GeneratorExpression(p: Parser): GeneratorExpressionNode | ErrorNode {
 
 // GeneratorBody
 
-function GeneratorBody(p: Parser): StatementListNode | ErrorNode {
+function GeneratorBody(p: Parser): ASTNode {
     return FunctionBody(p);
 }
 
 // YieldExpression_1
 
-function YieldExpression_1(p: Parser): YieldStarNode | ErrorNode {
+function YieldExpression_1(p: Parser): ASTNode {
     return p.seq6([
         pos,
         keyword("yield"),
@@ -3717,7 +3697,7 @@ function YieldExpression_1(p: Parser): YieldStarNode | ErrorNode {
 
 // YieldExpression_2
 
-function YieldExpression_2(p: Parser): YieldExprNode | ErrorNode {
+function YieldExpression_2(p: Parser): ASTNode {
     return p.seq4([
         pos,
         keyword("yield"),
@@ -3728,7 +3708,7 @@ function YieldExpression_2(p: Parser): YieldExprNode | ErrorNode {
 
 // YieldExpression_3
 
-function YieldExpression_3(p: Parser): YieldNothingNode | ErrorNode {
+function YieldExpression_3(p: Parser): ASTNode {
     return p.seq2([
         pos,
         keyword("yield")],
@@ -3737,8 +3717,8 @@ function YieldExpression_3(p: Parser): YieldNothingNode | ErrorNode {
 
 // YieldExpression
 
-function YieldExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
+function YieldExpression(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         YieldExpression_1,
         YieldExpression_2,
         YieldExpression_3,
@@ -3749,7 +3729,7 @@ function YieldExpression(p: Parser): ExpressionNode | ErrorNode {
 
 // ClassDeclaration_1
 
-function ClassDeclaration_1(p: Parser): ClassDeclarationNode | ErrorNode {
+function ClassDeclaration_1(p: Parser): ASTNode {
     return p.seq6([
         pos,
         keyword("class"),
@@ -3763,7 +3743,7 @@ function ClassDeclaration_1(p: Parser): ClassDeclarationNode | ErrorNode {
 
 // ClassDeclaration_2
 
-function ClassDeclaration_2(p: Parser): ClassDeclarationNode | ErrorNode {
+function ClassDeclaration_2(p: Parser): ASTNode {
     return p.seq4([
         pos,
         keyword("class"),
@@ -3774,7 +3754,7 @@ function ClassDeclaration_2(p: Parser): ClassDeclarationNode | ErrorNode {
 
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ClassDeclarationNode | ErrorNode {
+function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     if (flags === undefined)
         flags = {};
     try {
@@ -3796,7 +3776,7 @@ function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolea
 
 // ClassExpression
 
-function ClassExpression(p: Parser): ClassExpressionNode | ErrorNode {
+function ClassExpression(p: Parser): ASTNode {
     return p.seq5([
         pos,
         keyword("class"),
@@ -3814,7 +3794,7 @@ function ClassExpression(p: Parser): ClassExpressionNode | ErrorNode {
 
 // ClassTail
 
-function ClassTail(p: Parser): ClassTailNode | ErrorNode {
+function ClassTail(p: Parser): ASTNode {
     return p.seq6([
         pos,
         opt(() =>
@@ -3830,7 +3810,7 @@ function ClassTail(p: Parser): ClassTailNode | ErrorNode {
                 ClassBody,
                 whitespace],
                 ([inner,]) => inner),
-            () => new ClassElementListNode(new Range(p.pos,p.pos),[]),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,heritage,,,body,]) =>
@@ -3839,7 +3819,7 @@ function ClassTail(p: Parser): ClassTailNode | ErrorNode {
 
 // ClassHeritage
 
-function ClassHeritage(p: Parser): ExtendsNode | ErrorNode {
+function ClassHeritage(p: Parser): ASTNode {
     return p.seq4([
         pos,
         keyword("extends"),
@@ -3850,15 +3830,15 @@ function ClassHeritage(p: Parser): ExtendsNode | ErrorNode {
 
 // ClassBody
 
-function ClassBody(p: Parser): ClassElementListNode | ErrorNode {
+function ClassBody(p: Parser): ASTNode {
     return ClassElementList(p);
 }
 
 // ClassElementList
 
-function ClassElementList(p: Parser): ClassElementListNode | ErrorNode {
+function ClassElementList(p: Parser): ASTNode {
     const start = p.pos;
-    const elements: (ClassElementType | ErrorNode)[] = [];
+    const elements: ASTNode[] = [];
     elements.push(ClassElement(p));
     while (true) {
         try {
@@ -3871,20 +3851,20 @@ function ClassElementList(p: Parser): ClassElementListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new ClassElementListNode(new Range(start,p.pos),elements);
+            return new ListNode(new Range(start,p.pos),elements);
         }
     }
 }
 
 // ClassElement_1
 
-function ClassElement_1(p: Parser): MethodDefinitionNode | ErrorNode {
+function ClassElement_1(p: Parser): ASTNode {
     return MethodDefinition(p);
 }
 
 // ClassElement_2
 
-function ClassElement_2(p: Parser): StaticMethodDefinitionNode | ErrorNode {
+function ClassElement_2(p: Parser): ASTNode {
     return p.seq4([
         pos,
         keyword("static"),
@@ -3895,7 +3875,7 @@ function ClassElement_2(p: Parser): StaticMethodDefinitionNode | ErrorNode {
 
 // ClassElement_3
 
-function ClassElement_3(p: Parser): EmptyClassElementNode | ErrorNode {
+function ClassElement_3(p: Parser): ASTNode {
     return p.seq2([
         pos,
         punctuator(";")],
@@ -3904,8 +3884,8 @@ function ClassElement_3(p: Parser): EmptyClassElementNode | ErrorNode {
 
 // ClassElement
 
-function ClassElement(p: Parser): ClassElementType | ErrorNode {
-    return p.choice<ClassElementType | ErrorNode>([
+function ClassElement(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         ClassElement_1,
         ClassElement_2,
         ClassElement_3,
@@ -3918,7 +3898,7 @@ function ClassElement(p: Parser): ClassElementType | ErrorNode {
 
 export function Script(p: Parser): ScriptNode | ErrorNode {
     const start = p.pos;
-    let body: StatementListNode | ErrorNode = null;
+    let body: ASTNode = null;
     try {
         body = ScriptBody(p);
     } catch (e) {
@@ -3926,13 +3906,13 @@ export function Script(p: Parser): ScriptNode | ErrorNode {
             throw e;
     }
     if (body == null)
-        body = new StatementListNode(new Range(start,p.pos),[]);
+        body = new ListNode(new Range(start,p.pos),[]);
     return new ScriptNode(new Range(start,p.pos),body);
 }
 
 // ScriptBody
 
-function ScriptBody(p: Parser): StatementListNode | ErrorNode {
+function ScriptBody(p: Parser): ASTNode {
     return StatementList(p);
 }
 
@@ -3942,7 +3922,7 @@ function ScriptBody(p: Parser): StatementListNode | ErrorNode {
 
 export function Module(p: Parser): ModuleNode | ErrorNode {
     const start = p.pos;
-    let body: ModuleItemListNode | ErrorNode = null;
+    let body: ASTNode = null;
     try {
         body = ModuleBody(p);
     } catch (e) {
@@ -3950,21 +3930,21 @@ export function Module(p: Parser): ModuleNode | ErrorNode {
             throw e;
     }
     if (body == null)
-        body = new ModuleItemListNode(new Range(start,p.pos),[]);
+        body = new ListNode(new Range(start,p.pos),[]);
     return new ModuleNode(new Range(start,p.pos),body);
 }
 
 // ModuleBody
 
-function ModuleBody(p: Parser): ModuleItemListNode | ErrorNode {
+function ModuleBody(p: Parser): ASTNode {
     return ModuleItemList(p);
 }
 
 // ModuleItemList
 
-function ModuleItemList(p: Parser): ModuleItemListNode | ErrorNode {
+function ModuleItemList(p: Parser): ASTNode {
     const start = p.pos;
-    const items: (ModuleItemType | ErrorNode)[] = [];
+    const items: ASTNode[] = [];
     items.push(ModuleItem(p));
     while (true) {
         try {
@@ -3977,15 +3957,15 @@ function ModuleItemList(p: Parser): ModuleItemListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new ModuleItemListNode(new Range(start,p.pos),items);
+            return new ListNode(new Range(start,p.pos),items);
         }
     }
 }
 
 // ModuleItem
 
-function ModuleItem(p: Parser): ModuleItemType | ErrorNode {
-    return p.choice<ModuleItemType | ErrorNode>([
+function ModuleItem(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         ImportDeclaration,
         ExportDeclaration,
         StatementListItem,
@@ -3996,7 +3976,7 @@ function ModuleItem(p: Parser): ModuleItemType | ErrorNode {
 
 // ImportDeclaration_from
 
-function ImportDeclaration_from(p: Parser): ImportFromNode | ErrorNode {
+function ImportDeclaration_from(p: Parser): ASTNode {
     return p.seq8([
         pos,
         keyword("import"),
@@ -4012,7 +3992,7 @@ function ImportDeclaration_from(p: Parser): ImportFromNode | ErrorNode {
 
 // ImportDeclaration_module
 
-function ImportDeclaration_module(p: Parser): ImportModuleNode | ErrorNode {
+function ImportDeclaration_module(p: Parser): ASTNode {
     return p.seq6([
         pos,
         keyword("import"),
@@ -4026,8 +4006,8 @@ function ImportDeclaration_module(p: Parser): ImportModuleNode | ErrorNode {
 
 // ImportDeclaration
 
-function ImportDeclaration(p: Parser): ImportNode | ErrorNode {
-    return p.choice<ImportNode | ErrorNode>([
+function ImportDeclaration(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         ImportDeclaration_from,
         ImportDeclaration_module,
     ]);
@@ -4035,14 +4015,14 @@ function ImportDeclaration(p: Parser): ImportNode | ErrorNode {
 
 // ImportClause
 
-function ImportClause(p: Parser): ImportClauseNode | ErrorNode {
-    return p.choice<ImportClauseNode | ErrorNode>([
+function ImportClause(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         NameSpaceImport,
         NamedImports,
         () => {
             const start = p.pos;
             const defbinding = ImportedDefaultBinding(p);
-            return p.choice<ImportClauseNode | ErrorNode>([
+            return p.choice<ASTNode>([
                 () => p.seq4([
                     whitespace,
                     punctuator(","),
@@ -4063,13 +4043,13 @@ function ImportClause(p: Parser): ImportClauseNode | ErrorNode {
 
 // ImportedDefaultBinding
 
-function ImportedDefaultBinding(p: Parser): BindingIdentifierNode | ErrorNode {
+function ImportedDefaultBinding(p: Parser): ASTNode {
     return ImportedBinding(p);
 }
 
 // NameSpaceImport
 
-function NameSpaceImport(p: Parser): NameSpaceImportNode | ErrorNode {
+function NameSpaceImport(p: Parser): ASTNode {
     return p.seq6([
         pos,
         punctuator("*"),
@@ -4082,7 +4062,7 @@ function NameSpaceImport(p: Parser): NameSpaceImportNode | ErrorNode {
 
 // NamedImports
 
-function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
+function NamedImports(p: Parser): ASTNode {
     return p.seq5([
         pos,
         punctuator("{"),
@@ -4093,7 +4073,7 @@ function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
                 whitespace,
                 opt(() =>  p.seq2([punctuator(","),whitespace],() => {}))],
                 ([inner,,]) => inner),
-            () => new ImportsListNode(new Range(p.pos,p.pos),[]),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}")],
         ([start,,,imports,]) =>
@@ -4102,7 +4082,7 @@ function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
 
 // FromClause
 
-function FromClause(p: Parser): StringLiteralNode | ErrorNode {
+function FromClause(p: Parser): ASTNode {
     return p.seq3([
         keyword("from"),
         whitespace,
@@ -4112,9 +4092,9 @@ function FromClause(p: Parser): StringLiteralNode | ErrorNode {
 
 // ImportsList
 
-function ImportsList(p: Parser): ImportsListNode | ErrorNode {
+function ImportsList(p: Parser): ASTNode {
     const start = p.pos;
-    const imports: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[] = [];
+    const imports: ASTNode[] = [];
     imports.push(ImportSpecifier(p));
     while (true) {
         try {
@@ -4129,15 +4109,15 @@ function ImportsList(p: Parser): ImportsListNode | ErrorNode {
         catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
-            return new ImportsListNode(new Range(start,p.pos),imports);
+            return new ListNode(new Range(start,p.pos),imports);
         }
     }
 }
 
 // ImportSpecifier
 
-function ImportSpecifier(p: Parser): ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode {
-    return p.choice<ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode>([
+function ImportSpecifier(p: Parser): ASTNode {
+    return p.choice<ASTNode>([
         () => p.seq6([
             pos,
             IdentifierName,
@@ -4155,13 +4135,13 @@ function ImportSpecifier(p: Parser): ImportAsSpecifierNode | ImportSpecifierNode
 
 // ModuleSpecifier
 
-function ModuleSpecifier(p: Parser): StringLiteralNode | ErrorNode {
+function ModuleSpecifier(p: Parser): ASTNode {
     return StringLiteral(p);
 }
 
 // ImportedBinding
 
-function ImportedBinding(p: Parser): BindingIdentifierNode | ErrorNode {
+function ImportedBinding(p: Parser): ASTNode {
     return BindingIdentifier(p);
 }
 
@@ -4169,14 +4149,14 @@ function ImportedBinding(p: Parser): BindingIdentifierNode | ErrorNode {
 
 // ExportDeclaration
 
-function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
+function ExportDeclaration(p: Parser): ASTNode {
     return p.attempt((start) => {
         p.sequence([
             keyword("export"),
             whitespace,
         ]);
 
-        return p.choice<ExportNode | ErrorNode>([
+        return p.choice<ASTNode>([
             () => p.seq3([
                 keyword("default"),
                 whitespace,
@@ -4227,9 +4207,9 @@ function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
 
 // ExportClause
 
-function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
+function ExportClause(p: Parser): ASTNode {
     const start = p.pos;
-    let exports: ExportsListNode | ErrorNode;
+    let exports: ASTNode;
     p.sequence([
         punctuator("{"),
         whitespace,
@@ -4246,7 +4226,7 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
                     })],
                     ([inner,,]) => inner);
             },
-            () => new ExportsListNode(new Range(p.pos,p.pos),[]),
+            () => new ListNode(new Range(p.pos,p.pos),[]),
         ]),
         punctuator("}"),
     ]);
@@ -4255,9 +4235,9 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
 
 // ExportsList
 
-function ExportsList(p: Parser): ExportsListNode | ErrorNode {
+function ExportsList(p: Parser): ASTNode {
     const start = p.pos;
-    const exports: (ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode)[] = [];
+    const exports: ASTNode[] = [];
     exports.push(ExportSpecifier(p));
     while (true) {
         try {
@@ -4279,7 +4259,7 @@ function ExportsList(p: Parser): ExportsListNode | ErrorNode {
 
 // ExportSpecifier
 
-function ExportSpecifier(p: Parser): ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode {
+function ExportSpecifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.item(pos);

@@ -28,28 +28,10 @@ import {
     CastError,
     Range,
     ASTNode,
+    ListNode,
     ErrorNode,
     GenericNode,
-    IdentifierNode,
-    StringLiteralNode,
-    NumericLiteralNode,
-    ComputedPropertyNameNode,
-    ColonPropertyDefinitionNode,
-    CoverInitializedNameNode,
-    MethodDefinitionNode,
-    IdentifierReferenceNode,
-    StatementNode,
-    DeclarationNode,
-    BindingIdentifierNode,
-    SingleNameBindingNode,
     ExpressionNode,
-    BindingPropertyListNode,
-    BindingElementType,
-    BindingPatternInitNode,
-    BindingPatternNode,
-    BindingRestElementNode,
-    BindingElisionElementNode,
-    ElisionNode,
 } from "./ast";
 
 export class Builder {
@@ -210,44 +192,6 @@ export function whitespaceNoNewline(p: Parser): void {
     p.skipWhitespaceNoNewline();
 }
 
-export function isLiteralPropertyNameType(value: any): boolean {
-    if (value == null)
-        return false;
-    return ((value instanceof IdentifierNode) ||
-            (value instanceof StringLiteralNode) ||
-            (value instanceof NumericLiteralNode));
-}
-
-export function isPropertyNameType(value: any): boolean {
-    if (value == null)
-        return false;
-    return ((value instanceof ComputedPropertyNameNode) ||
-            isLiteralPropertyNameType(value));
-}
-
-export function isPropertyDefinitionType(value: any): boolean {
-    if (value == null)
-        return false;
-    return ((value instanceof ColonPropertyDefinitionNode) ||
-            (value instanceof CoverInitializedNameNode) ||
-            (value instanceof MethodDefinitionNode) ||
-            (value instanceof IdentifierReferenceNode));
-}
-
-export function isStatementListItemType(value: any): boolean {
-    if (value == null)
-        return false;
-    return ((value instanceof StatementNode) ||
-            (value instanceof DeclarationNode));
-}
-
-export function isSingleNameBindingType(value: any): boolean {
-    if (value == null)
-        return false;
-    return ((value instanceof BindingIdentifierNode) ||
-            (value instanceof SingleNameBindingNode));
-}
-
 export function checkNode(value: any): ASTNode | null {
     if ((value === null) || (value instanceof ASTNode))
         return value;
@@ -262,33 +206,11 @@ export function checkExpressionNode(value: any): ExpressionNode | ErrorNode | nu
         throw new CastError(value,"ASTNode | null");
 }
 
-export function checkBindingPropertyListNode(value: any): BindingPropertyListNode | ErrorNode | null {
-    if ((value == null) || (value instanceof BindingPropertyListNode) || (value instanceof ErrorNode))
+export function checkListNode(value: any): ListNode | ErrorNode | null {
+    if ((value == null) || (value instanceof ListNode) || (value instanceof ErrorNode))
         return value;
     else
-        throw new CastError(value,"BindingPropertyListNode | ErrorNode | null");
-}
-
-export function checkBindingElementType(value: any): BindingElementType | ErrorNode | null {
-    if ((value == null) ||
-        // SingleNameBindingType
-        (value instanceof BindingIdentifierNode) ||
-        (value instanceof SingleNameBindingNode) ||
-        // BindingPatternInitNode
-        (value instanceof BindingPatternInitNode) ||
-        // BindingPatternNode
-        (value instanceof BindingPatternNode) ||
-        // BindingRestElementNode
-        (value instanceof BindingRestElementNode) ||
-        // BindingElisionElementNode
-        (value instanceof BindingElisionElementNode) ||
-        // ElisionNode
-        (value instanceof ElisionNode) ||
-        // ErrorNode
-        (value instanceof ErrorNode))
-        return value;
-    else
-        throw new CastError(value,"BindingElementType | ErrorNode | null");
+        throw new CastError(value,"ListNode | ErrorNode | null");
 }
 
 export function checkGenericNode(value: any): ErrorNode | null {
