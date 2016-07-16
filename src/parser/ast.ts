@@ -1035,15 +1035,54 @@ export class ObjectBindingPatternNode extends BindingPatternNode {
     }
 }
 
-export class ArrayBindingPatternNode extends BindingPatternNode {
+export abstract class ArrayBindingPatternNode extends BindingPatternNode {
     _nominal_type_ArrayBindingPatternNode: any;
+}
+
+export class ArrayBindingPattern1Node extends ArrayBindingPatternNode {
+    _nominal_type_ArrayBindingPattern1Node: any;
+    public readonly elision: ElisionNode | ErrorNode;
+    public readonly rest: BindingRestElementNode | ErrorNode;
+    public constructor(range: Range, elision: ElisionNode | ErrorNode, rest: BindingRestElementNode | ErrorNode) {
+        super(range,"ArrayBindingPattern1");
+        this.elision = elision;
+        this.rest = rest;
+    }
+    public get children(): ASTNode[] {
+        return [this.elision,this.rest];
+    }
+}
+
+export class ArrayBindingPattern2Node extends ArrayBindingPatternNode {
+    _nominal_type_ArrayBindingPattern2Node: any;
     public readonly elements: BindingElementListNode | ErrorNode;
     public constructor(range: Range, elements: BindingElementListNode | ErrorNode) {
-        super(range,"ArrayBindingPattern");
+        super(range,"ArrayBindingPattern2");
         this.elements = elements;
     }
     public get children(): ASTNode[] {
         return [this.elements];
+    }
+}
+
+export class ArrayBindingPattern3Node extends ArrayBindingPatternNode {
+    _nominal_type_ArrayBindingPattern3Node: any;
+    public readonly elements: BindingElementListNode | ErrorNode;
+    public readonly elision: ElisionNode | ErrorNode;
+    public readonly rest: BindingRestElementNode | ErrorNode;
+    public constructor(
+        range: Range,
+        elements: BindingElementListNode | ErrorNode,
+        elision: ElisionNode | ErrorNode,
+        rest: BindingRestElementNode | ErrorNode
+    ) {
+        super(range,"ArrayBindingPattern3");
+        this.elements = elements;
+        this.elision = elision;
+        this.rest = rest;
+    }
+    public get children(): ASTNode[] {
+        return [this.elements,this.elision,this.rest];
     }
 }
 
