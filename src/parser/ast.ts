@@ -2095,8 +2095,8 @@ export class ListNode extends ASTNode {
 
 export class StatementListNode extends ASTNode {
     _nominal_type_StatementListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (StatementNode | DeclarationNode | ErrorNode)[];
+    public constructor(range: Range, elements: (StatementNode | DeclarationNode | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2107,8 +2107,8 @@ export class StatementListNode extends ASTNode {
 
 export class PropertyDefinitionListNode extends ASTNode {
     _nominal_type_PropertyDefinitionListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (PropertyDefinitionType | ErrorNode)[];
+    public constructor(range: Range, elements: (PropertyDefinitionType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2119,8 +2119,8 @@ export class PropertyDefinitionListNode extends ASTNode {
 
 export class ArgumentListNode extends ASTNode {
     _nominal_type_ArgumentListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (ArgumentType | ErrorNode)[];
+    public constructor(range: Range, elements: (ArgumentType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2131,8 +2131,8 @@ export class ArgumentListNode extends ASTNode {
 
 export class BindingListNode extends ASTNode {
     _nominal_type_BindingListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (LexicalBindingNode | ErrorNode)[];
+    public constructor(range: Range, elements: (LexicalBindingNode | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2143,8 +2143,8 @@ export class BindingListNode extends ASTNode {
 
 export class VariableDeclarationListNode extends ASTNode {
     _nominal_type_VariableDeclarationListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (VarIdentifierNode | VarPatternNode | ErrorNode)[];
+    public constructor(range: Range, elements: (VarIdentifierNode | VarPatternNode | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2155,8 +2155,8 @@ export class VariableDeclarationListNode extends ASTNode {
 
 export class CaseClauseListNode extends ASTNode {
     _nominal_type_CaseClauseListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (CaseClauseNode | DefaultClauseNode | ErrorNode)[];
+    public constructor(range: Range, elements: (CaseClauseNode | DefaultClauseNode | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2167,8 +2167,8 @@ export class CaseClauseListNode extends ASTNode {
 
 export class FormalParameterListNode extends ASTNode {
     _nominal_type_FormalParameterListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (BindingElementType | BindingRestElementNode | ErrorNode)[];
+    public constructor(range: Range, elements: (BindingElementType | BindingRestElementNode | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2179,8 +2179,8 @@ export class FormalParameterListNode extends ASTNode {
 
 export class ModuleItemListNode extends ASTNode {
     _nominal_type_ModuleItemListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (ModuleItemType | ErrorNode)[];
+    public constructor(range: Range, elements: (ModuleItemType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2191,8 +2191,8 @@ export class ModuleItemListNode extends ASTNode {
 
 export class ImportsListNode extends ASTNode {
     _nominal_type_ImportsListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[];
+    public constructor(range: Range, elements: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2215,8 +2215,8 @@ export class ExportsListNode extends ASTNode {
 
 export class BindingPropertyListNode extends ASTNode {
     _nominal_type_BindingPropertyListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (BindingPropertyType | ErrorNode)[];
+    public constructor(range: Range, elements: (BindingPropertyType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2227,8 +2227,8 @@ export class BindingPropertyListNode extends ASTNode {
 
 export class ElementListNode extends ASTNode {
     _nominal_type_ElementListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (ArrayLiteralItemType | ErrorNode)[];
+    public constructor(range: Range, elements: (ArrayLiteralItemType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2239,8 +2239,8 @@ export class ElementListNode extends ASTNode {
 
 export class BindingElementListNode extends ASTNode {
     _nominal_type_BindingElementListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (BindingElementType | ErrorNode)[];
+    public constructor(range: Range, elements: (BindingElementType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -2251,8 +2251,8 @@ export class BindingElementListNode extends ASTNode {
 
 export class ClassElementListNode extends ASTNode {
     _nominal_type_ClassElementListNode: any;
-    public readonly elements: ASTNode[];
-    public constructor(range: Range, elements: ASTNode[]) {
+    public readonly elements: (ClassElementType | ErrorNode)[];
+    public constructor(range: Range, elements: (ClassElementType | ErrorNode)[]) {
         super(range,"[]");
         this.elements = elements;
     }
