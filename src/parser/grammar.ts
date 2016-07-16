@@ -137,6 +137,32 @@ export class Builder {
         this.repeat(() => this.choice(list));
     }
 
+    public list(first: (b: Builder) => void, rest: (b: Builder) => void): void {
+        this.attempt(() => {
+            const start = this.parser.pos;
+            const elements: ASTNode[] = [];
+            const initialLength = this.stack.length;
+
+            first(this);
+            this.assertLengthIs(initialLength+1);
+            elements.push(this.get(0));
+            this.stack.pop();
+
+            this.assertLengthIs(initialLength);
+            this.repeat(() => {
+                rest(this);
+                this.assertLengthIs(initialLength+1);
+                elements.push(this.get(0));
+                this.stack.pop();
+                this.assertLengthIs(initialLength);
+            });
+
+            this.assertLengthIs(initialLength);
+            const end = this.parser.pos;
+            this.push(new ListNode(new Range(start,end),elements));
+        });
+    }
+
     public assertLengthIs(length: number): void {
         if (this.stack.length != length)
             throw new Error("Expected b to have exactly "+length+
@@ -150,6 +176,10 @@ export function opt<T>(f: (p: Parser) => T): (p: Parser) => T {
 
 export function pos(p: Parser) {
     return p.pos;
+}
+
+export function value<T>(value: T): (p: Parser) => T {
+    return (p: Parser) => value;
 }
 
 export function keyword(str: string): ((p: Parser) => void) {
@@ -234,4 +264,10 @@ export function makeNode(b: Builder, startIndex: number, endIndex: number, name:
         children.push(checkNode(b.get(childIndex)));
     }
     return new GenericNode(new Range(start,end),name,children);
+}
+
+export function makeEmptyListNode(b: Builder, startIndex: number, endIndex: number): ListNode {
+    const start = checkNumber(b.get(startIndex));
+    const end = checkNumber(b.get(endIndex));
+    return new ListNode(new Range(start,end),[]);
 }

@@ -212,6 +212,7 @@ import {
     Builder,
     opt,
     pos,
+    value,
     keyword,
     punctuator,
     notKeyword,
@@ -225,6 +226,7 @@ import {
     checkGenericNode,
     checkNumber,
     makeNode,
+    makeEmptyListNode,
 } from "./grammar";
 
 // Section 12.1
@@ -287,17 +289,26 @@ export function Identifier(p: Parser): IdentifierNode | ErrorNode {
 
 // Section 12.2
 
+// This
+
+function This(p: Parser): ASTNode {
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            keyword("this"),
+            pos,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,makeNode(b,2,0,"This",[]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
+}
+
 // PrimaryExpression
 
 function PrimaryExpression(p: Parser): ASTNode {
-
-    function This(p: Parser): ASTNode {
-        return p.seq2([
-            pos,
-            keyword("this")],
-            ([start,]) => new GenericNode(new Range(start,p.pos),"This",[]));
-    }
-
     return p.choice<ASTNode>([
         This,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
@@ -348,11 +359,18 @@ function Literal(p: Parser): ASTNode {
 // NullLiteral
 
 function NullLiteral(p: Parser): ASTNode {
-    return p.seq2([
-        pos,
-        keyword("null")],
-        ([start,]) => new GenericNode(new Range(start,p.pos),"NullLiteral",[])
-    );
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            keyword("null"),
+            pos,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,makeNode(b,2,0,"NullLiteral",[]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // BooleanLiteral
@@ -579,25 +597,25 @@ function ObjectLiteral(p: Parser): ASTNode {
 // PropertyDefinitionList
 
 function PropertyDefinitionList(p: Parser): ASTNode {
-    const start = p.pos;
-    const properties: ASTNode[] = [];
-    properties.push(PropertyDefinition(p));
-    while (true) {
-        try {
-            const defn = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                PropertyDefinition],
-                ([,,,propdef]) => propdef);
-            properties.push(defn);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),properties);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(PropertyDefinition);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    PropertyDefinition,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // PropertyDefinition_colon
@@ -759,35 +777,41 @@ function MemberExpression_start(p: Parser): ASTNode {
 // MemberExpression
 
 function MemberExpression(p: Parser): ASTNode {
-    return p.attempt((start) => {
-        let left = MemberExpression_start(p);
-        while (true) {
-            try {
-                left = p.choice<ExpressionNode | ErrorNode>([
-                    () => p.seq6([
-                        whitespace,
-                        punctuator("["),
-                        whitespace,
-                        Expression,
-                        whitespace,
-                        punctuator("]")],
-                        ([,,,expr,,]) => new GenericNode(new Range(start,p.pos),"MemberAccessExpr",[left,expr])),
-                    () => p.seq6([
-                        whitespace,
-                        punctuator("."),
-                        whitespace,
-                        IdentifierName,
-                        pos,
-                        whitespace],
-                        ([,,,ident,end,]) => new GenericNode(new Range(start,end),"MemberAccessIdent",[left,ident])),
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);
+        b.item(MemberExpression_start);
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,      // 6
+                    punctuator("["), // 5
+                    whitespace,      // 4
+                    Expression,      // 3 = expr
+                    whitespace,      // 2
+                    punctuator("]"), // 1
+                    pos,             // 0 = end
                 ]);
-            }
-            catch (e) {
-                if (!(e instanceof ParseFailure))
-                    throw e;
-                return left;
-            }
-        }
+                b.assertLengthIs(9);
+                b.popAboveAndSet(7,makeNode(b,8,0,"MemberAccessExpr",[7,3]));
+            },
+            () => {
+                b.items([
+                    whitespace,      // 5
+                    punctuator("."), // 4
+                    whitespace,      // 3
+                    IdentifierName,  // 2 = ident
+                    pos,             // 1 = end
+                    whitespace,      // 0
+                ]);
+                b.assertLengthIs(8);
+                b.popAboveAndSet(6,makeNode(b,7,1,"MemberAccessIdent",[6,2]));
+            },
+        ]);
+        b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
 }
 
@@ -855,6 +879,7 @@ function NewTarget(p: Parser): ASTNode {
         ]);
         b.assertLengthIs(7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewTarget",[]));
+        b.assertLengthIs(1);
         return checkGenericNode(b.get(0));
     });
 }
@@ -917,41 +942,53 @@ function CallExpression_start(p: Parser): ASTNode {
 // CallExpression
 
 function CallExpression(p: Parser): ASTNode {
-    const start = p.pos;
-    let left = CallExpression_start(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq2([
-                    whitespace,
-                    Arguments],
-                    ([,args]) => new GenericNode(new Range(start,p.pos),"Call",[left,args])),
-                () => p.seq6([
-                    whitespace,
-                    punctuator("["),
-                    whitespace,
-                    Expression,
-                    whitespace,
-                    punctuator("]")],
-                    ([,,,expr,,]) => new GenericNode(new Range(start,p.pos),"MemberAccessExpr",[left,expr])),
-                () => p.seq4([
-                    whitespace,
-                    punctuator("."),
-                    whitespace,
-                    IdentifierName],
-                    ([,,,idname]) => new GenericNode(new Range(start,p.pos),"MemberAccessIdent",[left,idname])),
-                // () => {
-                //     // TODO
-                //     left = TemplateLiteral(p);
-                // },
-            ]);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return left;
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);
+        b.item(CallExpression_start);
+        b.repeatChoice([
+            () => {
+                b.items([
+                    whitespace,      // 2
+                    Arguments,       // 1
+                    pos,             // 0
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(3,makeNode(b,4,0,"Call",[3,1]));
+            },
+            () => {
+                b.items([
+                    whitespace,      // 6
+                    punctuator("["), // 5
+                    whitespace,      // 4
+                    Expression,      // 3 = expr
+                    whitespace,      // 2
+                    punctuator("]"), // 1
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(9);
+                b.popAboveAndSet(7,makeNode(b,8,0,"MemberAccessExpr",[7,3]));
+            },
+            () => {
+                b.items([
+                    whitespace,      // 4
+                    punctuator("."), // 3
+                    whitespace,      // 2
+                    IdentifierName,  // 1 = idname
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(5,makeNode(b,6,0,"MemberAccessIdent",[5,1]));
+            },
+            // () => {
+            //     // TODO
+            //     left = TemplateLiteral(p);
+            // },
+        ]);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // SuperCall
@@ -1043,25 +1080,25 @@ function ArgumentList_item(p: Parser): ASTNode {
 // ArgumentList
 
 function ArgumentList(p: Parser): ASTNode {
-    const start = p.pos;
-    const items: ASTNode[] = [];
-    items.push(ArgumentList_item(p));
-    while (true) {
-        try {
-            const arg = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                ArgumentList_item],
-                ([,,,item]) => item);
-            items.push(arg);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),items);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(ArgumentList_item);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    ArgumentList_item,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // LeftHandSideExpression
@@ -1080,24 +1117,36 @@ function LeftHandSideExpression(p: Parser): ASTNode {
 // PostfixExpression
 
 function PostfixExpression(p: Parser): ASTNode {
-    const start = p.pos;
-    let expr: ASTNode;
-    let result: ASTNode;
-    p.sequence([
-        () => expr = LeftHandSideExpression(p),
-        () => result = p.choice<ASTNode>([
-            () => p.seq2([
-                whitespaceNoNewline,
-                punctuator("++")],
-                () => new GenericNode(new Range(start,p.pos),"PostIncrement",[expr])),
-            () => p.seq2([
-                whitespaceNoNewline,
-                punctuator("--")],
-                () => new GenericNode(new Range(start,p.pos),"PostDecrement",[expr])),
-            () => expr,
-        ]),
-    ]);
-    return result;
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);
+        b.item(LeftHandSideExpression);
+        b.choice([
+            () => {
+                b.items([
+                    whitespaceNoNewline,
+                    punctuator("++"),
+                    pos,
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"PostIncrement",[3]));
+            },
+            () => {
+                b.items([
+                    whitespaceNoNewline,
+                    punctuator("--"),
+                    pos,
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"PostDecrement",[3]));
+            },
+            () => {
+                b.popAboveAndSet(1,b.get(0));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 12.5
@@ -1259,6 +1308,8 @@ function MultiplicativeExpression(p: Parser): ASTNode {
         ]);
 
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1295,6 +1346,8 @@ function AdditiveExpression(p: Parser): ASTNode {
             }]);
 
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1342,6 +1395,8 @@ function ShiftExpression(p: Parser): ASTNode {
         ]);
 
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1430,6 +1485,8 @@ function RelationalExpression(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1494,6 +1551,8 @@ function EqualityExpression(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1519,6 +1578,8 @@ function BitwiseANDExpression(p: Parser): ASTNode {
         });
 
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1541,6 +1602,8 @@ function BitwiseXORExpression(p: Parser): ASTNode {
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseXOR",[5,1]));
         });
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1563,6 +1626,8 @@ function BitwiseORExpression(p: Parser): ASTNode {
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseOR",[5,1]));
         });
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1587,6 +1652,8 @@ function LogicalANDExpression(p: Parser): ASTNode {
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalAND",[5,1]));
         });
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1609,6 +1676,8 @@ function LogicalORExpression(p: Parser): ASTNode {
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalORNode",[5,1]));
         });
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1640,6 +1709,8 @@ function ConditionalExpression(p: Parser): ASTNode {
             () => {},
         ]);
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1776,6 +1847,8 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
             },
         ])
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1812,6 +1885,8 @@ function Expression(p: Parser): ASTNode {
             b.popAboveAndSet(5,makeNode(b,6,0,"Comma",[5,1]));
         });
         b.assertLengthIs(2);
+        b.popAboveAndSet(1,b.get(0));
+        b.assertLengthIs(1);
         return checkExpressionNode(b.get(0));
     });
 }
@@ -1904,26 +1979,25 @@ function Block(p: Parser): ASTNode {
 // StatementList
 
 function StatementList(p: Parser): ASTNode {
-    const start = p.pos;
-    const statements: ASTNode[] = [];
-    statements.push(StatementListItem(p));
-    while (true) {
-        try {
-            const stmt = p.seq2([
-                whitespace,
-                StatementListItem],
-                ([,next]) => next);
-            statements.push(stmt);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            const end = p.pos;
-            return p.seq1([
-                whitespace],
-                () => new ListNode(new Range(start,end),statements));
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(StatementListItem);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    StatementListItem,
+                ]);
+                b.popAboveAndSet(1,b.get(0));
+            },
+        );
+        b.item(whitespace);
+        b.popAboveAndSet(1,b.get(1));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // StatementListItem
@@ -1976,40 +2050,46 @@ function LexicalDeclaration(p: Parser): ASTNode {
 // BindingList
 
 function BindingList(p: Parser): ASTNode {
-    const start = p.pos;
-    const bindings: ASTNode[] = [];
-    bindings.push(LexicalBinding(p));
-    while (true) {
-        try {
-            const lexbnd = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                LexicalBinding],
-                ([,,,bnd]) => bnd);
-            bindings.push(lexbnd);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),bindings);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(LexicalBinding);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    LexicalBinding,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // LexicalBinding_identifier
 
 function LexicalBinding_identifier(p: Parser): ASTNode {
-    return p.seq3([
-        pos,
-        BindingIdentifier,
-        opt(() => p.seq2([
-            whitespace,
-            Initializer],
-            ([,inner]) => inner))],
-        ([start,identifier,initializer]) => {
-            return new GenericNode(new Range(start,p.pos),"LexicalIdentifierBinding",[identifier,initializer]);
-        });
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 3 = start
+            BindingIdentifier, // 2 = identifier
+            opt(() => p.seq2([ // 1 = initializer
+                whitespace,
+                Initializer],
+                ([,inner]) => inner)),
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(4);
+        b.popAboveAndSet(3,makeNode(b,3,0,"LexicalIdentifierBinding",[2,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // LexicalBinding_pattern
@@ -2047,7 +2127,6 @@ function LexicalBinding(p: Parser): ASTNode {
 function VariableStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-
         b.items([
             pos,                     // 6 = start
             keyword("var"),          // 5
@@ -2066,45 +2145,54 @@ function VariableStatement(p: Parser): ASTNode {
 // VariableDeclarationList
 
 function VariableDeclarationList(p: Parser): ASTNode {
-    const start = p.pos;
-    const declarations: ASTNode[] = [];
-    declarations.push(VariableDeclaration(p));
-    while (true) {
-        try {
-            const decl = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                VariableDeclaration],
-                ([,,,d]) => d);
-            declarations.push(decl);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),declarations);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(VariableDeclaration);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    VariableDeclaration,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // VariableDeclaration_identifier
 
 function VariableDeclaration_identifier(p: Parser): ASTNode {
-    let identifier: ASTNode;
-    let result: GenericNode;
-    const start = p.pos;
-    p.sequence([
-        () => identifier = BindingIdentifier(p),
-        () => result = p.choice([
-            () => p.seq2([
-                whitespace,
-                Initializer],
-                ([,initializer]) =>
-                    new GenericNode(new Range(start,p.pos),"VarIdentifier",[identifier,initializer])),
-            () => new GenericNode(new Range(start,p.pos),"VarIdentifier",[identifier,null]),
-        ]),
-    ]);
-    return result;
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);
+        b.item(BindingIdentifier);
+        b.choice([
+            () => {
+                b.items([
+                    whitespace,
+                    Initializer,
+                    pos,
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"VarIdentifier",[3,1]));
+            },
+            () => {
+                b.item(value(null));
+                b.item(pos);
+                b.assertLengthIs(4);
+                b.popAboveAndSet(3,makeNode(b,3,0,"VarIdentifier",[2,1]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // VariableDeclaration_pattern
@@ -2311,49 +2399,49 @@ function ArrayBindingPattern(p: Parser): ASTNode {
 // BindingPropertyList
 
 function BindingPropertyList(p: Parser): ASTNode {
-    const start = p.pos;
-    const properties: ASTNode[] = [];
-    properties.push(BindingProperty(p));
-    while (true) {
-        try {
-            const prop = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                BindingProperty],
-                ([,,,p]) => p);
-            properties.push(prop);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),properties);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(BindingProperty);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    BindingProperty,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // BindingElementList
 
 function BindingElementList(p: Parser): ASTNode {
-    const start = p.pos;
-    const elements: ASTNode[] = [];
-    elements.push(BindingElisionElement(p));
-    while (true) {
-        try {
-            const elem = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                BindingElisionElement],
-                ([,,,e]) => e);
-            elements.push(elem);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),elements);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(BindingElisionElement);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    BindingElisionElement
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // BindingElisionElement
@@ -2385,69 +2473,110 @@ function BindingElisionElement(p: Parser): ASTNode {
 // BindingProperty
 
 function BindingProperty(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        () => p.seq6([
-            pos,
-            PropertyName,
-            whitespace,
-            punctuator(":"),
-            whitespace,
-            BindingElement],
-            ([start,name,,,,element]) =>
-                new GenericNode(new Range(start,p.pos),"BindingProperty",[name,element])),
-        // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
-        // and PropertyName will match an identifier at the start of a colon binding
-        SingleNameBinding,
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,             // 6 = start
+                    PropertyName,    // 5 = name
+                    whitespace,      // 4
+                    punctuator(":"), // 3
+                    whitespace,      // 2
+                    BindingElement,  // 1 = element
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"BindingProperty",[5,1]));
+            },
+            () => {
+                // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
+                // and PropertyName will match an identifier at the start of a colon binding
+                b.item(SingleNameBinding);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // BindingElement
 
 function BindingElement(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        SingleNameBinding,
-        () => {
-            const start = p.pos;
-            const pattern = BindingPattern(p);
-            return p.choice<ASTNode>([
-                () => p.seq2([
-                    whitespace,
-                    Initializer],
-                    ([,init]) => new GenericNode(new Range(start,p.pos),"BindingPatternInit",[pattern,init])),
-                () => pattern,
-            ]);
-        },
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.item(SingleNameBinding);
+            },
+            () => {
+                b.item(pos);
+                b.item(BindingPattern);
+                b.choice([
+                    () => {
+                        b.items([
+                            whitespace,
+                            Initializer,
+                            pos,
+                        ]);
+                        b.assertLengthIs(5);
+                        b.popAboveAndSet(4,makeNode(b,4,0,"BindingPatternInit",[3,1]));
+                    },
+                    () => {
+                        b.popAboveAndSet(1,b.get(0));
+                    },
+                ]);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // SingleNameBinding
 
 function SingleNameBinding(p: Parser): ASTNode {
-    const start = p.pos;
-    let ident: ASTNode;
-    let result: ASTNode;
-    p.sequence([
-        () => ident = BindingIdentifier(p),
-        () => result = p.choice<ASTNode>([
-            () => p.seq2([
-                whitespace,
-                Initializer],
-                ([,init]) => new GenericNode(new Range(start,p.pos),"SingleNameBinding",[ident,init])),
-            () => ident,
-        ]),
-    ]);
-    return result;
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);
+        b.item(BindingIdentifier);
+        b.choice([
+            () => {
+                b.items([
+                    whitespace,
+                    Initializer,
+                    pos,
+                ]);
+                b.popAboveAndSet(2,makeNode(b,4,0,"SingleNameBinding",[3,1]));
+            },
+            () => {
+                b.push(b.get(0));
+            },
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,b.get(0));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // BindingRestElement
 
 function BindingRestElement(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        punctuator("..."),
-        whitespace,
-        BindingIdentifier],
-        ([start,,,ident]) => new GenericNode(new Range(start,p.pos),"BindingRestElement",[ident]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 4 = start
+            punctuator("..."), // 3
+            whitespace,        // 2
+            BindingIdentifier, // 1 = ident
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"BindingRestElement",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.4
@@ -2455,10 +2584,18 @@ function BindingRestElement(p: Parser): ASTNode {
 // EmptyStatement
 
 function EmptyStatement(p: Parser): ASTNode {
-    return p.seq2([
-        pos,
-        punctuator(";")],
-        ([start,]) => new GenericNode(new Range(start,p.pos),"EmptyStatement",[]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            punctuator(";"),
+            pos,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,makeNode(b,2,0,"EmptyStatement",[]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.5
@@ -2484,12 +2621,20 @@ function ExpressionStatement(p: Parser): ASTNode {
     }
     p.pos = start2;
 
-    return p.seq4([
-        pos,
-        Expression,
-        whitespace,
-        punctuator(";")],
-        ([start,expr,,,]) => new GenericNode(new Range(start,p.pos),"ExpressionStatement",[expr]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,             // 4 = start
+            Expression,      // 3 = expr
+            whitespace,      // 2
+            punctuator(";"), // 1
+            pos,             // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"ExpressionStatement",[3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.6
@@ -2843,22 +2988,38 @@ function ForBinding(p: Parser): ASTNode {
 // ContinueStatement
 
 function ContinueStatement(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        () => p.seq4([
-            pos,
-            keyword("continue"),
-            whitespace,
-            punctuator(";")],
-            ([start,,,]) => new GenericNode(new Range(start,p.pos),"ContinueStatement",[null])),
-        () => p.seq6([
-            pos,
-            keyword("continue"),
-            whitespaceNoNewline,
-            LabelIdentifier,
-            whitespace,
-            punctuator(";")],
-            ([start,,,ident,,]) => new GenericNode(new Range(start,p.pos),"ContinueStatement",[ident])),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,                 // 5 = start
+                    keyword("continue"), // 4
+                    whitespace,          // 3
+                    value(null),         // 2 = null
+                    punctuator(";"),     // 1
+                    pos,                 // 0 = end
+                ]);
+                b.assertLengthIs(6);
+                b.popAboveAndSet(5,makeNode(b,5,0,"ContinueStatement",[2]));
+            },
+            () => {
+                b.items([
+                    pos,                 // 6 = start
+                    keyword("continue"), // 5
+                    whitespaceNoNewline, // 4
+                    LabelIdentifier,     // 3 = ident
+                    whitespace,          // 2
+                    punctuator(";"),     // 1
+                    pos,                 // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"ContinueStatement",[3]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.9
@@ -2866,22 +3027,38 @@ function ContinueStatement(p: Parser): ASTNode {
 // BreakStatement
 
 function BreakStatement(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        () => p.seq4([
-            pos,
-            keyword("break"),
-            whitespace,
-            punctuator(";")],
-            ([start,,,]) => new GenericNode(new Range(start,p.pos),"BreakStatement",[null])),
-        () => p.seq6([
-            pos,
-            keyword("break"),
-            whitespaceNoNewline,
-            LabelIdentifier,
-            whitespace,
-            punctuator(";")],
-            ([start,,,ident,,]) => new GenericNode(new Range(start,p.pos),"BreakStatement",[ident])),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,              // 5 = start
+                    keyword("break"), // 4
+                    whitespace,       // 3
+                    value(null),      // 2 = null
+                    punctuator(";"),  // 1
+                    pos,              // 0 = end
+                ]);
+                b.assertLengthIs(6);
+                b.popAboveAndSet(5,makeNode(b,5,0,"BreakStatement",[2]));
+            },
+            () => {
+                b.items([
+                    pos,                 // 6 = start
+                    keyword("break"),    // 5
+                    whitespaceNoNewline, // 4
+                    LabelIdentifier,     // 3 = ident
+                    whitespace,          // 2
+                    punctuator(";"),     // 1
+                    pos,                 // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"BreakStatement",[3]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.10
@@ -2889,22 +3066,38 @@ function BreakStatement(p: Parser): ASTNode {
 // ReturnStatement
 
 function ReturnStatement(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        () => p.seq4([
-            pos,
-            keyword("return"),
-            whitespace,
-            punctuator(";")],
-            ([start,,,]) => new GenericNode(new Range(start,p.pos),"ReturnStatement",[null])),
-        () => p.seq6([
-            pos,
-            keyword("return"),
-            whitespaceNoNewline,
-            Expression,
-            whitespace,
-            punctuator(";")],
-            ([start,,,expr,,]) => new GenericNode(new Range(start,p.pos),"ReturnStatement",[expr])),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,               // 5 = start
+                    keyword("return"), // 4
+                    whitespace,        // 3
+                    value(null),       // 2 = null
+                    punctuator(";"),   // 1
+                    pos,               // 0 = end
+                ]);
+                b.assertLengthIs(6);
+                b.popAboveAndSet(5,makeNode(b,5,0,"ReturnStatement",[2]));
+            },
+            () => {
+                b.items([
+                    pos,                 // 6 = start
+                    keyword("return"),   // 5
+                    whitespaceNoNewline, // 4
+                    Expression,          // 3 = expr
+                    whitespace,          // 2
+                    punctuator(";"),     // 1
+                    pos,                 // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"ReturnStatement",[3]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.11
@@ -2912,19 +3105,26 @@ function ReturnStatement(p: Parser): ASTNode {
 // WithStatement
 
 function WithStatement(p: Parser): ASTNode {
-    return p.seq10([
-        pos,
-        keyword("with"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,expr,,,,body]) =>
-            new GenericNode(new Range(start,p.pos),"WithStatement",[expr,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,             // 10 = start
+            keyword("with"), // 9
+            whitespace,      // 8
+            punctuator("("), // 7
+            whitespace,      // 6
+            Expression,      // 5 = expr
+            whitespace,      // 4
+            punctuator(")"), // 3
+            whitespace,      // 2
+            Statement,       // 1 = body
+            pos,             // 0 = end
+        ]);
+        b.assertLengthIs(11);
+        b.popAboveAndSet(10,makeNode(b,10,0,"WithStatement",[5,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.12
@@ -2932,38 +3132,57 @@ function WithStatement(p: Parser): ASTNode {
 // SwitchStatement
 
 function SwitchStatement(p: Parser): ASTNode {
-    return p.seq10([
-        pos,
-        keyword("switch"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        CaseBlock],
-        ([start,arg2,arg3,arg4,arg5,expr,arg7,arg8,arg9,cases]) =>
-            new GenericNode(new Range(start,p.pos),"SwitchStatement",[expr,cases]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 10 = start
+            keyword("switch"), // 9
+            whitespace,        // 8
+            punctuator("("),   // 7
+            whitespace,        // 6
+            Expression,        // 5 = expr
+            whitespace,        // 4
+            punctuator(")"),   // 3
+            whitespace,        // 2
+            CaseBlock,         // 1 = cases
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(11);
+        b.popAboveAndSet(10,makeNode(b,10,0,"SwitchStatement",[5,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // CaseBlock_1
 
 function CaseBlock_1(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        punctuator("{"),
-        whitespace,
-        () => p.choice([
-            CaseClauses,
-            () => new ListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        whitespace,
-        punctuator("}")],
-        ([start,,,clauses,,]) => {
-            // clauses.range = new Range(start,p.pos);
-            return clauses;
-        });
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,             // 6
+            punctuator("{"), // 5
+            whitespace,      // 4
+            pos,             // 3 = midpos
+        ]);
+        b.choice([           // 2 = clauses
+            () => {
+                b.item(CaseClauses);
+            },
+            () => {
+                const midpos = checkNumber(b.get(0));
+                b.push(new ListNode(new Range(midpos,midpos),[]));
+            },
+        ]);
+        b.items([
+            whitespace,      // 1
+            punctuator("}"), // 0
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,b.get(2));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // CaseBlock_2
@@ -3041,30 +3260,50 @@ function CaseClauses(p: Parser): ASTNode {
 // CaseClause
 
 function CaseClause(p: Parser): ASTNode {
-    return p.seq8([
-        pos,
-        keyword("case"),
-        whitespace,
-        Expression,
-        whitespace,
-        punctuator(":"),
-        whitespace,
-        StatementList],
-        ([start,,,expr,,,,statements]) => new GenericNode(new Range(start,statements.range.end),"CaseClause",[expr,statements]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,             // 7 = start
+            keyword("case"), // 6
+            whitespace,      // 5
+            Expression,      // 4 = expr
+            whitespace,      // 3
+            punctuator(":"), // 2
+            whitespace,      // 1
+            StatementList,   // 0 = statements
+        ]);
+        b.assertLengthIs(8);
+        const start = checkNumber(b.get(7));
+        const expr = checkNode(b.get(4));
+        const statements = checkNode(b.get(0));
+        const end = statements.range.end;
+        b.popAboveAndSet(7,new GenericNode(new Range(start,end),"CaseClause",[expr,statements]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // DefaultClause
 
 function DefaultClause(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        keyword("default"),
-        whitespace,
-        punctuator(":"),
-        whitespace,
-        StatementList],
-        ([start,arg2,arg3,arg4,arg5,statements]) =>
-            new GenericNode(new Range(start,statements.range.end),"DefaultClause",[statements]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                // 5 = start
+            keyword("default"), // 4
+            whitespace,         // 3
+            punctuator(":"),    // 2
+            whitespace,         // 1
+            StatementList,      // 0 = statements
+        ]);
+        b.assertLengthIs(6);
+        const start = checkNumber(b.get(5));
+        const statements = checkNode(b.get(0));
+        const end = statements.range.end;
+        b.popAboveAndSet(5,new GenericNode(new Range(start,end),"DefaultClause",[statements]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.13
@@ -3072,15 +3311,22 @@ function DefaultClause(p: Parser): ASTNode {
 // LabelledStatement
 
 function LabelledStatement(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        LabelIdentifier,
-        whitespace,
-        punctuator(":"),
-        whitespace,
-        LabelledItem],
-        ([start,ident,,,,item]) =>
-            new GenericNode(new Range(start,p.pos),"LabelledStatement",[ident,item]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,             // 6 = start
+            LabelIdentifier, // 5 = ident
+            whitespace,      // 4
+            punctuator(":"), // 3
+            whitespace,      // 2
+            LabelledItem,    // 1 = item
+            pos,             // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"LabelledStatement",[5,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // LabelledItem
@@ -3097,15 +3343,22 @@ function LabelledItem(p: Parser): ASTNode {
 // ThrowStatement
 
 function ThrowStatement(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        keyword("throw"),
-        whitespaceNoNewline,
-        Expression,
-        whitespace,
-        punctuator(";")],
-        ([start,,,expr,,]) =>
-            new GenericNode(new Range(start,p.pos),"ThrowStatement",[expr]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 6 = start
+            keyword("throw"),    // 5
+            whitespaceNoNewline, // 4
+            Expression,          // 3 = expr
+            whitespace,          // 2
+            punctuator(";"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ThrowStatement",[3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 13.15
@@ -3114,64 +3367,77 @@ function ThrowStatement(p: Parser): ASTNode {
 
 function TryStatement(p: Parser): ASTNode {
     return p.attempt((start) => {
-        let catchBlock: ASTNode = null;
-        let finallyBlock: ASTNode = null;
-
-        const tryBlock = p.seq3([
-            keyword("try"),
-            whitespace,
-            Block],
-            ([,,block]) => block);
-
-        finallyBlock = p.opt(() => p.seq2([
-            whitespace,
-            Finally],
-            ([,inner]) => inner));
-
-        if (finallyBlock == null) {
-            p.sequence([
-                whitespace,
-                () => catchBlock = Catch(p),
-                () => finallyBlock = p.opt(() => p.seq2([
-                    whitespace,
-                    Finally],
-                    ([,inner]) => inner)),
-            ]);
-        }
-
-        return new GenericNode(new Range(start,p.pos),"TryStatement",[tryBlock,catchBlock,finallyBlock]);
+        const b = new Builder(p);
+        b.item(pos);                   // 7 = start
+        b.item(keyword("try"));        // 6
+        b.item(whitespace);            // 5
+        b.item(Block);                 // 4 = tryBlock
+        b.choice([
+            () => {
+                b.item(whitespace);    // 3
+                b.item(value(null));   // 2 = catchBlock
+                b.item(Finally);       // 1 = finallyBlock
+            },
+            () => {
+                b.item(whitespace);    // 3
+                b.item(Catch);         // 2 = catchBlock
+                b.opt(() => {          // 1 = finallyBlock
+                    b.item(whitespace);
+                    b.item(Finally);
+                    b.popAboveAndSet(1,b.get(0));
+                });
+            },
+        ]);
+        b.item(pos);                   // 0 = end
+        b.assertLengthIs(8);
+        b.popAboveAndSet(7,makeNode(b,7,0,"TryStatement",[4,2,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
 }
 
 // Catch
 
 function Catch(p: Parser): ASTNode {
-    return p.seq10([
-        pos,
-        keyword("catch"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        CatchParameter,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        Block],
-        ([start,,,,,param,,,,block]) =>
-            new GenericNode(new Range(start,p.pos),"Catch",[param,block]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,              // 10 = start
+            keyword("catch"), // 9
+            whitespace,       // 8
+            punctuator("("),  // 7
+            whitespace,       // 6
+            CatchParameter,   // 5 = param
+            whitespace,       // 4
+            punctuator(")"),  // 3
+            whitespace,       // 2
+            Block,            // 1 = block
+            pos,              // 0 = end
+        ]);
+        b.assertLengthIs(11);
+        b.popAboveAndSet(10,makeNode(b,10,0,"Catch",[5,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Finally
 
 function Finally(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        keyword("finally"),
-        whitespace,
-        Block],
-        ([start,arg2,arg3,block]) =>
-            new GenericNode(new Range(start,p.pos),"Finally",[block])
-    );
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                // 4
+            keyword("finally"), // 3
+            whitespace,         // 2
+            Block,              // 1
+            pos,                // 0
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"Finally",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // CatchParameter
@@ -3188,12 +3454,20 @@ function CatchParameter(p: Parser): ASTNode {
 // DebuggerStatement
 
 function DebuggerStatement(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        keyword("debugger"),
-        whitespace,
-        punctuator(";")],
-        ([start,,,]) => new GenericNode(new Range(start,p.pos),"DebuggerStatement",[]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 4
+            keyword("debugger"), // 3
+            whitespace,          // 2
+            punctuator(";"),     // 1
+            pos,                 // 0
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"DebuggerStatement",[]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 14.1
@@ -3201,47 +3475,62 @@ function DebuggerStatement(p: Parser): ASTNode {
 // FunctionDeclaration_named
 
 function FunctionDeclaration_named(p: Parser): ASTNode {
-    return p.seq16([
-        pos,
-        keyword("function"),
-        whitespace,
-        BindingIdentifier,
-        whitespace,
-        punctuator("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,ident,,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"Function",[ident,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 16 = start
+            keyword("function"), // 15
+            whitespace,          // 14
+            BindingIdentifier,   // 13 = ident
+            whitespace,          // 12
+            punctuator("("),     // 11
+            whitespace,          // 10
+            FormalParameters,    // 9 = params
+            whitespace,          // 8
+            punctuator(")"),     // 7
+            whitespace,          // 6
+            punctuator("{"),     // 5
+            whitespace,          // 4
+            FunctionBody,        // 3 = body
+            whitespace,          // 2
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(17);
+        b.popAboveAndSet(16,makeNode(b,16,0,"Function",[13,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // FunctionDeclaration_unnamed
 
 function FunctionDeclaration_unnamed(p: Parser): ASTNode {
-    return p.seq14([
-        pos,
-        keyword("function"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"Function",[null,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 15 = start
+            keyword("function"), // 14
+            whitespace,          // 13
+            punctuator("("),     // 12
+            whitespace,          // 11
+            value(null),         // 10 = null
+            FormalParameters,    // 9 = params
+            whitespace,          // 8
+            punctuator(")"),     // 7
+            whitespace,          // 6
+            punctuator("{"),     // 5
+            whitespace,          // 4
+            FunctionBody,        // 3 = body
+            whitespace,          // 2
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(16);
+        b.popAboveAndSet(15,makeNode(b,15,0,"Function",[10,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // FunctionDeclaration
@@ -3269,27 +3558,34 @@ function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boo
 // FunctionExpression
 
 function FunctionExpression(p: Parser): ASTNode {
-    return p.seq15([
-        pos,
-        keyword("function"),
-        whitespace,
-        opt(() => p.seq2([
-            BindingIdentifier,
-            whitespace],
-            ([inner,]) => inner)),
-        punctuator("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,ident,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"FunctionExpression",[ident,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 15 = start
+            keyword("function"), // 14
+            whitespace,          // 13
+            opt(() => p.seq2([   // 12 = ident
+                BindingIdentifier,
+                whitespace],
+                ([inner,]) => inner)),
+            punctuator("("),     // 11
+            whitespace,          // 10
+            FormalParameters,    // 9 = params
+            whitespace,          // 8
+            punctuator(")"),     // 7
+            whitespace,          // 6
+            punctuator("{"),     // 5
+            whitespace,          // 4
+            FunctionBody,        // 3 = body
+            whitespace,          // 2
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(16);
+        b.popAboveAndSet(15,makeNode(b,15,0,"FunctionExpression",[12,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // StrictFormalParameters
@@ -3342,26 +3638,25 @@ function FormalParameterList(p: Parser): ASTNode {
 // FormalsList
 
 function FormalsList(p: Parser): ASTNode {
-    const start = p.pos;
-    const elements: ASTNode[] = [];
-    elements.push(FormalParameter(p));
-    while (true) {
-        try {
-            // let param: BindingElementType | ErrorNode;
-            const param = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                FormalParameter],
-                ([,,,p]) => p);
-            elements.push(param);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),elements);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(FormalParameter);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    FormalParameter,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // FunctionRestParameter
@@ -3396,14 +3691,22 @@ function FunctionStatementList(p: Parser): ASTNode {
 // ArrowFunction
 
 function ArrowFunction(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        ArrowParameters,
-        whitespaceNoNewline,
-        punctuator("=>"),
-        whitespace,
-        ConciseBody],
-        ([start,params,,,,body]) => new GenericNode(new Range(start,p.pos),"ArrowFunction",[params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 6 = start
+            ArrowParameters,     // 5 = params
+            whitespaceNoNewline, // 4
+            punctuator("=>"),    // 3
+            whitespace,          // 2
+            ConciseBody,         // 1 = body
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ArrowFunction",[5,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ArrowParameters
@@ -3426,13 +3729,20 @@ function ConciseBody_1(p: Parser): ASTNode {
 // ConciseBody_2
 
 function ConciseBody_2(p: Parser): ASTNode {
-    return p.seq5([
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([,,body,,]) => body);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            punctuator("{"), // 4
+            whitespace,      // 3
+            FunctionBody,    // 2
+            whitespace,      // 1
+            punctuator("}"), // 0
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,b.get(2));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ConciseBody
@@ -3447,13 +3757,20 @@ function ConciseBody(p: Parser): ASTNode {
 // ArrowFormalParameters
 
 function ArrowFormalParameters(p: Parser): ASTNode {
-    return p.seq5([
-        punctuator("("),
-        whitespace,
-        StrictFormalParameters,
-        whitespace,
-        punctuator(")")],
-        ([,,params,,]) => params);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            punctuator("("),        // 4
+            whitespace,             // 3
+            StrictFormalParameters, // 2
+            whitespace,             // 1
+            punctuator(")"),        // 0
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,b.get(2));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // Section 14.3
@@ -3461,23 +3778,30 @@ function ArrowFormalParameters(p: Parser): ASTNode {
 // MethodDefinition_1
 
 function MethodDefinition_1(p: Parser): ASTNode {
-    return p.seq14([
-        pos,
-        PropertyName,
-        whitespace,
-        punctuator("("),
-        whitespace,
-        StrictFormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([start,name,,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"Method",[name,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                    // 14 = start
+            PropertyName,           // 13 = name
+            whitespace,             // 12
+            punctuator("("),        // 11
+            whitespace,             // 10
+            StrictFormalParameters, // 9 = params
+            whitespace,             // 8
+            punctuator(")"),        // 7
+            whitespace,             // 6
+            punctuator("{"),        // 5
+            whitespace,             // 4
+            FunctionBody,           // 3 = body
+            whitespace,             // 2
+            punctuator("}"),        // 1
+            pos,                    // 0 = end
+        ]);
+        b.assertLengthIs(15);
+        b.popAboveAndSet(14,makeNode(b,14,0,"Method",[13,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // MethodDefinition_2
@@ -3489,47 +3813,61 @@ function MethodDefinition_2(p: Parser): ASTNode {
 // MethodDefinition_3
 
 function MethodDefinition_3(p: Parser): ASTNode {
-    return p.seq14([
-        pos,
-        identifier("get"), // "get" is not a reserved word, so we can't use keyword here
-        whitespace,
-        PropertyName,
-        whitespace,
-        punctuator("("),
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,name,,,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"Getter",[name,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 14 = start
+            identifier("get"), // 13 "get" is not a reserved word, so we can't use keyword here
+            whitespace,        // 12
+            PropertyName,      // 11 = name
+            whitespace,        // 10
+            punctuator("("),   // 9
+            whitespace,        // 8
+            punctuator(")"),   // 7
+            whitespace,        // 6
+            punctuator("{"),   // 5
+            whitespace,        // 4
+            FunctionBody,      // 3 = body
+            whitespace,        // 2
+            punctuator("}"),   // 1
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(15);
+        b.popAboveAndSet(14,makeNode(b,14,0,"Getter",[11,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // MethodDefinition_4
 
 function MethodDefinition_4(p: Parser): ASTNode {
-    return p.seq16([
-        pos,
-        identifier("set"),
-        whitespace,
-        PropertyName,
-        whitespace,
-        punctuator("("),
-        whitespace,
-        PropertySetParameterList,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,name,,,,param,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"Setter",[name,param,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                      // 16 = start
+            identifier("set"),        // 15
+            whitespace,               // 14
+            PropertyName,             // 13 = name
+            whitespace,               // 12
+            punctuator("("),          // 11
+            whitespace,               // 10
+            PropertySetParameterList, // 9 = param
+            whitespace,               // 8
+            punctuator(")"),          // 7
+            whitespace,               // 6
+            punctuator("{"),          // 5
+            whitespace,               // 4
+            FunctionBody,             // 3 = body
+            whitespace,               // 2
+            punctuator("}"),          // 1
+            pos,                      // 0 = end
+        ]);
+        b.assertLengthIs(17);
+        b.popAboveAndSet(16,makeNode(b,16,0,"Setter",[13,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // MethodDefinition
@@ -3554,76 +3892,97 @@ function PropertySetParameterList(p: Parser): ASTNode {
 // GeneratorMethod
 
 function GeneratorMethod(p: Parser): ASTNode {
-    return p.seq16([
-        pos,
-        punctuator("*"),
-        whitespace,
-        PropertyName,
-        whitespace,
-        punctuator("("),
-        whitespace,
-        StrictFormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,name,,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"GeneratorMethod",[name,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                    // 16 = start
+            punctuator("*"),        // 15
+            whitespace,             // 14
+            PropertyName,           // 13 = name
+            whitespace,             // 12
+            punctuator("("),        // 11
+            whitespace,             // 10
+            StrictFormalParameters, // 9 = params
+            whitespace,             // 8
+            punctuator(")"),        // 7
+            whitespace,             // 6
+            punctuator("{"),        // 5
+            whitespace,             // 4
+            GeneratorBody,          // 3 = body
+            whitespace,             // 2
+            punctuator("}"),        // 1
+            pos,                    // 0 = end
+        ]);
+        b.assertLengthIs(17);
+        b.popAboveAndSet(16,makeNode(b,16,0,"GeneratorMethod",[13,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // GeneratorDeclaration_1
 
 function GeneratorDeclaration_1(p: Parser): ASTNode {
-    return p.seq18([
-        pos,
-        keyword("function"),
-        whitespace,
-        punctuator("*"),
-        whitespace,
-        BindingIdentifier,
-        whitespace,
-        punctuator("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,,,ident,,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"GeneratorDeclaration",[ident,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 18 = start
+            keyword("function"), // 17
+            whitespace,          // 16
+            punctuator("*"),     // 15
+            whitespace,          // 14
+            BindingIdentifier,   // 13 = ident
+            whitespace,          // 12
+            punctuator("("),     // 11
+            whitespace,          // 10
+            FormalParameters,    // 9 = params
+            whitespace,          // 8
+            punctuator(")"),     // 7
+            whitespace,          // 6
+            punctuator("{"),     // 5
+            whitespace,          // 4
+            GeneratorBody,       // 3 = body
+            whitespace,          // 2
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(19);
+        b.popAboveAndSet(18,makeNode(b,18,0,"GeneratorDeclaration",[13,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // GeneratorDeclaration_2
 
 function GeneratorDeclaration_2(p: Parser): ASTNode {
-    return p.seq16([
-        pos,
-        keyword("function"),
-        whitespace,
-        punctuator("*"),
-        whitespace,
-        punctuator("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,,,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"GeneratorDeclaration",[params,body]));
-            // FIXME: Should be DefaultGeneratorDeclaration
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 16 = start
+            keyword("function"), // 15
+            whitespace,          // 14
+            punctuator("*"),     // 13
+            whitespace,          // 12
+            punctuator("("),     // 11
+            whitespace,          // 10
+            FormalParameters,    // 9 = params
+            whitespace,          // 8
+            punctuator(")"),     // 7
+            whitespace,          // 6
+            punctuator("{"),     // 5
+            whitespace,          // 4
+            GeneratorBody,       // 3 = body
+            whitespace,          // 2
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(17);
+        // FIXME: Should be DefaultGeneratorDeclaration
+        b.popAboveAndSet(16,makeNode(b,16,0,"GeneratorDeclaration",[9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // GeneratorDeclaration
@@ -3651,29 +4010,41 @@ function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
 // GeneratorExpression
 
 function GeneratorExpression(p: Parser): ASTNode {
-    return p.seq17([
-        pos,
-        keyword("function"),
-        whitespace,
-        punctuator("*"),
-        whitespace,
-        opt(() => p.seq2([
-            BindingIdentifier,
-            whitespace],
-            ([inner,]) => inner)),
-        punctuator("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        punctuator(")"),
-        whitespace,
-        punctuator("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        punctuator("}")],
-        ([start,,,,,ident,,,params,,,,,,body,,]) =>
-            new GenericNode(new Range(start,p.pos),"GeneratorExpression",[ident,params,body]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 17 = start
+            keyword("function"), // 16
+            whitespace,          // 15
+            punctuator("*"),     // 14
+            whitespace,          // 13
+        ]);
+        b.opt(() => {            // 12 = ident
+            b.items([
+                BindingIdentifier,
+                whitespace,
+            ]);
+            b.popAboveAndSet(1,b.get(1));
+        });
+        b.items([
+            punctuator("("),     // 11
+            whitespace,          // 10
+            FormalParameters,    // 9 = params
+            whitespace,          // 8
+            punctuator(")"),     // 7
+            whitespace,          // 6
+            punctuator("{"),     // 5
+            whitespace,          // 4
+            GeneratorBody,       // 3 = body
+            whitespace,          // 2
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(18);
+        b.popAboveAndSet(17,makeNode(b,17,0,"GeneratorExpression",[12,9,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // GeneratorBody
@@ -3685,34 +4056,58 @@ function GeneratorBody(p: Parser): ASTNode {
 // YieldExpression_1
 
 function YieldExpression_1(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        keyword("yield"),
-        whitespaceNoNewline,
-        punctuator("*"),
-        whitespace,
-        AssignmentExpression],
-        ([start,,,,,expr]) => new GenericNode(new Range(start,p.pos),"YieldStar",[expr]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                  // 6
+            keyword("yield"),     // 5
+            whitespaceNoNewline,  // 4
+            punctuator("*"),      // 3
+            whitespace,           // 2
+            AssignmentExpression, // 1
+            pos,                  // 0
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"YieldStar",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // YieldExpression_2
 
 function YieldExpression_2(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        keyword("yield"),
-        whitespaceNoNewline,
-        AssignmentExpression],
-        ([start,,,expr]) => new GenericNode(new Range(start,p.pos),"YieldExpr",[expr]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                  // 4
+            keyword("yield"),     // 3
+            whitespaceNoNewline,  // 2
+            AssignmentExpression, // 1
+            pos,                  // 0
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"YieldExpr",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // YieldExpression_3
 
 function YieldExpression_3(p: Parser): ASTNode {
-    return p.seq2([
-        pos,
-        keyword("yield")],
-        ([start,]) => new GenericNode(new Range(start,p.pos),"YieldNothing",[]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            keyword("yield"),
+            pos,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,makeNode(b,2,0,"YieldNothing",[]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // YieldExpression
@@ -3730,26 +4125,42 @@ function YieldExpression(p: Parser): ASTNode {
 // ClassDeclaration_1
 
 function ClassDeclaration_1(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        keyword("class"),
-        whitespace,
-        BindingIdentifier,
-        whitespace,
-        ClassTail],
-        ([start,,,ident,,tail]) =>
-            new GenericNode(new Range(start,p.pos),"ClassDeclaration",[ident,tail]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 6 = start
+            keyword("class"),  // 5
+            whitespace,        // 4
+            BindingIdentifier, // 3 = ident
+            whitespace,        // 2
+            ClassTail,         // 1 = tail
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ClassDeclaration",[3,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassDeclaration_2
 
 function ClassDeclaration_2(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        keyword("class"),
-        whitespace,
-        ClassTail],
-        ([start,,,tail]) => new GenericNode(new Range(start,p.pos),"ClassDeclaration",[null,tail]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,              // 5
+            keyword("class"), // 4
+            whitespace,       // 3
+            value(null),      // 2
+            ClassTail,        // 1
+            pos,              // 0
+        ]);
+        b.assertLengthIs(6);
+        b.popAboveAndSet(5,makeNode(b,5,0,"ClassDeclaration",[2,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassDeclaration
@@ -3777,55 +4188,81 @@ function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolea
 // ClassExpression
 
 function ClassExpression(p: Parser): ASTNode {
-    return p.seq5([
-        pos,
-        keyword("class"),
-        whitespace,
-        opt(() =>
-            p.seq2([
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);              // 5
+        b.item(keyword("class")); // 4
+        b.item(whitespace);       // 3
+        b.opt(() => {             // 2
+            b.items([
                 BindingIdentifier,
-                whitespace],
-                ([inner,]) => inner)
-        ),
-        ClassTail],
-        ([start,,,ident,tail]) =>
-            new GenericNode(new Range(start,p.pos),"ClassExpression",[ident,tail]));
+                whitespace,
+            ]);
+            b.popAboveAndSet(1,b.get(1));
+        });
+        b.item(ClassTail);        // 1
+        b.item(pos);              // 0
+        b.assertLengthIs(6);
+        b.popAboveAndSet(5,makeNode(b,5,0,"ClassExpression",[2,1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassTail
 
 function ClassTail(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        opt(() =>
-            p.seq2([
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.item(pos);               // 6 = start
+        b.opt(() => {              // 5 = heritage
+            b.items([
                 ClassHeritage,
-                whitespace
-            ],([inner,]) => inner)
-        ),
-        punctuator("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq2([
-                ClassBody,
-                whitespace],
-                ([inner,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        punctuator("}")],
-        ([start,heritage,,,body,]) =>
-            new GenericNode(new Range(start,p.pos),"ClassTail",[heritage,body]));
+                whitespace,
+            ]);
+            b.popAboveAndSet(1,b.get(1));
+        });
+        b.item(punctuator("{"));   // 4
+        b.item(whitespace);        // 3
+        b.choice([                 // 2 = body
+            () => {
+                b.items([
+                    ClassBody,
+                    whitespace,
+                ]);
+                b.popAboveAndSet(1,b.get(1));
+            },
+            () => {
+                b.item(pos);
+                b.popAboveAndSet(0,makeEmptyListNode(b,0,0));
+            },
+        ]);
+        b.item(punctuator("}"));   // 1
+        b.item(pos);               // 0 = end
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ClassTail",[5,2]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassHeritage
 
 function ClassHeritage(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        keyword("extends"),
-        whitespace,
-        LeftHandSideExpression],
-        ([start,arg2,arg3,expr]) => new GenericNode(new Range(start,p.pos),"Extends",[expr]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                    // 4 = start
+            keyword("extends"),     // 3
+            whitespace,             // 2
+            LeftHandSideExpression, // 1 = expr
+            pos,                    // 0 = end
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"Extends",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassBody
@@ -3837,23 +4274,21 @@ function ClassBody(p: Parser): ASTNode {
 // ClassElementList
 
 function ClassElementList(p: Parser): ASTNode {
-    const start = p.pos;
-    const elements: ASTNode[] = [];
-    elements.push(ClassElement(p));
-    while (true) {
-        try {
-            const elem = p.seq2([
-                whitespace,
-                ClassElement],
-                ([,e]) => e);
-            elements.push(elem);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),elements);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(ClassElement);
+            },
+            () => {
+                b.item(whitespace);
+                b.item(ClassElement);
+                b.popAboveAndSet(1,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassElement_1
@@ -3865,21 +4300,37 @@ function ClassElement_1(p: Parser): ASTNode {
 // ClassElement_2
 
 function ClassElement_2(p: Parser): ASTNode {
-    return p.seq4([
-        pos,
-        keyword("static"),
-        whitespace,
-        MethodDefinition],
-        ([start,arg2,arg3,method]) => new GenericNode(new Range(start,p.pos),"StaticMethodDefinition",[method]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            keyword("static"),
+            whitespace,
+            MethodDefinition,
+            pos,
+        ]);
+        b.assertLengthIs(5);
+        b.popAboveAndSet(4,makeNode(b,4,0,"StaticMethodDefinition",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassElement_3
 
 function ClassElement_3(p: Parser): ASTNode {
-    return p.seq2([
-        pos,
-        punctuator(";")],
-        ([start,]) => new GenericNode(new Range(start,p.pos),"EmptyClassElement",[]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
+            punctuator(";"),
+            pos,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,makeNode(b,2,0,"EmptyClassElement",[]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ClassElement
@@ -3943,23 +4394,21 @@ function ModuleBody(p: Parser): ASTNode {
 // ModuleItemList
 
 function ModuleItemList(p: Parser): ASTNode {
-    const start = p.pos;
-    const items: ASTNode[] = [];
-    items.push(ModuleItem(p));
-    while (true) {
-        try {
-            const mod = p.seq2([
-                whitespace,
-                ModuleItem],
-                ([,m]) => m);
-            items.push(mod);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),items);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(ModuleItem);
+            },
+            () => {
+                b.item(whitespace);
+                b.item(ModuleItem);
+                b.popAboveAndSet(1,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ModuleItem
@@ -3977,31 +4426,45 @@ function ModuleItem(p: Parser): ASTNode {
 // ImportDeclaration_from
 
 function ImportDeclaration_from(p: Parser): ASTNode {
-    return p.seq8([
-        pos,
-        keyword("import"),
-        whitespace,
-        ImportClause,
-        whitespace,
-        FromClause,
-        whitespace,
-        punctuator(";")],
-        ([start,,,importClause,,fromClause,,]) =>
-            new GenericNode(new Range(start,p.pos),"ImportFrom",[importClause,fromClause]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 8 = start
+            keyword("import"), // 7
+            whitespace,        // 6
+            ImportClause,      // 5 = importClause
+            whitespace,        // 4
+            FromClause,        // 3 = fromClause
+            whitespace,        // 2
+            punctuator(";"),   // 1
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(9);
+        b.popAboveAndSet(8,makeNode(b,8,0,"ImportFrom",[5,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ImportDeclaration_module
 
 function ImportDeclaration_module(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        keyword("import"),
-        whitespace,
-        ModuleSpecifier,
-        whitespace,
-        punctuator(";")],
-        ([start,,,specifier,,]) =>
-            new GenericNode(new Range(start,p.pos),"ImportModule",[specifier]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,               // 6 = start
+            keyword("import"), // 5
+            whitespace,        // 4
+            ModuleSpecifier,   // 3 = specifier
+            whitespace,        // 2
+            punctuator(";"),   // 1
+            pos,               // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ImportModule",[3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ImportDeclaration
@@ -4016,29 +4479,51 @@ function ImportDeclaration(p: Parser): ASTNode {
 // ImportClause
 
 function ImportClause(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        NameSpaceImport,
-        NamedImports,
-        () => {
-            const start = p.pos;
-            const defbinding = ImportedDefaultBinding(p);
-            return p.choice<ASTNode>([
-                () => p.seq4([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    NameSpaceImport],
-                    ([,,,nsimport]) => new GenericNode(new Range(start,p.pos),"ImportedDefaultBinding",[defbinding,nsimport])),
-                () => p.seq4([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    NamedImports],
-                    ([,,,nimports]) => new GenericNode(new Range(start,p.pos),"ImportedDefaultBinding",[defbinding,nimports])),
-                () => new GenericNode(new Range(start,p.pos),"DefaultImport",[defbinding]),
-            ]);
-        },
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.item(NameSpaceImport);
+            },
+            () => {
+                b.item(NamedImports);
+            },
+            () => {
+                b.item(pos);                    // 6 = start
+                b.item(ImportedDefaultBinding); // 5 = defbinding
+                b.choice([
+                    () => {
+                        b.items([
+                            whitespace,         // 4
+                            punctuator(","),    // 3
+                            whitespace,         // 2
+                            NameSpaceImport,    // 1 = nsimport
+                            pos,                // 0 = end
+                        ]);
+                        b.assertLengthIs(7);
+                        b.popAboveAndSet(6,makeNode(b,6,0,"ImportedDefaultBinding",[5,1]));
+                    },
+                    () => {
+                        b.items([
+                            whitespace,         // 4
+                            punctuator(","),    // 3
+                            whitespace,         // 2
+                            NamedImports,       // 1 = nsimports
+                            pos,                // 0 = end
+                        ]);
+                        b.assertLengthIs(7);
+                        b.popAboveAndSet(6,makeNode(b,6,0,"ImportedDefaultBinding",[5,1]));
+                    },
+                    () => {
+                        b.item(pos);
+                        b.popAboveAndSet(2,makeNode(b,2,0,"DefaultImport",[1]));
+                    },
+                ]);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ImportedDefaultBinding
@@ -4050,87 +4535,132 @@ function ImportedDefaultBinding(p: Parser): ASTNode {
 // NameSpaceImport
 
 function NameSpaceImport(p: Parser): ASTNode {
-    return p.seq6([
-        pos,
-        punctuator("*"),
-        whitespace,
-        keyword("as"),
-        whitespace,
-        ImportedBinding],
-        ([start,,,,,binding]) => new GenericNode(new Range(start,p.pos),"NameSpaceImport",[binding]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,             // 6 = start
+            punctuator("*"), // 5
+            whitespace,      // 4
+            keyword("as"),   // 3
+            whitespace,      // 2
+            ImportedBinding, // 1 = binding
+            pos,             // 0 = end
+        ]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"NameSpaceImport",[1]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // NamedImports
 
 function NamedImports(p: Parser): ASTNode {
-    return p.seq5([
-        pos,
-        punctuator("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq3([
-                ImportsList,
-                whitespace,
-                opt(() =>  p.seq2([punctuator(","),whitespace],() => {}))],
-                ([inner,,]) => inner),
-            () => new ListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        punctuator("}")],
-        ([start,,,imports,]) =>
-            new GenericNode(new Range(start,p.pos),"NamedImports",[imports]));
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                // 5 = start
+            punctuator("{"),    // 4
+            whitespace,         // 3
+        ]);
+        b.choice([              // 2 = imports
+            () => {
+                b.items([
+                    ImportsList,
+                    whitespace,
+                    opt(() => p.seq2([punctuator(","),whitespace],() => {})),
+                ]);
+                b.assertLengthIs(6);
+                b.popAboveAndSet(2,b.get(2));
+            },
+            () => {
+                b.push(new ListNode(new Range(p.pos,p.pos),[]));
+            },
+        ]);
+        b.items([
+            punctuator("}"),    // 1
+            pos,                // 0 = end
+        ]);
+        b.assertLengthIs(6);
+        b.popAboveAndSet(5,makeNode(b,5,0,"NamedImports",[2]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // FromClause
 
 function FromClause(p: Parser): ASTNode {
-    return p.seq3([
-        keyword("from"),
-        whitespace,
-        ModuleSpecifier],
-        ([,,spec]) => spec);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            keyword("from"),
+            whitespace,
+            ModuleSpecifier,
+        ]);
+        b.assertLengthIs(3);
+        b.popAboveAndSet(2,b.get(0));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ImportsList
 
 function ImportsList(p: Parser): ASTNode {
-    const start = p.pos;
-    const imports: ASTNode[] = [];
-    imports.push(ImportSpecifier(p));
-    while (true) {
-        try {
-            const specifier = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                ImportSpecifier],
-                ([,,,spec]) => spec);
-            imports.push(specifier);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,p.pos),imports);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(ImportSpecifier);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    ImportSpecifier,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ImportSpecifier
 
 function ImportSpecifier(p: Parser): ASTNode {
-    return p.choice<ASTNode>([
-        () => p.seq6([
-            pos,
-            IdentifierName,
-            whitespace,
-            keyword("as"),
-            whitespace,
-            ImportedBinding],
-            ([start,name,,,,binding]) => new GenericNode(new Range(start,p.pos),"ImportAsSpecifier",[name,binding])),
-        () => p.seq2([
-            pos,
-            ImportedBinding],
-            ([start,binding]) => new GenericNode(new Range(start,p.pos),"ImportSpecifier",[binding])),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,             // 6 = start
+                    IdentifierName,  // 5 = name
+                    whitespace,      // 4
+                    keyword("as"),   // 3
+                    whitespace,      // 2
+                    ImportedBinding, // 1 = binding
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"ImportAsSpecifier",[5,1]));
+            },
+            () => {
+                b.items([
+                    pos,             // 2 = start
+                    ImportedBinding, // 1 = binding
+                    pos,             // 0 = end
+                ]);
+                b.assertLengthIs(3);
+                b.popAboveAndSet(2,makeNode(b,2,0,"ImportSpecifier",[1]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ModuleSpecifier
@@ -4150,72 +4680,117 @@ function ImportedBinding(p: Parser): ASTNode {
 // ExportDeclaration
 
 function ExportDeclaration(p: Parser): ASTNode {
-    return p.attempt((start) => {
-        p.sequence([
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,
             keyword("export"),
             whitespace,
         ]);
-
-        return p.choice<ASTNode>([
-            () => p.seq3([
-                keyword("default"),
-                whitespace,
-                () => HoistableDeclaration(p,{ Default: true })],
-                ([,,node]) => new GenericNode(new Range(start,p.pos),"ExportDefault",[node])),
-            () => p.seq3([
-                keyword("default"),
-                whitespace,
-                () => ClassDeclaration(p,{ Default: true })],
-                ([,,node]) => new GenericNode(new Range(start,p.pos),"ExportDefault",[node])),
-            () => p.seq7([
-                keyword("default"),
-                whitespace,
-                notKeyword("function"), // FIXME: need tests for this
-                notKeyword("class"), // FIXME: need tests for this
-                AssignmentExpression,
-                whitespace,
-                punctuator(";")],
-                ([,,,,node,,]) => new GenericNode(new Range(start,p.pos),"ExportDefault",[node])),
-            () => p.seq5([
-                punctuator("*"),
-                whitespace,
-                FromClause,
-                whitespace,
-                punctuator(";")],
-                ([,,from,,]) => new GenericNode(new Range(start,p.pos),"ExportStar",[from])),
-            () => p.seq5([
-                ExportClause,
-                whitespace,
-                FromClause,
-                whitespace,
-                punctuator(";")],
-                ([exportClause,,fromClause,,]) => new GenericNode(new Range(start,p.pos),"ExportFrom",[exportClause,fromClause])),
-            () => p.seq3([
-                ExportClause,
-                whitespace,
-                punctuator(";")],
-                ([exportClause,,]) => new GenericNode(new Range(start,p.pos),"ExportPlain",[exportClause])),
-            () => p.seq1([
-                VariableStatement],
-                ([node]) => new GenericNode(new Range(start,p.pos),"ExportVariable",[node])),
-            () => p.seq1([
-                Declaration],
-                ([node]) => new GenericNode(new Range(start,p.pos),"ExportDeclaration",[node])),
+        b.assertLengthIs(3);
+        b.choice([
+            () => {
+                b.items([
+                    keyword("default"),                              // 3
+                    whitespace,                                      // 2
+                    () => HoistableDeclaration(p,{ Default: true }), // 1
+                    pos,                                             // 0
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
+            },
+            () => {
+                b.items([
+                    keyword("default"), // 3
+                    whitespace, // 2
+                    () => ClassDeclaration(p,{ Default: true }), // 1
+                    pos, // 0
+                ]);
+                b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
+            },
+            () => {
+                b.items([
+                    keyword("default"), // 7
+                    whitespace, // 6
+                    notKeyword("function"), // 5 FIXME: need tests for this
+                    notKeyword("class"), // 4 FIXME: need tests for this
+                    AssignmentExpression, // 3
+                    whitespace, // 2
+                    punctuator(";"), // 1
+                    pos, // 0
+                ]);
+                b.assertLengthIs(11);
+                b.popAboveAndSet(10,makeNode(b,10,0,"ExportDefault",[3]));
+            },
+            () => {
+                b.items([
+                    punctuator("*"), // 5
+                    whitespace,      // 4
+                    FromClause,      // 3
+                    whitespace,      // 2
+                    punctuator(";"), // 1
+                    pos,             // 0
+                ]);
+                b.assertLengthIs(9);
+                b.popAboveAndSet(8,makeNode(b,8,0,"ExportStar",[3]));
+            },
+            () => {
+                b.items([
+                    ExportClause,    // 5
+                    whitespace,      // 4
+                    FromClause,      // 3
+                    whitespace,      // 2
+                    punctuator(";"), // 1
+                    pos,             // 0
+                ]);
+                b.assertLengthIs(9);
+                b.popAboveAndSet(8,makeNode(b,8,0,"ExportFrom",[5,3]));
+            },
+            () => {
+                b.items([
+                    ExportClause,    // 3
+                    whitespace,      // 2
+                    punctuator(";"), // 1
+                    pos,             // 0
+                ]);
+                b.assertLengthIs(7);
+                b.popAboveAndSet(6,makeNode(b,6,0,"ExportPlain",[3]));
+            },
+            () => {
+                b.items([
+                    VariableStatement, // 1
+                    pos,               // 0
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"ExportVariable",[1]));
+            },
+            () => {
+                b.items([
+                    Declaration, // 1
+                    pos,         // 0
+                ]);
+                b.assertLengthIs(5);
+                b.popAboveAndSet(4,makeNode(b,4,0,"ExportDeclaration",[1]));
+            },
         ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
 }
 
 // ExportClause
 
 function ExportClause(p: Parser): ASTNode {
-    const start = p.pos;
-    let exports: ASTNode;
-    p.sequence([
-        punctuator("{"),
-        whitespace,
-        () => exports = p.choice([
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                       // 5
+            punctuator("{"),           // 4
+            whitespace,                // 3
+        ]);
+        b.choice([                     // 2
             () => {
-                return p.seq3([
+                b.items([
                     ExportsList,
                     whitespace,
                     opt(() => {
@@ -4223,38 +4798,52 @@ function ExportClause(p: Parser): ASTNode {
                             punctuator(","),
                             whitespace,
                         ]);
-                    })],
-                    ([inner,,]) => inner);
+                    }),
+                ]);
+                b.assertLengthIs(6);
+                b.popAboveAndSet(2,b.get(2));
+                b.assertLengthIs(4);
             },
-            () => new ListNode(new Range(p.pos,p.pos),[]),
-        ]),
-        punctuator("}"),
-    ]);
-    return new GenericNode(new Range(start,p.pos),"ExportClause",[exports]);
+            () => {
+                b.item(pos);
+                const curPos = checkNumber(b.get(0));
+                b.popAboveAndSet(0,new ListNode(new Range(curPos,curPos),[]));
+            },
+        ]);
+        b.assertLengthIs(4);
+        b.items([
+            punctuator("}"),           // 1
+            pos,                       // 0
+        ]);
+        b.assertLengthIs(6);
+        b.popAboveAndSet(5,makeNode(b,5,0,"ExportClause",[2]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ExportsList
 
 function ExportsList(p: Parser): ASTNode {
-    const start = p.pos;
-    const exports: ASTNode[] = [];
-    exports.push(ExportSpecifier(p));
-    while (true) {
-        try {
-            const specifier = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                ExportSpecifier],
-                ([,,,spec]) => spec);
-            exports.push(specifier);
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new GenericNode(new Range(start,p.pos),"[]",exports);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(ExportSpecifier);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    punctuator(","),
+                    whitespace,
+                    ExportSpecifier,
+                ]);
+                b.popAboveAndSet(3,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // ExportSpecifier
@@ -4285,6 +4874,8 @@ function ExportSpecifier(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(3);
+        b.popAboveAndSet(2,b.get(0));
+        b.assertLengthIs(1);
         return checkGenericNode(b.get(0));
     });
 }
