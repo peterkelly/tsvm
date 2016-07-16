@@ -136,6 +136,9 @@ import {
     // VarPatternNode,
     // ObjectBindingPatternNode,
     // ArrayBindingPatternNode,
+    // ArrayBindingPattern1Node,
+    // ArrayBindingPattern2Node,
+    // ArrayBindingPattern3Node,
     // BindingElisionElementNode,
     // BindingPropertyNode,
     // BindingPatternInitNode,
@@ -2275,12 +2278,10 @@ function ObjectBindingPattern(p: Parser): ASTNode {
 function ArrayBindingPattern_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-
         b.items([
-            pos,                       // 7 = start
-            punctuator("["),           // 6
-            whitespace,                // 5
-            pos,                       // 4 = start2
+            pos,                       // 6 = start
+            punctuator("["),           // 5
+            whitespace,                // 4
             opt(() => p.seq2([         // 3 = elision
                 Elision,
                 whitespace],
@@ -2290,27 +2291,12 @@ function ArrayBindingPattern_1(p: Parser): ASTNode {
                 whitespace],
                 ([inner,]) => inner)),
             punctuator("]"),           // 1
-            pos,                       // 0 (unused)
+            pos,                       // 0 = end
         ]);
-
-        const start = checkNumber(b.get(7));
-        const start2 = checkNumber(b.get(4));
-        const elision = checkNode(b.get(3));
-        const rest = checkNode(b.get(2));
-        let end = start2;
-
-        const array: ASTNode[] = [];
-        if (elision != null) {
-            array.push(elision);
-            end = elision.range.end;
-        }
-        if (rest != null) {
-            array.push(rest);
-            end = rest.range.end;
-        }
-
-        const elements = new GenericNode(new Range(start2,end),"[]",array);
-        return new GenericNode(new Range(start,p.pos),"ArrayBindingPattern",[elements]);
+        b.assertLengthIs(7);
+        b.popAboveAndSet(6,makeNode(b,6,0,"ArrayBindingPattern1",[3,2]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
 }
 
@@ -2328,7 +2314,7 @@ function ArrayBindingPattern_2(p: Parser): ASTNode {
             punctuator("]"),    // 1
             pos,                // 0 = end
         ]);
-        b.popAboveAndSet(6,makeNode(b,6,0,"ArrayBindingPattern",[3]));
+        b.popAboveAndSet(6,makeNode(b,6,0,"ArrayBindingPattern2",[3]));
         b.assertLengthIs(1);
         return checkGenericNode(b.get(0));
     });
@@ -2343,46 +2329,29 @@ function ArrayBindingPattern_3(p: Parser): ASTNode {
             pos,                // 10 = start
             punctuator("["),    // 9
             whitespace,         // 8
-            pos,                // 7 = start2
-            BindingElementList, // 6 = elements
-            whitespace,         // 5
-            punctuator(","),    // 4
-            whitespace,         // 3
-            opt(() => {         // 2 = elision
+            BindingElementList, // 7 = elements
+            whitespace,         // 6
+            punctuator(","),    // 5
+            whitespace,         // 4
+            opt(() => {         // 3 = elision
                 return p.seq2([
                     Elision,
                     whitespace],
                     ([inner,]) => inner);
             }),
-            opt(() => {         // 1 = rest
+            opt(() => {         // 2 = rest
                 return p.seq2([
                     BindingRestElement,
                     whitespace],
                     ([inner,]) => inner);
             }),
-            punctuator("]"),    // 0
+            punctuator("]"),    // 1
+            pos,                // 0
         ]);
-        const start = checkNumber(b.get(10));
-        const start2 = checkNumber(b.get(7));
-        const elements = checkNode(b.get(6));
-        const elision = checkNode(b.get(2));
-        const rest = checkNode(b.get(1));
-
-        let end = elements.range.end;
-        let array: ASTNode[] = [];
-        if (!(elements instanceof ErrorNode))
-            array = array.concat(elements.children);
-        if (elision != null) {
-            array.push(elision);
-            end = elision.range.end;
-        }
-        if (rest != null) {
-            array.push(rest);
-            end = rest.range.end;
-        }
-
-        const allElements = new GenericNode(new Range(start2,end),"[]",array);
-        return new GenericNode(new Range(start,p.pos),"ArrayBindingPattern",[allElements]);
+        b.assertLengthIs(11);
+        b.popAboveAndSet(10,makeNode(b,10,0,"ArrayBindingPattern3",[7,3,2]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
 }
 
