@@ -2004,8 +2004,6 @@ function StatementList(p: Parser): ASTNode {
                 b.popAboveAndSet(1,b.get(0));
             },
         );
-        b.item(whitespace);
-        b.popAboveAndSet(1,b.get(1));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -3228,21 +3226,22 @@ function CaseClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
-            pos,             // 7 = start
-            keyword("case"), // 6
-            whitespace,      // 5
-            Expression,      // 4 = expr
-            whitespace,      // 3
-            punctuator(":"), // 2
-            whitespace,      // 1
-            StatementList,   // 0 = statements
+            pos,             // 8 = start
+            keyword("case"), // 7
+            whitespace,      // 6
+            Expression,      // 5 = expr
+            whitespace,      // 4
+            punctuator(":"), // 3
+            whitespace,      // 2
+            StatementList,   // 1 = statements
+            whitespace,      // 0
         ]);
-        b.assertLengthIs(8);
-        const start = checkNumber(b.get(7));
-        const expr = checkNode(b.get(4));
-        const statements = checkNode(b.get(0));
+        b.assertLengthIs(9);
+        const start = checkNumber(b.get(8));
+        const expr = checkNode(b.get(5));
+        const statements = checkNode(b.get(1));
         const end = statements.range.end;
-        b.popAboveAndSet(7,new GenericNode(new Range(start,end),"CaseClause",[expr,statements]));
+        b.popAboveAndSet(8,new GenericNode(new Range(start,end),"CaseClause",[expr,statements]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -3254,18 +3253,19 @@ function DefaultClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
-            pos,                // 5 = start
-            keyword("default"), // 4
-            whitespace,         // 3
-            punctuator(":"),    // 2
-            whitespace,         // 1
-            StatementList,      // 0 = statements
+            pos,                // 6 = start
+            keyword("default"), // 5
+            whitespace,         // 4
+            punctuator(":"),    // 3
+            whitespace,         // 2
+            StatementList,      // 1 = statements
+            whitespace,         // 0
         ]);
-        b.assertLengthIs(6);
-        const start = checkNumber(b.get(5));
-        const statements = checkNode(b.get(0));
+        b.assertLengthIs(7);
+        const start = checkNumber(b.get(6));
+        const statements = checkNode(b.get(1));
         const end = statements.range.end;
-        b.popAboveAndSet(5,new GenericNode(new Range(start,end),"DefaultClause",[statements]));
+        b.popAboveAndSet(6,new GenericNode(new Range(start,end),"DefaultClause",[statements]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
