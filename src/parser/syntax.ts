@@ -173,6 +173,11 @@ import {
     // DebuggerStatementNode,
     // FunctionDeclarationNode,
     // FunctionExpressionNode,
+    // FormalParametersNode,
+    // FormalParameters1Node,
+    // FormalParameters2Node,
+    // FormalParameters3Node,
+    // FormalParameters4Node,
     // ArrowFunctionNode,
     // MethodNode,
     // GetterNode,
@@ -3557,42 +3562,63 @@ function StrictFormalParameters(p: Parser): ASTNode {
 // FormalParameters
 
 function FormalParameters(p: Parser): ASTNode {
-    return p.choice([
-        FormalParameterList,
-        () => new ListNode(new Range(p.pos,p.pos),[]),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.item(FormalParameterList);
+            },
+            () => {
+                b.item(pos);
+                b.popAboveAndSet(0,makeNode(b,0,0,"FormalParameters1",[]));
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // FormalParameterList
 
 function FormalParameterList(p: Parser): ASTNode {
-    return p.choice([
-        () => p.seq2([
-            pos,
-            FunctionRestParameter],
-            ([start,rest]) => new ListNode(new Range(start,p.pos),[rest])),
-        () => p.seq3([
-            pos,
-            FormalsList,
-            opt(() => p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                FunctionRestParameter],
-                ([,,,rest]) => rest))],
-            ([start,formals,rest]) => {
-                if (rest == null)
-                    return formals;
-
-                let elements: ASTNode[];
-                if (formals instanceof ListNode)
-                    elements = formals.elements;
-                else
-                    elements = [formals];
-                elements.push(rest);
-                return new ListNode(new Range(start,p.pos),elements);
-            }),
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.choice([
+            () => {
+                b.items([
+                    pos,                   // 2 = start
+                    FunctionRestParameter, // 1 = rest
+                    pos,                   // 0 = end
+                ]);
+                b.assertLengthIs(3);
+                b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters2",[1]));
+            },
+            () => {
+                b.item(pos);           // 3 = start
+                b.item(FormalsList);   // 2 = formals
+                b.choice([
+                    () => {
+                        b.items([
+                            whitespace,
+                            punctuator(","),
+                            whitespace,
+                            FunctionRestParameter,
+                            pos,
+                        ]);
+                        b.assertLengthIs(7);
+                        b.popAboveAndSet(6,makeNode(b,6,0,"FormalParameters4",[5,1]));
+                    },
+                    () => {
+                        b.item(pos);
+                        b.assertLengthIs(3);
+                        b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters3",[1]));
+                    },
+                ]);
+            },
+        ]);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // FormalsList

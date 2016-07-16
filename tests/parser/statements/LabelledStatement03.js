@@ -10,6 +10,6 @@ Module 0-27 "one : function test ( ) {\n}"
       LabelIdentifier("one") 0-3 "one"
       FunctionDeclaration 6-27 "function test ( ) {\n}"
         BindingIdentifier("test") 15-19 "test"
-        [] 22-22 ""
+        FormalParameters1 22-22 ""
         [] 26-26 ""
 *******************************************************************************/
