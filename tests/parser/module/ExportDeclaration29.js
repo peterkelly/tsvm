@@ -8,7 +8,7 @@ Module 0-33 "export default function ( ) { } ;"
     ExportDefault 0-31 "export default function ( ) { }"
       FunctionDeclaration 15-31 "function ( ) { }"
         null
-        [] 26-26 ""
+        FormalParameters1 26-26 ""
         [] 30-30 ""
     EmptyStatement 32-33 ";"
 *******************************************************************************/

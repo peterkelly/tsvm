@@ -8,7 +8,7 @@ Module 0-31 "export function * foo ( ) { } ;"
     ExportDeclaration 0-29 "export function * foo ( ) { }"
       GeneratorDeclaration 7-29 "function * foo ( ) { }"
         BindingIdentifier("foo") 18-21 "foo"
-        [] 24-24 ""
+        FormalParameters1 24-24 ""
         [] 28-28 ""
     EmptyStatement 30-31 ";"
 *******************************************************************************/

@@ -1566,12 +1566,12 @@ export class DebuggerStatementNode extends StatementNode {
 export class FunctionDeclarationNode extends DeclarationNode {
     _nominal_type_FunctionDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode; // may be null
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParameterListNode | ErrorNode,
+        params: FormalParametersNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"FunctionDeclaration");
@@ -1587,12 +1587,12 @@ export class FunctionDeclarationNode extends DeclarationNode {
 export class FunctionExpressionNode extends ExpressionNode {
     _nominal_type_FunctionExpressionNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode; // may be null
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParameterListNode | ErrorNode,
+        params: FormalParametersNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"FunctionExpression");
@@ -1605,15 +1605,67 @@ export class FunctionExpressionNode extends ExpressionNode {
     }
 }
 
+export abstract class FormalParametersNode extends ASTNode {
+    _nominal_type_FormalParametersNode: any;
+}
+
+export class FormalParameters1Node extends FormalParametersNode {
+    _nominal_type_FormalParameters1Node: any;
+    public constructor(range: Range) {
+        super(range,"FormalParameters1");
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+}
+
+export class FormalParameters2Node extends FormalParametersNode {
+    _nominal_type_FormalParameters2Node: any;
+    public readonly rest: BindingRestElementNode | ErrorNode;
+    public constructor(range: Range, rest: BindingRestElementNode | ErrorNode) {
+        super(range,"FormalParameters2");
+        this.rest = rest;
+    }
+    public get children(): ASTNode[] {
+        return [this.rest];
+    }
+}
+
+export class FormalParameters3Node extends FormalParametersNode {
+    _nominal_type_FormalParameters3Node: any;
+    public readonly elements: FormalParameterListNode | ErrorNode;
+    public constructor(range: Range, elements: FormalParameterListNode | ErrorNode) {
+        super(range,"FormalParameters3");
+        this.elements = elements;
+    }
+    public get children(): ASTNode[] {
+        return [this.elements];
+    }
+}
+
+export class FormalParameters4Node extends FormalParametersNode {
+    _nominal_type_FormalParameters4Node: any;
+    public readonly elements: FormalParameterListNode | ErrorNode;
+    public readonly rest: BindingRestElementNode | ErrorNode;
+    public constructor(range: Range, elements: FormalParameterListNode | ErrorNode, rest: BindingRestElementNode | ErrorNode) {
+        super(range,"FormalParameters4");
+        this.elements = elements;
+        this.rest = rest;
+    }
+    public get children(): ASTNode[] {
+        return [this.elements,this.rest];
+    }
+}
+
 // Section 14.2
 
 export class ArrowFunctionNode extends ExpressionNode {
     _nominal_type_ArrowFunctionNode: any;
-    public readonly params: BindingIdentifierNode | FormalParameterListNode | ErrorNode;
+    public readonly params: BindingIdentifierNode | FormalParametersNode | ErrorNode;
     public readonly body: ExpressionNode | StatementListNode | ErrorNode;
     public constructor(
         range: Range,
-        params: BindingIdentifierNode | FormalParameterListNode | ErrorNode,
+        params: BindingIdentifierNode | FormalParametersNode | ErrorNode,
         body: ExpressionNode | StatementListNode | ErrorNode
     ) {
         super(range,"ArrowFunction");
@@ -1630,12 +1682,12 @@ export class ArrowFunctionNode extends ExpressionNode {
 export class MethodNode extends MethodDefinitionNode {
     _nominal_type_MethodNode: any;
     public readonly name: PropertyNameType | ErrorNode;
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         name: PropertyNameType | ErrorNode,
-        params: FormalParameterListNode | ErrorNode,
+        params: FormalParametersNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"Method");
@@ -1688,12 +1740,12 @@ export class SetterNode extends MethodDefinitionNode {
 export class GeneratorMethodNode extends MethodDefinitionNode {
     _nominal_type_GeneratorMethodNode: any;
     public readonly name: PropertyNameType | ErrorNode;
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         name: PropertyNameType | ErrorNode,
-        params: FormalParameterListNode | ErrorNode,
+        params: FormalParametersNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"GeneratorMethod");
@@ -1709,12 +1761,12 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
 export class GeneratorDeclarationNode extends DeclarationNode {
     _nominal_type_GeneratorDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode;
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParameterListNode | ErrorNode,
+        params: FormalParametersNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"GeneratorDeclaration");
@@ -1729,9 +1781,9 @@ export class GeneratorDeclarationNode extends DeclarationNode {
 
 export class DefaultGeneratorDeclarationNode extends DeclarationNode {
     _nominal_type_DefaultGeneratorDeclarationNode: any;
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
-    public constructor(range: Range, params: FormalParameterListNode | ErrorNode, body: StatementListNode | ErrorNode) {
+    public constructor(range: Range, params: FormalParametersNode | ErrorNode, body: StatementListNode | ErrorNode) {
         super(range,"DefaultGeneratorDeclaration");
         this.params = params;
         this.body = body;
@@ -1744,12 +1796,12 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
 export class GeneratorExpressionNode extends ExpressionNode {
     _nominal_type_GeneratorExpressionNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode;
-    public readonly params: FormalParameterListNode | ErrorNode;
+    public readonly params: FormalParametersNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParameterListNode | ErrorNode,
+        params: FormalParametersNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"GeneratorExpression");
