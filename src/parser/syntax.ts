@@ -463,7 +463,9 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
 
 function ArrayLiteral(p: Parser): ASTNode {
     return p.attempt((start) => {
-        p.sequence([
+        const b = new Builder(p);
+        b.items([
+            pos,
             punctuator("["),
             whitespace,
         ]);
@@ -475,46 +477,43 @@ function ArrayLiteral(p: Parser): ASTNode {
 
         while (!p.lookaheadPunctuator("]")) {
             if (!first) {
-                p.sequence([
+                b.items([
                     punctuator(","),
                     whitespace,
                 ]);
             }
 
-            const elision = p.opt(() => {
-                let inner: ASTNode;
-                p.sequence([
-                    () => inner = Elision(p),
+            b.opt(() => {
+                b.items([
+                    Elision,
                     whitespace,
                 ]);
-                return inner;
+                b.popAboveAndSet(1,b.get(1));
             });
+            b.opt(() => {
+                b.choice([
+                    () => {
+                        b.item(AssignmentExpression);
+                    },
+                    () => {
+                        b.item(SpreadElement);
+                    },
+                ]);
+            });
+
+            const elision = checkNode(b.get(1));
 
             if (elision != null) {
                 elements.push(elision);
                 listEnd = elision.range.end;
             }
-
-            let item: ASTNode = null;
-            try {
-                item = AssignmentExpression(p);
-            } catch (e) {
-                if (!(e instanceof ParseFailure))
-                    throw e;
-            }
-            try {
-                item = SpreadElement(p);
-            } catch (e) {
-                if (!(e instanceof ParseFailure))
-                    throw e;
-            }
+            const item = checkNode(b.get(0));
             if (item == null)
                 break;
+
             elements.push(item);
             listEnd = p.pos;
-            p.sequence([
-                whitespace,
-            ]);
+            b.item(whitespace);
             first = false;
         }
 
