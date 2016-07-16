@@ -6,7 +6,7 @@ ast-module
 Module 0-42 "import foo , { a , b , c } from \"foo.js\" ;"
   [] 0-42 "import foo , { a , b , c } from \"foo.js\" ;"
     ImportFrom 0-42 "import foo , { a , b , c } from \"foo.js\" ;"
-      ImportedDefaultBinding 7-26 "foo , { a , b , c }"
+      DefaultAndNamedImports 7-26 "foo , { a , b , c }"
         BindingIdentifier("foo") 7-10 "foo"
         NamedImports 13-26 "{ a , b , c }"
           [] 15-24 "a , b , c"
