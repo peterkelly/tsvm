@@ -158,6 +158,9 @@ import {
     ReturnStatementNode,
     WithStatementNode,
     SwitchStatementNode,
+    CaseBlockNode,
+    CaseBlock1Node,
+    CaseBlock2Node,
     CaseClauseNode,
     DefaultClauseNode,
     LabelledStatementNode,
@@ -2395,8 +2398,8 @@ function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
 
 // CaseBlock_1
 
-function CaseBlock_1(p: Parser): CaseClauseListNode | ErrorNode {
-    return p.seq6([
+function CaseBlock_1(p: Parser): CaseBlockNode | ErrorNode {
+    return p.seq7([
         pos,
         punctuator("{"),
         whitespace,
@@ -2405,17 +2408,17 @@ function CaseBlock_1(p: Parser): CaseClauseListNode | ErrorNode {
             () => new CaseClauseListNode(new Range(p.pos,p.pos),[]),
         ]),
         whitespace,
-        punctuator("}")],
-        ([start,,,clauses,,]) => {
-            // clauses.range = new Range(start,p.pos);
-            return clauses;
+        punctuator("}"),
+        pos],
+        ([start,,,clauses,,,end]) => {
+            return new CaseBlock1Node(new Range(start,end),clauses);
         });
 }
 
 // CaseBlock_2
 
-function CaseBlock_2(p: Parser): CaseClauseListNode | ErrorNode {
-    return p.seq10([
+function CaseBlock_2(p: Parser): CaseBlockNode | ErrorNode {
+    return p.seq11([
         pos,
         punctuator("{"),
         whitespace,
@@ -2425,34 +2428,16 @@ function CaseBlock_2(p: Parser): CaseClauseListNode | ErrorNode {
         whitespace,
         opt(CaseClauses),
         whitespace,
-        punctuator("}")],
-        ([start,,,clauses1,,defaultClause,,clauses2,,]) => {
-            let listStart = defaultClause.range.start;
-            let listEnd = defaultClause.range.end;
-            let elements1: ASTNode[] = [];
-            let elements2: ASTNode[] = [];
-            if (clauses1 != null) {
-                listStart = clauses1.range.start;
-                if (clauses1 instanceof ErrorNode)
-                    elements1 = [clauses1];
-                else
-                    elements1 = clauses1.elements;
-            }
-            if (clauses2 != null) {
-                listEnd = clauses2.range.end;
-                if (clauses2 instanceof ErrorNode)
-                    elements2 = [clauses2];
-                else
-                    elements2 = clauses2.elements;
-            }
-            const combined = [].concat(elements1,defaultClause,elements2);
-            return new CaseClauseListNode(new Range(listStart,listEnd),combined);
+        punctuator("}"),
+        pos],
+        ([start,,,clauses1,,defaultClause,,clauses2,,,end]) => {
+            return new CaseBlock2Node(new Range(start,end),clauses1,defaultClause,clauses2);
         });
 }
 
 // CaseBlock
 
-function CaseBlock(p: Parser): CaseClauseListNode | ErrorNode {
+function CaseBlock(p: Parser): CaseBlockNode | ErrorNode {
     return p.choice([
         CaseBlock_1,
         CaseBlock_2,
