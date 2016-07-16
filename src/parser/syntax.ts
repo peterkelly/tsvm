@@ -1673,7 +1673,7 @@ function LogicalORExpression(p: Parser): ASTNode {
                 LogicalANDExpression, // 1 = right
                 pos,                  // 0 = end
             ]);
-            b.popAboveAndSet(5,makeNode(b,6,0,"LogicalORNode",[5,1]));
+            b.popAboveAndSet(5,makeNode(b,6,0,"LogicalOR",[5,1]));
         });
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
@@ -3497,7 +3497,7 @@ function FunctionDeclaration_named(p: Parser): ASTNode {
             pos,                 // 0 = end
         ]);
         b.assertLengthIs(17);
-        b.popAboveAndSet(16,makeNode(b,16,0,"Function",[13,9,3]));
+        b.popAboveAndSet(16,makeNode(b,16,0,"FunctionDeclaration",[13,9,3]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -3527,7 +3527,7 @@ function FunctionDeclaration_unnamed(p: Parser): ASTNode {
             pos,                 // 0 = end
         ]);
         b.assertLengthIs(16);
-        b.popAboveAndSet(15,makeNode(b,15,0,"Function",[10,9,3]));
+        b.popAboveAndSet(15,makeNode(b,15,0,"FunctionDeclaration",[10,9,3]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -3979,7 +3979,7 @@ function GeneratorDeclaration_2(p: Parser): ASTNode {
         ]);
         b.assertLengthIs(17);
         // FIXME: Should be DefaultGeneratorDeclaration
-        b.popAboveAndSet(16,makeNode(b,16,0,"GeneratorDeclaration",[9,3]));
+        b.popAboveAndSet(16,makeNode(b,16,0,"DefaultGeneratorDeclaration",[9,3]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -4501,7 +4501,7 @@ function ImportClause(p: Parser): ASTNode {
                             pos,                // 0 = end
                         ]);
                         b.assertLengthIs(7);
-                        b.popAboveAndSet(6,makeNode(b,6,0,"ImportedDefaultBinding",[5,1]));
+                        b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNameSpaceImports",[5,1]));
                     },
                     () => {
                         b.items([
@@ -4512,7 +4512,7 @@ function ImportClause(p: Parser): ASTNode {
                             pos,                // 0 = end
                         ]);
                         b.assertLengthIs(7);
-                        b.popAboveAndSet(6,makeNode(b,6,0,"ImportedDefaultBinding",[5,1]));
+                        b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNamedImports",[5,1]));
                     },
                     () => {
                         b.item(pos);
