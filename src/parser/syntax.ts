@@ -3198,26 +3198,23 @@ function CaseBlock(p: Parser): ASTNode {
 // CaseClauses
 
 function CaseClauses(p: Parser): ASTNode {
-    const start = p.pos;
-    const clauses: ASTNode[] = [];
-    const first = CaseClause(p);
-    clauses.push(first);
-    let end = first.range.end;
-    while (true) {
-        try {
-            let clause: ASTNode;
-            p.sequence([
-                () => clause = CaseClause(p),
-            ]);
-            clauses.push(clause);
-            end = clause.range.end;
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ListNode(new Range(start,end),clauses);
-        }
-    }
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.list(
+            () => {
+                b.item(CaseClause);
+            },
+            () => {
+                b.items([
+                    whitespace,
+                    CaseClause,
+                ]);
+                b.popAboveAndSet(1,b.get(0));
+            },
+        );
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // CaseClause
@@ -3234,14 +3231,10 @@ function CaseClause(p: Parser): ASTNode {
             punctuator(":"), // 3
             whitespace,      // 2
             StatementList,   // 1 = statements
-            whitespace,      // 0
+            pos,             // 0 = end
         ]);
         b.assertLengthIs(9);
-        const start = checkNumber(b.get(8));
-        const expr = checkNode(b.get(5));
-        const statements = checkNode(b.get(1));
-        const end = statements.range.end;
-        b.popAboveAndSet(8,new GenericNode(new Range(start,end),"CaseClause",[expr,statements]));
+        b.popAboveAndSet(8,makeNode(b,8,0,"CaseClause",[5,1]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
