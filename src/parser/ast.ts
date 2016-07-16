@@ -1414,6 +1414,44 @@ export class SwitchStatementNode extends BreakableStatementNode {
     }
 }
 
+export abstract class CaseBlockNode extends ASTNode {
+    _nominal_type_CaseBlockNode: any;
+};
+
+export class CaseBlock1Node extends CaseBlockNode {
+    _nominal_type_CaseBlock1Node: any;
+    public caseClauses: CaseClauseListNode | ErrorNode;
+    public constructor(range: Range, caseClauses: CaseClauseListNode | ErrorNode) {
+        super(range,"CaseBlock1");
+        this.caseClauses = caseClauses;
+    }
+    public get children(): ASTNode[] {
+        return [this.caseClauses];
+    }
+}
+
+export class CaseBlock2Node extends CaseBlockNode {
+    _nominal_type_CaseBlock2Node: any;
+    public caseClauses1: CaseClauseListNode | ErrorNode;
+    public defaultClause: DefaultClauseNode | ErrorNode;
+    public caseClauses2: CaseClauseListNode | ErrorNode;
+    public constructor(
+        range: Range,
+        caseClauses1: CaseClauseListNode | ErrorNode,
+        defaultClause: DefaultClauseNode | ErrorNode,
+        caseClauses2: CaseClauseListNode | ErrorNode
+    ) {
+        super(range,"CaseBlock2");
+        this.range = range;
+        this.caseClauses1 = caseClauses1;
+        this.defaultClause = defaultClause;
+        this.caseClauses2 = caseClauses2;
+    }
+    public get children(): ASTNode[] {
+        return [this.caseClauses1,this.defaultClause,this.caseClauses2];
+    }
+}
+
 export class CaseClauseNode extends ASTNode {
     _nominal_type_CaseClauseNode: any;
     public readonly expr: ExpressionNode | ErrorNode;

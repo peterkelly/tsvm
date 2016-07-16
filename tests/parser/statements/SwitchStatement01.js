@@ -8,6 +8,6 @@ Module 0-16 "switch ( x ) {\n}"
   [] 0-16 "switch ( x ) {\n}"
     SwitchStatement 0-16 "switch ( x ) {\n}"
       IdentifierReference("x") 9-10 "x"
-      [] 15-15 ""
+      CaseBlock1 13-16 "{\n}"
+        [] 15-15 ""
 *******************************************************************************/
-

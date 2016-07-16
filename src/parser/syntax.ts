@@ -160,6 +160,9 @@ import {
     // ReturnStatementNode,
     // WithStatementNode,
     // SwitchStatementNode,
+    // CaseBlockNode,
+    // CaseBlock1Node,
+    // CaseBlock2Node,
     // CaseClauseNode,
     // DefaultClauseNode,
     // LabelledStatementNode,
@@ -3129,12 +3132,12 @@ function CaseBlock_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
         b.items([
-            pos,             // 6
-            punctuator("{"), // 5
-            whitespace,      // 4
-            pos,             // 3 = midpos
+            pos,             // 7
+            punctuator("{"), // 6
+            whitespace,      // 5
+            pos,             // 4 = midpos
         ]);
-        b.choice([           // 2 = clauses
+        b.choice([           // 3 = clauses
             () => {
                 b.item(CaseClauses);
             },
@@ -3144,11 +3147,12 @@ function CaseBlock_1(p: Parser): ASTNode {
             },
         ]);
         b.items([
-            whitespace,      // 1
-            punctuator("}"), // 0
+            whitespace,      // 2
+            punctuator("}"), // 1
+            pos,             // 0
         ]);
-        b.assertLengthIs(7);
-        b.popAboveAndSet(6,b.get(2));
+        b.assertLengthIs(8);
+        b.popAboveAndSet(7,makeNode(b,7,0,"CaseBlock1",[3]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -3157,39 +3161,26 @@ function CaseBlock_1(p: Parser): ASTNode {
 // CaseBlock_2
 
 function CaseBlock_2(p: Parser): ASTNode {
-    return p.seq10([
-        pos,
-        punctuator("{"),
-        whitespace,
-        opt(CaseClauses),
-        whitespace,
-        DefaultClause,
-        whitespace,
-        opt(CaseClauses),
-        whitespace,
-        punctuator("}")],
-        ([start,,,clauses1,,defaultClause,,clauses2,,]) => {
-            let listStart = defaultClause.range.start;
-            let listEnd = defaultClause.range.end;
-            let elements1: ASTNode[] = [];
-            let elements2: ASTNode[] = [];
-            if (clauses1 != null) {
-                listStart = clauses1.range.start;
-                if (clauses1 instanceof ListNode)
-                    elements1 = clauses1.elements;
-                else
-                    elements1 = [clauses1];
-            }
-            if (clauses2 != null) {
-                listEnd = clauses2.range.end;
-                if (clauses2 instanceof ListNode)
-                    elements2 = clauses2.elements;
-                else
-                    elements2 = [clauses2];
-            }
-            const combined = [].concat(elements1,defaultClause,elements2);
-            return new ListNode(new Range(listStart,listEnd),combined);
-        });
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,              // 10 = start
+            punctuator("{"),  // 9
+            whitespace,       // 8
+            opt(CaseClauses), // 7 = clauses1
+            whitespace,       // 6
+            DefaultClause,    // 5 = defaultClause
+            whitespace,       // 4
+            opt(CaseClauses), // 3 = clauses2
+            whitespace,       // 2
+            punctuator("}"),  // 1
+            pos,              // 0 = end
+        ]);
+        b.assertLengthIs(11);
+        b.popAboveAndSet(10,makeNode(b,10,0,"CaseBlock2",[7,5,3]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // CaseBlock
