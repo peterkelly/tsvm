@@ -757,7 +757,7 @@ export class LogicalANDNode extends BinaryNode {
 export class LogicalORNode extends BinaryNode {
     _nominal_type_LogicalORNode: any;
     public constructor(range: Range, left: ExpressionNode | ErrorNode, right: ExpressionNode | ErrorNode) {
-        super(range,"LogicalORNode",left,right);
+        super(range,"LogicalOR",left,right);
     }
 }
 
@@ -1494,7 +1494,7 @@ export class FunctionDeclarationNode extends DeclarationNode {
         params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
-        super(range,"Function");
+        super(range,"FunctionDeclaration");
         this.ident = ident;
         this.params = params;
         this.body = body;
@@ -1652,7 +1652,7 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
     public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(range: Range, params: FormalParameterListNode | ErrorNode, body: StatementListNode | ErrorNode) {
-        super(range,"GeneratorDeclaration");
+        super(range,"DefaultGeneratorDeclaration");
         this.params = params;
         this.body = body;
     }
@@ -1859,7 +1859,7 @@ export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
         defaultBinding: BindingIdentifierNode | ErrorNode,
         nameSpaceImport: NameSpaceImportNode | ErrorNode
     ) {
-        super(range,"ImportedDefaultBinding");
+        super(range,"DefaultAndNameSpaceImports");
         this.defaultBinding = defaultBinding;
         this.nameSpaceImport = nameSpaceImport;
     }
@@ -1877,7 +1877,7 @@ export class DefaultAndNamedImportsNode extends ImportClauseNode {
         defaultBinding: BindingIdentifierNode | ErrorNode,
         namedImports: NamedImportsNode | ErrorNode
     ) {
-        super(range,"ImportedDefaultBinding");
+        super(range,"DefaultAndNamedImports");
         this.defaultBinding = defaultBinding;
         this.namedImports = namedImports;
     }
