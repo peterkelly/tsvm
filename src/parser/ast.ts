@@ -1617,6 +1617,58 @@ export class FunctionExpressionNode extends ExpressionNode {
     }
 }
 
+export abstract class FormalParametersNode extends ASTNode {
+    _nominal_type_FormalParametersNode: any;
+}
+
+export class FormalParameters1Node extends FormalParametersNode {
+    _nominal_type_FormalParameters1Node: any;
+    public constructor(range: Range) {
+        super(range,"FormalParameters1");
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+}
+
+export class FormalParameters2Node extends FormalParametersNode {
+    _nominal_type_FormalParameters2Node: any;
+    public readonly rest: BindingRestElementNode | ErrorNode;
+    public constructor(range: Range, rest: BindingRestElementNode | ErrorNode) {
+        super(range,"FormalParameters2");
+        this.rest = rest;
+    }
+    public get children(): ASTNode[] {
+        return [this.rest];
+    }
+}
+
+export class FormalParameters3Node extends FormalParametersNode {
+    _nominal_type_FormalParameters3Node: any;
+    public readonly elements: FormalParameterListNode | ErrorNode;
+    public constructor(range: Range, elements: FormalParameterListNode | ErrorNode) {
+        super(range,"FormalParameters3");
+        this.elements = elements;
+    }
+    public get children(): ASTNode[] {
+        return [this.elements];
+    }
+}
+
+export class FormalParameters4Node extends FormalParametersNode {
+    _nominal_type_FormalParameters4Node: any;
+    public readonly elements: FormalParameterListNode | ErrorNode;
+    public readonly rest: BindingRestElementNode | ErrorNode;
+    public constructor(range: Range, elements: FormalParameterListNode | ErrorNode, rest: BindingRestElementNode | ErrorNode) {
+        super(range,"FormalParameters4");
+        this.elements = elements;
+        this.rest = rest;
+    }
+    public get children(): ASTNode[] {
+        return [this.elements,this.rest];
+    }
+}
+
 // Section 14.2
 
 export class ArrowFunctionNode extends ExpressionNode {
