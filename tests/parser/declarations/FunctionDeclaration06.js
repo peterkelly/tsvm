@@ -7,7 +7,7 @@ ast-module
 
 Module 0-29 "function test ( x ) {\n  1 ;\n}"
   [] 0-29 "function test ( x ) {\n  1 ;\n}"
-    Function 0-29 "function test ( x ) {\n  1 ;\n}"
+    FunctionDeclaration 0-29 "function test ( x ) {\n  1 ;\n}"
       BindingIdentifier("test") 9-13 "test"
       [] 16-17 "x"
         BindingIdentifier("x") 16-17 "x"
