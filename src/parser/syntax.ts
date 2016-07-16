@@ -171,6 +171,11 @@ import {
     DebuggerStatementNode,
     FunctionDeclarationNode,
     FunctionExpressionNode,
+    FormalParametersNode,
+    FormalParameters1Node,
+    FormalParameters2Node,
+    FormalParameters3Node,
+    FormalParameters4Node,
     ArrowFunctionNode,
     MethodNode,
     GetterNode,
@@ -2712,28 +2717,30 @@ function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
 
 // StrictFormalParameters
 
-function StrictFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
+function StrictFormalParameters(p: Parser): FormalParametersNode | ErrorNode {
     return FormalParameters(p);
 }
 
 // FormalParameters
 
-function FormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
-    return p.choice([
+function FormalParameters(p: Parser): FormalParametersNode | ErrorNode {
+    return p.choice<FormalParametersNode | ErrorNode>([
         FormalParameterList,
-        () => new FormalParameterListNode(new Range(p.pos,p.pos),[]),
+        () => {
+            return new FormalParameters1Node(new Range(p.pos,p.pos));
+        },
     ]);
 }
 
 // FormalParameterList
 
-function FormalParameterList(p: Parser): FormalParameterListNode | ErrorNode {
-    return p.choice([
+function FormalParameterList(p: Parser): FormalParametersNode | ErrorNode {
+    return p.choice<FormalParametersNode>([
         () => p.seq2([
             pos,
             FunctionRestParameter],
-            ([start,rest]) => new FormalParameterListNode(new Range(start,p.pos),[rest])),
-        () => p.seq3([
+            ([start,rest]) => new FormalParameters2Node(new Range(start,p.pos),rest)),
+        () => p.seq4([
             pos,
             FormalsList,
             opt(() => p.seq4([
@@ -2741,18 +2748,13 @@ function FormalParameterList(p: Parser): FormalParameterListNode | ErrorNode {
                 punctuator(","),
                 whitespace,
                 FunctionRestParameter],
-                ([,,,rest]) => rest))],
-            ([start,formals,rest]) => {
+                ([,,,rest]) => rest)),
+            pos],
+            ([start,formals,rest,end]) => {
                 if (rest == null)
-                    return formals;
-
-                let elements: (BindingElementType | BindingRestElementNode | ErrorNode)[];
-                if (formals instanceof ErrorNode)
-                    elements = [formals];
+                    return new FormalParameters3Node(new Range(start,end),formals);
                 else
-                    elements = formals.elements;
-                elements.push(rest);
-                return new FormalParameterListNode(new Range(start,p.pos),elements);
+                    return new FormalParameters4Node(new Range(start,end),formals,rest);
             }),
     ]);
 }
@@ -2824,8 +2826,8 @@ function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
 
 // ArrowParameters
 
-function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParameterListNode | ErrorNode {
-    return p.choice<BindingIdentifierNode | FormalParameterListNode | ErrorNode>([
+function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParametersNode | ErrorNode {
+    return p.choice<BindingIdentifierNode | FormalParametersNode | ErrorNode>([
         BindingIdentifier,
         ArrowFormalParameters,
     ]);
@@ -2862,7 +2864,7 @@ function ConciseBody(p: Parser): ExpressionNode | StatementListNode | ErrorNode 
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(p: Parser): FormalParameterListNode | ErrorNode {
+function ArrowFormalParameters(p: Parser): FormalParametersNode | ErrorNode {
     return p.seq5([
         punctuator("("),
         whitespace,
