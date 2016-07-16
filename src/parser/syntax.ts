@@ -26,7 +26,7 @@ import {
     PropertyDefinitionType,
     StatementListItemType,
     SingleNameBindingType,
-    BindingPatternType,
+    BindingPatternNode,
     BindingElementType,
     ArgumentType,
     ForBindingType,
@@ -1757,8 +1757,8 @@ function VariableDeclaration(p: Parser): VarIdentifierNode | VarPatternNode | Er
 
 // BindingPattern
 
-function BindingPattern(p: Parser): BindingPatternType | ErrorNode {
-    return p.choice<BindingPatternType | ErrorNode>([
+function BindingPattern(p: Parser): BindingPatternNode | ErrorNode {
+    return p.choice<BindingPatternNode | ErrorNode>([
         ObjectBindingPattern,
         ArrayBindingPattern,
     ]);
