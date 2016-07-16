@@ -18,13 +18,12 @@ export type PropertyDefinitionType = ColonPropertyDefinitionNode | CoverInitiali
                                      MethodDefinitionNode | IdentifierReferenceNode;
 export type StatementListItemType = StatementNode | DeclarationNode;
 export type SingleNameBindingType = BindingIdentifierNode | SingleNameBindingNode;
-export type BindingPatternType = ObjectBindingPatternNode | ArrayBindingPatternNode;
 export type BindingElementType = SingleNameBindingType | BindingPatternInitNode |
-                                 BindingPatternType | BindingRestElementNode |
+                                 BindingPatternNode | BindingRestElementNode |
                                  BindingElisionElementNode | ElisionNode; // FIXME: ElisionNode should not be part of this
 export type ArgumentType = ExpressionNode | SpreadElementNode;
-export type ForBindingType = BindingIdentifierNode | BindingPatternType;
-export type CatchParameterType = BindingIdentifierNode | BindingPatternType;
+export type ForBindingType = BindingIdentifierNode | BindingPatternNode;
+export type CatchParameterType = BindingIdentifierNode | BindingPatternNode;
 export type BindingPropertyType = SingleNameBindingType | BindingPropertyNode;
 export type ClassElementType = MethodDefinitionNode | StaticMethodDefinitionNode | EmptyClassElementNode;
 export type ModuleItemType = ImportNode | ExportNode | StatementListItemType;
@@ -87,6 +86,10 @@ export abstract class DeclarationNode extends ASTNode {
 
 export abstract class LexicalBindingNode extends ASTNode {
     _nominal_type_LexicalBindingNode: any;
+}
+
+export abstract class BindingPatternNode extends ASTNode {
+    _nominal_type_BindingPatternNode: any;
 }
 
 export abstract class BinaryNode extends ExpressionNode {
@@ -940,11 +943,11 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
 
 export class LexicalPatternBindingNode extends LexicalBindingNode {
     _nominal_type_LexicalPatternBindingNode: any;
-    public pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
+    public pattern: BindingPatternNode | ErrorNode;
     public initializer: ExpressionNode | ErrorNode;
     public constructor(
         range: Range,
-        pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode,
+        pattern: BindingPatternNode | ErrorNode,
         initializer: ExpressionNode | ErrorNode
     ) {
         super(range,"LexicalPatternBinding");
@@ -990,11 +993,11 @@ export class VarIdentifierNode extends ASTNode {
 
 export class VarPatternNode extends ASTNode {
     _nominal_type_VarPatternNode: any;
-    public pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
+    public pattern: BindingPatternNode | ErrorNode;
     public initializer: ExpressionNode | ErrorNode;
     public constructor(
         range: Range,
-        pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode,
+        pattern: BindingPatternNode | ErrorNode,
         initializer: ExpressionNode | ErrorNode
     ) {
         super(range,"VarPattern");
@@ -1008,7 +1011,7 @@ export class VarPatternNode extends ASTNode {
 
 // Section 13.3.3
 
-export class ObjectBindingPatternNode extends ASTNode {
+export class ObjectBindingPatternNode extends BindingPatternNode {
     _nominal_type_ObjectBindingPatternNode: any;
     public readonly properties: BindingPropertyListNode | ErrorNode;
     public constructor(range: Range, properties: BindingPropertyListNode | ErrorNode) {
@@ -1020,7 +1023,7 @@ export class ObjectBindingPatternNode extends ASTNode {
     }
 }
 
-export class ArrayBindingPatternNode extends ASTNode {
+export class ArrayBindingPatternNode extends BindingPatternNode {
     _nominal_type_ArrayBindingPatternNode: any;
     public readonly elements: BindingElementListNode | ErrorNode;
     public constructor(range: Range, elements: BindingElementListNode | ErrorNode) {
@@ -1062,11 +1065,11 @@ export class BindingPropertyNode extends ASTNode {
 
 export class BindingPatternInitNode extends ASTNode {
     _nominal_type_BindingPatternInitNode: any;
-    public readonly pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode;
+    public readonly pattern: BindingPatternNode | ErrorNode;
     public readonly init: ExpressionNode | ErrorNode;
     public constructor(
         range: Range,
-        pattern: ObjectBindingPatternNode | ArrayBindingPatternNode | ErrorNode,
+        pattern: BindingPatternNode | ErrorNode,
         init: ExpressionNode | ErrorNode
     ) {
         super(range,"BindingPatternInit");
