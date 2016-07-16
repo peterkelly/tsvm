@@ -134,6 +134,9 @@ import {
     VarPatternNode,
     ObjectBindingPatternNode,
     ArrayBindingPatternNode,
+    ArrayBindingPattern1Node,
+    ArrayBindingPattern2Node,
+    ArrayBindingPattern3Node,
     BindingElisionElementNode,
     BindingPropertyNode,
     BindingPatternInitNode,
@@ -1806,19 +1809,7 @@ function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
             ([inner,]) => inner)),
         punctuator("]")],
         ([start,,,start2,elision,rest,]) => {
-            let end = start2;
-            const array: (BindingElementType | ErrorNode)[] = [];
-            if (elision != null) {
-                array.push(elision);
-                end = elision.range.end;
-            }
-            if (rest != null) {
-                array.push(rest);
-                end = rest.range.end;
-            }
-
-            const elements = new BindingElementListNode(new Range(start2,end),array);
-            return new ArrayBindingPatternNode(new Range(start,p.pos),elements);
+            return new ArrayBindingPattern1Node(new Range(start,p.pos),elision,rest);
         });
 }
 
@@ -1832,7 +1823,7 @@ function ArrayBindingPattern_2(p: Parser): ArrayBindingPatternNode | ErrorNode {
         BindingElementList,
         whitespace,
         punctuator("]")],
-        ([start,,,elements,,]) => new ArrayBindingPatternNode(new Range(start,p.pos),elements));
+        ([start,,,elements,,]) => new ArrayBindingPattern2Node(new Range(start,p.pos),elements));
 }
 
 // ArrayBindingPattern_3
@@ -1861,21 +1852,7 @@ function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
         }),
         punctuator("]")],
         ([start,,,start2,elements,,,,elision,rest,]) => {
-            let end = elements.range.end;
-            let array: (BindingElementType | ErrorNode)[] = [];
-            if (!(elements instanceof ErrorNode))
-                array = array.concat(elements.elements);
-            if (elision != null) {
-                array.push(elision);
-                end = elision.range.end;
-            }
-            if (rest != null) {
-                array.push(rest);
-                end = rest.range.end;
-            }
-
-            const allElements = new BindingElementListNode(new Range(start2,end),array);
-            return new ArrayBindingPatternNode(new Range(start,p.pos),allElements);
+            return new ArrayBindingPattern3Node(new Range(start,p.pos),elements,elision,rest);
         });
 }
 
