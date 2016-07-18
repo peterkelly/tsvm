@@ -12,8 +12,9 @@ Module 0-28 "let { p1 : [ a ] } = value ;"
             [] 6-16 "p1 : [ a ]"
               BindingProperty 6-16 "p1 : [ a ]"
                 Identifier("p1") 6-8 "p1"
-                ArrayBindingPattern2 11-16 "[ a ]"
+                ArrayBindingPattern 11-16 "[ a ]"
                   [] 13-14 "a"
                     BindingIdentifier("a") 13-14 "a"
+                  null
           IdentifierReference("value") 21-26 "value"
 *******************************************************************************/

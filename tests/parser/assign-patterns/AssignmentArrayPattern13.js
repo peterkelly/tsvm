@@ -12,6 +12,6 @@ Module 0-31 "( [ a , b , c , , ] = value ) ;"
             IdentifierReference("a") 4-5 "a"
             IdentifierReference("b") 8-9 "b"
             IdentifierReference("c") 12-13 "c"
-            Elision(1) 16-17 ","
+            Elision 16-17 ","
         IdentifierReference("value") 22-27 "value"
 *******************************************************************************/

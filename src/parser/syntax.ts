@@ -136,10 +136,6 @@ import {
     // VarPatternNode,
     // ObjectBindingPatternNode,
     // ArrayBindingPatternNode,
-    // ArrayBindingPattern1Node,
-    // ArrayBindingPattern2Node,
-    // ArrayBindingPattern3Node,
-    // BindingElisionElementNode,
     // BindingPropertyNode,
     // BindingPatternInitNode,
     // SingleNameBindingNode,
@@ -462,94 +458,99 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
 // ArrayLiteral
 
 function ArrayLiteral(p: Parser): ASTNode {
-    return p.attempt((start) => {
+    return p.attempt((start): ASTNode => {
         const b = new Builder(p);
-        b.items([
-            pos,
-            punctuator("["),
-            whitespace,
-        ]);
+        b.item(pos);
+        b.item(punctuator("["));
+        b.item(whitespace);
 
         const elements: ASTNode[] = [];
         const listStart = p.pos;
         let listEnd = p.pos;
-        let first = true;
 
-        while (!p.lookaheadPunctuator("]")) {
-            if (!first) {
-                b.items([
-                    punctuator(","),
-                    whitespace,
-                ]);
+        b.assertLengthIs(3);
+
+        b.opt(() => {
+            b.item(pos);             // 3 = before
+            b.item(punctuator(",")); // 2
+            b.item(pos);             // 1 = after
+            b.item(whitespace);      // 0
+            b.assertLengthIs(7);
+            b.popAboveAndSet(3,makeNode(b,3,1,"Elision",[]));
+        });
+        b.assertLengthIs(4);
+
+        const initialElision = checkNode(b.get(0));
+        if (initialElision != null) {
+            elements.push(initialElision);
+            listEnd = initialElision.range.end;
+        }
+
+        while (true) {
+            b.assertLengthIs(4);
+            if (p.lookaheadPunctuator("]")) {
+                p.expectPunctuator("]");
+                break;
             }
 
-            b.opt(() => {
-                b.items([
-                    Elision,
-                    whitespace,
-                ]);
-                b.popAboveAndSet(1,b.get(1));
-            });
-            b.opt(() => {
+            try {
                 b.choice([
                     () => {
+                        b.items([
+                            pos,             // 3 = before
+                            punctuator(","), // 2
+                            pos,             // 1 = after
+                            whitespace,      // 0
+                        ]);
+                        b.assertLengthIs(8);
+                        b.popAboveAndSet(3,makeNode(b,3,1,"Elision",[]));
+                        b.assertLengthIs(5);
+                    },
+                    () => {
                         b.item(AssignmentExpression);
+                        b.item(whitespace);
+                        b.opt(() => {
+                            b.item(punctuator(","));
+                            b.item(whitespace);
+                            b.pop();
+                        });
+                        b.assertLengthIs(7);
+                        b.popAboveAndSet(2,checkNode(b.get(2)));
+                        b.assertLengthIs(5);
                     },
                     () => {
                         b.item(SpreadElement);
+                        b.item(whitespace);
+                        b.opt(() => {
+                            b.item(punctuator(","));
+                            b.item(whitespace);
+                            b.pop();
+                        });
+                        b.assertLengthIs(7);
+                        b.popAboveAndSet(2,checkNode(b.get(2)));
+                        b.assertLengthIs(5);
                     },
                 ]);
-            });
+                b.assertLengthIs(5);
+                const item = checkNode(b.get(0));
+                b.pop();
 
-            const elision = checkNode(b.get(1));
-
-            if (elision != null) {
-                elements.push(elision);
-                listEnd = elision.range.end;
+                elements.push(item);
+                listEnd = item.range.end;
             }
-            const item = checkNode(b.get(0));
-            if (item == null)
+            catch (e) {
+                if (!(e instanceof ParseFailure))
+                    throw e;
                 break;
-
-            elements.push(item);
-            listEnd = p.pos;
-            b.item(whitespace);
-            first = false;
+            }
         }
 
-        p.sequence([
-            punctuator("]"),
-        ]);
-
+        b.assertLengthIs(4);
         const list = new ListNode(new Range(listStart,listEnd),elements);
-        return new GenericNode(new Range(start,p.pos),"ArrayLiteral",[list]);
+        b.popAboveAndSet(3,new GenericNode(new Range(start,p.pos),"ArrayLiteral",[list]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
-}
-
-// Elision
-
-function Elision(p: Parser): ASTNode {
-    // FIXME: Protect against infinite loops in all "list" functions like these by ensuring that
-    // the current position has advanced by at least 1 in each iteration
-    const start = p.pos;
-    p.sequence([
-        punctuator(","),
-    ]);
-    let count = 1;
-    while (true) {
-        try {
-            p.sequence([
-                whitespace,
-                punctuator(","),
-            ]);
-            count++;
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            return new ElisionNode(new Range(start,p.pos),count);
-        }
-    }
 }
 
 // SpreadElement
@@ -2278,96 +2279,32 @@ function ObjectBindingPattern(p: Parser): ASTNode {
     });
 }
 
-// ArrayBindingPattern_1
-
-function ArrayBindingPattern_1(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
-        b.items([
-            pos,                       // 6 = start
-            punctuator("["),           // 5
-            whitespace,                // 4
-            opt(() => p.seq2([         // 3 = elision
-                Elision,
-                whitespace],
-                ([inner,]) => inner)),
-            opt(() => p.seq2([         // 2 = rest
-                BindingRestElement,
-                whitespace],
-                ([inner,]) => inner)),
-            punctuator("]"),           // 1
-            pos,                       // 0 = end
-        ]);
-        b.assertLengthIs(7);
-        b.popAboveAndSet(6,makeNode(b,6,0,"ArrayBindingPattern1",[3,2]));
-        b.assertLengthIs(1);
-        return checkNode(b.get(0));
-    });
-}
-
-// ArrayBindingPattern_2
-
-function ArrayBindingPattern_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
-        b.items([
-            pos,                // 6 = start
-            punctuator("["),    // 5
-            whitespace,         // 4
-            BindingElementList, // 3 = elements
-            whitespace,         // 2
-            punctuator("]"),    // 1
-            pos,                // 0 = end
-        ]);
-        b.popAboveAndSet(6,makeNode(b,6,0,"ArrayBindingPattern2",[3]));
-        b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
-    });
-}
-
-// ArrayBindingPattern_3
-
-function ArrayBindingPattern_3(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
-        b.items([
-            pos,                // 10 = start
-            punctuator("["),    // 9
-            whitespace,         // 8
-            BindingElementList, // 7 = elements
-            whitespace,         // 6
-            punctuator(","),    // 5
-            whitespace,         // 4
-            opt(() => {         // 3 = elision
-                return p.seq2([
-                    Elision,
-                    whitespace],
-                    ([inner,]) => inner);
-            }),
-            opt(() => {         // 2 = rest
-                return p.seq2([
-                    BindingRestElement,
-                    whitespace],
-                    ([inner,]) => inner);
-            }),
-            punctuator("]"),    // 1
-            pos,                // 0
-        ]);
-        b.assertLengthIs(11);
-        b.popAboveAndSet(10,makeNode(b,10,0,"ArrayBindingPattern3",[7,3,2]));
-        b.assertLengthIs(1);
-        return checkNode(b.get(0));
-    });
-}
-
 // ArrayBindingPattern
 
 function ArrayBindingPattern(p: Parser): ASTNode {
-    return p.choice([
-        ArrayBindingPattern_1,
-        ArrayBindingPattern_2,
-        ArrayBindingPattern_3,
-    ]);
+    return p.attempt(() => {
+        const b = new Builder(p);
+        b.items([
+            pos,                 // 7 = start
+            punctuator("["),     // 6
+            whitespace,          // 5
+            BindingElementList,  // 4 = elements
+            whitespace,          // 3
+        ]);
+        b.opt(() => {            // 2 = rest
+            b.item(BindingRestElement);
+            b.item(whitespace);
+            b.popAboveAndSet(1,b.get(1));
+        });
+        b.items([
+            punctuator("]"),     // 1
+            pos,                 // 0 = end
+        ]);
+        b.assertLengthIs(8);
+        b.popAboveAndSet(7,makeNode(b,7,0,"ArrayBindingPattern",[4,2]));
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
 }
 
 // BindingPropertyList
@@ -2401,44 +2338,37 @@ function BindingElementList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(BindingElisionElement);
+                b.opt(() => {
+                    b.item(pos);
+                    b.item(punctuator(","));
+                    b.item(pos);
+                    b.popAboveAndSet(2,makeNode(b,2,0,"Elision",[]));
+                });
             },
             () => {
-                b.items([
-                    whitespace,
-                    punctuator(","),
-                    whitespace,
-                    BindingElisionElement
-                ]);
-                b.popAboveAndSet(3,b.get(0));
+                b.choice([
+                    () => {
+                        b.items([
+                            whitespace,      // 3
+                            pos,             // 2 = before
+                            punctuator(","), // 1
+                            pos,             // 0 = after
+                        ]);
+                        b.popAboveAndSet(3,makeNode(b,2,0,"Elision",[]));
+                    },
+                    () => {
+                        b.item(whitespace);
+                        b.item(BindingElement);
+                        b.opt(() => {
+                            b.item(whitespace);
+                            b.item(punctuator(","));
+                            b.pop();
+                        });
+                        b.popAboveAndSet(2,b.get(1));
+                    },
+                ])
             },
         );
-        b.assertLengthIs(1);
-        return checkNode(b.get(0));
-    });
-}
-
-// BindingElisionElement
-
-function BindingElisionElement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
-        b.choice([
-            () => {
-                b.items([
-                    pos,            // 4 = start
-                    Elision,        // 3 = elision
-                    whitespace,     // 2
-                    BindingElement, // 1 = element
-                    pos,            // 0 = end
-                ]);
-                b.assertLengthIs(5);
-                b.popAboveAndSet(4,makeNode(b,4,0,"BindingElisionElement",[3,1]));
-            },
-            () => {
-                b.item(BindingElement);
-            },
-        ]);
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
