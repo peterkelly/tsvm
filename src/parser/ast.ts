@@ -20,7 +20,7 @@ export type StatementListItemType = StatementNode | DeclarationNode;
 export type SingleNameBindingType = BindingIdentifierNode | SingleNameBindingNode;
 export type BindingElementType = SingleNameBindingType | BindingPatternInitNode |
                                  BindingPatternNode | BindingRestElementNode |
-                                 BindingElisionElementNode | ElisionNode; // FIXME: ElisionNode should not be part of this
+                                 ElisionNode;
 export type ArgumentType = ExpressionNode | SpreadElementNode;
 export type ForBindingType = BindingIdentifierNode | BindingPatternNode;
 export type CatchParameterType = BindingIdentifierNode | BindingPatternNode;
@@ -258,16 +258,11 @@ export class ArrayLiteralNode extends ExpressionNode {
 
 export class ElisionNode extends ASTNode {
     _nominal_type_ElisionNode: any;
-    public readonly count: number;
-    public constructor(range: Range, count: number) {
+    public constructor(range: Range) {
         super(range,"Elision");
-        this.count = count;
     }
     public get children(): ASTNode[] {
         return [];
-    }
-    public get label(): string {
-        return "Elision("+this.count+")";
     }
 }
 
@@ -1023,68 +1018,20 @@ export class ObjectBindingPatternNode extends BindingPatternNode {
     }
 }
 
-export abstract class ArrayBindingPatternNode extends BindingPatternNode {
-    _nominal_type_ArrayBindingPatternNode: any;
-}
-
-export class ArrayBindingPattern1Node extends ArrayBindingPatternNode {
-    _nominal_type_ArrayBindingPattern1Node: any;
-    public readonly elision: ElisionNode | ErrorNode;
-    public readonly rest: BindingRestElementNode | ErrorNode;
-    public constructor(range: Range, elision: ElisionNode | ErrorNode, rest: BindingRestElementNode | ErrorNode) {
-        super(range,"ArrayBindingPattern1");
-        this.elision = elision;
-        this.rest = rest;
-    }
-    public get children(): ASTNode[] {
-        return [this.elision,this.rest];
-    }
-}
-
-export class ArrayBindingPattern2Node extends ArrayBindingPatternNode {
-    _nominal_type_ArrayBindingPattern2Node: any;
+export class ArrayBindingPatternNode extends BindingPatternNode {
     public readonly elements: BindingElementListNode | ErrorNode;
-    public constructor(range: Range, elements: BindingElementListNode | ErrorNode) {
-        super(range,"ArrayBindingPattern2");
-        this.elements = elements;
-    }
-    public get children(): ASTNode[] {
-        return [this.elements];
-    }
-}
-
-export class ArrayBindingPattern3Node extends ArrayBindingPatternNode {
-    _nominal_type_ArrayBindingPattern3Node: any;
-    public readonly elements: BindingElementListNode | ErrorNode;
-    public readonly elision: ElisionNode | ErrorNode;
     public readonly rest: BindingRestElementNode | ErrorNode;
     public constructor(
         range: Range,
         elements: BindingElementListNode | ErrorNode,
-        elision: ElisionNode | ErrorNode,
         rest: BindingRestElementNode | ErrorNode
     ) {
-        super(range,"ArrayBindingPattern3");
+        super(range,"ArrayBindingPattern");
         this.elements = elements;
-        this.elision = elision;
         this.rest = rest;
     }
     public get children(): ASTNode[] {
-        return [this.elements,this.elision,this.rest];
-    }
-}
-
-export class BindingElisionElementNode extends ASTNode {
-    _nominal_type_BindingElisionElementNode: any;
-    public readonly elision: ElisionNode | ErrorNode;
-    public readonly element: BindingElementType | ErrorNode;
-    public constructor(range: Range, elision: ElisionNode | ErrorNode, element: BindingElementType | ErrorNode) {
-        super(range,"BindingElisionElement");
-        this.elision = elision;
-        this.element = element;
-    }
-    public get children(): ASTNode[] {
-        return [this.elision,this.element];
+        return [this.elements,this.rest];
     }
 }
 
