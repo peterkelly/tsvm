@@ -134,10 +134,6 @@ import {
     VarPatternNode,
     ObjectBindingPatternNode,
     ArrayBindingPatternNode,
-    ArrayBindingPattern1Node,
-    ArrayBindingPattern2Node,
-    ArrayBindingPattern3Node,
-    BindingElisionElementNode,
     BindingPropertyNode,
     BindingPatternInitNode,
     SingleNameBindingNode,
@@ -487,74 +483,52 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
         const elements: (ArrayLiteralItemType | ErrorNode)[] = [];
         const listStart = p.pos;
         let listEnd = p.pos;
-        let first = true;
 
-        while (!p.lookaheadPunctuator("]")) {
-            if (!first) {
-                p.sequence([
-                    punctuator(","),
-                    whitespace,
-                ]);
-            }
-
-            const elision = p.opt(() => {
-                let inner: ElisionNode | ErrorNode;
-                p.sequence([
-                    () => inner = Elision(p),
-                    whitespace,
-                ]);
-                return inner;
-            });
-
-            if (elision != null) {
-                elements.push(elision);
-                listEnd = elision.range.end;
-            }
-
-            let item: ArrayLiteralItemType | ErrorNode = null;
-            try { item = AssignmentExpression(p); } catch (e) {}
-            try { item = SpreadElement(p); } catch (e) {}
-            if (item == null)
-                break;
-            elements.push(item);
+        p.opt(() => {
+            const before = p.pos;
+            p.expectPunctuator(",");
+            const after = p.pos;
             listEnd = p.pos;
-            p.sequence([
-                whitespace,
-            ]);
-            first = false;
-        }
+            p.skipWhitespace();
+            elements.push(new ElisionNode(new Range(before,after)));
+        });
 
-        p.sequence([
-            punctuator("]"),
-        ]);
+        while (true) {
+            if (p.lookaheadPunctuator("]")) {
+                p.expectPunctuator("]");
+                break;
+            }
+
+            try {
+                const item = p.choice<ArrayLiteralItemType | ErrorNode>([
+                    () => p.seq4([
+                        pos,
+                        punctuator(","),
+                        pos,
+                        whitespace],([before,,after,]) => new ElisionNode(new Range(before,after))),
+                    () => p.seq3([
+                        AssignmentExpression,
+                        whitespace,
+                        opt(() => p.sequence([punctuator(","),whitespace]))],
+                        ([assign,arg2,arg3]) => assign),
+                    () => p.seq3([
+                        SpreadElement,
+                        whitespace,
+                        opt(() => p.sequence([punctuator(","),whitespace]))],
+                        ([spread,arg2,arg3]) => spread),
+                ]);
+
+                elements.push(item);
+                listEnd = item.range.end;
+            }
+            catch (e) {
+                break;
+            }
+        }
 
         const list = new ElementListNode(new Range(listStart,listEnd),elements);
         return new ArrayLiteralNode(new Range(start,p.pos),list);
     });
-}
-
-// Elision
-
-function Elision(p: Parser): ElisionNode | ErrorNode {
-    // FIXME: Protect against infinite loops in all "list" functions like these by ensuring that
-    // the current position has advanced by at least 1 in each iteration
-    const start = p.pos;
-    p.sequence([
-        punctuator(","),
-    ]);
-    let count = 1;
-    while (true) {
-        try {
-            p.sequence([
-                whitespace,
-                punctuator(","),
-            ]);
-            count++;
-        }
-        catch (e) {
-            return new ElisionNode(new Range(start,p.pos),count);
-        }
-    }
 }
 
 // SpreadElement
@@ -1799,59 +1773,16 @@ function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
         ([start,,,properties,]) => new ObjectBindingPatternNode(new Range(start,p.pos),properties));
 }
 
-// ArrayBindingPattern_1
+// ArrayBindingPattern
 
-function ArrayBindingPattern_1(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq7([
-        pos,
-        punctuator("["),
-        whitespace,
-        pos,
-        opt(() => p.seq2([
-            Elision,
-            whitespace],
-            ([inner,]) => inner)),
-        opt(() => p.seq2([
-            BindingRestElement,
-            whitespace],
-            ([inner,]) => inner)),
-        punctuator("]")],
-        ([start,,,start2,elision,rest,]) => {
-            return new ArrayBindingPattern1Node(new Range(start,p.pos),elision,rest);
-        });
-}
-
-// ArrayBindingPattern_2
-
-function ArrayBindingPattern_2(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq6([
-        pos,
-        punctuator("["),
-        whitespace,
-        BindingElementList,
-        whitespace,
-        punctuator("]")],
-        ([start,,,elements,,]) => new ArrayBindingPattern2Node(new Range(start,p.pos),elements));
-}
-
-// ArrayBindingPattern_3
-
-function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq11([
+function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
+    return p.seq8([
         pos,
         punctuator("["),
         whitespace,
         pos,
         BindingElementList,
         whitespace,
-        punctuator(","),
-        whitespace,
-        () => p.opt(() => {
-            return p.seq2([
-                Elision,
-                whitespace],
-                ([inner,]) => inner);
-        }),
         () => p.opt(() => {
             return p.seq2([
                 BindingRestElement,
@@ -1859,19 +1790,9 @@ function ArrayBindingPattern_3(p: Parser): ArrayBindingPatternNode | ErrorNode {
                 ([inner,]) => inner);
         }),
         punctuator("]")],
-        ([start,,,start2,elements,,,,elision,rest,]) => {
-            return new ArrayBindingPattern3Node(new Range(start,p.pos),elements,elision,rest);
+        ([start,,,start2,elements,,rest,]) => {
+            return new ArrayBindingPatternNode(new Range(start,p.pos),elements,rest);
         });
-}
-
-// ArrayBindingPattern
-
-function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.choice([
-        ArrayBindingPattern_1,
-        ArrayBindingPattern_2,
-        ArrayBindingPattern_3,
-    ]);
 }
 
 // BindingPropertyList
@@ -1901,36 +1822,46 @@ function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
 function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
     const start = p.pos;
     const elements: (BindingElementType | ErrorNode)[] = [];
-    elements.push(BindingElisionElement(p));
+    let listEnd = p.pos;
+
+    p.opt(() => {
+        const item = p.seq3([
+            pos,
+            punctuator(","),
+            pos,
+        ],([before,,after]) => new ElisionNode(new Range(before,after)));
+        elements.push(item);
+        listEnd = item.range.end;
+    });
+
     while (true) {
         try {
-            const elem = p.seq4([
-                whitespace,
-                punctuator(","),
-                whitespace,
-                BindingElisionElement],
-                ([,,,e]) => e);
-            elements.push(elem);
+            p.attempt(() => {
+                const item = p.choice<BindingElementType | ErrorNode>([
+                    () => p.seq4([
+                        whitespace,
+                        pos,
+                        punctuator(","),
+                        pos],
+                        ([,before,,after]) => new ElisionNode(new Range(before,after))),
+                    () => p.seq3([
+                        whitespace,
+                        BindingElement,
+                        opt(() => {
+                            p.skipWhitespace();
+                            p.expectPunctuator(",");
+                        })],
+                        ([arg1,binding,arg3]) => binding),
+                ]);
+                elements.push(item);
+                listEnd = item.range.end;
+            });
         }
         catch (e) {
-            return new BindingElementListNode(new Range(start,p.pos),elements);
+            break;
         }
     }
-}
-
-// BindingElisionElement
-
-function BindingElisionElement(p: Parser): BindingElementType | ErrorNode {
-    return p.choice<BindingElementType | ErrorNode>([
-        () => p.seq4([
-            pos,
-            Elision,
-            whitespace,
-            BindingElement],
-            ([start,elision,,element]) =>
-                new BindingElisionElementNode(new Range(start,p.pos),elision,element)),
-        BindingElement,
-    ]);
+    return new BindingElementListNode(new Range(start,listEnd),elements);
 }
 
 // BindingProperty
