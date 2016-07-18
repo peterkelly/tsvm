@@ -50,6 +50,11 @@ export class Builder {
     public push(value: any): void {
         this.stack.push(value);
     }
+    public pop(n: number = 1): void {
+        if (n > this.stack.length)
+            throw new Error("Attempt to pop past end of stack");
+        this.stack.length -= n;
+    }
     public get(index: number): any {
         const pos = this.stack.length-1-index;
         if (pos >= 0)
@@ -145,20 +150,24 @@ export class Builder {
 
             first(this);
             this.assertLengthIs(initialLength+1);
-            elements.push(this.get(0));
+            const firstNode = checkNode(this.get(0));
+            if (firstNode != null)
+                elements.push(firstNode);
             this.stack.pop();
 
             this.assertLengthIs(initialLength);
             this.repeat(() => {
                 rest(this);
                 this.assertLengthIs(initialLength+1);
-                elements.push(this.get(0));
+                const node = this.get(0);
+                if (node != null)
+                    elements.push(node);
                 this.stack.pop();
                 this.assertLengthIs(initialLength);
             });
 
             this.assertLengthIs(initialLength);
-            const end = this.parser.pos;
+            const end = (elements.length > 0) ? elements[elements.length-1].range.end : start;
             this.push(new ListNode(new Range(start,end),elements));
         });
     }
