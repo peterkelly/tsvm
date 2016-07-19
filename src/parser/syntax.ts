@@ -299,7 +299,7 @@ export function Identifier(p: Parser): IdentifierNode | ErrorNode {
 function This(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             keyword("this"),
             pos,
@@ -335,7 +335,7 @@ function PrimaryExpression(p: Parser): ASTNode {
 function ParenthesizedExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             punctuator("("), // 4
             whitespace,      // 3
             Expression,      // 2 = expr
@@ -366,7 +366,7 @@ function Literal(p: Parser): ASTNode {
 function NullLiteral(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             keyword("null"),
             pos,
@@ -458,9 +458,9 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
 function ArrayLiteral(p: Parser): ASTNode {
     return p.attempt((start): ASTNode => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(punctuator("["));
-        b.item(whitespace);
+        b.pitem(pos);
+        b.pitem(punctuator("["));
+        b.pitem(whitespace);
 
         const elements: ASTNode[] = [];
         const listStart = p.pos;
@@ -468,11 +468,11 @@ function ArrayLiteral(p: Parser): ASTNode {
 
         b.assertLengthIs(3);
 
-        b.opt(() => {
-            b.item(pos);             // 3 = before
-            b.item(punctuator(",")); // 2
-            b.item(pos);             // 1 = after
-            b.item(whitespace);      // 0
+        b.bopt(() => {
+            b.pitem(pos);             // 3 = before
+            b.pitem(punctuator(",")); // 2
+            b.pitem(pos);             // 1 = after
+            b.pitem(whitespace);      // 0
             b.assertLengthIs(7);
             b.popAboveAndSet(3,makeNode(b,3,1,"Elision",[]));
         });
@@ -492,9 +492,9 @@ function ArrayLiteral(p: Parser): ASTNode {
             }
 
             try {
-                b.choice([
+                b.bchoice([
                     () => {
-                        b.items([
+                        b.pitems([
                             pos,             // 3 = before
                             punctuator(","), // 2
                             pos,             // 1 = after
@@ -505,11 +505,11 @@ function ArrayLiteral(p: Parser): ASTNode {
                         b.assertLengthIs(5);
                     },
                     () => {
-                        b.item(AssignmentExpression);
-                        b.item(whitespace);
-                        b.opt(() => {
-                            b.item(punctuator(","));
-                            b.item(whitespace);
+                        b.pitem(AssignmentExpression);
+                        b.pitem(whitespace);
+                        b.bopt(() => {
+                            b.pitem(punctuator(","));
+                            b.pitem(whitespace);
                             b.pop();
                         });
                         b.assertLengthIs(7);
@@ -517,11 +517,11 @@ function ArrayLiteral(p: Parser): ASTNode {
                         b.assertLengthIs(5);
                     },
                     () => {
-                        b.item(SpreadElement);
-                        b.item(whitespace);
-                        b.opt(() => {
-                            b.item(punctuator(","));
-                            b.item(whitespace);
+                        b.pitem(SpreadElement);
+                        b.pitem(whitespace);
+                        b.bopt(() => {
+                            b.pitem(punctuator(","));
+                            b.pitem(whitespace);
                             b.pop();
                         });
                         b.assertLengthIs(7);
@@ -556,7 +556,7 @@ function ArrayLiteral(p: Parser): ASTNode {
 function SpreadElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             punctuator("..."),
             whitespace,
@@ -576,16 +576,16 @@ function SpreadElement(p: Parser): ASTNode {
 function ObjectLiteral(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);             // 5
-        b.item(punctuator("{")); // 4
-        b.item(whitespace);      // 3
-        b.choice([               // 2 = properties
+        b.pitem(pos);             // 5
+        b.pitem(punctuator("{")); // 4
+        b.pitem(whitespace);      // 3
+        b.bchoice([               // 2 = properties
             () => {
-                b.item(PropertyDefinitionList);
-                b.item(whitespace);
-                b.opt(() => {
-                    b.item(punctuator(","));
-                    b.item(whitespace);
+                b.pitem(PropertyDefinitionList);
+                b.pitem(whitespace);
+                b.bopt(() => {
+                    b.pitem(punctuator(","));
+                    b.pitem(whitespace);
                     b.popAboveAndSet(1,0);
                 });
                 b.popAboveAndSet(2,b.get(2));
@@ -594,8 +594,8 @@ function ObjectLiteral(p: Parser): ASTNode {
                 b.push(new ListNode(new Range(p.pos,p.pos),[]));
             },
         ]);
-        b.item(punctuator("}")); // 1
-        b.item(pos);             // 0 = end
+        b.pitem(punctuator("}")); // 1
+        b.pitem(pos);             // 0 = end
         b.assertLengthIs(6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ObjectLiteral",[2]));
         b.assertLengthIs(1);
@@ -610,10 +610,10 @@ function PropertyDefinitionList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(PropertyDefinition);
+                b.pitem(PropertyDefinition);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -632,7 +632,7 @@ function PropertyDefinitionList(p: Parser): ASTNode {
 function PropertyDefinition_colon(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                  // 6 = start
             PropertyName,         // 5 = name
             whitespace,           // 4
@@ -683,7 +683,7 @@ function LiteralPropertyName(p: Parser): ASTNode {
 function ComputedPropertyName(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                  // 6 = start
             punctuator("["),      // 5
             whitespace,           // 4
@@ -704,7 +704,7 @@ function ComputedPropertyName(p: Parser): ASTNode {
 function CoverInitializedName(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 4 = start
             IdentifierReference, // 3 = ident
             whitespace,          // 2
@@ -723,7 +723,7 @@ function CoverInitializedName(p: Parser): ASTNode {
 function Initializer(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             punctuator("="),
             whitespace,
             AssignmentExpression,
@@ -756,7 +756,7 @@ function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"
 function MemberExpression_new(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,              // 6 = start
             keyword("new"),   // 5
             whitespace,       // 4
@@ -788,11 +788,11 @@ function MemberExpression_start(p: Parser): ASTNode {
 function MemberExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(MemberExpression_start);
-        b.repeatChoice([
+        b.pitem(pos);
+        b.pitem(MemberExpression_start);
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 6
                     punctuator("["), // 5
                     whitespace,      // 4
@@ -805,7 +805,7 @@ function MemberExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(7,makeNode(b,8,0,"MemberAccessExpr",[7,3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 5
                     punctuator("."), // 4
                     whitespace,      // 3
@@ -829,9 +829,9 @@ function MemberExpression(p: Parser): ASTNode {
 function SuperProperty(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 8 = start
                     keyword("super"), // 7
                     whitespace,       // 6
@@ -847,7 +847,7 @@ function SuperProperty(p: Parser): ASTNode {
                 b.assertLengthIs(1);
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 6 = start
                     keyword("super"), // 5
                     whitespace,       // 4
@@ -877,7 +877,7 @@ function MetaProperty(p: Parser): ASTNode {
 function NewTarget(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                  // 6
             keyword("new"),       // 5
             whitespace,           // 4
@@ -898,12 +898,12 @@ function NewTarget(p: Parser): ASTNode {
 function NewExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.item(MemberExpression);
+                b.pitem(MemberExpression);
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,            // 4 = start
                     keyword("new"), // 3
                     whitespace,     // 2
@@ -927,12 +927,12 @@ function NewExpression(p: Parser): ASTNode {
 function CallExpression_start(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.item(SuperCall);
+                b.pitem(SuperCall);
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 4 = start
                     MemberExpression, // 3 = fun
                     whitespace,       // 2
@@ -953,11 +953,11 @@ function CallExpression_start(p: Parser): ASTNode {
 function CallExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(CallExpression_start);
-        b.repeatChoice([
+        b.pitem(pos);
+        b.pitem(CallExpression_start);
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 2
                     Arguments,       // 1
                     pos,             // 0
@@ -966,7 +966,7 @@ function CallExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(3,makeNode(b,4,0,"Call",[3,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 6
                     punctuator("["), // 5
                     whitespace,      // 4
@@ -979,7 +979,7 @@ function CallExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(7,makeNode(b,8,0,"MemberAccessExpr",[7,3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 4
                     punctuator("."), // 3
                     whitespace,      // 2
@@ -1005,7 +1005,7 @@ function CallExpression(p: Parser): ASTNode {
 function SuperCall(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,              // 4 = start
             keyword("super"), // 3
             whitespace,       // 2
@@ -1024,9 +1024,9 @@ function SuperCall(p: Parser): ASTNode {
 function Arguments(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 5 = start
                     punctuator("("), // 4
                     whitespace,      // 3
@@ -1042,7 +1042,7 @@ function Arguments(p: Parser): ASTNode {
                 b.popAboveAndSet(5,new GenericNode(new Range(start,p.pos),"Arguments",[args]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 6 = start
                     punctuator("("), // 5
                     whitespace,      // 4
@@ -1065,9 +1065,9 @@ function Arguments(p: Parser): ASTNode {
 function ArgumentList_item(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,                  // 4 = start
                     punctuator("..."),    // 3
                     whitespace,           // 2
@@ -1078,7 +1078,7 @@ function ArgumentList_item(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
             },
             () => {
-                b.item(AssignmentExpression);
+                b.pitem(AssignmentExpression);
             },
         ]);
         b.assertLengthIs(1);
@@ -1093,10 +1093,10 @@ function ArgumentList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(ArgumentList_item);
+                b.pitem(ArgumentList_item);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -1128,11 +1128,11 @@ function LeftHandSideExpression(p: Parser): ASTNode {
 function PostfixExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(LeftHandSideExpression);
-        b.choice([
+        b.pitem(pos);
+        b.pitem(LeftHandSideExpression);
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespaceNoNewline,
                     punctuator("++"),
                     pos,
@@ -1141,7 +1141,7 @@ function PostfixExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"PostIncrement",[3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespaceNoNewline,
                     punctuator("--"),
                     pos,
@@ -1165,9 +1165,9 @@ function PostfixExpression(p: Parser): ASTNode {
 function UnaryExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,               // 4 = start
                     keyword("delete"), // 3
                     whitespace,        // 2
@@ -1178,7 +1178,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"Delete",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 4 = start
                     keyword("void"), // 3
                     whitespace,      // 2
@@ -1189,7 +1189,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"Void",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,               // 4 = start
                     keyword("typeof"), // 3
                     whitespace,        // 2
@@ -1200,7 +1200,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"TypeOf",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 4 = start
                     punctuator("++"), // 3
                     whitespace,       // 2
@@ -1211,7 +1211,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"PreIncrement",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 4 = start
                     punctuator("--"), // 3
                     whitespace,       // 2
@@ -1222,7 +1222,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"PreDecrement",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 4 = start
                     punctuator("+"), // 3
                     whitespace,      // 2
@@ -1233,7 +1233,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryPlus",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 4 = start
                     punctuator("-"), // 3
                     whitespace,      // 2
@@ -1244,7 +1244,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryMinus",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 4 = start
                     punctuator("~"), // 3
                     whitespace,      // 2
@@ -1255,7 +1255,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryBitwiseNot",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 4 = start
                     punctuator("!"), // 3
                     whitespace,      // 2
@@ -1266,7 +1266,7 @@ function UnaryExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryLogicalNot",[1]));
             },
             () => {
-                b.item(PostfixExpression);
+                b.pitem(PostfixExpression);
             },
         ]);
         b.assertLengthIs(1);
@@ -1281,11 +1281,11 @@ function UnaryExpression(p: Parser): ASTNode {
 function MultiplicativeExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                  // 6 = start
-        b.item(UnaryExpression);      // 5 = left
-        b.repeatChoice([
+        b.pitem(pos);                  // 6 = start
+        b.pitem(UnaryExpression);      // 5 = left
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,       // 4
                     punctuator("*"),  // 3
                     whitespace,       // 2
@@ -1295,7 +1295,7 @@ function MultiplicativeExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"Multiply",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,       // 4
                     punctuator("/"),  // 3
                     whitespace,       // 2
@@ -1305,7 +1305,7 @@ function MultiplicativeExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"Divide",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,       // 4
                     punctuator("%"),  // 3
                     whitespace,       // 2
@@ -1330,11 +1330,11 @@ function MultiplicativeExpression(p: Parser): ASTNode {
 function AdditiveExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                          // 6 = start
-        b.item(MultiplicativeExpression);     // 5 = left
-        b.repeatChoice([
+        b.pitem(pos);                          // 6 = start
+        b.pitem(MultiplicativeExpression);     // 5 = left
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,               // 4
                     punctuator("+"),          // 3
                     whitespace,               // 2
@@ -1344,7 +1344,7 @@ function AdditiveExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"Add",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,               // 4
                     punctuator("-"),          // 3
                     whitespace,               // 2
@@ -1368,11 +1368,11 @@ function AdditiveExpression(p: Parser): ASTNode {
 function ShiftExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                    // 6 = start
-        b.item(AdditiveExpression);     // 5 = left
-        b.repeatChoice([
+        b.pitem(pos);                    // 6 = start
+        b.pitem(AdditiveExpression);     // 5 = left
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,         // 4
                     punctuator("<<"),   // 3
                     whitespace,         // 2
@@ -1382,7 +1382,7 @@ function ShiftExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"LeftShift",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,         // 4
                     punctuator(">>>"),  // 3
                     whitespace,         // 2
@@ -1392,7 +1392,7 @@ function ShiftExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"UnsignedRightShift",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,         // 4
                     punctuator(">>"),   // 3
                     whitespace,         // 2
@@ -1417,11 +1417,11 @@ function ShiftExpression(p: Parser): ASTNode {
 function RelationalExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);             // 6 = start
-        b.item(ShiftExpression); // 5 = left
-        b.repeatChoice([
+        b.pitem(pos);             // 6 = start
+        b.pitem(ShiftExpression); // 5 = left
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,       // 4
                     punctuator("<="), // 3
                     whitespace,       // 2
@@ -1433,7 +1433,7 @@ function RelationalExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,       // 4
                     punctuator(">="), // 3
                     whitespace,       // 2
@@ -1445,7 +1445,7 @@ function RelationalExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 4
                     punctuator("<"), // 3
                     whitespace,      // 2
@@ -1457,7 +1457,7 @@ function RelationalExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 4
                     punctuator(">"), // 3
                     whitespace,      // 2
@@ -1469,7 +1469,7 @@ function RelationalExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,            // 4
                     keyword("instanceof"), // 3
                     whitespace,            // 2
@@ -1481,7 +1481,7 @@ function RelationalExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,      // 4
                     keyword("in"),   // 3
                     whitespace,      // 2
@@ -1507,11 +1507,11 @@ function RelationalExpression(p: Parser): ASTNode {
 function EqualityExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                      // 6 = start
-        b.item(RelationalExpression);     // 5 = left
-        b.repeatChoice([
+        b.pitem(pos);                      // 6 = start
+        b.pitem(RelationalExpression);     // 5 = left
+        b.brepeatChoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("==="),    // 3
                     whitespace,           // 2
@@ -1523,7 +1523,7 @@ function EqualityExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("!=="),    // 3
                     whitespace,           // 2
@@ -1535,7 +1535,7 @@ function EqualityExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("=="),     // 3
                     whitespace,           // 2
@@ -1547,7 +1547,7 @@ function EqualityExpression(p: Parser): ASTNode {
                 b.assertLengthIs(2);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("!="),     // 3
                     whitespace,           // 2
@@ -1573,10 +1573,10 @@ function EqualityExpression(p: Parser): ASTNode {
 function BitwiseANDExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                // 6 = start
-        b.item(EqualityExpression); // 5 = left
-        b.repeat(() => {
-            b.items([
+        b.pitem(pos);                // 6 = start
+        b.pitem(EqualityExpression); // 5 = left
+        b.brepeat(() => {
+            b.pitems([
                 whitespace,         // 4
                 punctuator("&"),    // 3
                 whitespace,         // 2
@@ -1598,10 +1598,10 @@ function BitwiseANDExpression(p: Parser): ASTNode {
 function BitwiseXORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                  // 6 = start
-        b.item(BitwiseANDExpression); // 5 = left
-        b.repeat(() => {
-            b.items([
+        b.pitem(pos);                  // 6 = start
+        b.pitem(BitwiseANDExpression); // 5 = left
+        b.brepeat(() => {
+            b.pitems([
                 whitespace,           // 4
                 punctuator("^"),      // 3
                 whitespace,           // 2
@@ -1622,10 +1622,10 @@ function BitwiseXORExpression(p: Parser): ASTNode {
 function BitwiseORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                  // 6 = start
-        b.item(BitwiseXORExpression); // 5 = left
-        b.repeat(() => {
-            b.items([
+        b.pitem(pos);                  // 6 = start
+        b.pitem(BitwiseXORExpression); // 5 = left
+        b.brepeat(() => {
+            b.pitems([
                 whitespace,           // 4
                 punctuator("|"),      // 3
                 whitespace,           // 2
@@ -1648,10 +1648,10 @@ function BitwiseORExpression(p: Parser): ASTNode {
 function LogicalANDExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                 // 6 = start
-        b.item(BitwiseORExpression); // 5 = left
-        b.repeat(() => {
-            b.items([
+        b.pitem(pos);                 // 6 = start
+        b.pitem(BitwiseORExpression); // 5 = left
+        b.brepeat(() => {
+            b.pitems([
                 whitespace,          // 4
                 punctuator("&&"),    // 3
                 whitespace,          // 2
@@ -1672,10 +1672,10 @@ function LogicalANDExpression(p: Parser): ASTNode {
 function LogicalORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                  // 6 = start
-        b.item(LogicalANDExpression); // 5 = left
-        b.repeat(() => {
-            b.items([
+        b.pitem(pos);                  // 6 = start
+        b.pitem(LogicalANDExpression); // 5 = left
+        b.brepeat(() => {
+            b.pitems([
                 whitespace,           // 4
                 punctuator("||"),     // 3
                 whitespace,           // 2
@@ -1698,11 +1698,11 @@ function LogicalORExpression(p: Parser): ASTNode {
 function ConditionalExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                      // 10 = start
-        b.item(LogicalORExpression);      // 9 = condition
-        b.choice([
+        b.pitem(pos);                      // 10 = start
+        b.pitem(LogicalORExpression);      // 9 = condition
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 8
                     punctuator("?"),      // 7
                     whitespace,           // 6
@@ -1731,11 +1731,11 @@ function ConditionalExpression(p: Parser): ASTNode {
 function AssignmentExpression_plain(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                      // 6 = start
-        b.item(LeftHandSideExpression);   // 5 = left
-        b.choice([
+        b.pitem(pos);                      // 6 = start
+        b.pitem(LeftHandSideExpression);   // 5 = left
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("="),      // 3
                     whitespace,           // 2
@@ -1745,7 +1745,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"Assign",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("*="),     // 3
                     whitespace,           // 2
@@ -1755,7 +1755,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignMultiply",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("/="),     // 3
                     whitespace,           // 2
@@ -1765,7 +1765,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignDivide",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("%="),     // 3
                     whitespace,           // 2
@@ -1775,7 +1775,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignModulo",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("+="),     // 3
                     whitespace,           // 2
@@ -1785,7 +1785,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignAdd",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("-="),     // 3
                     whitespace,           // 2
@@ -1795,7 +1795,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignSubtract",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("<<="),    // 3
                     whitespace,           // 2
@@ -1805,7 +1805,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignLeftShift",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator(">>="),    // 3
                     whitespace,           // 2
@@ -1815,7 +1815,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignSignedRightShift",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator(">>>="),   // 3
                     whitespace,           // 2
@@ -1825,7 +1825,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignUnsignedRightShift",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("&="),     // 3
                     whitespace,           // 2
@@ -1835,7 +1835,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseAND",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("^="),     // 3
                     whitespace,           // 2
@@ -1845,7 +1845,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseXOR",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,           // 4
                     punctuator("|="),     // 3
                     whitespace,           // 2
@@ -1881,10 +1881,10 @@ function AssignmentExpression(p: Parser): ASTNode {
 function Expression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);                  // 6 = start
-        b.item(AssignmentExpression); // 5 = left
-        b.repeat(() => {
-            b.items([
+        b.pitem(pos);                  // 6 = start
+        b.pitem(AssignmentExpression); // 5 = left
+        b.brepeat(() => {
+            b.pitems([
                 whitespace,           // 4
                 punctuator(","),      // 3
                 whitespace,           // 2
@@ -1965,23 +1965,23 @@ function BlockStatement(p: Parser): ASTNode {
 function Block(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);             // 5
-        b.item(punctuator("{")); // 4
-        b.item(whitespace);      // 3
-        b.choice([               // 2 = statements
+        b.pitem(pos);             // 5
+        b.pitem(punctuator("{")); // 4
+        b.pitem(whitespace);      // 3
+        b.bchoice([               // 2 = statements
             () => {
-                b.item(StatementList);
-                b.item(whitespace);
+                b.pitem(StatementList);
+                b.pitem(whitespace);
                 b.popAboveAndSet(1,b.get(1));
             },
             () => {
-                b.item(pos);
+                b.pitem(pos);
                 const position = checkNumber(b.get(0));
                 b.popAboveAndSet(0,new ListNode(new Range(position,position),[]));
             },
         ]);
-        b.item(punctuator("}")); // 1
-        b.item(pos);             // 0
+        b.pitem(punctuator("}")); // 1
+        b.pitem(pos);             // 0
         b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
@@ -1995,10 +1995,10 @@ function StatementList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(StatementListItem);
+                b.pitem(StatementListItem);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     StatementListItem,
                 ]);
@@ -2026,9 +2026,9 @@ function StatementListItem(p: Parser): ASTNode {
 function LexicalDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 6 = start
                     keyword("let"),   // 5
                     whitespace,       // 4
@@ -2040,7 +2040,7 @@ function LexicalDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(6,makeNode(b,6,0,"Let",[3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 6 = start
                     keyword("const"), // 5
                     whitespace,       // 4
@@ -2064,10 +2064,10 @@ function BindingList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(LexicalBinding);
+                b.pitem(LexicalBinding);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -2086,14 +2086,14 @@ function BindingList(p: Parser): ASTNode {
 function LexicalBinding_identifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);               // 3 = start
-        b.item(BindingIdentifier); // 2 = identifier
-        b.opt(() => {              // 1 = initializer
-            b.item(whitespace);
-            b.item(Initializer);
+        b.pitem(pos);               // 3 = start
+        b.pitem(BindingIdentifier); // 2 = identifier
+        b.bopt(() => {              // 1 = initializer
+            b.pitem(whitespace);
+            b.pitem(Initializer);
             b.popAboveAndSet(1,b.get(0));
         });
-        b.item(pos);               // 0 = end
+        b.pitem(pos);               // 0 = end
         b.assertLengthIs(4);
         b.popAboveAndSet(3,makeNode(b,3,0,"LexicalIdentifierBinding",[2,1]));
         b.assertLengthIs(1);
@@ -2106,7 +2106,7 @@ function LexicalBinding_identifier(p: Parser): ASTNode {
 function LexicalBinding_pattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,            // 4 = start
             BindingPattern, // 3 = pattern
             whitespace,     // 2
@@ -2136,7 +2136,7 @@ function LexicalBinding(p: Parser): ASTNode {
 function VariableStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                     // 6 = start
             keyword("var"),          // 5
             whitespace,              // 4
@@ -2158,10 +2158,10 @@ function VariableDeclarationList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(VariableDeclaration);
+                b.pitem(VariableDeclaration);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -2180,11 +2180,11 @@ function VariableDeclarationList(p: Parser): ASTNode {
 function VariableDeclaration_identifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(BindingIdentifier);
-        b.choice([
+        b.pitem(pos);
+        b.pitem(BindingIdentifier);
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     Initializer,
                     pos,
@@ -2193,8 +2193,8 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarIdentifier",[3,1]));
             },
             () => {
-                b.item(value(null));
-                b.item(pos);
+                b.pitem(value(null));
+                b.pitem(pos);
                 b.assertLengthIs(4);
                 b.popAboveAndSet(3,makeNode(b,3,0,"VarIdentifier",[2,1]));
             },
@@ -2209,7 +2209,7 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
 function VariableDeclaration_pattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,            // 4 = start
             BindingPattern, // 3 = pattern
             whitespace,     // 2
@@ -2248,17 +2248,17 @@ function BindingPattern(p: Parser): ASTNode {
 function ObjectBindingPattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);              // 6 = start
-        b.item(punctuator("{"));  // 5
-        b.item(whitespace);       // 4
-        b.item(pos);              // 3
-        b.choice([                // 2 = properties
+        b.pitem(pos);              // 6 = start
+        b.pitem(punctuator("{"));  // 5
+        b.pitem(whitespace);       // 4
+        b.pitem(pos);              // 3
+        b.bchoice([                // 2 = properties
             () => {
-                b.item(BindingPropertyList),
-                b.item(whitespace),
-                b.opt(() => {
-                    b.item(punctuator(","));
-                    b.item(whitespace);
+                b.pitem(BindingPropertyList),
+                b.pitem(whitespace),
+                b.bopt(() => {
+                    b.pitem(punctuator(","));
+                    b.pitem(whitespace);
                     b.popAboveAndSet(1,null);
                 });
                 b.popAboveAndSet(2,b.get(2));
@@ -2267,8 +2267,8 @@ function ObjectBindingPattern(p: Parser): ASTNode {
                 b.push(new ListNode(new Range(p.pos,p.pos),[]));
             },
         ]);
-        b.item(punctuator("}"));  // 1
-        b.item(pos);              // 0 = end
+        b.pitem(punctuator("}"));  // 1
+        b.pitem(pos);              // 0 = end
         b.assertLengthIs(7);
         const start = checkNumber(b.get(6));
         const end = checkNumber(b.get(0));
@@ -2284,19 +2284,19 @@ function ObjectBindingPattern(p: Parser): ASTNode {
 function ArrayBindingPattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 7 = start
             punctuator("["),     // 6
             whitespace,          // 5
             BindingElementList,  // 4 = elements
             whitespace,          // 3
         ]);
-        b.opt(() => {            // 2 = rest
-            b.item(BindingRestElement);
-            b.item(whitespace);
+        b.bopt(() => {            // 2 = rest
+            b.pitem(BindingRestElement);
+            b.pitem(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.items([
+        b.pitems([
             punctuator("]"),     // 1
             pos,                 // 0 = end
         ]);
@@ -2314,10 +2314,10 @@ function BindingPropertyList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(BindingProperty);
+                b.pitem(BindingProperty);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -2338,17 +2338,17 @@ function BindingElementList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.opt(() => {
-                    b.item(pos);
-                    b.item(punctuator(","));
-                    b.item(pos);
+                b.bopt(() => {
+                    b.pitem(pos);
+                    b.pitem(punctuator(","));
+                    b.pitem(pos);
                     b.popAboveAndSet(2,makeNode(b,2,0,"Elision",[]));
                 });
             },
             () => {
-                b.choice([
+                b.bchoice([
                     () => {
-                        b.items([
+                        b.pitems([
                             whitespace,      // 3
                             pos,             // 2 = before
                             punctuator(","), // 1
@@ -2357,11 +2357,11 @@ function BindingElementList(p: Parser): ASTNode {
                         b.popAboveAndSet(3,makeNode(b,2,0,"Elision",[]));
                     },
                     () => {
-                        b.item(whitespace);
-                        b.item(BindingElement);
-                        b.opt(() => {
-                            b.item(whitespace);
-                            b.item(punctuator(","));
+                        b.pitem(whitespace);
+                        b.pitem(BindingElement);
+                        b.bopt(() => {
+                            b.pitem(whitespace);
+                            b.pitem(punctuator(","));
                             b.pop();
                         });
                         b.popAboveAndSet(2,b.get(1));
@@ -2379,9 +2379,9 @@ function BindingElementList(p: Parser): ASTNode {
 function BindingProperty(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 6 = start
                     PropertyName,    // 5 = name
                     whitespace,      // 4
@@ -2396,7 +2396,7 @@ function BindingProperty(p: Parser): ASTNode {
             () => {
                 // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
                 // and PropertyName will match an identifier at the start of a colon binding
-                b.item(SingleNameBinding);
+                b.pitem(SingleNameBinding);
             },
         ]);
         b.assertLengthIs(1);
@@ -2409,16 +2409,16 @@ function BindingProperty(p: Parser): ASTNode {
 function BindingElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.item(SingleNameBinding);
+                b.pitem(SingleNameBinding);
             },
             () => {
-                b.item(pos);
-                b.item(BindingPattern);
-                b.choice([
+                b.pitem(pos);
+                b.pitem(BindingPattern);
+                b.bchoice([
                     () => {
-                        b.items([
+                        b.pitems([
                             whitespace,
                             Initializer,
                             pos,
@@ -2442,11 +2442,11 @@ function BindingElement(p: Parser): ASTNode {
 function SingleNameBinding(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(BindingIdentifier);
-        b.choice([
+        b.pitem(pos);
+        b.pitem(BindingIdentifier);
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     Initializer,
                     pos,
@@ -2469,7 +2469,7 @@ function SingleNameBinding(p: Parser): ASTNode {
 function BindingRestElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 4 = start
             punctuator("..."), // 3
             whitespace,        // 2
@@ -2490,7 +2490,7 @@ function BindingRestElement(p: Parser): ASTNode {
 function EmptyStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             punctuator(";"),
             pos,
@@ -2527,7 +2527,7 @@ function ExpressionStatement(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,             // 4 = start
             Expression,      // 3 = expr
             whitespace,      // 2
@@ -2548,7 +2548,7 @@ function ExpressionStatement(p: Parser): ASTNode {
 function IfStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 11 = start
             keyword("if"),     // 10
             whitespace,        // 9
@@ -2560,8 +2560,8 @@ function IfStatement(p: Parser): ASTNode {
             whitespace,        // 3
             Statement,         // 2 = trueBranch
         ]);
-        b.opt(() => {          // 1 = falseBranch
-            b.items([
+        b.bopt(() => {          // 1 = falseBranch
+            b.pitems([
                 whitespace,
                 keyword("else"),
                 whitespace,
@@ -2569,7 +2569,7 @@ function IfStatement(p: Parser): ASTNode {
             ]);
             b.popAboveAndSet(3,b.get(0));
         });
-        b.item(pos);           // 0 = end
+        b.pitem(pos);           // 0 = end
         b.assertLengthIs(12);
         b.popAboveAndSet(11,makeNode(b,11,0,"IfStatement",[6,2,1]));
         b.assertLengthIs(1);
@@ -2584,7 +2584,7 @@ function IfStatement(p: Parser): ASTNode {
 function IterationStatement_do(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,              // 14
             keyword("do"),    // 13
             whitespace,       // 12
@@ -2613,7 +2613,7 @@ function IterationStatement_do(p: Parser): ASTNode {
 function IterationStatement_while(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                // 10 = start
             keyword("while"),   // 9
             whitespace,         // 8
@@ -2642,7 +2642,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                                                            // 14 = start
             keyword("for"),                                                 // 13
             whitespace,                                                     // 12
@@ -2650,9 +2650,9 @@ function IterationStatement_for_c(p: Parser): ASTNode {
             whitespace,                                                     // 10
         ]);
         b.assertLengthIs(5);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
                     Expression,
@@ -2663,7 +2663,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
                 b.popAboveAndSet(5,b.get(3));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,                     // 7 = start2
                     keyword("var"),          // 6
                     whitespace,              // 5
@@ -2676,7 +2676,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
                 b.popAboveAndSet(7,makeNode(b,7,3,"Var",[4]));
             },
             () => {
-                b.items([
+                b.pitems([
                     LexicalDeclaration,
                     whitespace,
                 ]);
@@ -2684,26 +2684,26 @@ function IterationStatement_for_c(p: Parser): ASTNode {
             },
             () => {
                 // initializer part can be empty, but need to distinguish this from an error
-                b.items([
+                b.pitems([
                     punctuator(";"),
                 ]);
                 b.popAboveAndSet(0,null);
             },
         ]);
         b.assertLengthIs(6);
-        b.item(opt(Expression)); // 8 = condition
-        b.item(whitespace);      // 7
-        b.item(punctuator(";")); // 6
-        b.item(whitespace);      // 5
-        b.opt(() => {            // 4 = update
-            b.item(Expression);
-            b.item(whitespace);
+        b.pitem(opt(Expression)); // 8 = condition
+        b.pitem(whitespace);      // 7
+        b.pitem(punctuator(";")); // 6
+        b.pitem(whitespace);      // 5
+        b.bopt(() => {            // 4 = update
+            b.pitem(Expression);
+            b.pitem(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.item(punctuator(")")); // 3
-        b.item(whitespace);      // 2
-        b.item(Statement);       // 1 = body
-        b.item(pos);             // 0 = end
+        b.pitem(punctuator(")")); // 3
+        b.pitem(whitespace);      // 2
+        b.pitem(Statement);       // 1 = body
+        b.pitem(pos);             // 0 = end
         b.assertLengthIs(15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
         b.assertLengthIs(1);
@@ -2720,7 +2720,7 @@ function IterationStatement_for_in(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                                           // 14 = start
             keyword("for"),                                // 13
             whitespace,                                    // 12
@@ -2728,9 +2728,9 @@ function IterationStatement_for_in(p: Parser): ASTNode {
             whitespace,                                    // 10
         ]);
         b.assertLengthIs(5);
-        b.choice([ // 9 = binding
+        b.bchoice([ // 9 = binding
             () => {
-                b.items([
+                b.pitems([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
                     LeftHandSideExpression,
@@ -2738,7 +2738,7 @@ function IterationStatement_for_in(p: Parser): ASTNode {
                 b.popAboveAndSet(2,b.get(0));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,
                     keyword("var"),
                     whitespace,
@@ -2748,11 +2748,11 @@ function IterationStatement_for_in(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
             },
             () => {
-                b.item(ForDeclaration);
+                b.pitem(ForDeclaration);
             }
         ]);
         b.assertLengthIs(6);
-        b.items([
+        b.pitems([
             whitespace,                                    // 8
             keyword("in"),                                 // 7
             whitespace,                                    // 6
@@ -2779,7 +2779,7 @@ function IterationStatement_for_of(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                                           // 14 = start
             keyword("for"),                                // 13
             whitespace,                                    // 12
@@ -2787,9 +2787,9 @@ function IterationStatement_for_of(p: Parser): ASTNode {
             whitespace,                                    // 10
         ]);
         b.assertLengthIs(5);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
                     LeftHandSideExpression
@@ -2797,7 +2797,7 @@ function IterationStatement_for_of(p: Parser): ASTNode {
                 b.popAboveAndSet(2,b.get(0));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,
                     keyword("var"),
                     whitespace,
@@ -2807,11 +2807,11 @@ function IterationStatement_for_of(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
             },
             () => {
-                b.item(ForDeclaration);
+                b.pitem(ForDeclaration);
             },
         ]);
         b.assertLengthIs(6);
-        b.items([
+        b.pitems([
             whitespace,                                    // 8
             keyword("of"),                                 // 7
             whitespace,                                    // 6
@@ -2854,9 +2854,9 @@ function IterationStatement(p: Parser): ASTNode {
 function ForDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 4 = start
                     keyword("let"),   // 3
                     whitespace,       // 2
@@ -2867,7 +2867,7 @@ function ForDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"LetForDeclaration",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 4 = start
                     keyword("const"), // 3
                     whitespace,       // 2
@@ -2899,9 +2899,9 @@ function ForBinding(p: Parser): ASTNode {
 function ContinueStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,                 // 5 = start
                     keyword("continue"), // 4
                     whitespace,          // 3
@@ -2913,7 +2913,7 @@ function ContinueStatement(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,5,0,"ContinueStatement",[2]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,                 // 6 = start
                     keyword("continue"), // 5
                     whitespaceNoNewline, // 4
@@ -2938,9 +2938,9 @@ function ContinueStatement(p: Parser): ASTNode {
 function BreakStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,              // 5 = start
                     keyword("break"), // 4
                     whitespace,       // 3
@@ -2952,7 +2952,7 @@ function BreakStatement(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,5,0,"BreakStatement",[2]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,                 // 6 = start
                     keyword("break"),    // 5
                     whitespaceNoNewline, // 4
@@ -2977,9 +2977,9 @@ function BreakStatement(p: Parser): ASTNode {
 function ReturnStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,               // 5 = start
                     keyword("return"), // 4
                     whitespace,        // 3
@@ -2991,7 +2991,7 @@ function ReturnStatement(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,5,0,"ReturnStatement",[2]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,                 // 6 = start
                     keyword("return"),   // 5
                     whitespaceNoNewline, // 4
@@ -3016,7 +3016,7 @@ function ReturnStatement(p: Parser): ASTNode {
 function WithStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,             // 10 = start
             keyword("with"), // 9
             whitespace,      // 8
@@ -3043,7 +3043,7 @@ function WithStatement(p: Parser): ASTNode {
 function SwitchStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 10 = start
             keyword("switch"), // 9
             whitespace,        // 8
@@ -3068,22 +3068,22 @@ function SwitchStatement(p: Parser): ASTNode {
 function CaseBlock_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,             // 7
             punctuator("{"), // 6
             whitespace,      // 5
             pos,             // 4 = midpos
         ]);
-        b.choice([           // 3 = clauses
+        b.bchoice([           // 3 = clauses
             () => {
-                b.item(CaseClauses);
+                b.pitem(CaseClauses);
             },
             () => {
                 const midpos = checkNumber(b.get(0));
                 b.push(new ListNode(new Range(midpos,midpos),[]));
             },
         ]);
-        b.items([
+        b.pitems([
             whitespace,      // 2
             punctuator("}"), // 1
             pos,             // 0
@@ -3100,7 +3100,7 @@ function CaseBlock_1(p: Parser): ASTNode {
 function CaseBlock_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,              // 10 = start
             punctuator("{"),  // 9
             whitespace,       // 8
@@ -3136,10 +3136,10 @@ function CaseClauses(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(CaseClause);
+                b.pitem(CaseClause);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     CaseClause,
                 ]);
@@ -3156,7 +3156,7 @@ function CaseClauses(p: Parser): ASTNode {
 function CaseClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,             // 8 = start
             keyword("case"), // 7
             whitespace,      // 6
@@ -3179,7 +3179,7 @@ function CaseClause(p: Parser): ASTNode {
 function DefaultClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                // 6 = start
             keyword("default"), // 5
             whitespace,         // 4
@@ -3205,7 +3205,7 @@ function DefaultClause(p: Parser): ASTNode {
 function LabelledStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,             // 6 = start
             LabelIdentifier, // 5 = ident
             whitespace,      // 4
@@ -3237,7 +3237,7 @@ function LabelledItem(p: Parser): ASTNode {
 function ThrowStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 6 = start
             keyword("throw"),    // 5
             whitespaceNoNewline, // 4
@@ -3260,27 +3260,27 @@ function ThrowStatement(p: Parser): ASTNode {
 function TryStatement(p: Parser): ASTNode {
     return p.attempt((start) => {
         const b = new Builder(p);
-        b.item(pos);                   // 7 = start
-        b.item(keyword("try"));        // 6
-        b.item(whitespace);            // 5
-        b.item(Block);                 // 4 = tryBlock
-        b.choice([
+        b.pitem(pos);                   // 7 = start
+        b.pitem(keyword("try"));        // 6
+        b.pitem(whitespace);            // 5
+        b.pitem(Block);                 // 4 = tryBlock
+        b.bchoice([
             () => {
-                b.item(whitespace);    // 3
-                b.item(value(null));   // 2 = catchBlock
-                b.item(Finally);       // 1 = finallyBlock
+                b.pitem(whitespace);    // 3
+                b.pitem(value(null));   // 2 = catchBlock
+                b.pitem(Finally);       // 1 = finallyBlock
             },
             () => {
-                b.item(whitespace);    // 3
-                b.item(Catch);         // 2 = catchBlock
-                b.opt(() => {          // 1 = finallyBlock
-                    b.item(whitespace);
-                    b.item(Finally);
+                b.pitem(whitespace);    // 3
+                b.pitem(Catch);         // 2 = catchBlock
+                b.bopt(() => {          // 1 = finallyBlock
+                    b.pitem(whitespace);
+                    b.pitem(Finally);
                     b.popAboveAndSet(1,b.get(0));
                 });
             },
         ]);
-        b.item(pos);                   // 0 = end
+        b.pitem(pos);                   // 0 = end
         b.assertLengthIs(8);
         b.popAboveAndSet(7,makeNode(b,7,0,"TryStatement",[4,2,1]));
         b.assertLengthIs(1);
@@ -3293,7 +3293,7 @@ function TryStatement(p: Parser): ASTNode {
 function Catch(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,              // 10 = start
             keyword("catch"), // 9
             whitespace,       // 8
@@ -3318,7 +3318,7 @@ function Catch(p: Parser): ASTNode {
 function Finally(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                // 4
             keyword("finally"), // 3
             whitespace,         // 2
@@ -3348,7 +3348,7 @@ function CatchParameter(p: Parser): ASTNode {
 function DebuggerStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 4
             keyword("debugger"), // 3
             whitespace,          // 2
@@ -3369,7 +3369,7 @@ function DebuggerStatement(p: Parser): ASTNode {
 function FunctionDeclaration_named(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 16 = start
             keyword("function"), // 15
             whitespace,          // 14
@@ -3400,7 +3400,7 @@ function FunctionDeclaration_named(p: Parser): ASTNode {
 function FunctionDeclaration_unnamed(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 15 = start
             keyword("function"), // 14
             whitespace,          // 13
@@ -3452,17 +3452,17 @@ function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boo
 function FunctionExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 15 = start
             keyword("function"), // 14
             whitespace,          // 13
         ]);
-        b.opt(() => {
-            b.item(BindingIdentifier);
-            b.item(whitespace);
+        b.bopt(() => {
+            b.pitem(BindingIdentifier);
+            b.pitem(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.items([
+        b.pitems([
             punctuator("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
@@ -3494,12 +3494,12 @@ function StrictFormalParameters(p: Parser): ASTNode {
 function FormalParameters(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.item(FormalParameterList);
+                b.pitem(FormalParameterList);
             },
             () => {
-                b.item(pos);
+                b.pitem(pos);
                 b.popAboveAndSet(0,makeNode(b,0,0,"FormalParameters1",[]));
             },
         ]);
@@ -3513,9 +3513,9 @@ function FormalParameters(p: Parser): ASTNode {
 function FormalParameterList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,                   // 2 = start
                     FunctionRestParameter, // 1 = rest
                     pos,                   // 0 = end
@@ -3524,11 +3524,11 @@ function FormalParameterList(p: Parser): ASTNode {
                 b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters2",[1]));
             },
             () => {
-                b.item(pos);           // 3 = start
-                b.item(FormalsList);   // 2 = formals
-                b.choice([
+                b.pitem(pos);           // 3 = start
+                b.pitem(FormalsList);   // 2 = formals
+                b.bchoice([
                     () => {
-                        b.items([
+                        b.pitems([
                             whitespace,
                             punctuator(","),
                             whitespace,
@@ -3539,7 +3539,7 @@ function FormalParameterList(p: Parser): ASTNode {
                         b.popAboveAndSet(6,makeNode(b,6,0,"FormalParameters4",[5,1]));
                     },
                     () => {
-                        b.item(pos);
+                        b.pitem(pos);
                         b.assertLengthIs(3);
                         b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters3",[1]));
                     },
@@ -3558,10 +3558,10 @@ function FormalsList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(FormalParameter);
+                b.pitem(FormalParameter);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -3609,7 +3609,7 @@ function FunctionStatementList(p: Parser): ASTNode {
 function ArrowFunction(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 6 = start
             ArrowParameters,     // 5 = params
             whitespaceNoNewline, // 4
@@ -3647,7 +3647,7 @@ function ConciseBody_1(p: Parser): ASTNode {
 function ConciseBody_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             punctuator("{"), // 4
             whitespace,      // 3
             FunctionBody,    // 2
@@ -3675,7 +3675,7 @@ function ConciseBody(p: Parser): ASTNode {
 function ArrowFormalParameters(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             punctuator("("),        // 4
             whitespace,             // 3
             StrictFormalParameters, // 2
@@ -3696,7 +3696,7 @@ function ArrowFormalParameters(p: Parser): ASTNode {
 function MethodDefinition_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                    // 14 = start
             PropertyName,           // 13 = name
             whitespace,             // 12
@@ -3731,7 +3731,7 @@ function MethodDefinition_2(p: Parser): ASTNode {
 function MethodDefinition_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 14 = start
             identifier("get"), // 13 "get" is not a reserved word, so we can't use keyword here
             whitespace,        // 12
@@ -3760,7 +3760,7 @@ function MethodDefinition_3(p: Parser): ASTNode {
 function MethodDefinition_4(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                      // 16 = start
             identifier("set"),        // 15
             whitespace,               // 14
@@ -3810,7 +3810,7 @@ function PropertySetParameterList(p: Parser): ASTNode {
 function GeneratorMethod(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                    // 16 = start
             punctuator("*"),        // 15
             whitespace,             // 14
@@ -3841,7 +3841,7 @@ function GeneratorMethod(p: Parser): ASTNode {
 function GeneratorDeclaration_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 18 = start
             keyword("function"), // 17
             whitespace,          // 16
@@ -3874,7 +3874,7 @@ function GeneratorDeclaration_1(p: Parser): ASTNode {
 function GeneratorDeclaration_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 16 = start
             keyword("function"), // 15
             whitespace,          // 14
@@ -3928,21 +3928,21 @@ function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
 function GeneratorExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                 // 17 = start
             keyword("function"), // 16
             whitespace,          // 15
             punctuator("*"),     // 14
             whitespace,          // 13
         ]);
-        b.opt(() => {            // 12 = ident
-            b.items([
+        b.bopt(() => {            // 12 = ident
+            b.pitems([
                 BindingIdentifier,
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.items([
+        b.pitems([
             punctuator("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
@@ -3974,7 +3974,7 @@ function GeneratorBody(p: Parser): ASTNode {
 function YieldExpression_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                  // 6
             keyword("yield"),     // 5
             whitespaceNoNewline,  // 4
@@ -3995,7 +3995,7 @@ function YieldExpression_1(p: Parser): ASTNode {
 function YieldExpression_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                  // 4
             keyword("yield"),     // 3
             whitespaceNoNewline,  // 2
@@ -4014,7 +4014,7 @@ function YieldExpression_2(p: Parser): ASTNode {
 function YieldExpression_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             keyword("yield"),
             pos,
@@ -4043,7 +4043,7 @@ function YieldExpression(p: Parser): ASTNode {
 function ClassDeclaration_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 6 = start
             keyword("class"),  // 5
             whitespace,        // 4
@@ -4064,7 +4064,7 @@ function ClassDeclaration_1(p: Parser): ASTNode {
 function ClassDeclaration_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,              // 5
             keyword("class"), // 4
             whitespace,       // 3
@@ -4106,18 +4106,18 @@ function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolea
 function ClassExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);              // 5
-        b.item(keyword("class")); // 4
-        b.item(whitespace);       // 3
-        b.opt(() => {             // 2
-            b.items([
+        b.pitem(pos);              // 5
+        b.pitem(keyword("class")); // 4
+        b.pitem(whitespace);       // 3
+        b.bopt(() => {             // 2
+            b.pitems([
                 BindingIdentifier,
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.item(ClassTail);        // 1
-        b.item(pos);              // 0
+        b.pitem(ClassTail);        // 1
+        b.pitem(pos);              // 0
         b.assertLengthIs(6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassExpression",[2,1]));
         b.assertLengthIs(1);
@@ -4130,31 +4130,31 @@ function ClassExpression(p: Parser): ASTNode {
 function ClassTail(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);               // 6 = start
-        b.opt(() => {              // 5 = heritage
-            b.items([
+        b.pitem(pos);               // 6 = start
+        b.bopt(() => {              // 5 = heritage
+            b.pitems([
                 ClassHeritage,
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.item(punctuator("{"));   // 4
-        b.item(whitespace);        // 3
-        b.choice([                 // 2 = body
+        b.pitem(punctuator("{"));   // 4
+        b.pitem(whitespace);        // 3
+        b.bchoice([                 // 2 = body
             () => {
-                b.items([
+                b.pitems([
                     ClassBody,
                     whitespace,
                 ]);
                 b.popAboveAndSet(1,b.get(1));
             },
             () => {
-                b.item(pos);
+                b.pitem(pos);
                 b.popAboveAndSet(0,makeEmptyListNode(b,0,0));
             },
         ]);
-        b.item(punctuator("}"));   // 1
-        b.item(pos);               // 0 = end
+        b.pitem(punctuator("}"));   // 1
+        b.pitem(pos);               // 0 = end
         b.assertLengthIs(7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ClassTail",[5,2]));
         b.assertLengthIs(1);
@@ -4167,7 +4167,7 @@ function ClassTail(p: Parser): ASTNode {
 function ClassHeritage(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                    // 4 = start
             keyword("extends"),     // 3
             whitespace,             // 2
@@ -4194,11 +4194,11 @@ function ClassElementList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(ClassElement);
+                b.pitem(ClassElement);
             },
             () => {
-                b.item(whitespace);
-                b.item(ClassElement);
+                b.pitem(whitespace);
+                b.pitem(ClassElement);
                 b.popAboveAndSet(1,b.get(0));
             },
         );
@@ -4218,7 +4218,7 @@ function ClassElement_1(p: Parser): ASTNode {
 function ClassElement_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             keyword("static"),
             whitespace,
@@ -4237,7 +4237,7 @@ function ClassElement_2(p: Parser): ASTNode {
 function ClassElement_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             punctuator(";"),
             pos,
@@ -4314,11 +4314,11 @@ function ModuleItemList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(ModuleItem);
+                b.pitem(ModuleItem);
             },
             () => {
-                b.item(whitespace);
-                b.item(ModuleItem);
+                b.pitem(whitespace);
+                b.pitem(ModuleItem);
                 b.popAboveAndSet(1,b.get(0));
             },
         );
@@ -4344,7 +4344,7 @@ function ModuleItem(p: Parser): ASTNode {
 function ImportDeclaration_from(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 8 = start
             keyword("import"), // 7
             whitespace,        // 6
@@ -4367,7 +4367,7 @@ function ImportDeclaration_from(p: Parser): ASTNode {
 function ImportDeclaration_module(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,               // 6 = start
             keyword("import"), // 5
             whitespace,        // 4
@@ -4397,19 +4397,19 @@ function ImportDeclaration(p: Parser): ASTNode {
 function ImportClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.item(NameSpaceImport);
+                b.pitem(NameSpaceImport);
             },
             () => {
-                b.item(NamedImports);
+                b.pitem(NamedImports);
             },
             () => {
-                b.item(pos);                    // 6 = start
-                b.item(ImportedDefaultBinding); // 5 = defbinding
-                b.choice([
+                b.pitem(pos);                    // 6 = start
+                b.pitem(ImportedDefaultBinding); // 5 = defbinding
+                b.bchoice([
                     () => {
-                        b.items([
+                        b.pitems([
                             whitespace,         // 4
                             punctuator(","),    // 3
                             whitespace,         // 2
@@ -4420,7 +4420,7 @@ function ImportClause(p: Parser): ASTNode {
                         b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNameSpaceImports",[5,1]));
                     },
                     () => {
-                        b.items([
+                        b.pitems([
                             whitespace,         // 4
                             punctuator(","),    // 3
                             whitespace,         // 2
@@ -4431,7 +4431,7 @@ function ImportClause(p: Parser): ASTNode {
                         b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNamedImports",[5,1]));
                     },
                     () => {
-                        b.item(pos);
+                        b.pitem(pos);
                         b.popAboveAndSet(2,makeNode(b,2,0,"DefaultImport",[1]));
                     },
                 ]);
@@ -4453,7 +4453,7 @@ function ImportedDefaultBinding(p: Parser): ASTNode {
 function NameSpaceImport(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,             // 6 = start
             punctuator("*"), // 5
             whitespace,      // 4
@@ -4474,18 +4474,18 @@ function NameSpaceImport(p: Parser): ASTNode {
 function NamedImports(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                // 5 = start
             punctuator("{"),    // 4
             whitespace,         // 3
         ]);
-        b.choice([              // 2 = imports
+        b.bchoice([              // 2 = imports
             () => {
-                b.item(ImportsList);
-                b.item(whitespace);
-                b.opt(() => {
-                    b.item(punctuator(","));
-                    b.item(whitespace);
+                b.pitem(ImportsList);
+                b.pitem(whitespace);
+                b.bopt(() => {
+                    b.pitem(punctuator(","));
+                    b.pitem(whitespace);
                     b.pop();
                 });
                 b.assertLengthIs(6);
@@ -4495,7 +4495,7 @@ function NamedImports(p: Parser): ASTNode {
                 b.push(new ListNode(new Range(p.pos,p.pos),[]));
             },
         ]);
-        b.items([
+        b.pitems([
             punctuator("}"),    // 1
             pos,                // 0 = end
         ]);
@@ -4511,7 +4511,7 @@ function NamedImports(p: Parser): ASTNode {
 function FromClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             keyword("from"),
             whitespace,
             ModuleSpecifier,
@@ -4530,10 +4530,10 @@ function ImportsList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(ImportSpecifier);
+                b.pitem(ImportSpecifier);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -4552,9 +4552,9 @@ function ImportsList(p: Parser): ASTNode {
 function ImportSpecifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 6 = start
                     IdentifierName,  // 5 = name
                     whitespace,      // 4
@@ -4567,7 +4567,7 @@ function ImportSpecifier(p: Parser): ASTNode {
                 b.popAboveAndSet(6,makeNode(b,6,0,"ImportAsSpecifier",[5,1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     pos,             // 2 = start
                     ImportedBinding, // 1 = binding
                     pos,             // 0 = end
@@ -4600,15 +4600,15 @@ function ImportedBinding(p: Parser): ASTNode {
 function ExportDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,
             keyword("export"),
             whitespace,
         ]);
         b.assertLengthIs(3);
-        b.choice([
+        b.bchoice([
             () => {
-                b.items([
+                b.pitems([
                     keyword("default"),                              // 3
                     whitespace,                                      // 2
                     () => HoistableDeclaration(p,{ Default: true }), // 1
@@ -4618,7 +4618,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     keyword("default"), // 3
                     whitespace, // 2
                     () => ClassDeclaration(p,{ Default: true }), // 1
@@ -4627,7 +4627,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     keyword("default"), // 7
                     whitespace, // 6
                     notKeyword("function"), // 5 FIXME: need tests for this
@@ -4641,7 +4641,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(10,makeNode(b,10,0,"ExportDefault",[3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     punctuator("*"), // 5
                     whitespace,      // 4
                     FromClause,      // 3
@@ -4653,7 +4653,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(8,makeNode(b,8,0,"ExportStar",[3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     ExportClause,    // 5
                     whitespace,      // 4
                     FromClause,      // 3
@@ -4665,7 +4665,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(8,makeNode(b,8,0,"ExportFrom",[5,3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     ExportClause,    // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
@@ -4675,7 +4675,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportPlain",[3]));
             },
             () => {
-                b.items([
+                b.pitems([
                     VariableStatement, // 1
                     pos,               // 0
                 ]);
@@ -4683,7 +4683,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(4,makeNode(b,4,0,"ExportVariable",[1]));
             },
             () => {
-                b.items([
+                b.pitems([
                     Declaration, // 1
                     pos,         // 0
                 ]);
@@ -4701,18 +4701,18 @@ function ExportDeclaration(p: Parser): ASTNode {
 function ExportClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
+        b.pitems([
             pos,                       // 5
             punctuator("{"),           // 4
             whitespace,                // 3
         ]);
-        b.choice([                     // 2
+        b.bchoice([                     // 2
             () => {
-                b.item(ExportsList);
-                b.item(whitespace);
-                b.opt(() => {
-                    b.item(punctuator(","));
-                    b.item(whitespace);
+                b.pitem(ExportsList);
+                b.pitem(whitespace);
+                b.bopt(() => {
+                    b.pitem(punctuator(","));
+                    b.pitem(whitespace);
                     b.pop();
                 });
                 b.assertLengthIs(6);
@@ -4720,13 +4720,13 @@ function ExportClause(p: Parser): ASTNode {
                 b.assertLengthIs(4);
             },
             () => {
-                b.item(pos);
+                b.pitem(pos);
                 const curPos = checkNumber(b.get(0));
                 b.popAboveAndSet(0,new ListNode(new Range(curPos,curPos),[]));
             },
         ]);
         b.assertLengthIs(4);
-        b.items([
+        b.pitems([
             punctuator("}"),           // 1
             pos,                       // 0
         ]);
@@ -4744,10 +4744,10 @@ function ExportsList(p: Parser): ASTNode {
         const b = new Builder(p);
         b.list(
             () => {
-                b.item(ExportSpecifier);
+                b.pitem(ExportSpecifier);
             },
             () => {
-                b.items([
+                b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
@@ -4766,12 +4766,12 @@ function ExportsList(p: Parser): ASTNode {
 function ExportSpecifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.item(pos);
-        b.item(IdentifierName);
-        b.choice([
+        b.pitem(pos);
+        b.pitem(IdentifierName);
+        b.bchoice([
             () => {
                 // let asIdent: IdentifierNode | ErrorNode;
-                b.items([
+                b.pitems([
                     whitespace,        // 4
                     keyword("as"),     // 3
                     whitespace,        // 2
@@ -4783,7 +4783,7 @@ function ExportSpecifier(p: Parser): ASTNode {
                 b.assertLengthIs(3);
             },
             () => {
-                b.item(pos);
+                b.pitem(pos);
                 b.assertLengthIs(3);
                 b.popAboveAndSet(0,makeNode(b,2,0,"ExportNormalSpecifier",[1]));
             },
