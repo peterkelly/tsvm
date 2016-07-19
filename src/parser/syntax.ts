@@ -1965,20 +1965,23 @@ function BlockStatement(p: Parser): ASTNode {
 function Block(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
-            pos,               // 5
-            punctuator("{"),   // 4
-            whitespace,        // 3
-            () => p.choice([   // 2 = statements
-                () => p.seq2([
-                    StatementList,
-                    whitespace],
-                    ([inner,]) => inner),
-                () => new ListNode(new Range(p.pos,p.pos),[]),
-            ]),
-            punctuator("}"),   // 1
-            pos,               // 0
+        b.item(pos);             // 5
+        b.item(punctuator("{")); // 4
+        b.item(whitespace);      // 3
+        b.choice([               // 2 = statements
+            () => {
+                b.item(StatementList);
+                b.item(whitespace);
+                b.popAboveAndSet(1,b.get(1));
+            },
+            () => {
+                b.item(pos);
+                const position = checkNumber(b.get(0));
+                b.popAboveAndSet(0,new ListNode(new Range(position,position),[]));
+            },
         ]);
+        b.item(punctuator("}")); // 1
+        b.item(pos);             // 0
         b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
         b.assertLengthIs(1);
         return checkNode(b.get(0));
@@ -2083,15 +2086,14 @@ function BindingList(p: Parser): ASTNode {
 function LexicalBinding_identifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        b.items([
-            pos,               // 3 = start
-            BindingIdentifier, // 2 = identifier
-            opt(() => p.seq2([ // 1 = initializer
-                whitespace,
-                Initializer],
-                ([,inner]) => inner)),
-            pos,               // 0 = end
-        ]);
+        b.item(pos);               // 3 = start
+        b.item(BindingIdentifier); // 2 = identifier
+        b.opt(() => {              // 1 = initializer
+            b.item(whitespace);
+            b.item(Initializer);
+            b.popAboveAndSet(1,b.get(0));
+        });
+        b.item(pos);               // 0 = end
         b.assertLengthIs(4);
         b.popAboveAndSet(3,makeNode(b,3,0,"LexicalIdentifierBinding",[2,1]));
         b.assertLengthIs(1);
@@ -2557,14 +2559,17 @@ function IfStatement(p: Parser): ASTNode {
             punctuator(")"),   // 4
             whitespace,        // 3
             Statement,         // 2 = trueBranch
-            opt(() => p.seq4([ // 1 = falseBranch
+        ]);
+        b.opt(() => {          // 1 = falseBranch
+            b.items([
                 whitespace,
                 keyword("else"),
                 whitespace,
-                Statement],
-                ([,,,fb]) => fb)),
-            pos,               // 0 = end
-        ]);
+                Statement,
+            ]);
+            b.popAboveAndSet(3,b.get(0));
+        });
+        b.item(pos);           // 0 = end
         b.assertLengthIs(12);
         b.popAboveAndSet(11,makeNode(b,11,0,"IfStatement",[6,2,1]));
         b.assertLengthIs(1);
@@ -2686,17 +2691,19 @@ function IterationStatement_for_c(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(6);
-        b.items([
-            opt(Expression),                                                // 8 = condition
-            whitespace,                                                     // 7
-            punctuator(";"),                                                // 6
-            whitespace,                                                     // 5
-            opt(() => p.seq2([Expression,whitespace],([inner,]) => inner)), // 4 = update
-            punctuator(")"),                                                // 3
-            whitespace,                                                     // 2
-            Statement,                                                      // 1 = body
-            pos,
-        ]);
+        b.item(opt(Expression)); // 8 = condition
+        b.item(whitespace);      // 7
+        b.item(punctuator(";")); // 6
+        b.item(whitespace);      // 5
+        b.opt(() => {            // 4 = update
+            b.item(Expression);
+            b.item(whitespace);
+            b.popAboveAndSet(1,b.get(1));
+        });
+        b.item(punctuator(")")); // 3
+        b.item(whitespace);      // 2
+        b.item(Statement);       // 1 = body
+        b.item(pos);             // 0 = end
         b.assertLengthIs(15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
         b.assertLengthIs(1);
@@ -3449,10 +3456,13 @@ function FunctionExpression(p: Parser): ASTNode {
             pos,                 // 15 = start
             keyword("function"), // 14
             whitespace,          // 13
-            opt(() => p.seq2([   // 12 = ident
-                BindingIdentifier,
-                whitespace],
-                ([inner,]) => inner)),
+        ]);
+        b.opt(() => {
+            b.item(BindingIdentifier);
+            b.item(whitespace);
+            b.popAboveAndSet(1,b.get(1));
+        });
+        b.items([
             punctuator("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
@@ -4471,11 +4481,13 @@ function NamedImports(p: Parser): ASTNode {
         ]);
         b.choice([              // 2 = imports
             () => {
-                b.items([
-                    ImportsList,
-                    whitespace,
-                    opt(() => p.seq2([punctuator(","),whitespace],() => {})),
-                ]);
+                b.item(ImportsList);
+                b.item(whitespace);
+                b.opt(() => {
+                    b.item(punctuator(","));
+                    b.item(whitespace);
+                    b.pop();
+                });
                 b.assertLengthIs(6);
                 b.popAboveAndSet(2,b.get(2));
             },
@@ -4696,16 +4708,13 @@ function ExportClause(p: Parser): ASTNode {
         ]);
         b.choice([                     // 2
             () => {
-                b.items([
-                    ExportsList,
-                    whitespace,
-                    opt(() => {
-                        p.sequence([
-                            punctuator(","),
-                            whitespace,
-                        ]);
-                    }),
-                ]);
+                b.item(ExportsList);
+                b.item(whitespace);
+                b.opt(() => {
+                    b.item(punctuator(","));
+                    b.item(whitespace);
+                    b.pop();
+                });
                 b.assertLengthIs(6);
                 b.popAboveAndSet(2,b.get(2));
                 b.assertLengthIs(4);
