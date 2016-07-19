@@ -310,14 +310,15 @@ const Identifier_b = bfun(Identifier);
 function This(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             keyword("this"),
             pos,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"This",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -328,6 +329,7 @@ const This_b = bfun(This);
 
 function PrimaryExpression(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         This_b,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
@@ -342,7 +344,7 @@ function PrimaryExpression(p: Parser): ASTNode {
         // TemplateLiteral_b, // TODO
         ParenthesizedExpression_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -353,6 +355,7 @@ const PrimaryExpression_b = bfun(PrimaryExpression);
 function ParenthesizedExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             punctuator("("), // 4
             whitespace,      // 3
@@ -361,7 +364,7 @@ function ParenthesizedExpression(p: Parser): ASTNode {
             punctuator(")"), // 0
         ]);
         b.popAboveAndSet(4,b.get(2));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -374,13 +377,14 @@ const ParenthesizedExpression_b = bfun(ParenthesizedExpression);
 
 function Literal(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         NullLiteral_b,
         BooleanLiteral_b,
         NumericLiteral_b,
         StringLiteral_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -391,14 +395,15 @@ const Literal_b = bfun(Literal);
 function NullLiteral(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             keyword("null"),
             pos,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"NullLiteral",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -491,6 +496,7 @@ const StringLiteral_b = bfun(StringLiteral);
 function ArrayLiteral(p: Parser): ASTNode {
     return p.attempt((start): ASTNode => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(punctuator("["));
         b.pitem(whitespace);
@@ -499,17 +505,17 @@ function ArrayLiteral(p: Parser): ASTNode {
         const listStart = p.pos;
         let listEnd = p.pos;
 
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
 
         b.bopt(() => {
             b.pitem(pos);             // 3 = before
             b.pitem(punctuator(",")); // 2
             b.pitem(pos);             // 1 = after
             b.pitem(whitespace);      // 0
-            b.assertLengthIs(7);
+            b.assertLengthIs(oldLength+7);
             b.popAboveAndSet(3,makeNode(b,3,1,"Elision",[]));
         });
-        b.assertLengthIs(4);
+        b.assertLengthIs(oldLength+4);
 
         const initialElision = checkNode(b.get(0));
         if (initialElision != null) {
@@ -518,7 +524,7 @@ function ArrayLiteral(p: Parser): ASTNode {
         }
 
         while (true) {
-            b.assertLengthIs(4);
+            b.assertLengthIs(oldLength+4);
             if (p.lookaheadPunctuator("]")) {
                 p.expectPunctuator("]");
                 break;
@@ -533,9 +539,9 @@ function ArrayLiteral(p: Parser): ASTNode {
                             pos,             // 1 = after
                             whitespace,      // 0
                         ]);
-                        b.assertLengthIs(8);
+                        b.assertLengthIs(oldLength+8);
                         b.popAboveAndSet(3,makeNode(b,3,1,"Elision",[]));
-                        b.assertLengthIs(5);
+                        b.assertLengthIs(oldLength+5);
                     },
                     () => {
                         b.pitem(AssignmentExpression);
@@ -545,9 +551,9 @@ function ArrayLiteral(p: Parser): ASTNode {
                             b.pitem(whitespace);
                             b.pop();
                         });
-                        b.assertLengthIs(7);
+                        b.assertLengthIs(oldLength+7);
                         b.popAboveAndSet(2,checkNode(b.get(2)));
-                        b.assertLengthIs(5);
+                        b.assertLengthIs(oldLength+5);
                     },
                     () => {
                         b.pitem(SpreadElement);
@@ -557,12 +563,12 @@ function ArrayLiteral(p: Parser): ASTNode {
                             b.pitem(whitespace);
                             b.pop();
                         });
-                        b.assertLengthIs(7);
+                        b.assertLengthIs(oldLength+7);
                         b.popAboveAndSet(2,checkNode(b.get(2)));
-                        b.assertLengthIs(5);
+                        b.assertLengthIs(oldLength+5);
                     },
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 const item = checkNode(b.get(0));
                 b.pop();
 
@@ -576,10 +582,10 @@ function ArrayLiteral(p: Parser): ASTNode {
             }
         }
 
-        b.assertLengthIs(4);
+        b.assertLengthIs(oldLength+4);
         const list = new ListNode(new Range(listStart,listEnd),elements);
         b.popAboveAndSet(3,new GenericNode(new Range(start,p.pos),"ArrayLiteral",[list]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -591,6 +597,7 @@ const ArrayLiteral_b = bfun(ArrayLiteral);
 function SpreadElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             punctuator("..."),
@@ -599,7 +606,7 @@ function SpreadElement(p: Parser): ASTNode {
             pos,
         ]);
         b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -613,6 +620,7 @@ const SpreadElement_b = bfun(SpreadElement);
 function ObjectLiteral(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);             // 5
         b.pitem(punctuator("{")); // 4
         b.pitem(whitespace);      // 3
@@ -633,9 +641,9 @@ function ObjectLiteral(p: Parser): ASTNode {
         ]);
         b.pitem(punctuator("}")); // 1
         b.pitem(pos);             // 0 = end
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ObjectLiteral",[2]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -647,6 +655,7 @@ const ObjectLiteral_b = bfun(ObjectLiteral);
 function PropertyDefinitionList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(PropertyDefinition);
@@ -661,7 +670,7 @@ function PropertyDefinitionList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -673,6 +682,7 @@ const PropertyDefinitionList_b = bfun(PropertyDefinitionList);
 function PropertyDefinition_colon(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                  // 6 = start
             PropertyName,         // 5 = name
@@ -682,9 +692,9 @@ function PropertyDefinition_colon(p: Parser): ASTNode {
             AssignmentExpression, // 1 = init
             pos,                  // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ColonPropertyDefinition",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -695,13 +705,14 @@ const PropertyDefinition_colon_b = bfun(PropertyDefinition_colon);
 
 function PropertyDefinition(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         PropertyDefinition_colon_b,
         CoverInitializedName_b,
         MethodDefinition_b,
         IdentifierReference_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -711,11 +722,12 @@ const PropertyDefinition_b = bfun(PropertyDefinition);
 
 function PropertyName(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         LiteralPropertyName_b,
         ComputedPropertyName_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -725,12 +737,13 @@ const PropertyName_b = bfun(PropertyName);
 
 function LiteralPropertyName(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         IdentifierName_b,
         StringLiteral_b,
         NumericLiteral_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -741,6 +754,7 @@ const LiteralPropertyName_b = bfun(LiteralPropertyName);
 function ComputedPropertyName(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                  // 6 = start
             punctuator("["),      // 5
@@ -750,9 +764,9 @@ function ComputedPropertyName(p: Parser): ASTNode {
             punctuator("]"),      // 1
             pos,                  // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ComputedPropertyName",[3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -764,6 +778,7 @@ const ComputedPropertyName_b = bfun(ComputedPropertyName);
 function CoverInitializedName(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 4 = start
             IdentifierReference, // 3 = ident
@@ -771,9 +786,9 @@ function CoverInitializedName(p: Parser): ASTNode {
             Initializer,         // 1 = init
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"CoverInitializedName",[3,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -785,14 +800,15 @@ const CoverInitializedName_b = bfun(CoverInitializedName);
 function Initializer(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             punctuator("="),
             whitespace,
             AssignmentExpression,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -820,6 +836,7 @@ function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"
 function MemberExpression_new(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,              // 6 = start
             keyword("new"),   // 5
@@ -829,9 +846,9 @@ function MemberExpression_new(p: Parser): ASTNode {
             Arguments,        // 1 = args
             pos,              // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewExpression",[3,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -842,13 +859,14 @@ const MemberExpression_new_b = bfun(MemberExpression_new);
 
 function MemberExpression_start(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         PrimaryExpression_b,
         SuperProperty_b,
         MetaProperty_b,
         MemberExpression_new_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -859,6 +877,7 @@ const MemberExpression_start_b = bfun(MemberExpression_start);
 function MemberExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(MemberExpression_start);
         b.brepeatChoice([
@@ -872,7 +891,7 @@ function MemberExpression(p: Parser): ASTNode {
                     punctuator("]"), // 1
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(9);
+                b.assertLengthIs(oldLength+9);
                 b.popAboveAndSet(7,makeNode(b,8,0,"MemberAccessExpr",[7,3]));
             },
             () => {
@@ -884,13 +903,13 @@ function MemberExpression(p: Parser): ASTNode {
                     pos,             // 1 = end
                     whitespace,      // 0
                 ]);
-                b.assertLengthIs(8);
+                b.assertLengthIs(oldLength+8);
                 b.popAboveAndSet(6,makeNode(b,7,1,"MemberAccessIdent",[6,2]));
             },
         ]);
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -902,6 +921,7 @@ const MemberExpression_b = bfun(MemberExpression);
 function SuperProperty(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -915,9 +935,9 @@ function SuperProperty(p: Parser): ASTNode {
                     punctuator("]"),  // 1
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(9);
+                b.assertLengthIs(oldLength+9);
                 b.popAboveAndSet(8,makeNode(b,8,0,"SuperPropertyExpr",[3]));
-                b.assertLengthIs(1);
+                b.assertLengthIs(oldLength+1);
             },
             () => {
                 b.pitems([
@@ -929,12 +949,12 @@ function SuperProperty(p: Parser): ASTNode {
                     Identifier,       // 1 = ident
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"SuperPropertyIdent",[1]));
-                b.assertLengthIs(1);
+                b.assertLengthIs(oldLength+1);
             }
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -954,6 +974,7 @@ const MetaProperty_b = bfun(MetaProperty);
 function NewTarget(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                  // 6
             keyword("new"),       // 5
@@ -963,9 +984,9 @@ function NewTarget(p: Parser): ASTNode {
             identifier("target"), // 1 ("target" is not a reserved word, so we can't use keyword here)
             pos,                  // 0
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewTarget",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -977,6 +998,7 @@ const NewTarget_b = bfun(NewTarget);
 function NewExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitem(MemberExpression);
@@ -989,14 +1011,14 @@ function NewExpression(p: Parser): ASTNode {
                     NewExpression,  // 1 = expr
                     pos,            // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 const start = checkNumber(b.get(4));
                 const end = checkNumber(b.get(0));
                 const expr = checkNode(b.get(1));
                 b.popAboveAndSet(4,new GenericNode(new Range(start,p.pos),"NewExpression",[expr,null]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1008,6 +1030,7 @@ const NewExpression_b = bfun(NewExpression);
 function CallExpression_start(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitem(SuperCall);
@@ -1020,11 +1043,11 @@ function CallExpression_start(p: Parser): ASTNode {
                     Arguments,        // 1 = args
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"Call",[3,1]));
             },
         ])
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1036,6 +1059,7 @@ const CallExpression_start_b = bfun(CallExpression_start);
 function CallExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(CallExpression_start);
         b.brepeatChoice([
@@ -1045,7 +1069,7 @@ function CallExpression(p: Parser): ASTNode {
                     Arguments,       // 1
                     pos,             // 0
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(3,makeNode(b,4,0,"Call",[3,1]));
             },
             () => {
@@ -1058,7 +1082,7 @@ function CallExpression(p: Parser): ASTNode {
                     punctuator("]"), // 1
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(9);
+                b.assertLengthIs(oldLength+9);
                 b.popAboveAndSet(7,makeNode(b,8,0,"MemberAccessExpr",[7,3]));
             },
             () => {
@@ -1069,7 +1093,7 @@ function CallExpression(p: Parser): ASTNode {
                     IdentifierName,  // 1 = idname
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"MemberAccessIdent",[5,1]));
             },
             // () => {
@@ -1078,7 +1102,7 @@ function CallExpression(p: Parser): ASTNode {
             // },
         ]);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1090,6 +1114,7 @@ const CallExpression_b = bfun(CallExpression);
 function SuperCall(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,              // 4 = start
             keyword("super"), // 3
@@ -1097,9 +1122,9 @@ function SuperCall(p: Parser): ASTNode {
             Arguments,        // 1 = args
             pos,              // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"SuperCall",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1111,6 +1136,7 @@ const SuperCall_b = bfun(SuperCall);
 function Arguments(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -1121,7 +1147,7 @@ function Arguments(p: Parser): ASTNode {
                     punctuator(")"), // 1
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(6);
+                b.assertLengthIs(oldLength+6);
                 const start = checkNumber(b.get(5));
                 const end = checkNumber(b.get(0));
                 const listpos = checkNumber(b.get(2));
@@ -1138,11 +1164,11 @@ function Arguments(p: Parser): ASTNode {
                     punctuator(")"), // 1
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"Arguments",[3]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1154,6 +1180,7 @@ const Arguments_b = bfun(Arguments);
 function ArgumentList_item(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -1163,14 +1190,14 @@ function ArgumentList_item(p: Parser): ASTNode {
                     AssignmentExpression, // 1 = expr
                     pos,                  // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
             },
             () => {
                 b.pitem(AssignmentExpression);
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1182,6 +1209,7 @@ const ArgumentList_item_b = bfun(ArgumentList_item);
 function ArgumentList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(ArgumentList_item);
@@ -1196,7 +1224,7 @@ function ArgumentList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1209,11 +1237,12 @@ function LeftHandSideExpression(p: Parser): ASTNode {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         CallExpression_b,
         NewExpression_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -1226,6 +1255,7 @@ const LeftHandSideExpression_b = bfun(LeftHandSideExpression);
 function PostfixExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(LeftHandSideExpression);
         b.bchoice([
@@ -1235,7 +1265,7 @@ function PostfixExpression(p: Parser): ASTNode {
                     punctuator("++"),
                     pos,
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"PostIncrement",[3]));
             },
             () => {
@@ -1244,14 +1274,14 @@ function PostfixExpression(p: Parser): ASTNode {
                     punctuator("--"),
                     pos,
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"PostDecrement",[3]));
             },
             () => {
                 b.popAboveAndSet(1,b.get(0));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1265,6 +1295,7 @@ const PostfixExpression_b = bfun(PostfixExpression);
 function UnaryExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -1274,7 +1305,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression,   // 1 = expr
                     pos,               // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"Delete",[1]));
             },
             () => {
@@ -1285,7 +1316,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"Void",[1]));
             },
             () => {
@@ -1296,7 +1327,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression,   // 1 = expr
                     pos,               // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"TypeOf",[1]));
             },
             () => {
@@ -1307,7 +1338,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression,  // 1 = expr
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"PreIncrement",[1]));
             },
             () => {
@@ -1318,7 +1349,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression,  // 1 = expr
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"PreDecrement",[1]));
             },
             () => {
@@ -1329,7 +1360,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryPlus",[1]));
             },
             () => {
@@ -1340,7 +1371,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryMinus",[1]));
             },
             () => {
@@ -1351,7 +1382,7 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryBitwiseNot",[1]));
             },
             () => {
@@ -1362,14 +1393,14 @@ function UnaryExpression(p: Parser): ASTNode {
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryLogicalNot",[1]));
             },
             () => {
                 b.pitem(PostfixExpression);
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1383,6 +1414,7 @@ const UnaryExpression_b = bfun(UnaryExpression);
 function MultiplicativeExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(UnaryExpression);      // 5 = left
         b.brepeatChoice([
@@ -1418,9 +1450,9 @@ function MultiplicativeExpression(p: Parser): ASTNode {
             },
         ]);
 
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1434,6 +1466,7 @@ const MultiplicativeExpression_b = bfun(MultiplicativeExpression);
 function AdditiveExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                          // 6 = start
         b.pitem(MultiplicativeExpression);     // 5 = left
         b.brepeatChoice([
@@ -1458,9 +1491,9 @@ function AdditiveExpression(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"Subtract",[5,1]));
             }]);
 
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1474,6 +1507,7 @@ const AdditiveExpression_b = bfun(AdditiveExpression);
 function ShiftExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                    // 6 = start
         b.pitem(AdditiveExpression);     // 5 = left
         b.brepeatChoice([
@@ -1509,9 +1543,9 @@ function ShiftExpression(p: Parser): ASTNode {
             },
         ]);
 
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1525,6 +1559,7 @@ const ShiftExpression_b = bfun(ShiftExpression);
 function RelationalExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);             // 6 = start
         b.pitem(ShiftExpression); // 5 = left
         b.brepeatChoice([
@@ -1536,9 +1571,9 @@ function RelationalExpression(p: Parser): ASTNode {
                     ShiftExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"LessEqual",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1548,9 +1583,9 @@ function RelationalExpression(p: Parser): ASTNode {
                     ShiftExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"GreaterEqual",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1560,9 +1595,9 @@ function RelationalExpression(p: Parser): ASTNode {
                     ShiftExpression, // 1 = right
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"LessThan",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1572,9 +1607,9 @@ function RelationalExpression(p: Parser): ASTNode {
                     ShiftExpression, // 1 = right
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"GreaterThan",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1584,9 +1619,9 @@ function RelationalExpression(p: Parser): ASTNode {
                     ShiftExpression,       // 1 = right
                     pos,                   // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"InstanceOf",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1596,14 +1631,14 @@ function RelationalExpression(p: Parser): ASTNode {
                     ShiftExpression, // 1 = right
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"In",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
         ]);
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1617,6 +1652,7 @@ const RelationalExpression_b = bfun(RelationalExpression);
 function EqualityExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                      // 6 = start
         b.pitem(RelationalExpression);     // 5 = left
         b.brepeatChoice([
@@ -1628,9 +1664,9 @@ function EqualityExpression(p: Parser): ASTNode {
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"StrictEquals",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1640,9 +1676,9 @@ function EqualityExpression(p: Parser): ASTNode {
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"StrictNotEquals",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1652,9 +1688,9 @@ function EqualityExpression(p: Parser): ASTNode {
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AbstractEquals",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
             () => {
                 b.pitems([
@@ -1664,14 +1700,14 @@ function EqualityExpression(p: Parser): ASTNode {
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AbstractNotEquals",[5,1]));
-                b.assertLengthIs(2);
+                b.assertLengthIs(oldLength+2);
             },
         ]);
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1685,6 +1721,7 @@ const EqualityExpression_b = bfun(EqualityExpression);
 function BitwiseANDExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                // 6 = start
         b.pitem(EqualityExpression); // 5 = left
         b.brepeat(() => {
@@ -1698,9 +1735,9 @@ function BitwiseANDExpression(p: Parser): ASTNode {
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseAND",[5,1]));
         });
 
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1712,6 +1749,7 @@ const BitwiseANDExpression_b = bfun(BitwiseANDExpression);
 function BitwiseXORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(BitwiseANDExpression); // 5 = left
         b.brepeat(() => {
@@ -1724,9 +1762,9 @@ function BitwiseXORExpression(p: Parser): ASTNode {
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseXOR",[5,1]));
         });
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1738,6 +1776,7 @@ const BitwiseXORExpression_b = bfun(BitwiseXORExpression);
 function BitwiseORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(BitwiseXORExpression); // 5 = left
         b.brepeat(() => {
@@ -1750,9 +1789,9 @@ function BitwiseORExpression(p: Parser): ASTNode {
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseOR",[5,1]));
         });
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1766,6 +1805,7 @@ const BitwiseORExpression_b = bfun(BitwiseORExpression);
 function LogicalANDExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                 // 6 = start
         b.pitem(BitwiseORExpression); // 5 = left
         b.brepeat(() => {
@@ -1778,9 +1818,9 @@ function LogicalANDExpression(p: Parser): ASTNode {
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalAND",[5,1]));
         });
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1792,6 +1832,7 @@ const LogicalANDExpression_b = bfun(LogicalANDExpression);
 function LogicalORExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(LogicalANDExpression); // 5 = left
         b.brepeat(() => {
@@ -1804,9 +1845,9 @@ function LogicalORExpression(p: Parser): ASTNode {
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalOR",[5,1]));
         });
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1820,6 +1861,7 @@ const LogicalORExpression_b = bfun(LogicalORExpression);
 function ConditionalExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                      // 10 = start
         b.pitem(LogicalORExpression);      // 9 = condition
         b.bchoice([
@@ -1839,9 +1881,9 @@ function ConditionalExpression(p: Parser): ASTNode {
             },
             () => {},
         ]);
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1855,6 +1897,7 @@ const ConditionalExpression_b = bfun(ConditionalExpression);
 function AssignmentExpression_plain(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                      // 6 = start
         b.pitem(LeftHandSideExpression);   // 5 = left
         b.bchoice([
@@ -1979,9 +2022,9 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseOR",[5,1]));
             },
         ])
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -1993,13 +2036,14 @@ const AssignmentExpression_plain_b = bfun(AssignmentExpression_plain);
 function AssignmentExpression(p: Parser): ASTNode {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         ArrowFunction_b,
         AssignmentExpression_plain_b,
         ConditionalExpression_b,
         YieldExpression_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2012,6 +2056,7 @@ const AssignmentExpression_b = bfun(AssignmentExpression);
 function Expression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(AssignmentExpression); // 5 = left
         b.brepeat(() => {
@@ -2024,9 +2069,9 @@ function Expression(p: Parser): ASTNode {
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"Comma",[5,1]));
         });
-        b.assertLengthIs(2);
+        b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2039,6 +2084,7 @@ const Expression_b = bfun(Expression);
 
 function Statement(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         BlockStatement_b,
         VariableStatement_b,
@@ -2055,7 +2101,7 @@ function Statement(p: Parser): ASTNode {
         TryStatement_b,
         DebuggerStatement_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2065,12 +2111,13 @@ const Statement_b = bfun(Statement);
 
 function Declaration(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         HoistableDeclaration_b,
         ClassDeclaration_b,
         LexicalDeclaration_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2080,11 +2127,12 @@ const Declaration_b = bfun(Declaration);
 
 function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         bfun(() => FunctionDeclaration(p,flags)),
         bfun(() => GeneratorDeclaration(p,flags)),
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2094,11 +2142,12 @@ const HoistableDeclaration_b = bfun(HoistableDeclaration);
 
 function BreakableStatement(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         IterationStatement_b,
         SwitchStatement_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2119,6 +2168,7 @@ const BlockStatement_b = bfun(BlockStatement);
 function Block(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);             // 5
         b.pitem(punctuator("{")); // 4
         b.pitem(whitespace);      // 3
@@ -2137,7 +2187,7 @@ function Block(p: Parser): ASTNode {
         b.pitem(punctuator("}")); // 1
         b.pitem(pos);             // 0
         b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2149,6 +2199,7 @@ const Block_b = bfun(Block);
 function StatementList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(StatementListItem);
@@ -2161,7 +2212,7 @@ function StatementList(p: Parser): ASTNode {
                 b.popAboveAndSet(1,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2172,11 +2223,12 @@ const StatementList_b = bfun(StatementList);
 
 function StatementListItem(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         Statement_b,
         Declaration_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2189,6 +2241,7 @@ const StatementListItem_b = bfun(StatementListItem);
 function LexicalDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -2215,7 +2268,7 @@ function LexicalDeclaration(p: Parser): ASTNode {
                 b.popAboveAndSet(6,makeNode(b,6,0,"Const",[3]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2227,6 +2280,7 @@ const LexicalDeclaration_b = bfun(LexicalDeclaration);
 function BindingList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(LexicalBinding);
@@ -2241,7 +2295,7 @@ function BindingList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2253,6 +2307,7 @@ const BindingList_b = bfun(BindingList);
 function LexicalBinding_identifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);               // 3 = start
         b.pitem(BindingIdentifier); // 2 = identifier
         b.bopt(() => {              // 1 = initializer
@@ -2261,9 +2316,9 @@ function LexicalBinding_identifier(p: Parser): ASTNode {
             b.popAboveAndSet(1,b.get(0));
         });
         b.pitem(pos);               // 0 = end
-        b.assertLengthIs(4);
+        b.assertLengthIs(oldLength+4);
         b.popAboveAndSet(3,makeNode(b,3,0,"LexicalIdentifierBinding",[2,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2275,6 +2330,7 @@ const LexicalBinding_identifier_b = bfun(LexicalBinding_identifier);
 function LexicalBinding_pattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,            // 4 = start
             BindingPattern, // 3 = pattern
@@ -2282,9 +2338,9 @@ function LexicalBinding_pattern(p: Parser): ASTNode {
             Initializer,    // 1 = initializer
             pos,            // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"LexicalPatternBinding",[3,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2295,11 +2351,12 @@ const LexicalBinding_pattern_b = bfun(LexicalBinding_pattern);
 
 function LexicalBinding(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         LexicalBinding_identifier_b,
         LexicalBinding_pattern_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2312,6 +2369,7 @@ const LexicalBinding_b = bfun(LexicalBinding);
 function VariableStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                     // 6 = start
             keyword("var"),          // 5
@@ -2322,7 +2380,7 @@ function VariableStatement(p: Parser): ASTNode {
             pos,                     // 0 = end
         ]);
         b.popAboveAndSet(6,makeNode(b,6,0,"Var",[3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2334,6 +2392,7 @@ const VariableStatement_b = bfun(VariableStatement);
 function VariableDeclarationList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(VariableDeclaration);
@@ -2348,7 +2407,7 @@ function VariableDeclarationList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2360,6 +2419,7 @@ const VariableDeclarationList_b = bfun(VariableDeclarationList);
 function VariableDeclaration_identifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(BindingIdentifier);
         b.bchoice([
@@ -2369,17 +2429,17 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
                     Initializer,
                     pos,
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarIdentifier",[3,1]));
             },
             () => {
                 b.pitem(value(null));
                 b.pitem(pos);
-                b.assertLengthIs(4);
+                b.assertLengthIs(oldLength+4);
                 b.popAboveAndSet(3,makeNode(b,3,0,"VarIdentifier",[2,1]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2391,6 +2451,7 @@ const VariableDeclaration_identifier_b = bfun(VariableDeclaration_identifier);
 function VariableDeclaration_pattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,            // 4 = start
             BindingPattern, // 3 = pattern
@@ -2398,9 +2459,9 @@ function VariableDeclaration_pattern(p: Parser): ASTNode {
             Initializer,    // 1 = initializer
             pos,            // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"VarPattern",[3,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2411,11 +2472,12 @@ const VariableDeclaration_pattern_b = bfun(VariableDeclaration_pattern);
 
 function VariableDeclaration(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         VariableDeclaration_identifier_b,
         VariableDeclaration_pattern_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2427,11 +2489,12 @@ const VariableDeclaration_b = bfun(VariableDeclaration);
 
 function BindingPattern(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         ObjectBindingPattern_b,
         ArrayBindingPattern_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -2442,6 +2505,7 @@ const BindingPattern_b = bfun(BindingPattern);
 function ObjectBindingPattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);              // 6 = start
         b.pitem(punctuator("{"));  // 5
         b.pitem(whitespace);       // 4
@@ -2463,11 +2527,11 @@ function ObjectBindingPattern(p: Parser): ASTNode {
         ]);
         b.pitem(punctuator("}"));  // 1
         b.pitem(pos);              // 0 = end
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         const start = checkNumber(b.get(6));
         const end = checkNumber(b.get(0));
         b.popAboveAndSet(6,b.get(2));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         const properties = checkListNode(b.get(0));
         return new GenericNode(new Range(start,end),"ObjectBindingPattern",[properties]);
     });
@@ -2480,6 +2544,7 @@ const ObjectBindingPattern_b = bfun(ObjectBindingPattern);
 function ArrayBindingPattern(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 7 = start
             punctuator("["),     // 6
@@ -2496,9 +2561,9 @@ function ArrayBindingPattern(p: Parser): ASTNode {
             punctuator("]"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(8);
+        b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"ArrayBindingPattern",[4,2]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2510,6 +2575,7 @@ const ArrayBindingPattern_b = bfun(ArrayBindingPattern);
 function BindingPropertyList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(BindingProperty);
@@ -2524,7 +2590,7 @@ function BindingPropertyList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2536,6 +2602,7 @@ const BindingPropertyList_b = bfun(BindingPropertyList);
 function BindingElementList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.bopt(() => {
@@ -2569,7 +2636,7 @@ function BindingElementList(p: Parser): ASTNode {
                 ])
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2581,6 +2648,7 @@ const BindingElementList_b = bfun(BindingElementList);
 function BindingProperty(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -2592,7 +2660,7 @@ function BindingProperty(p: Parser): ASTNode {
                     BindingElement,  // 1 = element
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"BindingProperty",[5,1]));
             },
             () => {
@@ -2601,7 +2669,7 @@ function BindingProperty(p: Parser): ASTNode {
                 b.pitem(SingleNameBinding);
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2613,6 +2681,7 @@ const BindingProperty_b = bfun(BindingProperty);
 function BindingElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitem(SingleNameBinding);
@@ -2627,7 +2696,7 @@ function BindingElement(p: Parser): ASTNode {
                             Initializer,
                             pos,
                         ]);
-                        b.assertLengthIs(5);
+                        b.assertLengthIs(oldLength+5);
                         b.popAboveAndSet(4,makeNode(b,4,0,"BindingPatternInit",[3,1]));
                     },
                     () => {
@@ -2636,7 +2705,7 @@ function BindingElement(p: Parser): ASTNode {
                 ]);
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2648,6 +2717,7 @@ const BindingElement_b = bfun(BindingElement);
 function SingleNameBinding(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(BindingIdentifier);
         b.bchoice([
@@ -2663,9 +2733,9 @@ function SingleNameBinding(p: Parser): ASTNode {
                 b.push(b.get(0));
             },
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2677,6 +2747,7 @@ const SingleNameBinding_b = bfun(SingleNameBinding);
 function BindingRestElement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 4 = start
             punctuator("..."), // 3
@@ -2684,9 +2755,9 @@ function BindingRestElement(p: Parser): ASTNode {
             BindingIdentifier, // 1 = ident
             pos,               // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"BindingRestElement",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2700,14 +2771,15 @@ const BindingRestElement_b = bfun(BindingRestElement);
 function EmptyStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             punctuator(";"),
             pos,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"EmptyStatement",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2739,6 +2811,7 @@ function ExpressionStatement(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,             // 4 = start
             Expression,      // 3 = expr
@@ -2746,9 +2819,9 @@ function ExpressionStatement(p: Parser): ASTNode {
             punctuator(";"), // 1
             pos,             // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"ExpressionStatement",[3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2762,6 +2835,7 @@ const ExpressionStatement_b = bfun(ExpressionStatement);
 function IfStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 11 = start
             keyword("if"),     // 10
@@ -2784,9 +2858,9 @@ function IfStatement(p: Parser): ASTNode {
             b.popAboveAndSet(3,b.get(0));
         });
         b.pitem(pos);           // 0 = end
-        b.assertLengthIs(12);
+        b.assertLengthIs(oldLength+12);
         b.popAboveAndSet(11,makeNode(b,11,0,"IfStatement",[6,2,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2800,6 +2874,7 @@ const IfStatement_b = bfun(IfStatement);
 function IterationStatement_do(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,              // 14
             keyword("do"),    // 13
@@ -2817,9 +2892,9 @@ function IterationStatement_do(p: Parser): ASTNode {
             punctuator(";"),  // 1 = end
             pos,              // 0 = start
         ]);
-        b.assertLengthIs(15);
+        b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"DoStatement",[11,5]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2831,6 +2906,7 @@ const IterationStatement_do_b = bfun(IterationStatement_do);
 function IterationStatement_while(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                // 10 = start
             keyword("while"),   // 9
@@ -2844,9 +2920,9 @@ function IterationStatement_while(p: Parser): ASTNode {
             Statement,          // 1 = body
             pos,                // 0 = end
         ]);
-        b.assertLengthIs(11);
+        b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"WhileStatement",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2862,6 +2938,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                                                            // 14 = start
             keyword("for"),                                                 // 13
@@ -2869,7 +2946,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
             punctuator("("),                                                // 11
             whitespace,                                                     // 10
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.bchoice([
             () => {
                 b.pitems([
@@ -2910,7 +2987,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
                 b.popAboveAndSet(0,null);
             },
         ]);
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.pitem(opt(Expression)); // 8 = condition
         b.pitem(whitespace);      // 7
         b.pitem(punctuator(";")); // 6
@@ -2924,9 +3001,9 @@ function IterationStatement_for_c(p: Parser): ASTNode {
         b.pitem(whitespace);      // 2
         b.pitem(Statement);       // 1 = body
         b.pitem(pos);             // 0 = end
-        b.assertLengthIs(15);
+        b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -2942,6 +3019,7 @@ function IterationStatement_for_in(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                                           // 14 = start
             keyword("for"),                                // 13
@@ -2949,7 +3027,7 @@ function IterationStatement_for_in(p: Parser): ASTNode {
             punctuator("("),                               // 11
             whitespace,                                    // 10
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.bchoice([ // 9 = binding
             () => {
                 b.pitems([
@@ -2973,7 +3051,7 @@ function IterationStatement_for_in(p: Parser): ASTNode {
                 b.pitem(ForDeclaration);
             }
         ]);
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.pitems([
             whitespace,                                    // 8
             keyword("in"),                                 // 7
@@ -2985,9 +3063,9 @@ function IterationStatement_for_in(p: Parser): ASTNode {
             Statement,                                     // 1 = body
             pos,                                           // 0 = end
         ]);
-        b.assertLengthIs(15);
+        b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForIn",[9,5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3003,6 +3081,7 @@ function IterationStatement_for_of(p: Parser): ASTNode {
 
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                                           // 14 = start
             keyword("for"),                                // 13
@@ -3010,7 +3089,7 @@ function IterationStatement_for_of(p: Parser): ASTNode {
             punctuator("("),                               // 11
             whitespace,                                    // 10
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.bchoice([
             () => {
                 b.pitems([
@@ -3034,7 +3113,7 @@ function IterationStatement_for_of(p: Parser): ASTNode {
                 b.pitem(ForDeclaration);
             },
         ]);
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.pitems([
             whitespace,                                    // 8
             keyword("of"),                                 // 7
@@ -3046,9 +3125,9 @@ function IterationStatement_for_of(p: Parser): ASTNode {
             Statement,                                     // 1 = body
             pos,                                           // 0 = end
         ]);
-        b.assertLengthIs(15);
+        b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForOf",[9,5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3059,12 +3138,13 @@ const IterationStatement_for_of_b = bfun(IterationStatement_for_of);
 
 function IterationStatement_for(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         IterationStatement_for_c_b,
         IterationStatement_for_in_b,
         IterationStatement_for_of_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3074,12 +3154,13 @@ const IterationStatement_for_b = bfun(IterationStatement_for);
 
 function IterationStatement(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         IterationStatement_do_b,
         IterationStatement_while_b,
         IterationStatement_for_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3090,6 +3171,7 @@ const IterationStatement_b = bfun(IterationStatement);
 function ForDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -3099,7 +3181,7 @@ function ForDeclaration(p: Parser): ASTNode {
                     ForBinding,       // 1 = binding
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"LetForDeclaration",[1]));
             },
             () => {
@@ -3110,11 +3192,11 @@ function ForDeclaration(p: Parser): ASTNode {
                     ForBinding,       // 1 = binding
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"ConstForDeclaration",[1]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3125,11 +3207,12 @@ const ForDeclaration_b = bfun(ForDeclaration);
 
 function ForBinding(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         BindingIdentifier_b,
         BindingPattern_b, // FIXME: Need test cases for this
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3142,6 +3225,7 @@ const ForBinding_b = bfun(ForBinding);
 function ContinueStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -3152,7 +3236,7 @@ function ContinueStatement(p: Parser): ASTNode {
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
                 ]);
-                b.assertLengthIs(6);
+                b.assertLengthIs(oldLength+6);
                 b.popAboveAndSet(5,makeNode(b,5,0,"ContinueStatement",[2]));
             },
             () => {
@@ -3165,11 +3249,11 @@ function ContinueStatement(p: Parser): ASTNode {
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ContinueStatement",[3]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3183,6 +3267,7 @@ const ContinueStatement_b = bfun(ContinueStatement);
 function BreakStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -3193,7 +3278,7 @@ function BreakStatement(p: Parser): ASTNode {
                     punctuator(";"),  // 1
                     pos,              // 0 = end
                 ]);
-                b.assertLengthIs(6);
+                b.assertLengthIs(oldLength+6);
                 b.popAboveAndSet(5,makeNode(b,5,0,"BreakStatement",[2]));
             },
             () => {
@@ -3206,11 +3291,11 @@ function BreakStatement(p: Parser): ASTNode {
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"BreakStatement",[3]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3224,6 +3309,7 @@ const BreakStatement_b = bfun(BreakStatement);
 function ReturnStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -3234,7 +3320,7 @@ function ReturnStatement(p: Parser): ASTNode {
                     punctuator(";"),   // 1
                     pos,               // 0 = end
                 ]);
-                b.assertLengthIs(6);
+                b.assertLengthIs(oldLength+6);
                 b.popAboveAndSet(5,makeNode(b,5,0,"ReturnStatement",[2]));
             },
             () => {
@@ -3247,11 +3333,11 @@ function ReturnStatement(p: Parser): ASTNode {
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ReturnStatement",[3]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3265,6 +3351,7 @@ const ReturnStatement_b = bfun(ReturnStatement);
 function WithStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,             // 10 = start
             keyword("with"), // 9
@@ -3278,9 +3365,9 @@ function WithStatement(p: Parser): ASTNode {
             Statement,       // 1 = body
             pos,             // 0 = end
         ]);
-        b.assertLengthIs(11);
+        b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"WithStatement",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3294,6 +3381,7 @@ const WithStatement_b = bfun(WithStatement);
 function SwitchStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 10 = start
             keyword("switch"), // 9
@@ -3307,9 +3395,9 @@ function SwitchStatement(p: Parser): ASTNode {
             CaseBlock,         // 1 = cases
             pos,               // 0 = end
         ]);
-        b.assertLengthIs(11);
+        b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"SwitchStatement",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3321,6 +3409,7 @@ const SwitchStatement_b = bfun(SwitchStatement);
 function CaseBlock_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,             // 7
             punctuator("{"), // 6
@@ -3341,9 +3430,9 @@ function CaseBlock_1(p: Parser): ASTNode {
             punctuator("}"), // 1
             pos,             // 0
         ]);
-        b.assertLengthIs(8);
+        b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"CaseBlock1",[3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3355,6 +3444,7 @@ const CaseBlock_1_b = bfun(CaseBlock_1);
 function CaseBlock_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,              // 10 = start
             punctuator("{"),  // 9
@@ -3368,9 +3458,9 @@ function CaseBlock_2(p: Parser): ASTNode {
             punctuator("}"),  // 1
             pos,              // 0 = end
         ]);
-        b.assertLengthIs(11);
+        b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"CaseBlock2",[7,5,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3381,11 +3471,12 @@ const CaseBlock_2_b = bfun(CaseBlock_2);
 
 function CaseBlock(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         CaseBlock_1_b,
         CaseBlock_2_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3396,6 +3487,7 @@ const CaseBlock_b = bfun(CaseBlock);
 function CaseClauses(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(CaseClause);
@@ -3408,7 +3500,7 @@ function CaseClauses(p: Parser): ASTNode {
                 b.popAboveAndSet(1,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3420,6 +3512,7 @@ const CaseClauses_b = bfun(CaseClauses);
 function CaseClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,             // 8 = start
             keyword("case"), // 7
@@ -3431,9 +3524,9 @@ function CaseClause(p: Parser): ASTNode {
             StatementList,   // 1 = statements
             pos,             // 0 = end
         ]);
-        b.assertLengthIs(9);
+        b.assertLengthIs(oldLength+9);
         b.popAboveAndSet(8,makeNode(b,8,0,"CaseClause",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3445,6 +3538,7 @@ const CaseClause_b = bfun(CaseClause);
 function DefaultClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                // 6 = start
             keyword("default"), // 5
@@ -3454,12 +3548,12 @@ function DefaultClause(p: Parser): ASTNode {
             StatementList,      // 1 = statements
             whitespace,         // 0
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         const start = checkNumber(b.get(6));
         const statements = checkNode(b.get(1));
         const end = statements.range.end;
         b.popAboveAndSet(6,new GenericNode(new Range(start,end),"DefaultClause",[statements]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3473,6 +3567,7 @@ const DefaultClause_b = bfun(DefaultClause);
 function LabelledStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,             // 6 = start
             LabelIdentifier, // 5 = ident
@@ -3482,9 +3577,9 @@ function LabelledStatement(p: Parser): ASTNode {
             LabelledItem,    // 1 = item
             pos,             // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"LabelledStatement",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3495,11 +3590,12 @@ const LabelledStatement_b = bfun(LabelledStatement);
 
 function LabelledItem(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         Statement_b,
         FunctionDeclaration_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3512,6 +3608,7 @@ const LabelledItem_b = bfun(LabelledItem);
 function ThrowStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 6 = start
             keyword("throw"),    // 5
@@ -3521,9 +3618,9 @@ function ThrowStatement(p: Parser): ASTNode {
             punctuator(";"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ThrowStatement",[3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3537,6 +3634,7 @@ const ThrowStatement_b = bfun(ThrowStatement);
 function TryStatement(p: Parser): ASTNode {
     return p.attempt((start) => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);                   // 7 = start
         b.pitem(keyword("try"));        // 6
         b.pitem(whitespace);            // 5
@@ -3558,9 +3656,9 @@ function TryStatement(p: Parser): ASTNode {
             },
         ]);
         b.pitem(pos);                   // 0 = end
-        b.assertLengthIs(8);
+        b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"TryStatement",[4,2,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3572,6 +3670,7 @@ const TryStatement_b = bfun(TryStatement);
 function Catch(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,              // 10 = start
             keyword("catch"), // 9
@@ -3585,9 +3684,9 @@ function Catch(p: Parser): ASTNode {
             Block,            // 1 = block
             pos,              // 0 = end
         ]);
-        b.assertLengthIs(11);
+        b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"Catch",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3599,6 +3698,7 @@ const Catch_b = bfun(Catch);
 function Finally(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                // 4
             keyword("finally"), // 3
@@ -3606,9 +3706,9 @@ function Finally(p: Parser): ASTNode {
             Block,              // 1
             pos,                // 0
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"Finally",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3619,11 +3719,12 @@ const Finally_b = bfun(Finally);
 
 function CatchParameter(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         BindingIdentifier_b,
         BindingPattern_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3636,6 +3737,7 @@ const CatchParameter_b = bfun(CatchParameter);
 function DebuggerStatement(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 4
             keyword("debugger"), // 3
@@ -3643,9 +3745,9 @@ function DebuggerStatement(p: Parser): ASTNode {
             punctuator(";"),     // 1
             pos,                 // 0
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"DebuggerStatement",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3659,6 +3761,7 @@ const DebuggerStatement_b = bfun(DebuggerStatement);
 function FunctionDeclaration_named(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 16 = start
             keyword("function"), // 15
@@ -3678,9 +3781,9 @@ function FunctionDeclaration_named(p: Parser): ASTNode {
             punctuator("}"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(17);
+        b.assertLengthIs(oldLength+17);
         b.popAboveAndSet(16,makeNode(b,16,0,"FunctionDeclaration",[13,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3692,6 +3795,7 @@ const FunctionDeclaration_named_b = bfun(FunctionDeclaration_named);
 function FunctionDeclaration_unnamed(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 15 = start
             keyword("function"), // 14
@@ -3710,9 +3814,9 @@ function FunctionDeclaration_unnamed(p: Parser): ASTNode {
             punctuator("}"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(16);
+        b.assertLengthIs(oldLength+16);
         b.popAboveAndSet(15,makeNode(b,15,0,"FunctionDeclaration",[10,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3748,6 +3852,7 @@ const FunctionDeclaration_b = bfun(FunctionDeclaration);
 function FunctionExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 15 = start
             keyword("function"), // 14
@@ -3772,9 +3877,9 @@ function FunctionExpression(p: Parser): ASTNode {
             punctuator("}"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(16);
+        b.assertLengthIs(oldLength+16);
         b.popAboveAndSet(15,makeNode(b,15,0,"FunctionExpression",[12,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3794,6 +3899,7 @@ const StrictFormalParameters_b = bfun(StrictFormalParameters);
 function FormalParameters(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitem(FormalParameterList);
@@ -3803,7 +3909,7 @@ function FormalParameters(p: Parser): ASTNode {
                 b.popAboveAndSet(0,makeNode(b,0,0,"FormalParameters1",[]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3815,6 +3921,7 @@ const FormalParameters_b = bfun(FormalParameters);
 function FormalParameterList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -3822,7 +3929,7 @@ function FormalParameterList(p: Parser): ASTNode {
                     FunctionRestParameter, // 1 = rest
                     pos,                   // 0 = end
                 ]);
-                b.assertLengthIs(3);
+                b.assertLengthIs(oldLength+3);
                 b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters2",[1]));
             },
             () => {
@@ -3837,18 +3944,18 @@ function FormalParameterList(p: Parser): ASTNode {
                             FunctionRestParameter,
                             pos,
                         ]);
-                        b.assertLengthIs(7);
+                        b.assertLengthIs(oldLength+7);
                         b.popAboveAndSet(6,makeNode(b,6,0,"FormalParameters4",[5,1]));
                     },
                     () => {
                         b.pitem(pos);
-                        b.assertLengthIs(3);
+                        b.assertLengthIs(oldLength+3);
                         b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters3",[1]));
                     },
                 ]);
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3860,6 +3967,7 @@ const FormalParameterList_b = bfun(FormalParameterList);
 function FormalsList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(FormalParameter);
@@ -3874,7 +3982,7 @@ function FormalsList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3909,11 +4017,12 @@ const FunctionBody_b = bfun(FunctionBody);
 
 function FunctionStatementList(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         StatementList_b,
         bfun(() => new ListNode(new Range(p.pos,p.pos),[])),
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3926,6 +4035,7 @@ const FunctionStatementList_b = bfun(FunctionStatementList);
 function ArrowFunction(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 6 = start
             ArrowParameters,     // 5 = params
@@ -3935,9 +4045,9 @@ function ArrowFunction(p: Parser): ASTNode {
             ConciseBody,         // 1 = body
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ArrowFunction",[5,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3948,11 +4058,12 @@ const ArrowFunction_b = bfun(ArrowFunction);
 
 function ArrowParameters(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         BindingIdentifier_b,
         ArrowFormalParameters_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -3973,6 +4084,7 @@ const ConciseBody_1_b = bfun(ConciseBody_1);
 function ConciseBody_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             punctuator("{"), // 4
             whitespace,      // 3
@@ -3980,9 +4092,9 @@ function ConciseBody_2(p: Parser): ASTNode {
             whitespace,      // 1
             punctuator("}"), // 0
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,b.get(2));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -3993,11 +4105,12 @@ const ConciseBody_2_b = bfun(ConciseBody_2);
 
 function ConciseBody(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         ConciseBody_1_b,
         ConciseBody_2_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -4008,6 +4121,7 @@ const ConciseBody_b = bfun(ConciseBody);
 function ArrowFormalParameters(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             punctuator("("),        // 4
             whitespace,             // 3
@@ -4015,9 +4129,9 @@ function ArrowFormalParameters(p: Parser): ASTNode {
             whitespace,             // 1
             punctuator(")"),        // 0
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,b.get(2));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4031,6 +4145,7 @@ const ArrowFormalParameters_b = bfun(ArrowFormalParameters);
 function MethodDefinition_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                    // 14 = start
             PropertyName,           // 13 = name
@@ -4048,9 +4163,9 @@ function MethodDefinition_1(p: Parser): ASTNode {
             punctuator("}"),        // 1
             pos,                    // 0 = end
         ]);
-        b.assertLengthIs(15);
+        b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"Method",[13,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4070,6 +4185,7 @@ const MethodDefinition_2_b = bfun(MethodDefinition_2);
 function MethodDefinition_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 14 = start
             identifier("get"), // 13 "get" is not a reserved word, so we can't use keyword here
@@ -4087,9 +4203,9 @@ function MethodDefinition_3(p: Parser): ASTNode {
             punctuator("}"),   // 1
             pos,               // 0 = end
         ]);
-        b.assertLengthIs(15);
+        b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"Getter",[11,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4101,6 +4217,7 @@ const MethodDefinition_3_b = bfun(MethodDefinition_3);
 function MethodDefinition_4(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                      // 16 = start
             identifier("set"),        // 15
@@ -4120,9 +4237,9 @@ function MethodDefinition_4(p: Parser): ASTNode {
             punctuator("}"),          // 1
             pos,                      // 0 = end
         ]);
-        b.assertLengthIs(17);
+        b.assertLengthIs(oldLength+17);
         b.popAboveAndSet(16,makeNode(b,16,0,"Setter",[13,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4133,13 +4250,14 @@ const MethodDefinition_4_b = bfun(MethodDefinition_4);
 
 function MethodDefinition(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         MethodDefinition_1_b,
         MethodDefinition_2_b,
         MethodDefinition_3_b,
         MethodDefinition_4_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -4160,6 +4278,7 @@ const PropertySetParameterList_b = bfun(PropertySetParameterList);
 function GeneratorMethod(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                    // 16 = start
             punctuator("*"),        // 15
@@ -4179,9 +4298,9 @@ function GeneratorMethod(p: Parser): ASTNode {
             punctuator("}"),        // 1
             pos,                    // 0 = end
         ]);
-        b.assertLengthIs(17);
+        b.assertLengthIs(oldLength+17);
         b.popAboveAndSet(16,makeNode(b,16,0,"GeneratorMethod",[13,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4193,6 +4312,7 @@ const GeneratorMethod_b = bfun(GeneratorMethod);
 function GeneratorDeclaration_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 18 = start
             keyword("function"), // 17
@@ -4214,9 +4334,9 @@ function GeneratorDeclaration_1(p: Parser): ASTNode {
             punctuator("}"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(19);
+        b.assertLengthIs(oldLength+19);
         b.popAboveAndSet(18,makeNode(b,18,0,"GeneratorDeclaration",[13,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4228,6 +4348,7 @@ const GeneratorDeclaration_1_b = bfun(GeneratorDeclaration_1);
 function GeneratorDeclaration_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 16 = start
             keyword("function"), // 15
@@ -4247,10 +4368,10 @@ function GeneratorDeclaration_2(p: Parser): ASTNode {
             punctuator("}"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(17);
+        b.assertLengthIs(oldLength+17);
         // FIXME: Should be DefaultGeneratorDeclaration
         b.popAboveAndSet(16,makeNode(b,16,0,"DefaultGeneratorDeclaration",[9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4286,6 +4407,7 @@ const GeneratorDeclaration_b = bfun(GeneratorDeclaration);
 function GeneratorExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                 // 17 = start
             keyword("function"), // 16
@@ -4314,9 +4436,9 @@ function GeneratorExpression(p: Parser): ASTNode {
             punctuator("}"),     // 1
             pos,                 // 0 = end
         ]);
-        b.assertLengthIs(18);
+        b.assertLengthIs(oldLength+18);
         b.popAboveAndSet(17,makeNode(b,17,0,"GeneratorExpression",[12,9,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4336,6 +4458,7 @@ const GeneratorBody_b = bfun(GeneratorBody);
 function YieldExpression_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                  // 6
             keyword("yield"),     // 5
@@ -4345,9 +4468,9 @@ function YieldExpression_1(p: Parser): ASTNode {
             AssignmentExpression, // 1
             pos,                  // 0
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"YieldStar",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4359,6 +4482,7 @@ const YieldExpression_1_b = bfun(YieldExpression_1);
 function YieldExpression_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                  // 4
             keyword("yield"),     // 3
@@ -4366,9 +4490,9 @@ function YieldExpression_2(p: Parser): ASTNode {
             AssignmentExpression, // 1
             pos,                  // 0
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"YieldExpr",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4380,14 +4504,15 @@ const YieldExpression_2_b = bfun(YieldExpression_2);
 function YieldExpression_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             keyword("yield"),
             pos,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"YieldNothing",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4398,12 +4523,13 @@ const YieldExpression_3_b = bfun(YieldExpression_3);
 
 function YieldExpression(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         YieldExpression_1_b,
         YieldExpression_2_b,
         YieldExpression_3_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -4416,6 +4542,7 @@ const YieldExpression_b = bfun(YieldExpression);
 function ClassDeclaration_1(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 6 = start
             keyword("class"),  // 5
@@ -4425,9 +4552,9 @@ function ClassDeclaration_1(p: Parser): ASTNode {
             ClassTail,         // 1 = tail
             pos,               // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ClassDeclaration",[3,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4439,6 +4566,7 @@ const ClassDeclaration_1_b = bfun(ClassDeclaration_1);
 function ClassDeclaration_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,              // 5
             keyword("class"), // 4
@@ -4447,9 +4575,9 @@ function ClassDeclaration_2(p: Parser): ASTNode {
             ClassTail,        // 1
             pos,              // 0
         ]);
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassDeclaration",[2,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4485,6 +4613,7 @@ const ClassDeclaration_b = bfun(ClassDeclaration);
 function ClassExpression(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);              // 5
         b.pitem(keyword("class")); // 4
         b.pitem(whitespace);       // 3
@@ -4497,9 +4626,9 @@ function ClassExpression(p: Parser): ASTNode {
         });
         b.pitem(ClassTail);        // 1
         b.pitem(pos);              // 0
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassExpression",[2,1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4511,6 +4640,7 @@ const ClassExpression_b = bfun(ClassExpression);
 function ClassTail(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);               // 6 = start
         b.bopt(() => {              // 5 = heritage
             b.pitems([
@@ -4536,9 +4666,9 @@ function ClassTail(p: Parser): ASTNode {
         ]);
         b.pitem(punctuator("}"));   // 1
         b.pitem(pos);               // 0 = end
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ClassTail",[5,2]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4550,6 +4680,7 @@ const ClassTail_b = bfun(ClassTail);
 function ClassHeritage(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                    // 4 = start
             keyword("extends"),     // 3
@@ -4557,9 +4688,9 @@ function ClassHeritage(p: Parser): ASTNode {
             LeftHandSideExpression, // 1 = expr
             pos,                    // 0 = end
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"Extends",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4579,6 +4710,7 @@ const ClassBody_b = bfun(ClassBody);
 function ClassElementList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(ClassElement);
@@ -4589,7 +4721,7 @@ function ClassElementList(p: Parser): ASTNode {
                 b.popAboveAndSet(1,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4609,6 +4741,7 @@ const ClassElement_1_b = bfun(ClassElement_1);
 function ClassElement_2(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             keyword("static"),
@@ -4616,9 +4749,9 @@ function ClassElement_2(p: Parser): ASTNode {
             MethodDefinition,
             pos,
         ]);
-        b.assertLengthIs(5);
+        b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"StaticMethodDefinition",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4630,14 +4763,15 @@ const ClassElement_2_b = bfun(ClassElement_2);
 function ClassElement_3(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             punctuator(";"),
             pos,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"EmptyClassElement",[]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4648,12 +4782,13 @@ const ClassElement_3_b = bfun(ClassElement_3);
 
 function ClassElement(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         ClassElement_1_b,
         ClassElement_2_b,
         ClassElement_3_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -4720,6 +4855,7 @@ const ModuleBody_b = bfun(ModuleBody);
 function ModuleItemList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(ModuleItem);
@@ -4730,7 +4866,7 @@ function ModuleItemList(p: Parser): ASTNode {
                 b.popAboveAndSet(1,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4741,12 +4877,13 @@ const ModuleItemList_b = bfun(ModuleItemList);
 
 function ModuleItem(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         ImportDeclaration_b,
         ExportDeclaration_b,
         StatementListItem_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -4759,6 +4896,7 @@ const ModuleItem_b = bfun(ModuleItem);
 function ImportDeclaration_from(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 8 = start
             keyword("import"), // 7
@@ -4770,9 +4908,9 @@ function ImportDeclaration_from(p: Parser): ASTNode {
             punctuator(";"),   // 1
             pos,               // 0 = end
         ]);
-        b.assertLengthIs(9);
+        b.assertLengthIs(oldLength+9);
         b.popAboveAndSet(8,makeNode(b,8,0,"ImportFrom",[5,3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4784,6 +4922,7 @@ const ImportDeclaration_from_b = bfun(ImportDeclaration_from);
 function ImportDeclaration_module(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,               // 6 = start
             keyword("import"), // 5
@@ -4793,9 +4932,9 @@ function ImportDeclaration_module(p: Parser): ASTNode {
             punctuator(";"),   // 1
             pos,               // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ImportModule",[3]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4806,11 +4945,12 @@ const ImportDeclaration_module_b = bfun(ImportDeclaration_module);
 
 function ImportDeclaration(p: Parser): ASTNode {
     const b = new Builder(p);
+    const oldLength = b.length;
     b.bchoice([
         ImportDeclaration_from_b,
         ImportDeclaration_module_b,
     ]);
-    b.assertLengthIs(1);
+    b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
 }
 
@@ -4821,6 +4961,7 @@ const ImportDeclaration_b = bfun(ImportDeclaration);
 function ImportClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitem(NameSpaceImport);
@@ -4840,7 +4981,7 @@ function ImportClause(p: Parser): ASTNode {
                             NameSpaceImport,    // 1 = nsimport
                             pos,                // 0 = end
                         ]);
-                        b.assertLengthIs(7);
+                        b.assertLengthIs(oldLength+7);
                         b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNameSpaceImports",[5,1]));
                     },
                     () => {
@@ -4851,7 +4992,7 @@ function ImportClause(p: Parser): ASTNode {
                             NamedImports,       // 1 = nsimports
                             pos,                // 0 = end
                         ]);
-                        b.assertLengthIs(7);
+                        b.assertLengthIs(oldLength+7);
                         b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNamedImports",[5,1]));
                     },
                     () => {
@@ -4861,7 +5002,7 @@ function ImportClause(p: Parser): ASTNode {
                 ]);
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4881,6 +5022,7 @@ const ImportedDefaultBinding_b = bfun(ImportedDefaultBinding);
 function NameSpaceImport(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,             // 6 = start
             punctuator("*"), // 5
@@ -4890,9 +5032,9 @@ function NameSpaceImport(p: Parser): ASTNode {
             ImportedBinding, // 1 = binding
             pos,             // 0 = end
         ]);
-        b.assertLengthIs(7);
+        b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NameSpaceImport",[1]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4904,6 +5046,7 @@ const NameSpaceImport_b = bfun(NameSpaceImport);
 function NamedImports(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                // 5 = start
             punctuator("{"),    // 4
@@ -4918,7 +5061,7 @@ function NamedImports(p: Parser): ASTNode {
                     b.pitem(whitespace);
                     b.pop();
                 });
-                b.assertLengthIs(6);
+                b.assertLengthIs(oldLength+6);
                 b.popAboveAndSet(2,b.get(2));
             },
             () => {
@@ -4929,9 +5072,9 @@ function NamedImports(p: Parser): ASTNode {
             punctuator("}"),    // 1
             pos,                // 0 = end
         ]);
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"NamedImports",[2]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4943,14 +5086,15 @@ const NamedImports_b = bfun(NamedImports);
 function FromClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             keyword("from"),
             whitespace,
             ModuleSpecifier,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4962,6 +5106,7 @@ const FromClause_b = bfun(FromClause);
 function ImportsList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(ImportSpecifier);
@@ -4976,7 +5121,7 @@ function ImportsList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -4988,6 +5133,7 @@ const ImportsList_b = bfun(ImportsList);
 function ImportSpecifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.bchoice([
             () => {
                 b.pitems([
@@ -4999,7 +5145,7 @@ function ImportSpecifier(p: Parser): ASTNode {
                     ImportedBinding, // 1 = binding
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ImportAsSpecifier",[5,1]));
             },
             () => {
@@ -5008,11 +5154,11 @@ function ImportSpecifier(p: Parser): ASTNode {
                     ImportedBinding, // 1 = binding
                     pos,             // 0 = end
                 ]);
-                b.assertLengthIs(3);
+                b.assertLengthIs(oldLength+3);
                 b.popAboveAndSet(2,makeNode(b,2,0,"ImportSpecifier",[1]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -5042,12 +5188,13 @@ const ImportedBinding_b = bfun(ImportedBinding);
 function ExportDeclaration(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,
             keyword("export"),
             whitespace,
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.bchoice([
             () => {
                 b.pitems([
@@ -5056,7 +5203,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     () => HoistableDeclaration(p,{ Default: true }), // 1
                     pos,                                             // 0
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
             },
             () => {
@@ -5079,7 +5226,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     punctuator(";"), // 1
                     pos, // 0
                 ]);
-                b.assertLengthIs(11);
+                b.assertLengthIs(oldLength+11);
                 b.popAboveAndSet(10,makeNode(b,10,0,"ExportDefault",[3]));
             },
             () => {
@@ -5091,7 +5238,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     punctuator(";"), // 1
                     pos,             // 0
                 ]);
-                b.assertLengthIs(9);
+                b.assertLengthIs(oldLength+9);
                 b.popAboveAndSet(8,makeNode(b,8,0,"ExportStar",[3]));
             },
             () => {
@@ -5103,7 +5250,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     punctuator(";"), // 1
                     pos,             // 0
                 ]);
-                b.assertLengthIs(9);
+                b.assertLengthIs(oldLength+9);
                 b.popAboveAndSet(8,makeNode(b,8,0,"ExportFrom",[5,3]));
             },
             () => {
@@ -5113,7 +5260,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     punctuator(";"), // 1
                     pos,             // 0
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportPlain",[3]));
             },
             () => {
@@ -5121,7 +5268,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                     VariableStatement, // 1
                     pos,               // 0
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"ExportVariable",[1]));
             },
             () => {
@@ -5129,11 +5276,11 @@ function ExportDeclaration(p: Parser): ASTNode {
                     Declaration, // 1
                     pos,         // 0
                 ]);
-                b.assertLengthIs(5);
+                b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"ExportDeclaration",[1]));
             },
         ]);
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -5145,6 +5292,7 @@ const ExportDeclaration_b = bfun(ExportDeclaration);
 function ExportClause(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitems([
             pos,                       // 5
             punctuator("{"),           // 4
@@ -5159,9 +5307,9 @@ function ExportClause(p: Parser): ASTNode {
                     b.pitem(whitespace);
                     b.pop();
                 });
-                b.assertLengthIs(6);
+                b.assertLengthIs(oldLength+6);
                 b.popAboveAndSet(2,b.get(2));
-                b.assertLengthIs(4);
+                b.assertLengthIs(oldLength+4);
             },
             () => {
                 b.pitem(pos);
@@ -5169,14 +5317,14 @@ function ExportClause(p: Parser): ASTNode {
                 b.popAboveAndSet(0,new ListNode(new Range(curPos,curPos),[]));
             },
         ]);
-        b.assertLengthIs(4);
+        b.assertLengthIs(oldLength+4);
         b.pitems([
             punctuator("}"),           // 1
             pos,                       // 0
         ]);
-        b.assertLengthIs(6);
+        b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ExportClause",[2]));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -5188,6 +5336,7 @@ const ExportClause_b = bfun(ExportClause);
 function ExportsList(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.list(
             () => {
                 b.pitem(ExportSpecifier);
@@ -5202,7 +5351,7 @@ function ExportsList(p: Parser): ASTNode {
                 b.popAboveAndSet(3,b.get(0));
             },
         );
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
@@ -5214,6 +5363,7 @@ const ExportsList_b = bfun(ExportsList);
 function ExportSpecifier(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
+        const oldLength = b.length;
         b.pitem(pos);
         b.pitem(IdentifierName);
         b.bchoice([
@@ -5226,19 +5376,19 @@ function ExportSpecifier(p: Parser): ASTNode {
                     IdentifierName,    // 1
                     pos,               // 0
                 ]);
-                b.assertLengthIs(7);
+                b.assertLengthIs(oldLength+7);
                 b.popAboveAndSet(4,makeNode(b,6,0,"ExportAsSpecifier",[5,1]));
-                b.assertLengthIs(3);
+                b.assertLengthIs(oldLength+3);
             },
             () => {
                 b.pitem(pos);
-                b.assertLengthIs(3);
+                b.assertLengthIs(oldLength+3);
                 b.popAboveAndSet(0,makeNode(b,2,0,"ExportNormalSpecifier",[1]));
             },
         ]);
-        b.assertLengthIs(3);
+        b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
-        b.assertLengthIs(1);
+        b.assertLengthIs(oldLength+1);
         return checkNode(b.get(0));
     });
 }
