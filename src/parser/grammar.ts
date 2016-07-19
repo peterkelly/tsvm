@@ -40,12 +40,12 @@ export class Builder {
     public constructor(parser: Parser) {
         this.parser = parser;
     }
-    public item(f: (p: Parser) => any): void {
+    public pitem(f: (p: Parser) => any): void {
         this.stack.push(f(this.parser));
     }
-    public items(funs: ((p: Parser) => any)[]): void {
+    public pitems(funs: ((p: Parser) => any)[]): void {
         for (const f of funs)
-            this.item(f);
+            this.pitem(f);
     }
     public push(value: any): void {
         this.stack.push(value);
@@ -88,11 +88,11 @@ export class Builder {
     }
 
     // F must either throw an exception or result in exactly one extra item on the stack
-    public opt(f: () => void): void {
+    public bopt(f: (b: Builder) => void): void {
         try {
             this.attempt(() => {
                 const oldLength = this.stack.length;
-                f();
+                f(this);
                 this.assertLengthIs(oldLength+1);
             });
         }
@@ -103,7 +103,7 @@ export class Builder {
         }
     }
 
-    public choice(list: ((b: Builder) => void)[]): void {
+    public bchoice(list: ((b: Builder) => void)[]): void {
         const start = this.parser.pos;
         const length = this.stack.length;
         for (const item of list) {
@@ -120,7 +120,7 @@ export class Builder {
         throw new ParseError(this.parser,this.parser.pos,"No valid alternative found");
     }
 
-    public repeat(f: (b: Builder) => void): void {
+    public brepeat(f: (b: Builder) => void): void {
         while (true) {
             const start = this.parser.pos;
             const length = this.stack.length;
@@ -138,8 +138,8 @@ export class Builder {
         }
     }
 
-    public repeatChoice(list: ((b: Builder) => void)[]): void {
-        this.repeat(() => this.choice(list));
+    public brepeatChoice(list: ((b: Builder) => void)[]): void {
+        this.brepeat(() => this.bchoice(list));
     }
 
     public list(first: (b: Builder) => void, rest: (b: Builder) => void): void {
@@ -156,7 +156,7 @@ export class Builder {
             this.stack.pop();
 
             this.assertLengthIs(initialLength);
-            this.repeat(() => {
+            this.brepeat(() => {
                 rest(this);
                 this.assertLengthIs(initialLength+1);
                 const node = this.get(0);
