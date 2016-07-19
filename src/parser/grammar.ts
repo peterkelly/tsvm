@@ -77,11 +77,11 @@ export class Builder {
         }
     }
 
-    public attempt<T>(f: () => T): T {
+    public attempt(f: () => void): void {
         const start = this.parser.pos;
         const length = this.stack.length;
         try {
-            return f();
+            f();
         }
         catch (e) {
             this.parser.pos = start;
@@ -238,6 +238,18 @@ export function bfun(f: (p: Parser) => any): (b: Builder) => void {
     return (b: Builder) => {
         b.pitem(f);
     };
+}
+
+export function pfun(f: (b: Builder) => void): (p: Parser) => any {
+    return (p: Parser) => {
+        return p.attempt(() => {
+            const b = new Builder(p);
+            const oldLength = b.length;
+            f(b);
+            b.assertLengthIs(oldLength+1);
+            return checkNode(b.get(0));
+        });
+    }
 }
 
 export function checkNode(value: any): ASTNode | null {

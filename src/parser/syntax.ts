@@ -228,6 +228,7 @@ import {
     whitespace,
     whitespaceNoNewline,
     bfun,
+    pfun,
     checkNode,
     checkListNode,
     checkNumber,
@@ -493,17 +494,17 @@ const StringLiteral_b = bfun(StringLiteral);
 
 // ArrayLiteral
 
-function ArrayLiteral(p: Parser): ASTNode {
-    return p.attempt((start): ASTNode => {
-        const b = new Builder(p);
+function ArrayLiteral_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
+        const start = b.parser.pos;
         b.pitem(pos);
         b.pitem(punctuator("["));
         b.pitem(whitespace);
 
         const elements: ASTNode[] = [];
-        const listStart = p.pos;
-        let listEnd = p.pos;
+        const listStart = b.parser.pos;
+        let listEnd = b.parser.pos;
 
         b.assertLengthIs(oldLength+3);
 
@@ -525,8 +526,8 @@ function ArrayLiteral(p: Parser): ASTNode {
 
         while (true) {
             b.assertLengthIs(oldLength+4);
-            if (p.lookaheadPunctuator("]")) {
-                p.expectPunctuator("]");
+            if (b.parser.lookaheadPunctuator("]")) {
+                b.parser.expectPunctuator("]");
                 break;
             }
 
@@ -584,19 +585,18 @@ function ArrayLiteral(p: Parser): ASTNode {
 
         b.assertLengthIs(oldLength+4);
         const list = new ListNode(new Range(listStart,listEnd),elements);
-        b.popAboveAndSet(3,new GenericNode(new Range(start,p.pos),"ArrayLiteral",[list]));
+        b.popAboveAndSet(3,new GenericNode(new Range(start,b.parser.pos),"ArrayLiteral",[list]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ArrayLiteral_b = bfun(ArrayLiteral);
+const ArrayLiteral = pfun(ArrayLiteral_b);
 
 // SpreadElement
 
-function SpreadElement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function SpreadElement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -607,19 +607,18 @@ function SpreadElement(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const SpreadElement_b = bfun(SpreadElement);
+const SpreadElement = pfun(SpreadElement_b);
 
 // Section 12.2.6
 
 // ObjectLiteral
 
-function ObjectLiteral(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ObjectLiteral_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);             // 5
         b.pitem(punctuator("{")); // 4
@@ -636,7 +635,7 @@ function ObjectLiteral(p: Parser): ASTNode {
                 b.popAboveAndSet(2,b.get(2));
             },
             () => {
-                b.push(new ListNode(new Range(p.pos,p.pos),[]));
+                b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
             },
         ]);
         b.pitem(punctuator("}")); // 1
@@ -644,17 +643,16 @@ function ObjectLiteral(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ObjectLiteral",[2]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ObjectLiteral_b = bfun(ObjectLiteral);
+const ObjectLiteral = pfun(ObjectLiteral_b);
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function PropertyDefinitionList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -671,17 +669,16 @@ function PropertyDefinitionList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const PropertyDefinitionList_b = bfun(PropertyDefinitionList);
+const PropertyDefinitionList = pfun(PropertyDefinitionList_b);
 
 // PropertyDefinition_colon
 
-function PropertyDefinition_colon(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function PropertyDefinition_colon_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                  // 6 = start
@@ -695,16 +692,15 @@ function PropertyDefinition_colon(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ColonPropertyDefinition",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const PropertyDefinition_colon_b = bfun(PropertyDefinition_colon);
+const PropertyDefinition_colon = pfun(PropertyDefinition_colon_b);
 
 // PropertyDefinition
 
-function PropertyDefinition(p: Parser): ASTNode {
-    const b = new Builder(p);
+function PropertyDefinition_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         PropertyDefinition_colon_b,
@@ -713,30 +709,28 @@ function PropertyDefinition(p: Parser): ASTNode {
         IdentifierReference_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const PropertyDefinition_b = bfun(PropertyDefinition);
+const PropertyDefinition = pfun(PropertyDefinition_b);
 
 // PropertyName
 
-function PropertyName(p: Parser): ASTNode {
-    const b = new Builder(p);
+function PropertyName_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         LiteralPropertyName_b,
         ComputedPropertyName_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const PropertyName_b = bfun(PropertyName);
+const PropertyName = pfun(PropertyName_b);
 
 // LiteralPropertyName
 
-function LiteralPropertyName(p: Parser): ASTNode {
-    const b = new Builder(p);
+function LiteralPropertyName_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         IdentifierName_b,
@@ -744,16 +738,15 @@ function LiteralPropertyName(p: Parser): ASTNode {
         NumericLiteral_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const LiteralPropertyName_b = bfun(LiteralPropertyName);
+const LiteralPropertyName = pfun(LiteralPropertyName_b);
 
 // ComputedPropertyName
 
-function ComputedPropertyName(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ComputedPropertyName_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                  // 6 = start
@@ -767,17 +760,16 @@ function ComputedPropertyName(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ComputedPropertyName",[3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ComputedPropertyName_b = bfun(ComputedPropertyName);
+const ComputedPropertyName = pfun(ComputedPropertyName_b);
 
 // CoverInitializedName
 
-function CoverInitializedName(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CoverInitializedName_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 4 = start
@@ -789,17 +781,16 @@ function CoverInitializedName(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"CoverInitializedName",[3,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CoverInitializedName_b = bfun(CoverInitializedName);
+const CoverInitializedName = pfun(CoverInitializedName_b);
 
 // Initializer
 
-function Initializer(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function Initializer_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             punctuator("="),
@@ -809,11 +800,11 @@ function Initializer(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const Initializer_b = bfun(Initializer);
+const Initializer = pfun(Initializer_b);
 
 // Section 12.2.9
 
@@ -833,9 +824,8 @@ function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"
 
 // MemberExpression_new
 
-function MemberExpression_new(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function MemberExpression_new_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,              // 6 = start
@@ -849,16 +839,15 @@ function MemberExpression_new(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewExpression",[3,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const MemberExpression_new_b = bfun(MemberExpression_new);
+const MemberExpression_new = pfun(MemberExpression_new_b);
 
 // MemberExpression_start
 
-function MemberExpression_start(p: Parser): ASTNode {
-    const b = new Builder(p);
+function MemberExpression_start_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         PrimaryExpression_b,
@@ -867,16 +856,15 @@ function MemberExpression_start(p: Parser): ASTNode {
         MemberExpression_new_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const MemberExpression_start_b = bfun(MemberExpression_start);
+const MemberExpression_start = pfun(MemberExpression_start_b);
 
 // MemberExpression
 
-function MemberExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function MemberExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
         b.pitem(MemberExpression_start);
@@ -910,17 +898,16 @@ function MemberExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const MemberExpression_b = bfun(MemberExpression);
+const MemberExpression = pfun(MemberExpression_b);
 
 // SuperProperty
 
-function SuperProperty(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function SuperProperty_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -955,11 +942,11 @@ function SuperProperty(p: Parser): ASTNode {
             }
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const SuperProperty_b = bfun(SuperProperty);
+const SuperProperty = pfun(SuperProperty_b);
 
 // MetaProperty
 
@@ -971,9 +958,8 @@ const MetaProperty_b = bfun(MetaProperty);
 
 // NewTarget
 
-function NewTarget(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function NewTarget_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                  // 6
@@ -987,17 +973,16 @@ function NewTarget(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewTarget",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const NewTarget_b = bfun(NewTarget);
+const NewTarget = pfun(NewTarget_b);
 
 // NewExpression
 
-function NewExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function NewExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -1015,21 +1000,20 @@ function NewExpression(p: Parser): ASTNode {
                 const start = checkNumber(b.get(4));
                 const end = checkNumber(b.get(0));
                 const expr = checkNode(b.get(1));
-                b.popAboveAndSet(4,new GenericNode(new Range(start,p.pos),"NewExpression",[expr,null]));
+                b.popAboveAndSet(4,new GenericNode(new Range(start,b.parser.pos),"NewExpression",[expr,null]));
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const NewExpression_b = bfun(NewExpression);
+const NewExpression = pfun(NewExpression_b);
 
 // CallExpression_start
 
-function CallExpression_start(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CallExpression_start_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -1048,17 +1032,16 @@ function CallExpression_start(p: Parser): ASTNode {
             },
         ])
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CallExpression_start_b = bfun(CallExpression_start);
+const CallExpression_start = pfun(CallExpression_start_b);
 
 // CallExpression
 
-function CallExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CallExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
         b.pitem(CallExpression_start);
@@ -1103,17 +1086,16 @@ function CallExpression(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CallExpression_b = bfun(CallExpression);
+const CallExpression = pfun(CallExpression_b);
 
 // SuperCall
 
-function SuperCall(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function SuperCall_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,              // 4 = start
@@ -1125,17 +1107,16 @@ function SuperCall(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"SuperCall",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const SuperCall_b = bfun(SuperCall);
+const SuperCall = pfun(SuperCall_b);
 
 // Arguments
 
-function Arguments(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function Arguments_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -1152,7 +1133,7 @@ function Arguments(p: Parser): ASTNode {
                 const end = checkNumber(b.get(0));
                 const listpos = checkNumber(b.get(2));
                 const args = new ListNode(new Range(listpos,listpos),[]);
-                b.popAboveAndSet(5,new GenericNode(new Range(start,p.pos),"Arguments",[args]));
+                b.popAboveAndSet(5,new GenericNode(new Range(start,b.parser.pos),"Arguments",[args]));
             },
             () => {
                 b.pitems([
@@ -1169,17 +1150,16 @@ function Arguments(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const Arguments_b = bfun(Arguments);
+const Arguments = pfun(Arguments_b);
 
 // ArgumentList_item
 
-function ArgumentList_item(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ArgumentList_item_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -1198,17 +1178,16 @@ function ArgumentList_item(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ArgumentList_item_b = bfun(ArgumentList_item);
+const ArgumentList_item = pfun(ArgumentList_item_b);
 
 // ArgumentList
 
-function ArgumentList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ArgumentList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -1225,36 +1204,34 @@ function ArgumentList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ArgumentList_b = bfun(ArgumentList);
+const ArgumentList = pfun(ArgumentList_b);
 
 // LeftHandSideExpression
 
-function LeftHandSideExpression(p: Parser): ASTNode {
+function LeftHandSideExpression_b(b: Builder): void {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
-    const b = new Builder(p);
     const oldLength = b.length;
     b.bchoice([
         CallExpression_b,
         NewExpression_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const LeftHandSideExpression_b = bfun(LeftHandSideExpression);
+const LeftHandSideExpression = pfun(LeftHandSideExpression_b);
 
 // Section 12.4
 
 // PostfixExpression
 
-function PostfixExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function PostfixExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
         b.pitem(LeftHandSideExpression);
@@ -1282,19 +1259,18 @@ function PostfixExpression(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const PostfixExpression_b = bfun(PostfixExpression);
+const PostfixExpression = pfun(PostfixExpression_b);
 
 // Section 12.5
 
 // UnaryExpression
 
-function UnaryExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function UnaryExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -1401,19 +1377,18 @@ function UnaryExpression(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const UnaryExpression_b = bfun(UnaryExpression);
+const UnaryExpression = pfun(UnaryExpression_b);
 
 // Section 12.6
 
 // MultiplicativeExpression
 
-function MultiplicativeExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function MultiplicativeExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(UnaryExpression);      // 5 = left
@@ -1453,19 +1428,18 @@ function MultiplicativeExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const MultiplicativeExpression_b = bfun(MultiplicativeExpression);
+const MultiplicativeExpression = pfun(MultiplicativeExpression_b);
 
 // Section 12.7
 
 // AdditiveExpression
 
-function AdditiveExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function AdditiveExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                          // 6 = start
         b.pitem(MultiplicativeExpression);     // 5 = left
@@ -1494,19 +1468,18 @@ function AdditiveExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const AdditiveExpression_b = bfun(AdditiveExpression);
+const AdditiveExpression = pfun(AdditiveExpression_b);
 
 // Section 12.8
 
 // ShiftExpression
 
-function ShiftExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ShiftExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                    // 6 = start
         b.pitem(AdditiveExpression);     // 5 = left
@@ -1546,19 +1519,18 @@ function ShiftExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ShiftExpression_b = bfun(ShiftExpression);
+const ShiftExpression = pfun(ShiftExpression_b);
 
 // Section 12.9
 
 // RelationalExpression
 
-function RelationalExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function RelationalExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);             // 6 = start
         b.pitem(ShiftExpression); // 5 = left
@@ -1639,19 +1611,18 @@ function RelationalExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const RelationalExpression_b = bfun(RelationalExpression);
+const RelationalExpression = pfun(RelationalExpression_b);
 
 // Section 12.10
 
 // EqualityExpression
 
-function EqualityExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function EqualityExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                      // 6 = start
         b.pitem(RelationalExpression);     // 5 = left
@@ -1708,19 +1679,18 @@ function EqualityExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const EqualityExpression_b = bfun(EqualityExpression);
+const EqualityExpression = pfun(EqualityExpression_b);
 
 // Section 12.11
 
 // BitwiseANDExpression
 
-function BitwiseANDExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BitwiseANDExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                // 6 = start
         b.pitem(EqualityExpression); // 5 = left
@@ -1738,17 +1708,16 @@ function BitwiseANDExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BitwiseANDExpression_b = bfun(BitwiseANDExpression);
+const BitwiseANDExpression = pfun(BitwiseANDExpression_b);
 
 // BitwiseXORExpression
 
-function BitwiseXORExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BitwiseXORExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(BitwiseANDExpression); // 5 = left
@@ -1765,17 +1734,16 @@ function BitwiseXORExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BitwiseXORExpression_b = bfun(BitwiseXORExpression);
+const BitwiseXORExpression = pfun(BitwiseXORExpression_b);
 
 // BitwiseORExpression
 
-function BitwiseORExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BitwiseORExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(BitwiseXORExpression); // 5 = left
@@ -1792,19 +1760,18 @@ function BitwiseORExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BitwiseORExpression_b = bfun(BitwiseORExpression);
+const BitwiseORExpression = pfun(BitwiseORExpression_b);
 
 // Section 12.12
 
 // LogicalANDExpression
 
-function LogicalANDExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function LogicalANDExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                 // 6 = start
         b.pitem(BitwiseORExpression); // 5 = left
@@ -1821,17 +1788,16 @@ function LogicalANDExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const LogicalANDExpression_b = bfun(LogicalANDExpression);
+const LogicalANDExpression = pfun(LogicalANDExpression_b);
 
 // LogicalORExpression
 
-function LogicalORExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function LogicalORExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(LogicalANDExpression); // 5 = left
@@ -1848,19 +1814,18 @@ function LogicalORExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const LogicalORExpression_b = bfun(LogicalORExpression);
+const LogicalORExpression = pfun(LogicalORExpression_b);
 
 // Section 12.13
 
 // ConditionalExpression
 
-function ConditionalExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ConditionalExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                      // 10 = start
         b.pitem(LogicalORExpression);      // 9 = condition
@@ -1884,19 +1849,18 @@ function ConditionalExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ConditionalExpression_b = bfun(ConditionalExpression);
+const ConditionalExpression = pfun(ConditionalExpression_b);
 
 // Section 12.14
 
 // AssignmentExpression_plain
 
-function AssignmentExpression_plain(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function AssignmentExpression_plain_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                      // 6 = start
         b.pitem(LeftHandSideExpression);   // 5 = left
@@ -2025,17 +1989,16 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const AssignmentExpression_plain_b = bfun(AssignmentExpression_plain);
+const AssignmentExpression_plain = pfun(AssignmentExpression_plain_b);
 
 // AssignmentExpression
 
-function AssignmentExpression(p: Parser): ASTNode {
+function AssignmentExpression_b(b: Builder): void {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
-    const b = new Builder(p);
     const oldLength = b.length;
     b.bchoice([
         ArrowFunction_b,
@@ -2044,18 +2007,17 @@ function AssignmentExpression(p: Parser): ASTNode {
         YieldExpression_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const AssignmentExpression_b = bfun(AssignmentExpression);
+const AssignmentExpression = pfun(AssignmentExpression_b);
 
 // Section 12.15
 
 // Expression
 
-function Expression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function Expression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
         b.pitem(AssignmentExpression); // 5 = left
@@ -2072,18 +2034,17 @@ function Expression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const Expression_b = bfun(Expression);
+const Expression = pfun(Expression_b);
 
 // Section 13
 
 // Statement
 
-function Statement(p: Parser): ASTNode {
-    const b = new Builder(p);
+function Statement_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         BlockStatement_b,
@@ -2102,15 +2063,14 @@ function Statement(p: Parser): ASTNode {
         DebuggerStatement_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const Statement_b = bfun(Statement);
+const Statement = pfun(Statement_b);
 
 // Declaration
 
-function Declaration(p: Parser): ASTNode {
-    const b = new Builder(p);
+function Declaration_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         HoistableDeclaration_b,
@@ -2118,10 +2078,10 @@ function Declaration(p: Parser): ASTNode {
         LexicalDeclaration_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const Declaration_b = bfun(Declaration);
+const Declaration = pfun(Declaration_b);
 
 // HoistableDeclaration
 
@@ -2140,18 +2100,17 @@ const HoistableDeclaration_b = bfun(HoistableDeclaration);
 
 // BreakableStatement
 
-function BreakableStatement(p: Parser): ASTNode {
-    const b = new Builder(p);
+function BreakableStatement_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         IterationStatement_b,
         SwitchStatement_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const BreakableStatement_b = bfun(BreakableStatement);
+const BreakableStatement = pfun(BreakableStatement_b);
 
 // Section 13.2
 
@@ -2165,9 +2124,8 @@ const BlockStatement_b = bfun(BlockStatement);
 
 // Block
 
-function Block(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function Block_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);             // 5
         b.pitem(punctuator("{")); // 4
@@ -2188,17 +2146,16 @@ function Block(p: Parser): ASTNode {
         b.pitem(pos);             // 0
         b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const Block_b = bfun(Block);
+const Block = pfun(Block_b);
 
 // StatementList
 
-function StatementList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function StatementList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -2213,34 +2170,32 @@ function StatementList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const StatementList_b = bfun(StatementList);
+const StatementList = pfun(StatementList_b);
 
 // StatementListItem
 
-function StatementListItem(p: Parser): ASTNode {
-    const b = new Builder(p);
+function StatementListItem_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         Statement_b,
         Declaration_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const StatementListItem_b = bfun(StatementListItem);
+const StatementListItem = pfun(StatementListItem_b);
 
 // Section 13.3.1
 
 // LexicalDeclaration
 
-function LexicalDeclaration(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function LexicalDeclaration_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -2269,17 +2224,16 @@ function LexicalDeclaration(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const LexicalDeclaration_b = bfun(LexicalDeclaration);
+const LexicalDeclaration = pfun(LexicalDeclaration_b);
 
 // BindingList
 
-function BindingList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BindingList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -2296,17 +2250,16 @@ function BindingList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BindingList_b = bfun(BindingList);
+const BindingList = pfun(BindingList_b);
 
 // LexicalBinding_identifier
 
-function LexicalBinding_identifier(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function LexicalBinding_identifier_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);               // 3 = start
         b.pitem(BindingIdentifier); // 2 = identifier
@@ -2319,17 +2272,16 @@ function LexicalBinding_identifier(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+4);
         b.popAboveAndSet(3,makeNode(b,3,0,"LexicalIdentifierBinding",[2,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const LexicalBinding_identifier_b = bfun(LexicalBinding_identifier);
+const LexicalBinding_identifier = pfun(LexicalBinding_identifier_b);
 
 // LexicalBinding_pattern
 
-function LexicalBinding_pattern(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function LexicalBinding_pattern_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,            // 4 = start
@@ -2341,34 +2293,32 @@ function LexicalBinding_pattern(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"LexicalPatternBinding",[3,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const LexicalBinding_pattern_b = bfun(LexicalBinding_pattern);
+const LexicalBinding_pattern = pfun(LexicalBinding_pattern_b);
 
 // LexicalBinding
 
-function LexicalBinding(p: Parser): ASTNode {
-    const b = new Builder(p);
+function LexicalBinding_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         LexicalBinding_identifier_b,
         LexicalBinding_pattern_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const LexicalBinding_b = bfun(LexicalBinding);
+const LexicalBinding = pfun(LexicalBinding_b);
 
 // Section 13.3.2
 
 // VariableStatement
 
-function VariableStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function VariableStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                     // 6 = start
@@ -2381,17 +2331,16 @@ function VariableStatement(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(6,makeNode(b,6,0,"Var",[3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const VariableStatement_b = bfun(VariableStatement);
+const VariableStatement = pfun(VariableStatement_b);
 
 // VariableDeclarationList
 
-function VariableDeclarationList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function VariableDeclarationList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -2408,17 +2357,16 @@ function VariableDeclarationList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const VariableDeclarationList_b = bfun(VariableDeclarationList);
+const VariableDeclarationList = pfun(VariableDeclarationList_b);
 
 // VariableDeclaration_identifier
 
-function VariableDeclaration_identifier(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function VariableDeclaration_identifier_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
         b.pitem(BindingIdentifier);
@@ -2440,17 +2388,16 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const VariableDeclaration_identifier_b = bfun(VariableDeclaration_identifier);
+const VariableDeclaration_identifier = pfun(VariableDeclaration_identifier_b);
 
 // VariableDeclaration_pattern
 
-function VariableDeclaration_pattern(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function VariableDeclaration_pattern_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,            // 4 = start
@@ -2462,49 +2409,46 @@ function VariableDeclaration_pattern(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"VarPattern",[3,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const VariableDeclaration_pattern_b = bfun(VariableDeclaration_pattern);
+const VariableDeclaration_pattern = pfun(VariableDeclaration_pattern_b);
 
 // VariableDeclaration
 
-function VariableDeclaration(p: Parser): ASTNode {
-    const b = new Builder(p);
+function VariableDeclaration_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         VariableDeclaration_identifier_b,
         VariableDeclaration_pattern_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const VariableDeclaration_b = bfun(VariableDeclaration);
+const VariableDeclaration = pfun(VariableDeclaration_b);
 
 // Section 13.3.3
 
 // BindingPattern
 
-function BindingPattern(p: Parser): ASTNode {
-    const b = new Builder(p);
+function BindingPattern_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         ObjectBindingPattern_b,
         ArrayBindingPattern_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const BindingPattern_b = bfun(BindingPattern);
+const BindingPattern = pfun(BindingPattern_b);
 
 // ObjectBindingPattern
 
-function ObjectBindingPattern(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ObjectBindingPattern_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);              // 6 = start
         b.pitem(punctuator("{"));  // 5
@@ -2522,7 +2466,7 @@ function ObjectBindingPattern(p: Parser): ASTNode {
                 b.popAboveAndSet(2,b.get(2));
             },
             () => {
-                b.push(new ListNode(new Range(p.pos,p.pos),[]));
+                b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
             },
         ]);
         b.pitem(punctuator("}"));  // 1
@@ -2533,17 +2477,17 @@ function ObjectBindingPattern(p: Parser): ASTNode {
         b.popAboveAndSet(6,b.get(2));
         b.assertLengthIs(oldLength+1);
         const properties = checkListNode(b.get(0));
-        return new GenericNode(new Range(start,end),"ObjectBindingPattern",[properties]);
+        b.popAboveAndSet(0,new GenericNode(new Range(start,end),"ObjectBindingPattern",[properties]));
+        checkNode(b.get(0));
     });
 }
 
-const ObjectBindingPattern_b = bfun(ObjectBindingPattern);
+const ObjectBindingPattern = pfun(ObjectBindingPattern_b);
 
 // ArrayBindingPattern
 
-function ArrayBindingPattern(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ArrayBindingPattern_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 7 = start
@@ -2564,17 +2508,16 @@ function ArrayBindingPattern(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"ArrayBindingPattern",[4,2]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ArrayBindingPattern_b = bfun(ArrayBindingPattern);
+const ArrayBindingPattern = pfun(ArrayBindingPattern_b);
 
 // BindingPropertyList
 
-function BindingPropertyList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BindingPropertyList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -2591,17 +2534,16 @@ function BindingPropertyList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BindingPropertyList_b = bfun(BindingPropertyList);
+const BindingPropertyList = pfun(BindingPropertyList_b);
 
 // BindingElementList
 
-function BindingElementList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BindingElementList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -2637,17 +2579,16 @@ function BindingElementList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BindingElementList_b = bfun(BindingElementList);
+const BindingElementList = pfun(BindingElementList_b);
 
 // BindingProperty
 
-function BindingProperty(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BindingProperty_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -2670,17 +2611,16 @@ function BindingProperty(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BindingProperty_b = bfun(BindingProperty);
+const BindingProperty = pfun(BindingProperty_b);
 
 // BindingElement
 
-function BindingElement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BindingElement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -2706,17 +2646,16 @@ function BindingElement(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BindingElement_b = bfun(BindingElement);
+const BindingElement = pfun(BindingElement_b);
 
 // SingleNameBinding
 
-function SingleNameBinding(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function SingleNameBinding_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
         b.pitem(BindingIdentifier);
@@ -2736,17 +2675,16 @@ function SingleNameBinding(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const SingleNameBinding_b = bfun(SingleNameBinding);
+const SingleNameBinding = pfun(SingleNameBinding_b);
 
 // BindingRestElement
 
-function BindingRestElement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BindingRestElement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 4 = start
@@ -2758,19 +2696,18 @@ function BindingRestElement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"BindingRestElement",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BindingRestElement_b = bfun(BindingRestElement);
+const BindingRestElement = pfun(BindingRestElement_b);
 
 // Section 13.4
 
 // EmptyStatement
 
-function EmptyStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function EmptyStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -2780,17 +2717,18 @@ function EmptyStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"EmptyStatement",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const EmptyStatement_b = bfun(EmptyStatement);
+const EmptyStatement = pfun(EmptyStatement_b);
 
 // Section 13.5
 
 // ExpressionStatement
 
-function ExpressionStatement(p: Parser): ASTNode {
+function ExpressionStatement_b(b: Builder): void {
+    const p = b.parser;
     const start2 = p.pos;
 
     // Lookahead not in one of the four sequences <{> <function> <class> <let [>
@@ -2809,8 +2747,7 @@ function ExpressionStatement(p: Parser): ASTNode {
     }
     p.pos = start2;
 
-    return p.attempt(() => {
-        const b = new Builder(p);
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,             // 4 = start
@@ -2822,19 +2759,18 @@ function ExpressionStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"ExpressionStatement",[3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ExpressionStatement_b = bfun(ExpressionStatement);
+const ExpressionStatement = pfun(ExpressionStatement_b);
 
 // Section 13.6
 
 // IfStatement
 
-function IfStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function IfStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 11 = start
@@ -2861,19 +2797,18 @@ function IfStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+12);
         b.popAboveAndSet(11,makeNode(b,11,0,"IfStatement",[6,2,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const IfStatement_b = bfun(IfStatement);
+const IfStatement = pfun(IfStatement_b);
 
 // Section 13.7
 
 // IterationStatement_do
 
-function IterationStatement_do(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function IterationStatement_do_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,              // 14
@@ -2895,17 +2830,16 @@ function IterationStatement_do(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"DoStatement",[11,5]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const IterationStatement_do_b = bfun(IterationStatement_do);
+const IterationStatement_do = pfun(IterationStatement_do_b);
 
 // IterationStatement_while
 
-function IterationStatement_while(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function IterationStatement_while_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                // 10 = start
@@ -2923,21 +2857,20 @@ function IterationStatement_while(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"WhileStatement",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const IterationStatement_while_b = bfun(IterationStatement_while);
+const IterationStatement_while = pfun(IterationStatement_while_b);
 
 // IterationStatement_for_c
 
-function IterationStatement_for_c(p: Parser): ASTNode {
+function IterationStatement_for_c_b(b: Builder): void {
     // for ( [lookahead ∉ {let [}] Expression-opt ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
-    return p.attempt(() => {
-        const b = new Builder(p);
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                                                            // 14 = start
@@ -3004,21 +2937,20 @@ function IterationStatement_for_c(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const IterationStatement_for_c_b = bfun(IterationStatement_for_c);
+const IterationStatement_for_c = pfun(IterationStatement_for_c_b);
 
 // IterationStatement_for_in
 
-function IterationStatement_for_in(p: Parser): ASTNode {
+function IterationStatement_for_in_b(b: Builder): void {
     // for ( [lookahead ∉ {let [}] LeftHandSideExpression in Expression )             Statement[?Yield, ?Return]
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
-    return p.attempt(() => {
-        const b = new Builder(p);
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                                           // 14 = start
@@ -3066,21 +2998,20 @@ function IterationStatement_for_in(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForIn",[9,5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const IterationStatement_for_in_b = bfun(IterationStatement_for_in);
+const IterationStatement_for_in = pfun(IterationStatement_for_in_b);
 
 // IterationStatement_for_of
 
-function IterationStatement_for_of(p: Parser): ASTNode {
+function IterationStatement_for_of_b(b: Builder): void {
     // for ( [lookahead ≠ let ] LeftHandSideExpression    of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
-    return p.attempt(() => {
-        const b = new Builder(p);
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                                           // 14 = start
@@ -3128,16 +3059,15 @@ function IterationStatement_for_of(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForOf",[9,5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const IterationStatement_for_of_b = bfun(IterationStatement_for_of);
+const IterationStatement_for_of = pfun(IterationStatement_for_of_b);
 
 // IterationStatement_for
 
-function IterationStatement_for(p: Parser): ASTNode {
-    const b = new Builder(p);
+function IterationStatement_for_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         IterationStatement_for_c_b,
@@ -3145,15 +3075,14 @@ function IterationStatement_for(p: Parser): ASTNode {
         IterationStatement_for_of_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const IterationStatement_for_b = bfun(IterationStatement_for);
+const IterationStatement_for = pfun(IterationStatement_for_b);
 
 // IterationStatement
 
-function IterationStatement(p: Parser): ASTNode {
-    const b = new Builder(p);
+function IterationStatement_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         IterationStatement_do_b,
@@ -3161,16 +3090,15 @@ function IterationStatement(p: Parser): ASTNode {
         IterationStatement_for_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const IterationStatement_b = bfun(IterationStatement);
+const IterationStatement = pfun(IterationStatement_b);
 
 // ForDeclaration
 
-function ForDeclaration(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ForDeclaration_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -3197,34 +3125,32 @@ function ForDeclaration(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ForDeclaration_b = bfun(ForDeclaration);
+const ForDeclaration = pfun(ForDeclaration_b);
 
 // ForBinding
 
-function ForBinding(p: Parser): ASTNode {
-    const b = new Builder(p);
+function ForBinding_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         BindingIdentifier_b,
         BindingPattern_b, // FIXME: Need test cases for this
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const ForBinding_b = bfun(ForBinding);
+const ForBinding = pfun(ForBinding_b);
 
 // Section 13.8
 
 // ContinueStatement
 
-function ContinueStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ContinueStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -3254,19 +3180,18 @@ function ContinueStatement(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ContinueStatement_b = bfun(ContinueStatement);
+const ContinueStatement = pfun(ContinueStatement_b);
 
 // Section 13.9
 
 // BreakStatement
 
-function BreakStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function BreakStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -3296,19 +3221,18 @@ function BreakStatement(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const BreakStatement_b = bfun(BreakStatement);
+const BreakStatement = pfun(BreakStatement_b);
 
 // Section 13.10
 
 // ReturnStatement
 
-function ReturnStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ReturnStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -3338,19 +3262,18 @@ function ReturnStatement(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ReturnStatement_b = bfun(ReturnStatement);
+const ReturnStatement = pfun(ReturnStatement_b);
 
 // Section 13.11
 
 // WithStatement
 
-function WithStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function WithStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,             // 10 = start
@@ -3368,19 +3291,18 @@ function WithStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"WithStatement",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const WithStatement_b = bfun(WithStatement);
+const WithStatement = pfun(WithStatement_b);
 
 // Section 13.12
 
 // SwitchStatement
 
-function SwitchStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function SwitchStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 10 = start
@@ -3398,17 +3320,16 @@ function SwitchStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"SwitchStatement",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const SwitchStatement_b = bfun(SwitchStatement);
+const SwitchStatement = pfun(SwitchStatement_b);
 
 // CaseBlock_1
 
-function CaseBlock_1(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CaseBlock_1_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,             // 7
@@ -3433,17 +3354,16 @@ function CaseBlock_1(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"CaseBlock1",[3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CaseBlock_1_b = bfun(CaseBlock_1);
+const CaseBlock_1 = pfun(CaseBlock_1_b);
 
 // CaseBlock_2
 
-function CaseBlock_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CaseBlock_2_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,              // 10 = start
@@ -3461,32 +3381,30 @@ function CaseBlock_2(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"CaseBlock2",[7,5,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CaseBlock_2_b = bfun(CaseBlock_2);
+const CaseBlock_2 = pfun(CaseBlock_2_b);
 
 // CaseBlock
 
-function CaseBlock(p: Parser): ASTNode {
-    const b = new Builder(p);
+function CaseBlock_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         CaseBlock_1_b,
         CaseBlock_2_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const CaseBlock_b = bfun(CaseBlock);
+const CaseBlock = pfun(CaseBlock_b);
 
 // CaseClauses
 
-function CaseClauses(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CaseClauses_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -3501,17 +3419,16 @@ function CaseClauses(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CaseClauses_b = bfun(CaseClauses);
+const CaseClauses = pfun(CaseClauses_b);
 
 // CaseClause
 
-function CaseClause(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function CaseClause_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,             // 8 = start
@@ -3527,17 +3444,16 @@ function CaseClause(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+9);
         b.popAboveAndSet(8,makeNode(b,8,0,"CaseClause",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const CaseClause_b = bfun(CaseClause);
+const CaseClause = pfun(CaseClause_b);
 
 // DefaultClause
 
-function DefaultClause(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function DefaultClause_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                // 6 = start
@@ -3554,19 +3470,18 @@ function DefaultClause(p: Parser): ASTNode {
         const end = statements.range.end;
         b.popAboveAndSet(6,new GenericNode(new Range(start,end),"DefaultClause",[statements]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const DefaultClause_b = bfun(DefaultClause);
+const DefaultClause = pfun(DefaultClause_b);
 
 // Section 13.13
 
 // LabelledStatement
 
-function LabelledStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function LabelledStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,             // 6 = start
@@ -3580,34 +3495,32 @@ function LabelledStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"LabelledStatement",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const LabelledStatement_b = bfun(LabelledStatement);
+const LabelledStatement = pfun(LabelledStatement_b);
 
 // LabelledItem
 
-function LabelledItem(p: Parser): ASTNode {
-    const b = new Builder(p);
+function LabelledItem_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         Statement_b,
         FunctionDeclaration_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const LabelledItem_b = bfun(LabelledItem);
+const LabelledItem = pfun(LabelledItem_b);
 
 // Section 13.14
 
 // ThrowStatement
 
-function ThrowStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ThrowStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 6 = start
@@ -3621,19 +3534,18 @@ function ThrowStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ThrowStatement",[3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ThrowStatement_b = bfun(ThrowStatement);
+const ThrowStatement = pfun(ThrowStatement_b);
 
 // Section 13.15
 
 // TryStatement
 
-function TryStatement(p: Parser): ASTNode {
-    return p.attempt((start) => {
-        const b = new Builder(p);
+function TryStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                   // 7 = start
         b.pitem(keyword("try"));        // 6
@@ -3659,17 +3571,16 @@ function TryStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"TryStatement",[4,2,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const TryStatement_b = bfun(TryStatement);
+const TryStatement = pfun(TryStatement_b);
 
 // Catch
 
-function Catch(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function Catch_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,              // 10 = start
@@ -3687,17 +3598,16 @@ function Catch(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+11);
         b.popAboveAndSet(10,makeNode(b,10,0,"Catch",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const Catch_b = bfun(Catch);
+const Catch = pfun(Catch_b);
 
 // Finally
 
-function Finally(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function Finally_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                // 4
@@ -3709,34 +3619,32 @@ function Finally(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"Finally",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const Finally_b = bfun(Finally);
+const Finally = pfun(Finally_b);
 
 // CatchParameter
 
-function CatchParameter(p: Parser): ASTNode {
-    const b = new Builder(p);
+function CatchParameter_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         BindingIdentifier_b,
         BindingPattern_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const CatchParameter_b = bfun(CatchParameter);
+const CatchParameter = pfun(CatchParameter_b);
 
 // Section 13.16
 
 // DebuggerStatement
 
-function DebuggerStatement(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function DebuggerStatement_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 4
@@ -3748,19 +3656,18 @@ function DebuggerStatement(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"DebuggerStatement",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const DebuggerStatement_b = bfun(DebuggerStatement);
+const DebuggerStatement = pfun(DebuggerStatement_b);
 
 // Section 14.1
 
 // FunctionDeclaration_named
 
-function FunctionDeclaration_named(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FunctionDeclaration_named_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 16 = start
@@ -3784,17 +3691,16 @@ function FunctionDeclaration_named(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+17);
         b.popAboveAndSet(16,makeNode(b,16,0,"FunctionDeclaration",[13,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const FunctionDeclaration_named_b = bfun(FunctionDeclaration_named);
+const FunctionDeclaration_named = pfun(FunctionDeclaration_named_b);
 
 // FunctionDeclaration_unnamed
 
-function FunctionDeclaration_unnamed(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FunctionDeclaration_unnamed_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 15 = start
@@ -3817,11 +3723,11 @@ function FunctionDeclaration_unnamed(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+16);
         b.popAboveAndSet(15,makeNode(b,15,0,"FunctionDeclaration",[10,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const FunctionDeclaration_unnamed_b = bfun(FunctionDeclaration_unnamed);
+const FunctionDeclaration_unnamed = pfun(FunctionDeclaration_unnamed_b);
 
 // FunctionDeclaration
 
@@ -3849,9 +3755,8 @@ const FunctionDeclaration_b = bfun(FunctionDeclaration);
 
 // FunctionExpression
 
-function FunctionExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FunctionExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 15 = start
@@ -3880,11 +3785,11 @@ function FunctionExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+16);
         b.popAboveAndSet(15,makeNode(b,15,0,"FunctionExpression",[12,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const FunctionExpression_b = bfun(FunctionExpression);
+const FunctionExpression = pfun(FunctionExpression_b);
 
 // StrictFormalParameters
 
@@ -3896,9 +3801,8 @@ const StrictFormalParameters_b = bfun(StrictFormalParameters);
 
 // FormalParameters
 
-function FormalParameters(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FormalParameters_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -3910,17 +3814,16 @@ function FormalParameters(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const FormalParameters_b = bfun(FormalParameters);
+const FormalParameters = pfun(FormalParameters_b);
 
 // FormalParameterList
 
-function FormalParameterList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FormalParameterList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -3956,17 +3859,15 @@ function FormalParameterList(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
     });
 }
 
-const FormalParameterList_b = bfun(FormalParameterList);
+const FormalParameterList = pfun(FormalParameterList_b);
 
 // FormalsList
 
-function FormalsList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FormalsList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -3983,11 +3884,11 @@ function FormalsList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const FormalsList_b = bfun(FormalsList);
+const FormalsList = pfun(FormalsList_b);
 
 // FunctionRestParameter
 
@@ -4015,26 +3916,24 @@ const FunctionBody_b = bfun(FunctionBody);
 
 // FunctionStatementList
 
-function FunctionStatementList(p: Parser): ASTNode {
-    const b = new Builder(p);
+function FunctionStatementList_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         StatementList_b,
-        bfun(() => new ListNode(new Range(p.pos,p.pos),[])),
+        bfun(() => new ListNode(new Range(b.parser.pos,b.parser.pos),[])),
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const FunctionStatementList_b = bfun(FunctionStatementList);
+const FunctionStatementList = pfun(FunctionStatementList_b);
 
 // Section 14.2
 
 // ArrowFunction
 
-function ArrowFunction(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ArrowFunction_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 6 = start
@@ -4048,28 +3947,27 @@ function ArrowFunction(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ArrowFunction",[5,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ArrowFunction_b = bfun(ArrowFunction);
+const ArrowFunction = pfun(ArrowFunction_b);
 
 // ArrowParameters
 
-function ArrowParameters(p: Parser): ASTNode {
-    const b = new Builder(p);
+function ArrowParameters_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         BindingIdentifier_b,
         ArrowFormalParameters_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const ArrowParameters_b = bfun(ArrowParameters);
+const ArrowParameters = pfun(ArrowParameters_b);
 
-// ConciseBody_1
+// ConciseBody
 
 function ConciseBody_1(p: Parser): ASTNode {
     if (p.lookaheadPunctuator("{"))
@@ -4081,9 +3979,8 @@ const ConciseBody_1_b = bfun(ConciseBody_1);
 
 // ConciseBody_2
 
-function ConciseBody_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ConciseBody_2_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             punctuator("{"), // 4
@@ -4095,32 +3992,30 @@ function ConciseBody_2(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,b.get(2));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ConciseBody_2_b = bfun(ConciseBody_2);
+const ConciseBody_2 = pfun(ConciseBody_2_b);
 
 // ConciseBody
 
-function ConciseBody(p: Parser): ASTNode {
-    const b = new Builder(p);
+function ConciseBody_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         ConciseBody_1_b,
         ConciseBody_2_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const ConciseBody_b = bfun(ConciseBody);
+const ConciseBody = pfun(ConciseBody_b);
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ArrowFormalParameters_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             punctuator("("),        // 4
@@ -4132,19 +4027,18 @@ function ArrowFormalParameters(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,b.get(2));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ArrowFormalParameters_b = bfun(ArrowFormalParameters);
+const ArrowFormalParameters = pfun(ArrowFormalParameters_b);
 
 // Section 14.3
 
 // MethodDefinition_1
 
-function MethodDefinition_1(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function MethodDefinition_1_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                    // 14 = start
@@ -4166,11 +4060,11 @@ function MethodDefinition_1(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"Method",[13,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const MethodDefinition_1_b = bfun(MethodDefinition_1);
+const MethodDefinition_1 = pfun(MethodDefinition_1_b);
 
 // MethodDefinition_2
 
@@ -4182,9 +4076,8 @@ const MethodDefinition_2_b = bfun(MethodDefinition_2);
 
 // MethodDefinition_3
 
-function MethodDefinition_3(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function MethodDefinition_3_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 14 = start
@@ -4206,17 +4099,16 @@ function MethodDefinition_3(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"Getter",[11,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const MethodDefinition_3_b = bfun(MethodDefinition_3);
+const MethodDefinition_3 = pfun(MethodDefinition_3_b);
 
 // MethodDefinition_4
 
-function MethodDefinition_4(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function MethodDefinition_4_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                      // 16 = start
@@ -4240,16 +4132,15 @@ function MethodDefinition_4(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+17);
         b.popAboveAndSet(16,makeNode(b,16,0,"Setter",[13,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const MethodDefinition_4_b = bfun(MethodDefinition_4);
+const MethodDefinition_4 = pfun(MethodDefinition_4_b);
 
 // MethodDefinition
 
-function MethodDefinition(p: Parser): ASTNode {
-    const b = new Builder(p);
+function MethodDefinition_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         MethodDefinition_1_b,
@@ -4258,10 +4149,10 @@ function MethodDefinition(p: Parser): ASTNode {
         MethodDefinition_4_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const MethodDefinition_b = bfun(MethodDefinition);
+const MethodDefinition = pfun(MethodDefinition_b);
 
 // PropertySetParameterList
 
@@ -4275,9 +4166,8 @@ const PropertySetParameterList_b = bfun(PropertySetParameterList);
 
 // GeneratorMethod
 
-function GeneratorMethod(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function GeneratorMethod_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                    // 16 = start
@@ -4301,17 +4191,16 @@ function GeneratorMethod(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+17);
         b.popAboveAndSet(16,makeNode(b,16,0,"GeneratorMethod",[13,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const GeneratorMethod_b = bfun(GeneratorMethod);
+const GeneratorMethod = pfun(GeneratorMethod_b);
 
 // GeneratorDeclaration_1
 
-function GeneratorDeclaration_1(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function GeneratorDeclaration_1_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 18 = start
@@ -4337,17 +4226,16 @@ function GeneratorDeclaration_1(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+19);
         b.popAboveAndSet(18,makeNode(b,18,0,"GeneratorDeclaration",[13,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const GeneratorDeclaration_1_b = bfun(GeneratorDeclaration_1);
+const GeneratorDeclaration_1 = pfun(GeneratorDeclaration_1_b);
 
 // GeneratorDeclaration_2
 
-function GeneratorDeclaration_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function GeneratorDeclaration_2_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 16 = start
@@ -4372,11 +4260,11 @@ function GeneratorDeclaration_2(p: Parser): ASTNode {
         // FIXME: Should be DefaultGeneratorDeclaration
         b.popAboveAndSet(16,makeNode(b,16,0,"DefaultGeneratorDeclaration",[9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const GeneratorDeclaration_2_b = bfun(GeneratorDeclaration_2);
+const GeneratorDeclaration_2 = pfun(GeneratorDeclaration_2_b);
 
 // GeneratorDeclaration
 
@@ -4404,9 +4292,8 @@ const GeneratorDeclaration_b = bfun(GeneratorDeclaration);
 
 // GeneratorExpression
 
-function GeneratorExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function GeneratorExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 17 = start
@@ -4439,11 +4326,11 @@ function GeneratorExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+18);
         b.popAboveAndSet(17,makeNode(b,17,0,"GeneratorExpression",[12,9,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const GeneratorExpression_b = bfun(GeneratorExpression);
+const GeneratorExpression = pfun(GeneratorExpression_b);
 
 // GeneratorBody
 
@@ -4455,9 +4342,8 @@ const GeneratorBody_b = bfun(GeneratorBody);
 
 // YieldExpression_1
 
-function YieldExpression_1(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function YieldExpression_1_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                  // 6
@@ -4471,17 +4357,16 @@ function YieldExpression_1(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"YieldStar",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const YieldExpression_1_b = bfun(YieldExpression_1);
+const YieldExpression_1 = pfun(YieldExpression_1_b);
 
 // YieldExpression_2
 
-function YieldExpression_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function YieldExpression_2_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                  // 4
@@ -4493,17 +4378,16 @@ function YieldExpression_2(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"YieldExpr",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const YieldExpression_2_b = bfun(YieldExpression_2);
+const YieldExpression_2 = pfun(YieldExpression_2_b);
 
 // YieldExpression_3
 
-function YieldExpression_3(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function YieldExpression_3_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -4513,16 +4397,15 @@ function YieldExpression_3(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"YieldNothing",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const YieldExpression_3_b = bfun(YieldExpression_3);
+const YieldExpression_3 = pfun(YieldExpression_3_b);
 
 // YieldExpression
 
-function YieldExpression(p: Parser): ASTNode {
-    const b = new Builder(p);
+function YieldExpression_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         YieldExpression_1_b,
@@ -4530,18 +4413,17 @@ function YieldExpression(p: Parser): ASTNode {
         YieldExpression_3_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const YieldExpression_b = bfun(YieldExpression);
+const YieldExpression = pfun(YieldExpression_b);
 
 // Section 14.5
 
 // ClassDeclaration_1
 
-function ClassDeclaration_1(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassDeclaration_1_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 6 = start
@@ -4555,17 +4437,16 @@ function ClassDeclaration_1(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ClassDeclaration",[3,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassDeclaration_1_b = bfun(ClassDeclaration_1);
+const ClassDeclaration_1 = pfun(ClassDeclaration_1_b);
 
 // ClassDeclaration_2
 
-function ClassDeclaration_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassDeclaration_2_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,              // 5
@@ -4578,11 +4459,11 @@ function ClassDeclaration_2(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassDeclaration",[2,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassDeclaration_2_b = bfun(ClassDeclaration_2);
+const ClassDeclaration_2 = pfun(ClassDeclaration_2_b);
 
 // ClassDeclaration
 
@@ -4610,9 +4491,8 @@ const ClassDeclaration_b = bfun(ClassDeclaration);
 
 // ClassExpression
 
-function ClassExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);              // 5
         b.pitem(keyword("class")); // 4
@@ -4629,17 +4509,16 @@ function ClassExpression(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassExpression",[2,1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassExpression_b = bfun(ClassExpression);
+const ClassExpression = pfun(ClassExpression_b);
 
 // ClassTail
 
-function ClassTail(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassTail_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);               // 6 = start
         b.bopt(() => {              // 5 = heritage
@@ -4669,17 +4548,16 @@ function ClassTail(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ClassTail",[5,2]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassTail_b = bfun(ClassTail);
+const ClassTail = pfun(ClassTail_b);
 
 // ClassHeritage
 
-function ClassHeritage(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassHeritage_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                    // 4 = start
@@ -4691,11 +4569,11 @@ function ClassHeritage(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"Extends",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassHeritage_b = bfun(ClassHeritage);
+const ClassHeritage = pfun(ClassHeritage_b);
 
 // ClassBody
 
@@ -4707,9 +4585,8 @@ const ClassBody_b = bfun(ClassBody);
 
 // ClassElementList
 
-function ClassElementList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassElementList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -4722,11 +4599,11 @@ function ClassElementList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassElementList_b = bfun(ClassElementList);
+const ClassElementList = pfun(ClassElementList_b);
 
 // ClassElement_1
 
@@ -4738,9 +4615,8 @@ const ClassElement_1_b = bfun(ClassElement_1);
 
 // ClassElement_2
 
-function ClassElement_2(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassElement_2_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -4752,17 +4628,16 @@ function ClassElement_2(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+5);
         b.popAboveAndSet(4,makeNode(b,4,0,"StaticMethodDefinition",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassElement_2_b = bfun(ClassElement_2);
+const ClassElement_2 = pfun(ClassElement_2_b);
 
 // ClassElement_3
 
-function ClassElement_3(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ClassElement_3_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -4772,16 +4647,15 @@ function ClassElement_3(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"EmptyClassElement",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ClassElement_3_b = bfun(ClassElement_3);
+const ClassElement_3 = pfun(ClassElement_3_b);
 
 // ClassElement
 
-function ClassElement(p: Parser): ASTNode {
-    const b = new Builder(p);
+function ClassElement_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         ClassElement_1_b,
@@ -4789,10 +4663,10 @@ function ClassElement(p: Parser): ASTNode {
         ClassElement_3_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const ClassElement_b = bfun(ClassElement);
+const ClassElement = pfun(ClassElement_b);
 
 // Section 15.1
 
@@ -4852,9 +4726,8 @@ const ModuleBody_b = bfun(ModuleBody);
 
 // ModuleItemList
 
-function ModuleItemList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ModuleItemList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -4867,16 +4740,15 @@ function ModuleItemList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ModuleItemList_b = bfun(ModuleItemList);
+const ModuleItemList = pfun(ModuleItemList_b);
 
 // ModuleItem
 
-function ModuleItem(p: Parser): ASTNode {
-    const b = new Builder(p);
+function ModuleItem_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         ImportDeclaration_b,
@@ -4884,18 +4756,17 @@ function ModuleItem(p: Parser): ASTNode {
         StatementListItem_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const ModuleItem_b = bfun(ModuleItem);
+const ModuleItem = pfun(ModuleItem_b);
 
 // Section 15.2.2
 
 // ImportDeclaration_from
 
-function ImportDeclaration_from(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ImportDeclaration_from_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 8 = start
@@ -4911,17 +4782,16 @@ function ImportDeclaration_from(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+9);
         b.popAboveAndSet(8,makeNode(b,8,0,"ImportFrom",[5,3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ImportDeclaration_from_b = bfun(ImportDeclaration_from);
+const ImportDeclaration_from = pfun(ImportDeclaration_from_b);
 
 // ImportDeclaration_module
 
-function ImportDeclaration_module(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ImportDeclaration_module_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,               // 6 = start
@@ -4935,32 +4805,30 @@ function ImportDeclaration_module(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ImportModule",[3]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ImportDeclaration_module_b = bfun(ImportDeclaration_module);
+const ImportDeclaration_module = pfun(ImportDeclaration_module_b);
 
 // ImportDeclaration
 
-function ImportDeclaration(p: Parser): ASTNode {
-    const b = new Builder(p);
+function ImportDeclaration_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         ImportDeclaration_from_b,
         ImportDeclaration_module_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
 
-const ImportDeclaration_b = bfun(ImportDeclaration);
+const ImportDeclaration = pfun(ImportDeclaration_b);
 
 // ImportClause
 
-function ImportClause(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ImportClause_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -5003,11 +4871,11 @@ function ImportClause(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ImportClause_b = bfun(ImportClause);
+const ImportClause = pfun(ImportClause_b);
 
 // ImportedDefaultBinding
 
@@ -5019,9 +4887,8 @@ const ImportedDefaultBinding_b = bfun(ImportedDefaultBinding);
 
 // NameSpaceImport
 
-function NameSpaceImport(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function NameSpaceImport_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,             // 6 = start
@@ -5035,17 +4902,16 @@ function NameSpaceImport(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NameSpaceImport",[1]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const NameSpaceImport_b = bfun(NameSpaceImport);
+const NameSpaceImport = pfun(NameSpaceImport_b);
 
 // NamedImports
 
-function NamedImports(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function NamedImports_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                // 5 = start
@@ -5065,7 +4931,7 @@ function NamedImports(p: Parser): ASTNode {
                 b.popAboveAndSet(2,b.get(2));
             },
             () => {
-                b.push(new ListNode(new Range(p.pos,p.pos),[]));
+                b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
             },
         ]);
         b.pitems([
@@ -5075,17 +4941,16 @@ function NamedImports(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"NamedImports",[2]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const NamedImports_b = bfun(NamedImports);
+const NamedImports = pfun(NamedImports_b);
 
 // FromClause
 
-function FromClause(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function FromClause_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             keyword("from"),
@@ -5095,17 +4960,16 @@ function FromClause(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const FromClause_b = bfun(FromClause);
+const FromClause = pfun(FromClause_b);
 
 // ImportsList
 
-function ImportsList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ImportsList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -5122,17 +4986,16 @@ function ImportsList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ImportsList_b = bfun(ImportsList);
+const ImportsList = pfun(ImportsList_b);
 
 // ImportSpecifier
 
-function ImportSpecifier(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ImportSpecifier_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
@@ -5159,11 +5022,11 @@ function ImportSpecifier(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ImportSpecifier_b = bfun(ImportSpecifier);
+const ImportSpecifier = pfun(ImportSpecifier_b);
 
 // ModuleSpecifier
 
@@ -5185,9 +5048,8 @@ const ImportedBinding_b = bfun(ImportedBinding);
 
 // ExportDeclaration
 
-function ExportDeclaration(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ExportDeclaration_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -5200,7 +5062,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.pitems([
                     keyword("default"),                              // 3
                     whitespace,                                      // 2
-                    () => HoistableDeclaration(p,{ Default: true }), // 1
+                    () => HoistableDeclaration(b.parser,{ Default: true }), // 1
                     pos,                                             // 0
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -5210,7 +5072,7 @@ function ExportDeclaration(p: Parser): ASTNode {
                 b.pitems([
                     keyword("default"), // 3
                     whitespace, // 2
-                    () => ClassDeclaration(p,{ Default: true }), // 1
+                    () => ClassDeclaration(b.parser,{ Default: true }), // 1
                     pos, // 0
                 ]);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
@@ -5281,17 +5143,16 @@ function ExportDeclaration(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ExportDeclaration_b = bfun(ExportDeclaration);
+const ExportDeclaration = pfun(ExportDeclaration_b);
 
 // ExportClause
 
-function ExportClause(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ExportClause_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,                       // 5
@@ -5325,17 +5186,16 @@ function ExportClause(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ExportClause",[2]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ExportClause_b = bfun(ExportClause);
+const ExportClause = pfun(ExportClause_b);
 
 // ExportsList
 
-function ExportsList(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ExportsList_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
@@ -5352,17 +5212,16 @@ function ExportsList(p: Parser): ASTNode {
             },
         );
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ExportsList_b = bfun(ExportsList);
+const ExportsList = pfun(ExportsList_b);
 
 // ExportSpecifier
 
-function ExportSpecifier(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ExportSpecifier_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
         b.pitem(IdentifierName);
@@ -5389,8 +5248,8 @@ function ExportSpecifier(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const ExportSpecifier_b = bfun(ExportSpecifier);
+const ExportSpecifier = pfun(ExportSpecifier_b);
