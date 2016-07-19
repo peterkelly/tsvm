@@ -40,6 +40,9 @@ export class Builder {
     public constructor(parser: Parser) {
         this.parser = parser;
     }
+    public get length(): number {
+        return this.stack.length;
+    }
     public pitem(f: (p: Parser) => any): void {
         this.stack.push(f(this.parser));
     }
