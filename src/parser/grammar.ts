@@ -231,6 +231,12 @@ export function whitespaceNoNewline(p: Parser): void {
     p.skipWhitespaceNoNewline();
 }
 
+export function bfun(f: (p: Parser) => any): (b: Builder) => void {
+    return (b: Builder) => {
+        b.pitem(f);
+    };
+}
+
 export function checkNode(value: any): ASTNode | null {
     if ((value === null) || (value instanceof ASTNode))
         return value;
