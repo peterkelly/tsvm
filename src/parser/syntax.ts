@@ -228,7 +228,6 @@ import {
     whitespace,
     whitespaceNoNewline,
     checkNode,
-    checkExpressionNode,
     checkListNode,
     checkNumber,
     makeNode,
@@ -345,7 +344,7 @@ function ParenthesizedExpression(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(4,b.get(2));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -732,7 +731,7 @@ function Initializer(p: Parser): ASTNode {
         b.assertLengthIs(3);
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -914,12 +913,12 @@ function NewExpression(p: Parser): ASTNode {
                 b.assertLengthIs(5);
                 const start = checkNumber(b.get(4));
                 const end = checkNumber(b.get(0));
-                const expr = checkExpressionNode(b.get(1));
+                const expr = checkNode(b.get(1));
                 b.popAboveAndSet(4,new GenericNode(new Range(start,p.pos),"NewExpression",[expr,null]));
             },
         ]);
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -945,7 +944,7 @@ function CallExpression_start(p: Parser): ASTNode {
             },
         ])
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1016,7 +1015,7 @@ function SuperCall(p: Parser): ASTNode {
         b.assertLengthIs(5);
         b.popAboveAndSet(4,makeNode(b,4,0,"SuperCall",[1]));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1083,7 +1082,7 @@ function ArgumentList_item(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1271,7 +1270,7 @@ function UnaryExpression(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1320,7 +1319,7 @@ function MultiplicativeExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1358,7 +1357,7 @@ function AdditiveExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1407,7 +1406,7 @@ function ShiftExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1497,7 +1496,7 @@ function RelationalExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1563,7 +1562,7 @@ function EqualityExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1590,7 +1589,7 @@ function BitwiseANDExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1614,7 +1613,7 @@ function BitwiseXORExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1638,7 +1637,7 @@ function BitwiseORExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1664,7 +1663,7 @@ function LogicalANDExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1688,7 +1687,7 @@ function LogicalORExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1721,7 +1720,7 @@ function ConditionalExpression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1859,7 +1858,7 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1897,7 +1896,7 @@ function Expression(p: Parser): ASTNode {
         b.assertLengthIs(2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(1);
-        return checkExpressionNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 

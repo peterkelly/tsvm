@@ -238,13 +238,6 @@ export function checkNode(value: any): ASTNode | null {
         throw new CastError(value,"ASTNode | null");
 }
 
-export function checkExpressionNode(value: any): ExpressionNode | ErrorNode | null {
-    if ((value === null) || (value instanceof ExpressionNode) || (value instanceof ErrorNode))
-        return value;
-    else
-        throw new CastError(value,"ASTNode | null");
-}
-
 export function checkListNode(value: any): ListNode | ErrorNode | null {
     if ((value == null) || (value instanceof ListNode) || (value instanceof ErrorNode))
         return value;
