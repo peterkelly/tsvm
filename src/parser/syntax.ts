@@ -247,6 +247,8 @@ function IdentifierReference(p: Parser): ASTNode {
         return new IdentifierReferenceNode(ident.range,ident.value);
 }
 
+const IdentifierReference_b = bfun(IdentifierReference);
+
 // BindingIdentifier
 
 function BindingIdentifier(p: Parser): BindingIdentifierNode | ErrorNode {
@@ -256,6 +258,8 @@ function BindingIdentifier(p: Parser): BindingIdentifierNode | ErrorNode {
     else
         return new BindingIdentifierNode(ident.range,ident.value);
 }
+
+const BindingIdentifier_b = bfun(BindingIdentifier);
 
 // LabelIdentifier
 
@@ -267,11 +271,15 @@ function LabelIdentifier(p: Parser): ASTNode {
         return new LabelIdentifierNode(ident.range,ident.value);
 }
 
+const LabelIdentifier_b = bfun(LabelIdentifier);
+
 // IdentifierName
 
 function IdentifierName(p: Parser): ASTNode {
     return Identifier(p);
 }
+
+const IdentifierName_b = bfun(IdentifierName);
 
 // Identifier
 
@@ -293,6 +301,8 @@ export function Identifier(p: Parser): IdentifierNode | ErrorNode {
     });
 }
 
+const Identifier_b = bfun(Identifier);
+
 // Section 12.2
 
 // This
@@ -311,6 +321,8 @@ function This(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const This_b = bfun(This);
 
 // PrimaryExpression
 
@@ -334,6 +346,8 @@ function PrimaryExpression(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const PrimaryExpression_b = bfun(PrimaryExpression);
+
 // ParenthesizedExpression
 
 function ParenthesizedExpression(p: Parser): ASTNode {
@@ -352,6 +366,8 @@ function ParenthesizedExpression(p: Parser): ASTNode {
     });
 }
 
+const ParenthesizedExpression_b = bfun(ParenthesizedExpression);
+
 // Section 12.2.4
 
 // Literal
@@ -367,6 +383,8 @@ function Literal(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const Literal_b = bfun(Literal);
 
 // NullLiteral
 
@@ -385,6 +403,8 @@ function NullLiteral(p: Parser): ASTNode {
     });
 }
 
+const NullLiteral_b = bfun(NullLiteral);
+
 // BooleanLiteral
 
 function BooleanLiteral(p: Parser): ASTNode {
@@ -395,6 +415,8 @@ function BooleanLiteral(p: Parser): ASTNode {
         return new BooleanLiteralNode(new Range(start,p.pos),false);
     throw new ParseError(p,p.pos,"Expected BooleanLiteral");
 }
+
+const BooleanLiteral_b = bfun(BooleanLiteral);
 
 // NumericLiteral
 
@@ -417,6 +439,8 @@ function NumericLiteral(p: Parser): ASTNode {
         return new NumericLiteralNode(new Range(start,p.pos),value);
     });
 }
+
+const NumericLiteral_b = bfun(NumericLiteral);
 
 // StringLiteral
 
@@ -457,6 +481,8 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
         throw new ParseError(p,p.pos,"Invalid string");
     });
 }
+
+const StringLiteral_b = bfun(StringLiteral);
 
 // Section 12.2.5
 
@@ -558,6 +584,8 @@ function ArrayLiteral(p: Parser): ASTNode {
     });
 }
 
+const ArrayLiteral_b = bfun(ArrayLiteral);
+
 // SpreadElement
 
 function SpreadElement(p: Parser): ASTNode {
@@ -575,6 +603,8 @@ function SpreadElement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const SpreadElement_b = bfun(SpreadElement);
 
 // Section 12.2.6
 
@@ -610,6 +640,8 @@ function ObjectLiteral(p: Parser): ASTNode {
     });
 }
 
+const ObjectLiteral_b = bfun(ObjectLiteral);
+
 // PropertyDefinitionList
 
 function PropertyDefinitionList(p: Parser): ASTNode {
@@ -634,6 +666,8 @@ function PropertyDefinitionList(p: Parser): ASTNode {
     });
 }
 
+const PropertyDefinitionList_b = bfun(PropertyDefinitionList);
+
 // PropertyDefinition_colon
 
 function PropertyDefinition_colon(p: Parser): ASTNode {
@@ -655,6 +689,8 @@ function PropertyDefinition_colon(p: Parser): ASTNode {
     });
 }
 
+const PropertyDefinition_colon_b = bfun(PropertyDefinition_colon);
+
 // PropertyDefinition
 
 function PropertyDefinition(p: Parser): ASTNode {
@@ -669,6 +705,8 @@ function PropertyDefinition(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const PropertyDefinition_b = bfun(PropertyDefinition);
+
 // PropertyName
 
 function PropertyName(p: Parser): ASTNode {
@@ -680,6 +718,8 @@ function PropertyName(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const PropertyName_b = bfun(PropertyName);
 
 // LiteralPropertyName
 
@@ -693,6 +733,8 @@ function LiteralPropertyName(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const LiteralPropertyName_b = bfun(LiteralPropertyName);
 
 // ComputedPropertyName
 
@@ -715,6 +757,8 @@ function ComputedPropertyName(p: Parser): ASTNode {
     });
 }
 
+const ComputedPropertyName_b = bfun(ComputedPropertyName);
+
 // CoverInitializedName
 
 function CoverInitializedName(p: Parser): ASTNode {
@@ -734,6 +778,8 @@ function CoverInitializedName(p: Parser): ASTNode {
     });
 }
 
+const CoverInitializedName_b = bfun(CoverInitializedName);
+
 // Initializer
 
 function Initializer(p: Parser): ASTNode {
@@ -750,6 +796,8 @@ function Initializer(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const Initializer_b = bfun(Initializer);
 
 // Section 12.2.9
 
@@ -788,6 +836,8 @@ function MemberExpression_new(p: Parser): ASTNode {
     });
 }
 
+const MemberExpression_new_b = bfun(MemberExpression_new);
+
 // MemberExpression_start
 
 function MemberExpression_start(p: Parser): ASTNode {
@@ -801,6 +851,8 @@ function MemberExpression_start(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const MemberExpression_start_b = bfun(MemberExpression_start);
 
 // MemberExpression
 
@@ -842,6 +894,8 @@ function MemberExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const MemberExpression_b = bfun(MemberExpression);
 
 // SuperProperty
 
@@ -885,11 +939,15 @@ function SuperProperty(p: Parser): ASTNode {
     });
 }
 
+const SuperProperty_b = bfun(SuperProperty);
+
 // MetaProperty
 
 function MetaProperty(p: Parser): ASTNode {
     return NewTarget(p);
 }
+
+const MetaProperty_b = bfun(MetaProperty);
 
 // NewTarget
 
@@ -911,6 +969,8 @@ function NewTarget(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const NewTarget_b = bfun(NewTarget);
 
 // NewExpression
 
@@ -941,6 +1001,8 @@ function NewExpression(p: Parser): ASTNode {
     });
 }
 
+const NewExpression_b = bfun(NewExpression);
+
 // CallExpression_start
 
 function CallExpression_start(p: Parser): ASTNode {
@@ -966,6 +1028,8 @@ function CallExpression_start(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const CallExpression_start_b = bfun(CallExpression_start);
 
 // CallExpression
 
@@ -1019,6 +1083,8 @@ function CallExpression(p: Parser): ASTNode {
     });
 }
 
+const CallExpression_b = bfun(CallExpression);
+
 // SuperCall
 
 function SuperCall(p: Parser): ASTNode {
@@ -1037,6 +1103,8 @@ function SuperCall(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const SuperCall_b = bfun(SuperCall);
 
 // Arguments
 
@@ -1079,6 +1147,8 @@ function Arguments(p: Parser): ASTNode {
     });
 }
 
+const Arguments_b = bfun(Arguments);
+
 // ArgumentList_item
 
 function ArgumentList_item(p: Parser): ASTNode {
@@ -1105,6 +1175,8 @@ function ArgumentList_item(p: Parser): ASTNode {
     });
 }
 
+const ArgumentList_item_b = bfun(ArgumentList_item);
+
 // ArgumentList
 
 function ArgumentList(p: Parser): ASTNode {
@@ -1129,6 +1201,8 @@ function ArgumentList(p: Parser): ASTNode {
     });
 }
 
+const ArgumentList_b = bfun(ArgumentList);
+
 // LeftHandSideExpression
 
 function LeftHandSideExpression(p: Parser): ASTNode {
@@ -1142,6 +1216,8 @@ function LeftHandSideExpression(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const LeftHandSideExpression_b = bfun(LeftHandSideExpression);
 
 // Section 12.4
 
@@ -1179,6 +1255,8 @@ function PostfixExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const PostfixExpression_b = bfun(PostfixExpression);
 
 // Section 12.5
 
@@ -1296,6 +1374,8 @@ function UnaryExpression(p: Parser): ASTNode {
     });
 }
 
+const UnaryExpression_b = bfun(UnaryExpression);
+
 // Section 12.6
 
 // MultiplicativeExpression
@@ -1345,6 +1425,8 @@ function MultiplicativeExpression(p: Parser): ASTNode {
     });
 }
 
+const MultiplicativeExpression_b = bfun(MultiplicativeExpression);
+
 // Section 12.7
 
 // AdditiveExpression
@@ -1382,6 +1464,8 @@ function AdditiveExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const AdditiveExpression_b = bfun(AdditiveExpression);
 
 // Section 12.8
 
@@ -1431,6 +1515,8 @@ function ShiftExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ShiftExpression_b = bfun(ShiftExpression);
 
 // Section 12.9
 
@@ -1522,6 +1608,8 @@ function RelationalExpression(p: Parser): ASTNode {
     });
 }
 
+const RelationalExpression_b = bfun(RelationalExpression);
+
 // Section 12.10
 
 // EqualityExpression
@@ -1588,6 +1676,8 @@ function EqualityExpression(p: Parser): ASTNode {
     });
 }
 
+const EqualityExpression_b = bfun(EqualityExpression);
+
 // Section 12.11
 
 // BitwiseANDExpression
@@ -1615,6 +1705,8 @@ function BitwiseANDExpression(p: Parser): ASTNode {
     });
 }
 
+const BitwiseANDExpression_b = bfun(BitwiseANDExpression);
+
 // BitwiseXORExpression
 
 function BitwiseXORExpression(p: Parser): ASTNode {
@@ -1639,6 +1731,8 @@ function BitwiseXORExpression(p: Parser): ASTNode {
     });
 }
 
+const BitwiseXORExpression_b = bfun(BitwiseXORExpression);
+
 // BitwiseORExpression
 
 function BitwiseORExpression(p: Parser): ASTNode {
@@ -1662,6 +1756,8 @@ function BitwiseORExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const BitwiseORExpression_b = bfun(BitwiseORExpression);
 
 // Section 12.12
 
@@ -1689,6 +1785,8 @@ function LogicalANDExpression(p: Parser): ASTNode {
     });
 }
 
+const LogicalANDExpression_b = bfun(LogicalANDExpression);
+
 // LogicalORExpression
 
 function LogicalORExpression(p: Parser): ASTNode {
@@ -1712,6 +1810,8 @@ function LogicalORExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const LogicalORExpression_b = bfun(LogicalORExpression);
 
 // Section 12.13
 
@@ -1745,6 +1845,8 @@ function ConditionalExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ConditionalExpression_b = bfun(ConditionalExpression);
 
 // Section 12.14
 
@@ -1884,6 +1986,8 @@ function AssignmentExpression_plain(p: Parser): ASTNode {
     });
 }
 
+const AssignmentExpression_plain_b = bfun(AssignmentExpression_plain);
+
 // AssignmentExpression
 
 function AssignmentExpression(p: Parser): ASTNode {
@@ -1898,6 +2002,8 @@ function AssignmentExpression(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const AssignmentExpression_b = bfun(AssignmentExpression);
 
 // Section 12.15
 
@@ -1925,6 +2031,8 @@ function Expression(p: Parser): ASTNode {
     });
 }
 
+const Expression_b = bfun(Expression);
+
 // Section 13
 
 // Statement
@@ -1951,6 +2059,8 @@ function Statement(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const Statement_b = bfun(Statement);
+
 // Declaration
 
 function Declaration(p: Parser): ASTNode {
@@ -1964,6 +2074,8 @@ function Declaration(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const Declaration_b = bfun(Declaration);
+
 // HoistableDeclaration
 
 function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
@@ -1975,6 +2087,8 @@ function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const HoistableDeclaration_b = bfun(HoistableDeclaration);
 
 // BreakableStatement
 
@@ -1988,6 +2102,8 @@ function BreakableStatement(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const BreakableStatement_b = bfun(BreakableStatement);
+
 // Section 13.2
 
 // BlockStatement
@@ -1995,6 +2111,8 @@ function BreakableStatement(p: Parser): ASTNode {
 function BlockStatement(p: Parser): ASTNode {
     return Block(p);
 }
+
+const BlockStatement_b = bfun(BlockStatement);
 
 // Block
 
@@ -2024,6 +2142,8 @@ function Block(p: Parser): ASTNode {
     });
 }
 
+const Block_b = bfun(Block);
+
 // StatementList
 
 function StatementList(p: Parser): ASTNode {
@@ -2046,6 +2166,8 @@ function StatementList(p: Parser): ASTNode {
     });
 }
 
+const StatementList_b = bfun(StatementList);
+
 // StatementListItem
 
 function StatementListItem(p: Parser): ASTNode {
@@ -2057,6 +2179,8 @@ function StatementListItem(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const StatementListItem_b = bfun(StatementListItem);
 
 // Section 13.3.1
 
@@ -2096,6 +2220,8 @@ function LexicalDeclaration(p: Parser): ASTNode {
     });
 }
 
+const LexicalDeclaration_b = bfun(LexicalDeclaration);
+
 // BindingList
 
 function BindingList(p: Parser): ASTNode {
@@ -2120,6 +2246,8 @@ function BindingList(p: Parser): ASTNode {
     });
 }
 
+const BindingList_b = bfun(BindingList);
+
 // LexicalBinding_identifier
 
 function LexicalBinding_identifier(p: Parser): ASTNode {
@@ -2140,6 +2268,8 @@ function LexicalBinding_identifier(p: Parser): ASTNode {
     });
 }
 
+const LexicalBinding_identifier_b = bfun(LexicalBinding_identifier);
+
 // LexicalBinding_pattern
 
 function LexicalBinding_pattern(p: Parser): ASTNode {
@@ -2159,6 +2289,8 @@ function LexicalBinding_pattern(p: Parser): ASTNode {
     });
 }
 
+const LexicalBinding_pattern_b = bfun(LexicalBinding_pattern);
+
 // LexicalBinding
 
 function LexicalBinding(p: Parser): ASTNode {
@@ -2170,6 +2302,8 @@ function LexicalBinding(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const LexicalBinding_b = bfun(LexicalBinding);
 
 // Section 13.3.2
 
@@ -2192,6 +2326,8 @@ function VariableStatement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const VariableStatement_b = bfun(VariableStatement);
 
 // VariableDeclarationList
 
@@ -2216,6 +2352,8 @@ function VariableDeclarationList(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const VariableDeclarationList_b = bfun(VariableDeclarationList);
 
 // VariableDeclaration_identifier
 
@@ -2246,6 +2384,8 @@ function VariableDeclaration_identifier(p: Parser): ASTNode {
     });
 }
 
+const VariableDeclaration_identifier_b = bfun(VariableDeclaration_identifier);
+
 // VariableDeclaration_pattern
 
 function VariableDeclaration_pattern(p: Parser): ASTNode {
@@ -2265,6 +2405,8 @@ function VariableDeclaration_pattern(p: Parser): ASTNode {
     });
 }
 
+const VariableDeclaration_pattern_b = bfun(VariableDeclaration_pattern);
+
 // VariableDeclaration
 
 function VariableDeclaration(p: Parser): ASTNode {
@@ -2276,6 +2418,8 @@ function VariableDeclaration(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const VariableDeclaration_b = bfun(VariableDeclaration);
 
 // Section 13.3.3
 
@@ -2290,6 +2434,8 @@ function BindingPattern(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const BindingPattern_b = bfun(BindingPattern);
 
 // ObjectBindingPattern
 
@@ -2327,6 +2473,8 @@ function ObjectBindingPattern(p: Parser): ASTNode {
     });
 }
 
+const ObjectBindingPattern_b = bfun(ObjectBindingPattern);
+
 // ArrayBindingPattern
 
 function ArrayBindingPattern(p: Parser): ASTNode {
@@ -2355,6 +2503,8 @@ function ArrayBindingPattern(p: Parser): ASTNode {
     });
 }
 
+const ArrayBindingPattern_b = bfun(ArrayBindingPattern);
+
 // BindingPropertyList
 
 function BindingPropertyList(p: Parser): ASTNode {
@@ -2378,6 +2528,8 @@ function BindingPropertyList(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const BindingPropertyList_b = bfun(BindingPropertyList);
 
 // BindingElementList
 
@@ -2422,6 +2574,8 @@ function BindingElementList(p: Parser): ASTNode {
     });
 }
 
+const BindingElementList_b = bfun(BindingElementList);
+
 // BindingProperty
 
 function BindingProperty(p: Parser): ASTNode {
@@ -2451,6 +2605,8 @@ function BindingProperty(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const BindingProperty_b = bfun(BindingProperty);
 
 // BindingElement
 
@@ -2485,6 +2641,8 @@ function BindingElement(p: Parser): ASTNode {
     });
 }
 
+const BindingElement_b = bfun(BindingElement);
+
 // SingleNameBinding
 
 function SingleNameBinding(p: Parser): ASTNode {
@@ -2512,6 +2670,8 @@ function SingleNameBinding(p: Parser): ASTNode {
     });
 }
 
+const SingleNameBinding_b = bfun(SingleNameBinding);
+
 // BindingRestElement
 
 function BindingRestElement(p: Parser): ASTNode {
@@ -2531,6 +2691,8 @@ function BindingRestElement(p: Parser): ASTNode {
     });
 }
 
+const BindingRestElement_b = bfun(BindingRestElement);
+
 // Section 13.4
 
 // EmptyStatement
@@ -2549,6 +2711,8 @@ function EmptyStatement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const EmptyStatement_b = bfun(EmptyStatement);
 
 // Section 13.5
 
@@ -2589,6 +2753,8 @@ function ExpressionStatement(p: Parser): ASTNode {
     });
 }
 
+const ExpressionStatement_b = bfun(ExpressionStatement);
+
 // Section 13.6
 
 // IfStatement
@@ -2625,6 +2791,8 @@ function IfStatement(p: Parser): ASTNode {
     });
 }
 
+const IfStatement_b = bfun(IfStatement);
+
 // Section 13.7
 
 // IterationStatement_do
@@ -2656,6 +2824,8 @@ function IterationStatement_do(p: Parser): ASTNode {
     });
 }
 
+const IterationStatement_do_b = bfun(IterationStatement_do);
+
 // IterationStatement_while
 
 function IterationStatement_while(p: Parser): ASTNode {
@@ -2680,6 +2850,8 @@ function IterationStatement_while(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const IterationStatement_while_b = bfun(IterationStatement_while);
 
 // IterationStatement_for_c
 
@@ -2759,6 +2931,8 @@ function IterationStatement_for_c(p: Parser): ASTNode {
     });
 }
 
+const IterationStatement_for_c_b = bfun(IterationStatement_for_c);
+
 // IterationStatement_for_in
 
 function IterationStatement_for_in(p: Parser): ASTNode {
@@ -2817,6 +2991,8 @@ function IterationStatement_for_in(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const IterationStatement_for_in_b = bfun(IterationStatement_for_in);
 
 // IterationStatement_for_of
 
@@ -2877,6 +3053,8 @@ function IterationStatement_for_of(p: Parser): ASTNode {
     });
 }
 
+const IterationStatement_for_of_b = bfun(IterationStatement_for_of);
+
 // IterationStatement_for
 
 function IterationStatement_for(p: Parser): ASTNode {
@@ -2890,6 +3068,8 @@ function IterationStatement_for(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const IterationStatement_for_b = bfun(IterationStatement_for);
+
 // IterationStatement
 
 function IterationStatement(p: Parser): ASTNode {
@@ -2902,6 +3082,8 @@ function IterationStatement(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const IterationStatement_b = bfun(IterationStatement);
 
 // ForDeclaration
 
@@ -2937,6 +3119,8 @@ function ForDeclaration(p: Parser): ASTNode {
     });
 }
 
+const ForDeclaration_b = bfun(ForDeclaration);
+
 // ForBinding
 
 function ForBinding(p: Parser): ASTNode {
@@ -2948,6 +3132,8 @@ function ForBinding(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const ForBinding_b = bfun(ForBinding);
 
 // Section 13.8
 
@@ -2988,6 +3174,8 @@ function ContinueStatement(p: Parser): ASTNode {
     });
 }
 
+const ContinueStatement_b = bfun(ContinueStatement);
+
 // Section 13.9
 
 // BreakStatement
@@ -3026,6 +3214,8 @@ function BreakStatement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const BreakStatement_b = bfun(BreakStatement);
 
 // Section 13.10
 
@@ -3066,6 +3256,8 @@ function ReturnStatement(p: Parser): ASTNode {
     });
 }
 
+const ReturnStatement_b = bfun(ReturnStatement);
+
 // Section 13.11
 
 // WithStatement
@@ -3093,6 +3285,8 @@ function WithStatement(p: Parser): ASTNode {
     });
 }
 
+const WithStatement_b = bfun(WithStatement);
+
 // Section 13.12
 
 // SwitchStatement
@@ -3119,6 +3313,8 @@ function SwitchStatement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const SwitchStatement_b = bfun(SwitchStatement);
 
 // CaseBlock_1
 
@@ -3152,6 +3348,8 @@ function CaseBlock_1(p: Parser): ASTNode {
     });
 }
 
+const CaseBlock_1_b = bfun(CaseBlock_1);
+
 // CaseBlock_2
 
 function CaseBlock_2(p: Parser): ASTNode {
@@ -3177,6 +3375,8 @@ function CaseBlock_2(p: Parser): ASTNode {
     });
 }
 
+const CaseBlock_2_b = bfun(CaseBlock_2);
+
 // CaseBlock
 
 function CaseBlock(p: Parser): ASTNode {
@@ -3188,6 +3388,8 @@ function CaseBlock(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const CaseBlock_b = bfun(CaseBlock);
 
 // CaseClauses
 
@@ -3211,6 +3413,8 @@ function CaseClauses(p: Parser): ASTNode {
     });
 }
 
+const CaseClauses_b = bfun(CaseClauses);
+
 // CaseClause
 
 function CaseClause(p: Parser): ASTNode {
@@ -3233,6 +3437,8 @@ function CaseClause(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const CaseClause_b = bfun(CaseClause);
 
 // DefaultClause
 
@@ -3258,6 +3464,8 @@ function DefaultClause(p: Parser): ASTNode {
     });
 }
 
+const DefaultClause_b = bfun(DefaultClause);
+
 // Section 13.13
 
 // LabelledStatement
@@ -3281,6 +3489,8 @@ function LabelledStatement(p: Parser): ASTNode {
     });
 }
 
+const LabelledStatement_b = bfun(LabelledStatement);
+
 // LabelledItem
 
 function LabelledItem(p: Parser): ASTNode {
@@ -3292,6 +3502,8 @@ function LabelledItem(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const LabelledItem_b = bfun(LabelledItem);
 
 // Section 13.14
 
@@ -3315,6 +3527,8 @@ function ThrowStatement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ThrowStatement_b = bfun(ThrowStatement);
 
 // Section 13.15
 
@@ -3351,6 +3565,8 @@ function TryStatement(p: Parser): ASTNode {
     });
 }
 
+const TryStatement_b = bfun(TryStatement);
+
 // Catch
 
 function Catch(p: Parser): ASTNode {
@@ -3376,6 +3592,8 @@ function Catch(p: Parser): ASTNode {
     });
 }
 
+const Catch_b = bfun(Catch);
+
 // Finally
 
 function Finally(p: Parser): ASTNode {
@@ -3395,6 +3613,8 @@ function Finally(p: Parser): ASTNode {
     });
 }
 
+const Finally_b = bfun(Finally);
+
 // CatchParameter
 
 function CatchParameter(p: Parser): ASTNode {
@@ -3406,6 +3626,8 @@ function CatchParameter(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const CatchParameter_b = bfun(CatchParameter);
 
 // Section 13.16
 
@@ -3427,6 +3649,8 @@ function DebuggerStatement(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const DebuggerStatement_b = bfun(DebuggerStatement);
 
 // Section 14.1
 
@@ -3461,6 +3685,8 @@ function FunctionDeclaration_named(p: Parser): ASTNode {
     });
 }
 
+const FunctionDeclaration_named_b = bfun(FunctionDeclaration_named);
+
 // FunctionDeclaration_unnamed
 
 function FunctionDeclaration_unnamed(p: Parser): ASTNode {
@@ -3491,6 +3717,8 @@ function FunctionDeclaration_unnamed(p: Parser): ASTNode {
     });
 }
 
+const FunctionDeclaration_unnamed_b = bfun(FunctionDeclaration_unnamed);
+
 // FunctionDeclaration
 
 function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
@@ -3512,6 +3740,8 @@ function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boo
     }
     throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
 }
+
+const FunctionDeclaration_b = bfun(FunctionDeclaration);
 
 // FunctionExpression
 
@@ -3549,11 +3779,15 @@ function FunctionExpression(p: Parser): ASTNode {
     });
 }
 
+const FunctionExpression_b = bfun(FunctionExpression);
+
 // StrictFormalParameters
 
 function StrictFormalParameters(p: Parser): ASTNode {
     return FormalParameters(p);
 }
+
+const StrictFormalParameters_b = bfun(StrictFormalParameters);
 
 // FormalParameters
 
@@ -3573,6 +3807,8 @@ function FormalParameters(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const FormalParameters_b = bfun(FormalParameters);
 
 // FormalParameterList
 
@@ -3617,6 +3853,8 @@ function FormalParameterList(p: Parser): ASTNode {
     });
 }
 
+const FormalParameterList_b = bfun(FormalParameterList);
+
 // FormalsList
 
 function FormalsList(p: Parser): ASTNode {
@@ -3641,11 +3879,15 @@ function FormalsList(p: Parser): ASTNode {
     });
 }
 
+const FormalsList_b = bfun(FormalsList);
+
 // FunctionRestParameter
 
 function FunctionRestParameter(p: Parser): ASTNode {
     return BindingRestElement(p);
 }
+
+const FunctionRestParameter_b = bfun(FunctionRestParameter);
 
 // FormalParameter
 
@@ -3653,11 +3895,15 @@ function FormalParameter(p: Parser): ASTNode {
     return BindingElement(p);
 }
 
+const FormalParameter_b = bfun(FormalParameter);
+
 // FunctionBody
 
 function FunctionBody(p: Parser): ASTNode {
     return FunctionStatementList(p);
 }
+
+const FunctionBody_b = bfun(FunctionBody);
 
 // FunctionStatementList
 
@@ -3670,6 +3916,8 @@ function FunctionStatementList(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const FunctionStatementList_b = bfun(FunctionStatementList);
 
 // Section 14.2
 
@@ -3694,6 +3942,8 @@ function ArrowFunction(p: Parser): ASTNode {
     });
 }
 
+const ArrowFunction_b = bfun(ArrowFunction);
+
 // ArrowParameters
 
 function ArrowParameters(p: Parser): ASTNode {
@@ -3706,6 +3956,8 @@ function ArrowParameters(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const ArrowParameters_b = bfun(ArrowParameters);
+
 // ConciseBody_1
 
 function ConciseBody_1(p: Parser): ASTNode {
@@ -3713,6 +3965,8 @@ function ConciseBody_1(p: Parser): ASTNode {
         throw new ParseIgnore();
     return AssignmentExpression(p);
 }
+
+const ConciseBody_1_b = bfun(ConciseBody_1);
 
 // ConciseBody_2
 
@@ -3733,6 +3987,8 @@ function ConciseBody_2(p: Parser): ASTNode {
     });
 }
 
+const ConciseBody_2_b = bfun(ConciseBody_2);
+
 // ConciseBody
 
 function ConciseBody(p: Parser): ASTNode {
@@ -3744,6 +4000,8 @@ function ConciseBody(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const ConciseBody_b = bfun(ConciseBody);
 
 // ArrowFormalParameters
 
@@ -3763,6 +4021,8 @@ function ArrowFormalParameters(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ArrowFormalParameters_b = bfun(ArrowFormalParameters);
 
 // Section 14.3
 
@@ -3795,11 +4055,15 @@ function MethodDefinition_1(p: Parser): ASTNode {
     });
 }
 
+const MethodDefinition_1_b = bfun(MethodDefinition_1);
+
 // MethodDefinition_2
 
 function MethodDefinition_2(p: Parser): ASTNode {
     return GeneratorMethod(p);
 }
+
+const MethodDefinition_2_b = bfun(MethodDefinition_2);
 
 // MethodDefinition_3
 
@@ -3829,6 +4093,8 @@ function MethodDefinition_3(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const MethodDefinition_3_b = bfun(MethodDefinition_3);
 
 // MethodDefinition_4
 
@@ -3861,6 +4127,8 @@ function MethodDefinition_4(p: Parser): ASTNode {
     });
 }
 
+const MethodDefinition_4_b = bfun(MethodDefinition_4);
+
 // MethodDefinition
 
 function MethodDefinition(p: Parser): ASTNode {
@@ -3875,11 +4143,15 @@ function MethodDefinition(p: Parser): ASTNode {
     return checkNode(b.get(0));
 }
 
+const MethodDefinition_b = bfun(MethodDefinition);
+
 // PropertySetParameterList
 
 function PropertySetParameterList(p: Parser): ASTNode {
     return FormalParameter(p);
 }
+
+const PropertySetParameterList_b = bfun(PropertySetParameterList);
 
 // Section 14.4
 
@@ -3914,6 +4186,8 @@ function GeneratorMethod(p: Parser): ASTNode {
     });
 }
 
+const GeneratorMethod_b = bfun(GeneratorMethod);
+
 // GeneratorDeclaration_1
 
 function GeneratorDeclaration_1(p: Parser): ASTNode {
@@ -3947,6 +4221,8 @@ function GeneratorDeclaration_1(p: Parser): ASTNode {
     });
 }
 
+const GeneratorDeclaration_1_b = bfun(GeneratorDeclaration_1);
+
 // GeneratorDeclaration_2
 
 function GeneratorDeclaration_2(p: Parser): ASTNode {
@@ -3979,6 +4255,8 @@ function GeneratorDeclaration_2(p: Parser): ASTNode {
     });
 }
 
+const GeneratorDeclaration_2_b = bfun(GeneratorDeclaration_2);
+
 // GeneratorDeclaration
 
 function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
@@ -4000,6 +4278,8 @@ function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: bo
     }
     throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
 }
+
+const GeneratorDeclaration_b = bfun(GeneratorDeclaration);
 
 // GeneratorExpression
 
@@ -4041,11 +4321,15 @@ function GeneratorExpression(p: Parser): ASTNode {
     });
 }
 
+const GeneratorExpression_b = bfun(GeneratorExpression);
+
 // GeneratorBody
 
 function GeneratorBody(p: Parser): ASTNode {
     return FunctionBody(p);
 }
+
+const GeneratorBody_b = bfun(GeneratorBody);
 
 // YieldExpression_1
 
@@ -4068,6 +4352,8 @@ function YieldExpression_1(p: Parser): ASTNode {
     });
 }
 
+const YieldExpression_1_b = bfun(YieldExpression_1);
+
 // YieldExpression_2
 
 function YieldExpression_2(p: Parser): ASTNode {
@@ -4087,6 +4373,8 @@ function YieldExpression_2(p: Parser): ASTNode {
     });
 }
 
+const YieldExpression_2_b = bfun(YieldExpression_2);
+
 // YieldExpression_3
 
 function YieldExpression_3(p: Parser): ASTNode {
@@ -4104,6 +4392,8 @@ function YieldExpression_3(p: Parser): ASTNode {
     });
 }
 
+const YieldExpression_3_b = bfun(YieldExpression_3);
+
 // YieldExpression
 
 function YieldExpression(p: Parser): ASTNode {
@@ -4116,6 +4406,8 @@ function YieldExpression(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const YieldExpression_b = bfun(YieldExpression);
 
 // Section 14.5
 
@@ -4140,6 +4432,8 @@ function ClassDeclaration_1(p: Parser): ASTNode {
     });
 }
 
+const ClassDeclaration_1_b = bfun(ClassDeclaration_1);
+
 // ClassDeclaration_2
 
 function ClassDeclaration_2(p: Parser): ASTNode {
@@ -4159,6 +4453,8 @@ function ClassDeclaration_2(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ClassDeclaration_2_b = bfun(ClassDeclaration_2);
 
 // ClassDeclaration
 
@@ -4181,6 +4477,8 @@ function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolea
     }
     throw new ParseError(p,p.pos,"Expected ClassDeclaration");
 }
+
+const ClassDeclaration_b = bfun(ClassDeclaration);
 
 // ClassExpression
 
@@ -4205,6 +4503,8 @@ function ClassExpression(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ClassExpression_b = bfun(ClassExpression);
 
 // ClassTail
 
@@ -4243,6 +4543,8 @@ function ClassTail(p: Parser): ASTNode {
     });
 }
 
+const ClassTail_b = bfun(ClassTail);
+
 // ClassHeritage
 
 function ClassHeritage(p: Parser): ASTNode {
@@ -4262,11 +4564,15 @@ function ClassHeritage(p: Parser): ASTNode {
     });
 }
 
+const ClassHeritage_b = bfun(ClassHeritage);
+
 // ClassBody
 
 function ClassBody(p: Parser): ASTNode {
     return ClassElementList(p);
 }
+
+const ClassBody_b = bfun(ClassBody);
 
 // ClassElementList
 
@@ -4288,11 +4594,15 @@ function ClassElementList(p: Parser): ASTNode {
     });
 }
 
+const ClassElementList_b = bfun(ClassElementList);
+
 // ClassElement_1
 
 function ClassElement_1(p: Parser): ASTNode {
     return MethodDefinition(p);
 }
+
+const ClassElement_1_b = bfun(ClassElement_1);
 
 // ClassElement_2
 
@@ -4313,6 +4623,8 @@ function ClassElement_2(p: Parser): ASTNode {
     });
 }
 
+const ClassElement_2_b = bfun(ClassElement_2);
+
 // ClassElement_3
 
 function ClassElement_3(p: Parser): ASTNode {
@@ -4330,6 +4642,8 @@ function ClassElement_3(p: Parser): ASTNode {
     });
 }
 
+const ClassElement_3_b = bfun(ClassElement_3);
+
 // ClassElement
 
 function ClassElement(p: Parser): ASTNode {
@@ -4342,6 +4656,8 @@ function ClassElement(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const ClassElement_b = bfun(ClassElement);
 
 // Section 15.1
 
@@ -4361,11 +4677,15 @@ export function Script(p: Parser): ScriptNode | ErrorNode {
     return new ScriptNode(new Range(start,p.pos),body);
 }
 
+const Script_b = bfun(Script);
+
 // ScriptBody
 
 function ScriptBody(p: Parser): ASTNode {
     return StatementList(p);
 }
+
+const ScriptBody_b = bfun(ScriptBody);
 
 // Section 15.2
 
@@ -4385,11 +4705,15 @@ export function Module(p: Parser): ModuleNode | ErrorNode {
     return new ModuleNode(new Range(start,p.pos),body);
 }
 
+const Module_b = bfun(Module);
+
 // ModuleBody
 
 function ModuleBody(p: Parser): ASTNode {
     return ModuleItemList(p);
 }
+
+const ModuleBody_b = bfun(ModuleBody);
 
 // ModuleItemList
 
@@ -4411,6 +4735,8 @@ function ModuleItemList(p: Parser): ASTNode {
     });
 }
 
+const ModuleItemList_b = bfun(ModuleItemList);
+
 // ModuleItem
 
 function ModuleItem(p: Parser): ASTNode {
@@ -4423,6 +4749,8 @@ function ModuleItem(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const ModuleItem_b = bfun(ModuleItem);
 
 // Section 15.2.2
 
@@ -4449,6 +4777,8 @@ function ImportDeclaration_from(p: Parser): ASTNode {
     });
 }
 
+const ImportDeclaration_from_b = bfun(ImportDeclaration_from);
+
 // ImportDeclaration_module
 
 function ImportDeclaration_module(p: Parser): ASTNode {
@@ -4470,6 +4800,8 @@ function ImportDeclaration_module(p: Parser): ASTNode {
     });
 }
 
+const ImportDeclaration_module_b = bfun(ImportDeclaration_module);
+
 // ImportDeclaration
 
 function ImportDeclaration(p: Parser): ASTNode {
@@ -4481,6 +4813,8 @@ function ImportDeclaration(p: Parser): ASTNode {
     b.assertLengthIs(1);
     return checkNode(b.get(0));
 }
+
+const ImportDeclaration_b = bfun(ImportDeclaration);
 
 // ImportClause
 
@@ -4532,11 +4866,15 @@ function ImportClause(p: Parser): ASTNode {
     });
 }
 
+const ImportClause_b = bfun(ImportClause);
+
 // ImportedDefaultBinding
 
 function ImportedDefaultBinding(p: Parser): ASTNode {
     return ImportedBinding(p);
 }
+
+const ImportedDefaultBinding_b = bfun(ImportedDefaultBinding);
 
 // NameSpaceImport
 
@@ -4558,6 +4896,8 @@ function NameSpaceImport(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const NameSpaceImport_b = bfun(NameSpaceImport);
 
 // NamedImports
 
@@ -4596,6 +4936,8 @@ function NamedImports(p: Parser): ASTNode {
     });
 }
 
+const NamedImports_b = bfun(NamedImports);
+
 // FromClause
 
 function FromClause(p: Parser): ASTNode {
@@ -4612,6 +4954,8 @@ function FromClause(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const FromClause_b = bfun(FromClause);
 
 // ImportsList
 
@@ -4636,6 +4980,8 @@ function ImportsList(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ImportsList_b = bfun(ImportsList);
 
 // ImportSpecifier
 
@@ -4671,17 +5017,23 @@ function ImportSpecifier(p: Parser): ASTNode {
     });
 }
 
+const ImportSpecifier_b = bfun(ImportSpecifier);
+
 // ModuleSpecifier
 
 function ModuleSpecifier(p: Parser): ASTNode {
     return StringLiteral(p);
 }
 
+const ModuleSpecifier_b = bfun(ModuleSpecifier);
+
 // ImportedBinding
 
 function ImportedBinding(p: Parser): ASTNode {
     return BindingIdentifier(p);
 }
+
+const ImportedBinding_b = bfun(ImportedBinding);
 
 // Section 15.2.3
 
@@ -4786,6 +5138,8 @@ function ExportDeclaration(p: Parser): ASTNode {
     });
 }
 
+const ExportDeclaration_b = bfun(ExportDeclaration);
+
 // ExportClause
 
 function ExportClause(p: Parser): ASTNode {
@@ -4827,6 +5181,8 @@ function ExportClause(p: Parser): ASTNode {
     });
 }
 
+const ExportClause_b = bfun(ExportClause);
+
 // ExportsList
 
 function ExportsList(p: Parser): ASTNode {
@@ -4850,6 +5206,8 @@ function ExportsList(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ExportsList_b = bfun(ExportsList);
 
 // ExportSpecifier
 
@@ -4884,3 +5242,5 @@ function ExportSpecifier(p: Parser): ASTNode {
         return checkNode(b.get(0));
     });
 }
+
+const ExportSpecifier_b = bfun(ExportSpecifier);
