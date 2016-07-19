@@ -252,13 +252,6 @@ export function checkListNode(value: any): ListNode | ErrorNode | null {
         throw new CastError(value,"ListNode | ErrorNode | null");
 }
 
-export function checkGenericNode(value: any): ErrorNode | null {
-    if ((value === null) || (value instanceof ErrorNode)) // GenericNode is a subclass of ErrorNode, for now
-        return value;
-    else
-        throw new CastError(value,"ASTNode | null");
-}
-
 export function checkNumber(value: any): number {
     if (typeof(value) === "number")
         return value;

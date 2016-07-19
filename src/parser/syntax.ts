@@ -230,7 +230,6 @@ import {
     checkNode,
     checkExpressionNode,
     checkListNode,
-    checkGenericNode,
     checkNumber,
     makeNode,
     makeEmptyListNode,
@@ -567,7 +566,7 @@ function SpreadElement(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -601,7 +600,7 @@ function ObjectLiteral(p: Parser): ASTNode {
         b.assertLengthIs(6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ObjectLiteral",[2]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -646,7 +645,7 @@ function PropertyDefinition_colon(p: Parser): ASTNode {
         b.assertLengthIs(7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ColonPropertyDefinition",[5,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -697,7 +696,7 @@ function ComputedPropertyName(p: Parser): ASTNode {
         b.assertLengthIs(7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ComputedPropertyName",[3]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -716,7 +715,7 @@ function CoverInitializedName(p: Parser): ASTNode {
         b.assertLengthIs(5);
         b.popAboveAndSet(4,makeNode(b,4,0,"CoverInitializedName",[3,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -770,7 +769,7 @@ function MemberExpression_new(p: Parser): ASTNode {
         b.assertLengthIs(7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewExpression",[3,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -864,7 +863,7 @@ function SuperProperty(p: Parser): ASTNode {
             }
         ]);
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -891,7 +890,7 @@ function NewTarget(p: Parser): ASTNode {
         b.assertLengthIs(7);
         b.popAboveAndSet(6,makeNode(b,6,0,"NewTarget",[]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1058,7 +1057,7 @@ function Arguments(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -1983,7 +1982,7 @@ function Block(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2052,7 +2051,7 @@ function LexicalDeclaration(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2116,7 +2115,7 @@ function LexicalBinding_pattern(p: Parser): ASTNode {
         b.assertLengthIs(5);
         b.popAboveAndSet(4,makeNode(b,4,0,"LexicalPatternBinding",[3,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2147,7 +2146,7 @@ function VariableStatement(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(6,makeNode(b,6,0,"Var",[3]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2219,7 +2218,7 @@ function VariableDeclaration_pattern(p: Parser): ASTNode {
         b.assertLengthIs(5);
         b.popAboveAndSet(4,makeNode(b,4,0,"VarPattern",[3,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2570,7 +2569,7 @@ function IfStatement(p: Parser): ASTNode {
         b.assertLengthIs(12);
         b.popAboveAndSet(11,makeNode(b,11,0,"IfStatement",[6,2,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2601,7 +2600,7 @@ function IterationStatement_do(p: Parser): ASTNode {
         b.assertLengthIs(15);
         b.popAboveAndSet(14,makeNode(b,14,0,"DoStatement",[11,5]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2626,7 +2625,7 @@ function IterationStatement_while(p: Parser): ASTNode {
         b.assertLengthIs(11);
         b.popAboveAndSet(10,makeNode(b,10,0,"WhileStatement",[5,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2702,7 +2701,7 @@ function IterationStatement_for_c(p: Parser): ASTNode {
         b.assertLengthIs(15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2761,7 +2760,7 @@ function IterationStatement_for_in(p: Parser): ASTNode {
         b.assertLengthIs(15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForIn",[9,5,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2820,7 +2819,7 @@ function IterationStatement_for_of(p: Parser): ASTNode {
         b.assertLengthIs(15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForOf",[9,5,1]));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -2874,7 +2873,7 @@ function ForDeclaration(p: Parser): ASTNode {
             },
         ]);
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
 
@@ -4784,6 +4783,6 @@ function ExportSpecifier(p: Parser): ASTNode {
         b.assertLengthIs(3);
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(1);
-        return checkGenericNode(b.get(0));
+        return checkNode(b.get(0));
     });
 }
