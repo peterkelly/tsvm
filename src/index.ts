@@ -14,7 +14,7 @@
 
 import fs = require("fs");
 import path = require("path");
-import { Module } from "./parser/syntax";
+import { parseModule } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
 import { compileModule } from "./compiler";
@@ -88,7 +88,7 @@ const commands: CommandSet = {
 
     ["ast-module"](input: string): string {
         const p = new Parser(input);
-        const root = Module(p);
+        const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
@@ -221,7 +221,7 @@ function parse(relFilename: string): void {
     console.log(text);
     try {
         const p = new Parser(text);
-        const root = Module(p);
+        const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
@@ -286,7 +286,7 @@ function compile(relFilename: string) {
         const { input } = splitTestData(content);
 
         const p = new Parser(input);
-        const root = Module(p);
+        const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");

@@ -227,8 +227,6 @@ import {
     identifier,
     whitespace,
     whitespaceNoNewline,
-    bfun,
-    pfun,
     checkNode,
     checkListNode,
     checkNumber,
@@ -803,15 +801,15 @@ function Initializer_b(b: Builder): void {
 
 // TemplateLiteral
 
-function TemplateLiteral(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function TemplateLiteral(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // TemplateSpans
 
-function TemplateSpans(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function TemplateSpans(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // TemplateMiddleList
 
-function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function TemplateMiddleList(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // Section 12.3
 
@@ -2014,18 +2012,12 @@ function Declaration_b(b: Builder): void {
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser): ASTNode {
-    const b = new Builder(p);
-    const oldLength = b.length;
+function HoistableDeclaration_b(b: Builder): void {
     b.bchoice([
-        bfun(() => FunctionDeclaration(p)),
-        bfun(() => GeneratorDeclaration(p)),
+        FunctionDeclaration_b,
+        GeneratorDeclaration_b,
     ]);
-    b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
 }
-
-const HoistableDeclaration_b = bfun(HoistableDeclaration);
 
 // BreakableStatement
 
@@ -2046,8 +2038,6 @@ function BreakableStatement_b(b: Builder): void {
 function BlockStatement_b(b: Builder): void {
     b.item(Block_b);
 }
-
-const BlockStatement = pfun(BlockStatement_b);
 
 // Block
 
@@ -3546,23 +3536,12 @@ function FunctionDeclaration_unnamed_b(b: Builder): void {
 
 // FunctionDeclaration
 
-function FunctionDeclaration(p: Parser): ASTNode {
-    try {
-        return pfun(FunctionDeclaration_named_b)(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    try {
-        return pfun(FunctionDeclaration_unnamed_b)(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
+function FunctionDeclaration_b(b: Builder): void {
+    b.bchoice([
+        FunctionDeclaration_named_b,
+        FunctionDeclaration_unnamed_b,
+    ]);
 }
-
-const FunctionDeclaration_b = bfun(FunctionDeclaration);
 
 // FunctionExpression
 
@@ -3709,15 +3688,13 @@ function FunctionBody_b(b: Builder): void {
     b.item(FunctionStatementList_b);
 }
 
-const FunctionBody = pfun(FunctionBody_b);
-
 // FunctionStatementList
 
 function FunctionStatementList_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         StatementList_b,
-        bfun(() => new ListNode(new Range(b.parser.pos,b.parser.pos),[])),
+        () => b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[])),
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -3849,8 +3826,8 @@ function MethodDefinition_1_b(b: Builder): void {
 
 // MethodDefinition_2
 
-function MethodDefinition_2(p: Parser): ASTNode {
-    return pfun(GeneratorMethod_b)(p);
+function MethodDefinition_2_b(b: Builder): void {
+    b.item(GeneratorMethod_b);
 }
 
 // MethodDefinition_3
@@ -3916,15 +3893,12 @@ function MethodDefinition_4_b(b: Builder): void {
 // MethodDefinition
 
 function MethodDefinition_b(b: Builder): void {
-    const oldLength = b.length;
     b.bchoice([
         MethodDefinition_1_b,
-        bfun(MethodDefinition_2),
+        MethodDefinition_2_b,
         MethodDefinition_3_b,
         MethodDefinition_4_b,
     ]);
-    b.assertLengthIs(oldLength+1);
-    checkNode(b.get(0));
 }
 
 // PropertySetParameterList
@@ -3954,7 +3928,7 @@ function GeneratorMethod_b(b: Builder): void {
             whitespace,             // 6
             punctuator("{"),        // 5
             whitespace,             // 4
-            bfun(GeneratorBody),          // 3 = body
+            GeneratorBody_b,          // 3 = body
             whitespace,             // 2
             punctuator("}"),        // 1
             pos,                    // 0 = end
@@ -3987,7 +3961,7 @@ function GeneratorDeclaration_1_b(b: Builder): void {
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            bfun(GeneratorBody),       // 3 = body
+            GeneratorBody_b,       // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -4018,7 +3992,7 @@ function GeneratorDeclaration_2_b(b: Builder): void {
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            bfun(GeneratorBody),       // 3 = body
+            GeneratorBody_b,       // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -4033,23 +4007,12 @@ function GeneratorDeclaration_2_b(b: Builder): void {
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser): ASTNode {
-    try {
-        return pfun(GeneratorDeclaration_1_b)(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    try {
-        return pfun(GeneratorDeclaration_2_b)(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
+function GeneratorDeclaration_b(b: Builder): void {
+    b.bchoice([
+        GeneratorDeclaration_1_b,
+        GeneratorDeclaration_2_b,
+    ]);
 }
-
-const GeneratorDeclaration_b = bfun(GeneratorDeclaration);
 
 // GeneratorExpression
 
@@ -4079,7 +4042,7 @@ function GeneratorExpression_b(b: Builder): void {
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            bfun(GeneratorBody),       // 3 = body
+            GeneratorBody_b,       // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -4093,8 +4056,8 @@ function GeneratorExpression_b(b: Builder): void {
 
 // GeneratorBody
 
-function GeneratorBody(p: Parser): ASTNode {
-    return FunctionBody(p);
+function GeneratorBody_b(b: Builder): void {
+    b.item(FunctionBody_b);
 }
 
 // YieldExpression_1
@@ -4212,23 +4175,12 @@ function ClassDeclaration_2_b(b: Builder): void {
 
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser): ASTNode {
-    try {
-        return pfun(ClassDeclaration_1_b)(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    try {
-        return pfun(ClassDeclaration_2_b)(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    throw new ParseError(p,p.pos,"Expected ClassDeclaration");
+function ClassDeclaration_b(b: Builder): void {
+    b.bchoice([
+        ClassDeclaration_1_b,
+        ClassDeclaration_2_b,
+    ]);
 }
-
-const ClassDeclaration_b = bfun(ClassDeclaration);
 
 // ClassExpression
 
@@ -4395,7 +4347,7 @@ function ClassElement_b(b: Builder): void {
 
 // Script
 
-export function Script_b(b: Builder): void {
+function Script_b(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
     b.bchoice([
@@ -4418,8 +4370,6 @@ export function Script_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-export const Script = pfun(Script_b);
-
 // ScriptBody
 
 function ScriptBody_b(b: Builder): void {
@@ -4430,7 +4380,7 @@ function ScriptBody_b(b: Builder): void {
 
 // Module
 
-export function Module_b(b: Builder): void {
+function Module_b(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
     b.bchoice([
@@ -4452,8 +4402,6 @@ export function Module_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-export const Module = pfun(Module_b);
 
 // ModuleBody
 
@@ -4747,8 +4695,6 @@ function ModuleSpecifier_b(b: Builder): void {
     b.item(StringLiteral_b);
 }
 
-const ModuleSpecifier = pfun(ModuleSpecifier_b);
-
 // ImportedBinding
 
 function ImportedBinding_b(b: Builder): void {
@@ -4773,7 +4719,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     keyword("default"),                              // 3
                     whitespace,                                      // 2
-                    bfun(() => HoistableDeclaration(b.parser,)), // 1
+                    HoistableDeclaration_b, // 1
                     pos,                                             // 0
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -4783,7 +4729,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     keyword("default"), // 3
                     whitespace, // 2
-                    bfun(() => ClassDeclaration(b.parser)), // 1
+                    ClassDeclaration_b, // 1
                     pos, // 0
                 ]);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
@@ -4954,5 +4900,23 @@ function ExportSpecifier_b(b: Builder): void {
         b.popAboveAndSet(2,b.get(0));
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
+    });
+}
+
+export function parseScript(p: Parser): ASTNode {
+    return p.attempt(() => {
+        const b = new Builder(p);
+        Script_b(b);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
+    });
+}
+
+export function parseModule(p: Parser): ASTNode {
+    return p.attempt(() => {
+        const b = new Builder(p);
+        Module_b(b);
+        b.assertLengthIs(1);
+        return checkNode(b.get(0));
     });
 }
