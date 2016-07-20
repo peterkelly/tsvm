@@ -92,7 +92,7 @@ export class Builder {
     }
 
     // F must either throw an exception or result in exactly one extra item on the stack
-    public bopt(f: (b: Builder) => void): void {
+    public opt(f: (b: Builder) => void): void {
         try {
             this.attempt(() => {
                 const oldLength = this.stack.length;
@@ -184,7 +184,7 @@ export class Builder {
 }
 
 export function opt(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.bopt(f);
+    return (b: Builder) => b.opt(f);
 }
 
 export function pos(b: Builder) {
