@@ -155,7 +155,7 @@ function This(b: Builder): void {
 
 function PrimaryExpression(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         This,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
         Literal,
@@ -168,7 +168,7 @@ function PrimaryExpression(b: Builder): void {
         // RegularExpressionLiteral_b, // TODO
         // TemplateLiteral_b, // TODO
         ParenthesizedExpression,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -197,12 +197,12 @@ function ParenthesizedExpression(b: Builder): void {
 
 function Literal(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         NullLiteral,
         BooleanLiteral,
         NumericLiteral,
         StringLiteral,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -228,7 +228,7 @@ function NullLiteral(b: Builder): void {
 
 function BooleanLiteral(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         () => {
             b.items([
                 pos,
@@ -251,7 +251,7 @@ function BooleanLiteral(b: Builder): void {
             const end = checkNumber(b.get(0));
             b.item(popAboveAndSet(2,new BooleanLiteralNode(new Range(start,end),false)));
         },
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -371,7 +371,7 @@ function ArrayLiteral(b: Builder): void {
             }
 
             try {
-                b.choice([
+                b.item(choice([
                     () => {
                         b.items([
                             pos,             // 3 = before
@@ -407,7 +407,7 @@ function ArrayLiteral(b: Builder): void {
                         b.item(popAboveAndSet(2,checkNode(b.get(2))));
                         b.item(assertLengthIs(oldLength+5));
                     },
-                ]);
+                ]));
                 b.item(assertLengthIs(oldLength+5));
                 const item = checkNode(b.get(0));
                 b.item(pop);
@@ -533,12 +533,12 @@ function PropertyDefinition_colon(b: Builder): void {
 
 function PropertyDefinition(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         PropertyDefinition_colon,
         CoverInitializedName,
         MethodDefinition,
         IdentifierReference,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -547,10 +547,10 @@ function PropertyDefinition(b: Builder): void {
 
 function PropertyName(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         LiteralPropertyName,
         ComputedPropertyName,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -559,11 +559,11 @@ function PropertyName(b: Builder): void {
 
 function LiteralPropertyName(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         IdentifierName,
         StringLiteral,
         NumericLiteral,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -666,12 +666,12 @@ function MemberExpression_new(b: Builder): void {
 
 function MemberExpression_start(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         PrimaryExpression,
         SuperProperty,
         MetaProperty,
         MemberExpression_new,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -722,7 +722,7 @@ function MemberExpression(b: Builder): void {
 function SuperProperty(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,              // 8 = start
@@ -753,7 +753,7 @@ function SuperProperty(b: Builder): void {
                 b.item(popAboveAndSet(6,makeNode(b,6,0,"SuperPropertyIdent",[1])));
                 b.item(assertLengthIs(oldLength+1));
             }
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -791,7 +791,7 @@ function NewTarget(b: Builder): void {
 function NewExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.item(MemberExpression);
             },
@@ -809,7 +809,7 @@ function NewExpression(b: Builder): void {
                 const expr = checkNode(b.get(1));
                 b.item(popAboveAndSet(4,new GenericNode(new Range(start,b.parser.pos),"NewExpression",[expr,null])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -820,7 +820,7 @@ function NewExpression(b: Builder): void {
 function CallExpression_start(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.item(SuperCall);
             },
@@ -835,7 +835,7 @@ function CallExpression_start(b: Builder): void {
                 b.item(assertLengthIs(oldLength+5));
                 b.item(popAboveAndSet(4,makeNode(b,4,0,"Call",[3,1])));
             },
-        ])
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -917,7 +917,7 @@ function SuperCall(b: Builder): void {
 function Arguments(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,             // 5 = start
@@ -947,7 +947,7 @@ function Arguments(b: Builder): void {
                 b.item(assertLengthIs(oldLength+7));
                 b.item(popAboveAndSet(6,makeNode(b,6,0,"Arguments",[3])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -958,7 +958,7 @@ function Arguments(b: Builder): void {
 function ArgumentList_item(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,                  // 4 = start
@@ -973,7 +973,7 @@ function ArgumentList_item(b: Builder): void {
             () => {
                 b.item(AssignmentExpression);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -1009,10 +1009,10 @@ function LeftHandSideExpression(b: Builder): void {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         CallExpression,
         NewExpression,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -1063,7 +1063,7 @@ function PostfixExpression(b: Builder): void {
 function UnaryExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,               // 4 = start
@@ -1166,7 +1166,7 @@ function UnaryExpression(b: Builder): void {
             () => {
                 b.item(PostfixExpression);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -1769,12 +1769,12 @@ function AssignmentExpression_plain(b: Builder): void {
 function AssignmentExpression(b: Builder): void {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         ArrowFunction,
         AssignmentExpression_plain,
         ConditionalExpression,
         YieldExpression,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -1811,7 +1811,7 @@ function Expression(b: Builder): void {
 
 function Statement(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         BlockStatement,
         VariableStatement,
         EmptyStatement,
@@ -1826,7 +1826,7 @@ function Statement(b: Builder): void {
         ThrowStatement,
         TryStatement,
         DebuggerStatement,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -1835,11 +1835,11 @@ function Statement(b: Builder): void {
 
 function Declaration(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         HoistableDeclaration,
         ClassDeclaration,
         LexicalDeclaration,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -1847,20 +1847,20 @@ function Declaration(b: Builder): void {
 // HoistableDeclaration
 
 function HoistableDeclaration(b: Builder): void {
-    b.choice([
+    b.item(choice([
         FunctionDeclaration,
         GeneratorDeclaration,
-    ]);
+    ]));
 }
 
 // BreakableStatement
 
 function BreakableStatement(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         IterationStatement,
         SwitchStatement,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -1929,10 +1929,10 @@ function StatementList(b: Builder): void {
 
 function StatementListItem(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         Statement,
         Declaration,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -1944,7 +1944,7 @@ function StatementListItem(b: Builder): void {
 function LexicalDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,              // 6 = start
@@ -1969,7 +1969,7 @@ function LexicalDeclaration(b: Builder): void {
                 ]);
                 b.item(popAboveAndSet(6,makeNode(b,6,0,"Const",[3])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -2042,10 +2042,10 @@ function LexicalBinding_pattern(b: Builder): void {
 
 function LexicalBinding(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         LexicalBinding_identifier,
         LexicalBinding_pattern,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -2150,10 +2150,10 @@ function VariableDeclaration_pattern(b: Builder): void {
 
 function VariableDeclaration(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         VariableDeclaration_identifier,
         VariableDeclaration_pattern,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -2164,10 +2164,10 @@ function VariableDeclaration(b: Builder): void {
 
 function BindingPattern(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         ObjectBindingPattern,
         ArrayBindingPattern,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -2278,7 +2278,7 @@ function BindingElementList(b: Builder): void {
                 });
             },
             () => {
-                b.choice([
+                b.item(choice([
                     () => {
                         b.items([
                             whitespace,      // 3
@@ -2298,7 +2298,7 @@ function BindingElementList(b: Builder): void {
                         });
                         b.item(popAboveAndSet(2,b.get(1)));
                     },
-                ])
+                ]));
             },
         );
         b.item(assertLengthIs(oldLength+1));
@@ -2311,7 +2311,7 @@ function BindingElementList(b: Builder): void {
 function BindingProperty(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,             // 6 = start
@@ -2330,7 +2330,7 @@ function BindingProperty(b: Builder): void {
                 // and PropertyName will match an identifier at the start of a colon binding
                 b.item(SingleNameBinding);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -2341,7 +2341,7 @@ function BindingProperty(b: Builder): void {
 function BindingElement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.item(SingleNameBinding);
             },
@@ -2365,7 +2365,7 @@ function BindingElement(b: Builder): void {
                     ]),
                 ]);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -2585,7 +2585,7 @@ function IterationStatement_for_c(b: Builder): void {
             whitespace,                                                     // 10
         ]);
         b.item(assertLengthIs(oldLength+5));
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
@@ -2624,7 +2624,7 @@ function IterationStatement_for_c(b: Builder): void {
                 ]);
                 b.item(popAboveAndSet(0,null));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+6));
         b.item(opt(Expression)); // 8 = condition
         b.item(whitespace);      // 7
@@ -2663,7 +2663,7 @@ function IterationStatement_for_in(b: Builder): void {
             whitespace,                                    // 10
         ]);
         b.item(assertLengthIs(oldLength+5));
-        b.choice([ // 9 = binding
+        b.item(choice([ // 9 = binding
             () => {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
@@ -2685,7 +2685,7 @@ function IterationStatement_for_in(b: Builder): void {
             () => {
                 b.item(ForDeclaration);
             }
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+6));
         b.items([
             whitespace,                                    // 8
@@ -2722,7 +2722,7 @@ function IterationStatement_for_of(b: Builder): void {
             whitespace,                                    // 10
         ]);
         b.item(assertLengthIs(oldLength+5));
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
@@ -2744,7 +2744,7 @@ function IterationStatement_for_of(b: Builder): void {
             () => {
                 b.item(ForDeclaration);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+6));
         b.items([
             whitespace,                                    // 8
@@ -2768,11 +2768,11 @@ function IterationStatement_for_of(b: Builder): void {
 
 function IterationStatement_for(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         IterationStatement_for_c,
         IterationStatement_for_in,
         IterationStatement_for_of,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -2781,11 +2781,11 @@ function IterationStatement_for(b: Builder): void {
 
 function IterationStatement(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         IterationStatement_do,
         IterationStatement_while,
         IterationStatement_for,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -2795,7 +2795,7 @@ function IterationStatement(b: Builder): void {
 function ForDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,              // 4 = start
@@ -2818,7 +2818,7 @@ function ForDeclaration(b: Builder): void {
                 b.item(assertLengthIs(oldLength+5));
                 b.item(popAboveAndSet(4,makeNode(b,4,0,"ConstForDeclaration",[1])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -2828,10 +2828,10 @@ function ForDeclaration(b: Builder): void {
 
 function ForBinding(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         BindingIdentifier,
         BindingPattern, // FIXME: Need test cases for this
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -2843,7 +2843,7 @@ function ForBinding(b: Builder): void {
 function ContinueStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,                 // 5 = start
@@ -2869,7 +2869,7 @@ function ContinueStatement(b: Builder): void {
                 b.item(assertLengthIs(oldLength+7));
                 b.item(popAboveAndSet(6,makeNode(b,6,0,"ContinueStatement",[3])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -2882,7 +2882,7 @@ function ContinueStatement(b: Builder): void {
 function BreakStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,              // 5 = start
@@ -2908,7 +2908,7 @@ function BreakStatement(b: Builder): void {
                 b.item(assertLengthIs(oldLength+7));
                 b.item(popAboveAndSet(6,makeNode(b,6,0,"BreakStatement",[3])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -2921,7 +2921,7 @@ function BreakStatement(b: Builder): void {
 function ReturnStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,               // 5 = start
@@ -2947,7 +2947,7 @@ function ReturnStatement(b: Builder): void {
                 b.item(assertLengthIs(oldLength+7));
                 b.item(popAboveAndSet(6,makeNode(b,6,0,"ReturnStatement",[3])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -3066,10 +3066,10 @@ function CaseBlock_2(b: Builder): void {
 
 function CaseBlock(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         CaseBlock_1,
         CaseBlock_2,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -3170,10 +3170,10 @@ function LabelledStatement(b: Builder): void {
 
 function LabelledItem(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         Statement,
         FunctionDeclaration,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -3286,10 +3286,10 @@ function Finally(b: Builder): void {
 
 function CatchParameter(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         BindingIdentifier,
         BindingPattern,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -3381,10 +3381,10 @@ function FunctionDeclaration_unnamed(b: Builder): void {
 // FunctionDeclaration
 
 function FunctionDeclaration(b: Builder): void {
-    b.choice([
+    b.item(choice([
         FunctionDeclaration_named,
         FunctionDeclaration_unnamed,
-    ]);
+    ]));
 }
 
 // FunctionExpression
@@ -3434,7 +3434,7 @@ function StrictFormalParameters(b: Builder): void {
 function FormalParameters(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.item(FormalParameterList);
             },
@@ -3442,7 +3442,7 @@ function FormalParameters(b: Builder): void {
                 b.item(pos);
                 b.item(popAboveAndSet(0,makeNode(b,0,0,"FormalParameters1",[])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -3453,7 +3453,7 @@ function FormalParameters(b: Builder): void {
 function FormalParameterList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,                   // 2 = start
@@ -3487,7 +3487,7 @@ function FormalParameterList(b: Builder): void {
                     ]),
                 ]);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
     });
 }
@@ -3538,10 +3538,10 @@ function FunctionBody(b: Builder): void {
 
 function FunctionStatementList(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         StatementList,
         () => b.item(push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]))),
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -3573,10 +3573,10 @@ function ArrowFunction(b: Builder): void {
 
 function ArrowParameters(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         BindingIdentifier,
         ArrowFormalParameters,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -3612,10 +3612,10 @@ function ConciseBody_2(b: Builder): void {
 
 function ConciseBody(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         ConciseBody_1,
         ConciseBody_2,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -3739,12 +3739,12 @@ function MethodDefinition_4(b: Builder): void {
 // MethodDefinition
 
 function MethodDefinition(b: Builder): void {
-    b.choice([
+    b.item(choice([
         MethodDefinition_1,
         MethodDefinition_2,
         MethodDefinition_3,
         MethodDefinition_4,
-    ]);
+    ]));
 }
 
 // PropertySetParameterList
@@ -3854,10 +3854,10 @@ function GeneratorDeclaration_2(b: Builder): void {
 // GeneratorDeclaration
 
 function GeneratorDeclaration(b: Builder): void {
-    b.choice([
+    b.item(choice([
         GeneratorDeclaration_1,
         GeneratorDeclaration_2,
-    ]);
+    ]));
 }
 
 // GeneratorExpression
@@ -3967,11 +3967,11 @@ function YieldExpression_3(b: Builder): void {
 
 function YieldExpression(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         YieldExpression_1,
         YieldExpression_2,
         YieldExpression_3,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -4022,10 +4022,10 @@ function ClassDeclaration_2(b: Builder): void {
 // ClassDeclaration
 
 function ClassDeclaration(b: Builder): void {
-    b.choice([
+    b.item(choice([
         ClassDeclaration_1,
         ClassDeclaration_2,
-    ]);
+    ]));
 }
 
 // ClassExpression
@@ -4182,11 +4182,11 @@ function ClassElement_3(b: Builder): void {
 
 function ClassElement(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         ClassElement_1,
         ClassElement_2,
         ClassElement_3,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -4198,7 +4198,7 @@ function ClassElement(b: Builder): void {
 function Script(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
-    b.choice([
+    b.item(choice([
         () => {
             b.item(ScriptBody);
         },
@@ -4206,7 +4206,7 @@ function Script(b: Builder): void {
             const start = checkNumber(b.get(0));
             b.item(push(new ListNode(new Range(start,start),[])));
         },
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+2));
     b.item(pos);
     b.item(assertLengthIs(oldLength+3));
@@ -4228,7 +4228,7 @@ function ScriptBody(b: Builder): void {
 function Module(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
-    b.choice([
+    b.item(choice([
         () => {
             b.item(ModuleBody);
         },
@@ -4236,7 +4236,7 @@ function Module(b: Builder): void {
             const start = checkNumber(b.get(0));
             b.item(push(new ListNode(new Range(start,start),[])));
         },
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+2));
     b.item(pos);
     b.item(assertLengthIs(oldLength+3));
@@ -4275,11 +4275,11 @@ function ModuleItemList(b: Builder): void {
 
 function ModuleItem(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         ImportDeclaration,
         ExportDeclaration,
         StatementListItem,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -4334,10 +4334,10 @@ function ImportDeclaration_module(b: Builder): void {
 
 function ImportDeclaration(b: Builder): void {
     const oldLength = b.length;
-    b.choice([
+    b.item(choice([
         ImportDeclaration_from,
         ImportDeclaration_module,
-    ]);
+    ]));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 }
@@ -4347,7 +4347,7 @@ function ImportDeclaration(b: Builder): void {
 function ImportClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.item(NameSpaceImport);
             },
@@ -4388,7 +4388,7 @@ function ImportClause(b: Builder): void {
                     ]),
                 ]);
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -4502,7 +4502,7 @@ function ImportsList(b: Builder): void {
 function ImportSpecifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     pos,             // 6 = start
@@ -4525,7 +4525,7 @@ function ImportSpecifier(b: Builder): void {
                 b.item(assertLengthIs(oldLength+3));
                 b.item(popAboveAndSet(2,makeNode(b,2,0,"ImportSpecifier",[1])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
@@ -4556,7 +4556,7 @@ function ExportDeclaration(b: Builder): void {
             whitespace,
         ]);
         b.item(assertLengthIs(oldLength+3));
-        b.choice([
+        b.item(choice([
             () => {
                 b.items([
                     keyword("default"),                              // 3
@@ -4640,7 +4640,7 @@ function ExportDeclaration(b: Builder): void {
                 b.item(assertLengthIs(oldLength+5));
                 b.item(popAboveAndSet(4,makeNode(b,4,0,"ExportDeclaration",[1])));
             },
-        ]);
+        ]));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
