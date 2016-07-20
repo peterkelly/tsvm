@@ -22,7 +22,7 @@ import {
     ParseIgnore,
 } from "./parser";
 import {
-    Identifier_b
+    Identifier
 } from "./syntax";
 import {
     CastError,
@@ -230,7 +230,7 @@ export function identifier(str: string): (b: Builder) => void {
         b.attempt((): void => {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
-            Identifier_b(b);
+            Identifier(b);
             b.assertLengthIs(oldLength+1);
             const ident = checkNode(b.get(0));
             if (!(ident instanceof IdentifierNode) || (ident.value != str))
