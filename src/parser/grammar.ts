@@ -183,6 +183,22 @@ export class Builder {
     }
 }
 
+export function popAboveAndSet(index: number, value: any): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,value);
+}
+
+export function assertLengthIs(length: number): (b: Builder) => void {
+    return (b: Builder) => b.assertLengthIs(length);
+}
+
+export function push(value: any): (b: Builder) => void {
+    return (b: Builder) => b.push(value);
+}
+
+export function pop(b: Builder): void {
+    b.pop();
+}
+
 export function opt(f: (b: Builder) => void): (b: Builder) => void {
     return (b: Builder) => b.opt(f);
 }
@@ -235,7 +251,7 @@ export function identifier(str: string): (b: Builder) => void {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
             Identifier(b);
-            b.assertLengthIs(oldLength+1);
+            b.item(assertLengthIs(oldLength+1));
             const ident = checkNode(b.get(0));
             if (!(ident instanceof IdentifierNode) || (ident.value != str))
                 throw new ParseError(b.parser,start,"Expected "+str);
