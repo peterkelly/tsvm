@@ -190,37 +190,33 @@ export class Builder {
     }
 }
 
-export function opt<T>(f: (p: Parser) => T): (p: Parser) => T {
-    return (p: Parser): T => p.opt(f);
-}
-
-export function opt_b(f: (b: Builder) => void): (b: Builder) => void {
+export function opt(f: (b: Builder) => void): (b: Builder) => void {
     return (b: Builder) => b.bopt(f);
 }
 
-export function pos_b(b: Builder) {
+export function pos(b: Builder) {
     b.push(b.parser.pos);
 }
 
-export function value_b(value: any): (b: Builder) => void {
+export function value(value: any): (b: Builder) => void {
     return (b: Builder) => b.push(value);
 }
 
-export function keyword_b(str: string): ((b: Builder) => void) {
+export function keyword(str: string): ((b: Builder) => void) {
     return (b: Builder): void => {
         b.parser.expectKeyword(str);
         b.push(null);
     }
 }
 
-export function punctuator_b(str: string): (b: Builder) => void {
+export function punctuator(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         b.parser.expectPunctuator(str);
         b.push(null);
     }
 }
 
-export function notKeyword_b(str: string): (b: Builder) => void {
+export function notKeyword(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         if (b.parser.lookaheadKeyword(str))
             throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
@@ -228,7 +224,7 @@ export function notKeyword_b(str: string): (b: Builder) => void {
     };
 }
 
-export function notPunctuator_b(str: string): (b: Builder) => void {
+export function notPunctuator(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         if (b.parser.lookaheadPunctuator(str))
             throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
@@ -236,7 +232,7 @@ export function notPunctuator_b(str: string): (b: Builder) => void {
     };
 }
 
-export function identifier_b(str: string): (b: Builder) => void {
+export function identifier(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         b.attempt((): void => {
             const oldLength = b.stack.length;
@@ -251,12 +247,12 @@ export function identifier_b(str: string): (b: Builder) => void {
     };
 }
 
-export function whitespace_b(b: Builder): void {
+export function whitespace(b: Builder): void {
     b.parser.skipWhitespace();
     b.push(null);
 }
 
-export function whitespaceNoNewline_b(b: Builder): void {
+export function whitespaceNoNewline(b: Builder): void {
     b.parser.skipWhitespaceNoNewline();
     b.push(null);
 }
