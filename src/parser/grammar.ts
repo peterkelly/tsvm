@@ -198,24 +198,12 @@ export function opt_b(f: (b: Builder) => void): (b: Builder) => void {
     return (b: Builder) => b.bopt(f);
 }
 
-export function pos(p: Parser) {
-    return p.pos;
-}
-
 export function pos_b(b: Builder) {
     b.push(b.parser.pos);
 }
 
-export function value<T>(value: T): (p: Parser) => T {
-    return (p: Parser) => value;
-}
-
 export function value_b(value: any): (b: Builder) => void {
     return (b: Builder) => b.push(value);
-}
-
-export function keyword(str: string): ((p: Parser) => void) {
-    return (p: Parser): void => p.expectKeyword(str);
 }
 
 export function keyword_b(str: string): ((b: Builder) => void) {
@@ -225,22 +213,11 @@ export function keyword_b(str: string): ((b: Builder) => void) {
     }
 }
 
-export function punctuator(str: string): (p: Parser) => void {
-    return (p: Parser): void => p.expectPunctuator(str);
-}
-
 export function punctuator_b(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         b.parser.expectPunctuator(str);
         b.push(null);
     }
-}
-
-export function notKeyword(str: string): (p: Parser) => void {
-    return (p: Parser): void => {
-        if (p.lookaheadKeyword(str))
-            throw new ParseError(p,p.pos,"Unexpected "+str);
-    };
 }
 
 export function notKeyword_b(str: string): (b: Builder) => void {
@@ -251,28 +228,11 @@ export function notKeyword_b(str: string): (b: Builder) => void {
     };
 }
 
-export function notPunctuator(str: string): (p: Parser) => void {
-    return (p: Parser): void => {
-        if (p.lookaheadPunctuator(str))
-            throw new ParseError(p,p.pos,"Unexpected "+str);
-    };
-}
-
 export function notPunctuator_b(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         if (b.parser.lookaheadPunctuator(str))
             throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
         b.push(null);
-    };
-}
-
-export function identifier(str: string): (p: Parser) => void {
-    return (p: Parser): void => {
-        const ident = pfun(Identifier_b)(p);
-        if (ident instanceof ErrorNode)
-            throw new ParseError(p,p.pos,"Expected "+str);
-        if (ident.value != str)
-            throw new ParseError(p,p.pos,"Expected "+str);
     };
 }
 
@@ -291,17 +251,9 @@ export function identifier_b(str: string): (b: Builder) => void {
     };
 }
 
-export function whitespace(p: Parser): void {
-    p.skipWhitespace();
-}
-
 export function whitespace_b(b: Builder): void {
     b.parser.skipWhitespace();
     b.push(null);
-}
-
-export function whitespaceNoNewline(p: Parser): void {
-    p.skipWhitespaceNoNewline();
 }
 
 export function whitespaceNoNewline_b(b: Builder): void {

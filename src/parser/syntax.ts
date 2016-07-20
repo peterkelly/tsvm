@@ -219,23 +219,14 @@ import {
     Builder,
     opt,
     opt_b,
-    pos,
     pos_b,
-    value,
     value_b,
-    keyword,
     keyword_b,
-    punctuator,
     punctuator_b,
-    notKeyword,
     notKeyword_b,
-    notPunctuator,
     notPunctuator_b,
-    identifier,
     identifier_b,
-    whitespace,
     whitespace_b,
-    whitespaceNoNewline,
     whitespaceNoNewline_b,
     bfun,
     pfun,
@@ -2628,9 +2619,7 @@ function ExpressionStatement_b(b: Builder): void {
         throw new ParseIgnore();
 
     if (p.matchKeyword("let")) {
-        p.sequence([
-            whitespace,
-        ]);
+        p.skipWhitespace();
         if (p.matchPunctuator("[")) {
             p.pos = start2;
             throw new ParseIgnore();
