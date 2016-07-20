@@ -39,6 +39,7 @@ import {
 import {
     Builder,
     opt,
+    choice,
     pos,
     value,
     keyword,
@@ -450,26 +451,28 @@ function SpreadElement(b: Builder): void {
 function ObjectLiteral(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);             // 5
-        b.item(punctuator("{")); // 4
-        b.item(whitespace);      // 3
-        b.choice([               // 2 = properties
-            () => {
-                b.item(PropertyDefinitionList);
-                b.item(whitespace);
-                b.opt(() => {
-                    b.item(punctuator(","));
+        b.items([
+            pos,                 // 5
+            punctuator("{"),     // 4
+            whitespace,          // 3
+            choice([             // 2 = properties
+                () => {
+                    b.item(PropertyDefinitionList);
                     b.item(whitespace);
-                    b.popAboveAndSet(1,0);
-                });
-                b.popAboveAndSet(2,b.get(2));
-            },
-            () => {
-                b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
-            },
+                    b.opt(() => {
+                        b.item(punctuator(","));
+                        b.item(whitespace);
+                        b.popAboveAndSet(1,0);
+                    });
+                    b.popAboveAndSet(2,b.get(2));
+                },
+                () => {
+                    b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
+                },
+            ]),
+            punctuator("}"),     // 1
+            pos,                 // 0 = end
         ]);
-        b.item(punctuator("}")); // 1
-        b.item(pos);             // 0 = end
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ObjectLiteral",[2]));
         b.assertLengthIs(oldLength+1);
@@ -1017,30 +1020,32 @@ function LeftHandSideExpression(b: Builder): void {
 function PostfixExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);
-        b.item(LeftHandSideExpression);
-        b.choice([
-            () => {
-                b.items([
-                    whitespaceNoNewline,
-                    punctuator("++"),
-                    pos,
-                ]);
-                b.assertLengthIs(oldLength+5);
-                b.popAboveAndSet(4,makeNode(b,4,0,"PostIncrement",[3]));
-            },
-            () => {
-                b.items([
-                    whitespaceNoNewline,
-                    punctuator("--"),
-                    pos,
-                ]);
-                b.assertLengthIs(oldLength+5);
-                b.popAboveAndSet(4,makeNode(b,4,0,"PostDecrement",[3]));
-            },
-            () => {
-                b.popAboveAndSet(1,b.get(0));
-            },
+        b.items([
+            pos,
+            LeftHandSideExpression,
+            choice([
+                () => {
+                    b.items([
+                        whitespaceNoNewline,
+                        punctuator("++"),
+                        pos,
+                    ]);
+                    b.assertLengthIs(oldLength+5);
+                    b.popAboveAndSet(4,makeNode(b,4,0,"PostIncrement",[3]));
+                },
+                () => {
+                    b.items([
+                        whitespaceNoNewline,
+                        punctuator("--"),
+                        pos,
+                    ]);
+                    b.assertLengthIs(oldLength+5);
+                    b.popAboveAndSet(4,makeNode(b,4,0,"PostDecrement",[3]));
+                },
+                () => {
+                    b.popAboveAndSet(1,b.get(0));
+                },
+            ]),
         ]);
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
@@ -1587,24 +1592,26 @@ function LogicalORExpression(b: Builder): void {
 function ConditionalExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);                      // 10 = start
-        b.item(LogicalORExpression);      // 9 = condition
-        b.choice([
-            () => {
-                b.items([
-                    whitespace,           // 8
-                    punctuator("?"),      // 7
-                    whitespace,           // 6
-                    AssignmentExpression, // 5 = trueExpr
-                    whitespace,           // 4
-                    punctuator(":"),      // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = falseExpr
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(9,makeNode(b,10,0,"Conditional",[9,5,1]));
-            },
-            () => {},
+        b.items([
+            pos,                              // 10 = start
+            LogicalORExpression,              // 9 = condition
+            choice([
+                () => {
+                    b.items([
+                        whitespace,           // 8
+                        punctuator("?"),      // 7
+                        whitespace,           // 6
+                        AssignmentExpression, // 5 = trueExpr
+                        whitespace,           // 4
+                        punctuator(":"),      // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = falseExpr
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(9,makeNode(b,10,0,"Conditional",[9,5,1]));
+                },
+                () => {},
+            ]),
         ]);
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
@@ -1620,130 +1627,132 @@ function ConditionalExpression(b: Builder): void {
 function AssignmentExpression_plain(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);                      // 6 = start
-        b.item(LeftHandSideExpression);   // 5 = left
-        b.choice([
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("="),      // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"Assign",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("*="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignMultiply",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("/="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignDivide",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("%="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignModulo",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("+="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignAdd",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("-="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignSubtract",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("<<="),    // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignLeftShift",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator(">>="),    // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignSignedRightShift",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator(">>>="),   // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignUnsignedRightShift",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("&="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseAND",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("^="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseXOR",[5,1]));
-            },
-            () => {
-                b.items([
-                    whitespace,           // 4
-                    punctuator("|="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
-                ]);
-                b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseOR",[5,1]));
-            },
-        ])
+        b.items([
+            pos,                              // 6 = start
+            LeftHandSideExpression,           // 5 = left
+            choice([
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("="),      // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"Assign",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("*="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignMultiply",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("/="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignDivide",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("%="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignModulo",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("+="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignAdd",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("-="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignSubtract",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("<<="),    // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignLeftShift",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator(">>="),    // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignSignedRightShift",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator(">>>="),   // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignUnsignedRightShift",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("&="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseAND",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("^="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseXOR",[5,1]));
+                },
+                () => {
+                    b.items([
+                        whitespace,           // 4
+                        punctuator("|="),     // 3
+                        whitespace,           // 2
+                        AssignmentExpression, // 1 = right
+                        pos,                  // 0 = end
+                    ]);
+                    b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseOR",[5,1]));
+                },
+            ]),
+        ]);
         b.assertLengthIs(oldLength+2);
         b.popAboveAndSet(1,b.get(0));
         b.assertLengthIs(oldLength+1);
@@ -1865,23 +1874,25 @@ function BlockStatement(b: Builder): void {
 function Block(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);             // 5
-        b.item(punctuator("{")); // 4
-        b.item(whitespace);      // 3
-        b.choice([               // 2 = statements
-            () => {
-                b.item(StatementList);
-                b.item(whitespace);
-                b.popAboveAndSet(1,b.get(1));
-            },
-            () => {
-                b.item(pos);
-                const position = checkNumber(b.get(0));
-                b.popAboveAndSet(0,new ListNode(new Range(position,position),[]));
-            },
+        b.items([
+            pos,                 // 5
+            punctuator("{"),     // 4
+            whitespace,          // 3
+            choice([             // 2 = statements
+                () => {
+                    b.item(StatementList);
+                    b.item(whitespace);
+                    b.popAboveAndSet(1,b.get(1));
+                },
+                () => {
+                    b.item(pos);
+                    const position = checkNumber(b.get(0));
+                    b.popAboveAndSet(0,new ListNode(new Range(position,position),[]));
+                },
+            ]),
+            punctuator("}"),     // 1
+            pos,                 // 0
         ]);
-        b.item(punctuator("}")); // 1
-        b.item(pos);             // 0
         b.popAboveAndSet(5,makeNode(b,5,0,"Block",[2]));
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
@@ -2086,24 +2097,26 @@ function VariableDeclarationList(b: Builder): void {
 function VariableDeclaration_identifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);
-        b.item(BindingIdentifier);
-        b.choice([
-            () => {
-                b.items([
-                    whitespace,
-                    Initializer,
-                    pos,
-                ]);
-                b.assertLengthIs(oldLength+5);
-                b.popAboveAndSet(4,makeNode(b,4,0,"VarIdentifier",[3,1]));
-            },
-            () => {
-                b.item(value(null));
-                b.item(pos);
-                b.assertLengthIs(oldLength+4);
-                b.popAboveAndSet(3,makeNode(b,3,0,"VarIdentifier",[2,1]));
-            },
+        b.items([
+            pos,
+            BindingIdentifier,
+            choice([
+                () => {
+                    b.items([
+                        whitespace,
+                        Initializer,
+                        pos,
+                    ]);
+                    b.assertLengthIs(oldLength+5);
+                    b.popAboveAndSet(4,makeNode(b,4,0,"VarIdentifier",[3,1]));
+                },
+                () => {
+                    b.item(value(null));
+                    b.item(pos);
+                    b.assertLengthIs(oldLength+4);
+                    b.popAboveAndSet(3,makeNode(b,3,0,"VarIdentifier",[2,1]));
+                },
+            ]),
         ]);
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
@@ -2160,24 +2173,26 @@ function BindingPattern(b: Builder): void {
 function ObjectBindingPattern(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);              // 6 = start
-        b.item(punctuator("{"));  // 5
-        b.item(whitespace);       // 4
-        b.item(pos);              // 3
-        b.choice([                // 2 = properties
-            () => {
-                b.item(BindingPropertyList),
-                b.item(whitespace),
-                b.opt(() => {
-                    b.item(punctuator(","));
-                    b.item(whitespace);
-                    b.popAboveAndSet(1,null);
-                });
-                b.popAboveAndSet(2,b.get(2));
-            },
-            () => {
-                b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
-            },
+        b.items([
+            pos,                  // 6 = start
+            punctuator("{"),      // 5
+            whitespace,           // 4
+            pos,                  // 3
+            choice([              // 2 = properties
+                () => {
+                    b.item(BindingPropertyList),
+                    b.item(whitespace),
+                    b.opt(() => {
+                        b.item(punctuator(","));
+                        b.item(whitespace);
+                        b.popAboveAndSet(1,null);
+                    });
+                    b.popAboveAndSet(2,b.get(2));
+                },
+                () => {
+                    b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
+                },
+            ]),
         ]);
         b.item(punctuator("}"));  // 1
         b.item(pos);              // 0 = end
@@ -2327,21 +2342,23 @@ function BindingElement(b: Builder): void {
                 b.item(SingleNameBinding);
             },
             () => {
-                b.item(pos);
-                b.item(BindingPattern);
-                b.choice([
-                    () => {
-                        b.items([
-                            whitespace,
-                            Initializer,
-                            pos,
-                        ]);
-                        b.assertLengthIs(oldLength+5);
-                        b.popAboveAndSet(4,makeNode(b,4,0,"BindingPatternInit",[3,1]));
-                    },
-                    () => {
-                        b.popAboveAndSet(1,b.get(0));
-                    },
+                b.items([
+                    pos,
+                    BindingPattern,
+                    choice([
+                        () => {
+                            b.items([
+                                whitespace,
+                                Initializer,
+                                pos,
+                            ]);
+                            b.assertLengthIs(oldLength+5);
+                            b.popAboveAndSet(4,makeNode(b,4,0,"BindingPatternInit",[3,1]));
+                        },
+                        () => {
+                            b.popAboveAndSet(1,b.get(0));
+                        },
+                    ]),
                 ]);
             },
         ]);
@@ -2355,20 +2372,22 @@ function BindingElement(b: Builder): void {
 function SingleNameBinding(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);
-        b.item(BindingIdentifier);
-        b.choice([
-            () => {
-                b.items([
-                    whitespace,
-                    Initializer,
-                    pos,
-                ]);
-                b.popAboveAndSet(2,makeNode(b,4,0,"SingleNameBinding",[3,1]));
-            },
-            () => {
-                b.push(b.get(0));
-            },
+        b.items([
+            pos,
+            BindingIdentifier,
+            choice([
+                () => {
+                    b.items([
+                        whitespace,
+                        Initializer,
+                        pos,
+                    ]);
+                    b.popAboveAndSet(2,makeNode(b,4,0,"SingleNameBinding",[3,1]));
+                },
+                () => {
+                    b.push(b.get(0));
+                },
+            ]),
         ]);
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
@@ -2994,17 +3013,15 @@ function CaseBlock_1(b: Builder): void {
             punctuator("{"), // 6
             whitespace,      // 5
             pos,             // 4 = midpos
-        ]);
-        b.choice([           // 3 = clauses
-            () => {
-                b.item(CaseClauses);
-            },
-            () => {
-                const midpos = checkNumber(b.get(0));
-                b.push(new ListNode(new Range(midpos,midpos),[]));
-            },
-        ]);
-        b.items([
+            choice([           // 3 = clauses
+                () => {
+                    b.item(CaseClauses);
+                },
+                () => {
+                    const midpos = checkNumber(b.get(0));
+                    b.push(new ListNode(new Range(midpos,midpos),[]));
+                },
+            ]),
             whitespace,      // 2
             punctuator("}"), // 1
             pos,             // 0
@@ -3187,27 +3204,29 @@ function ThrowStatement(b: Builder): void {
 function TryStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);                   // 7 = start
-        b.item(keyword("try"));        // 6
-        b.item(whitespace);            // 5
-        b.item(Block);                 // 4 = tryBlock
-        b.choice([
-            () => {
-                b.item(whitespace);    // 3
-                b.item(value(null));   // 2 = catchBlock
-                b.item(Finally);       // 1 = finallyBlock
-            },
-            () => {
-                b.item(whitespace);    // 3
-                b.item(Catch);         // 2 = catchBlock
-                b.opt(() => {          // 1 = finallyBlock
-                    b.item(whitespace);
-                    b.item(Finally);
-                    b.popAboveAndSet(1,b.get(0));
-                });
-            },
+        b.items([
+            pos,                         // 7 = start
+            keyword("try"),              // 6
+            whitespace,                  // 5
+            Block,                       // 4 = tryBlock
+            choice([
+                () => {
+                    b.item(whitespace);  // 3
+                    b.item(value(null)); // 2 = catchBlock
+                    b.item(Finally);     // 1 = finallyBlock
+                },
+                () => {
+                    b.item(whitespace);  // 3
+                    b.item(Catch);       // 2 = catchBlock
+                    b.opt(() => {        // 1 = finallyBlock
+                        b.item(whitespace);
+                        b.item(Finally);
+                        b.popAboveAndSet(1,b.get(0));
+                    });
+                },
+            ]),
+            pos,                         // 0 = end
         ]);
-        b.item(pos);                   // 0 = end
         b.assertLengthIs(oldLength+8);
         b.popAboveAndSet(7,makeNode(b,7,0,"TryStatement",[4,2,1]));
         b.assertLengthIs(oldLength+1);
@@ -3441,25 +3460,27 @@ function FormalParameterList(b: Builder): void {
                 b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters2",[1]));
             },
             () => {
-                b.item(pos);           // 3 = start
-                b.item(FormalsList);   // 2 = formals
-                b.choice([
-                    () => {
-                        b.items([
-                            whitespace,
-                            punctuator(","),
-                            whitespace,
-                            FunctionRestParameter,
-                            pos,
-                        ]);
-                        b.assertLengthIs(oldLength+7);
-                        b.popAboveAndSet(6,makeNode(b,6,0,"FormalParameters4",[5,1]));
-                    },
-                    () => {
-                        b.item(pos);
-                        b.assertLengthIs(oldLength+3);
-                        b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters3",[1]));
-                    },
+                b.items([
+                    pos,               // 3 = start
+                    FormalsList,       // 2 = formals
+                    choice([
+                        () => {
+                            b.items([
+                                whitespace,
+                                punctuator(","),
+                                whitespace,
+                                FunctionRestParameter,
+                                pos,
+                            ]);
+                            b.assertLengthIs(oldLength+7);
+                            b.popAboveAndSet(6,makeNode(b,6,0,"FormalParameters4",[5,1]));
+                        },
+                        () => {
+                            b.item(pos);
+                            b.assertLengthIs(oldLength+3);
+                            b.popAboveAndSet(2,makeNode(b,2,0,"FormalParameters3",[1]));
+                        },
+                    ]),
                 ]);
             },
         ]);
@@ -4032,31 +4053,33 @@ function ClassExpression(b: Builder): void {
 function ClassTail(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);               // 6 = start
-        b.opt(() => {              // 5 = heritage
-            b.items([
-                ClassHeritage,
-                whitespace,
-            ]);
-            b.popAboveAndSet(1,b.get(1));
-        });
-        b.item(punctuator("{"));   // 4
-        b.item(whitespace);        // 3
-        b.choice([                 // 2 = body
-            () => {
+        b.items([
+            pos,                   // 6 = start
+            opt(() => {            // 5 = heritage
                 b.items([
-                    ClassBody,
+                    ClassHeritage,
                     whitespace,
                 ]);
                 b.popAboveAndSet(1,b.get(1));
-            },
-            () => {
-                b.item(pos);
-                b.popAboveAndSet(0,makeEmptyListNode(b,0,0));
-            },
+            }),
+            punctuator("{"),       // 4
+            whitespace,            // 3
+            choice([               // 2 = body
+                () => {
+                    b.items([
+                        ClassBody,
+                        whitespace,
+                    ]);
+                    b.popAboveAndSet(1,b.get(1));
+                },
+                () => {
+                    b.item(pos);
+                    b.popAboveAndSet(0,makeEmptyListNode(b,0,0));
+                },
+            ]),
+            punctuator("}"),       // 1
+            pos,                   // 0 = end
         ]);
-        b.item(punctuator("}"));   // 1
-        b.item(pos);               // 0 = end
         b.assertLengthIs(oldLength+7);
         b.popAboveAndSet(6,makeNode(b,6,0,"ClassTail",[5,2]));
         b.assertLengthIs(oldLength+1);
@@ -4328,35 +4351,37 @@ function ImportClause(b: Builder): void {
                 b.item(NamedImports);
             },
             () => {
-                b.item(pos);                    // 6 = start
-                b.item(ImportedDefaultBinding); // 5 = defbinding
-                b.choice([
-                    () => {
-                        b.items([
-                            whitespace,         // 4
-                            punctuator(","),    // 3
-                            whitespace,         // 2
-                            NameSpaceImport,    // 1 = nsimport
-                            pos,                // 0 = end
-                        ]);
-                        b.assertLengthIs(oldLength+7);
-                        b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNameSpaceImports",[5,1]));
-                    },
-                    () => {
-                        b.items([
-                            whitespace,         // 4
-                            punctuator(","),    // 3
-                            whitespace,         // 2
-                            NamedImports,       // 1 = nsimports
-                            pos,                // 0 = end
-                        ]);
-                        b.assertLengthIs(oldLength+7);
-                        b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNamedImports",[5,1]));
-                    },
-                    () => {
-                        b.item(pos);
-                        b.popAboveAndSet(2,makeNode(b,2,0,"DefaultImport",[1]));
-                    },
+                b.items([
+                    pos,                            // 6 = start
+                    ImportedDefaultBinding,         // 5 = defbinding
+                    choice([
+                        () => {
+                            b.items([
+                                whitespace,         // 4
+                                punctuator(","),    // 3
+                                whitespace,         // 2
+                                NameSpaceImport,    // 1 = nsimport
+                                pos,                // 0 = end
+                            ]);
+                            b.assertLengthIs(oldLength+7);
+                            b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNameSpaceImports",[5,1]));
+                        },
+                        () => {
+                            b.items([
+                                whitespace,         // 4
+                                punctuator(","),    // 3
+                                whitespace,         // 2
+                                NamedImports,       // 1 = nsimports
+                                pos,                // 0 = end
+                            ]);
+                            b.assertLengthIs(oldLength+7);
+                            b.popAboveAndSet(6,makeNode(b,6,0,"DefaultAndNamedImports",[5,1]));
+                        },
+                        () => {
+                            b.item(pos);
+                            b.popAboveAndSet(2,makeNode(b,2,0,"DefaultImport",[1]));
+                        },
+                    ]),
                 ]);
             },
         ]);
@@ -4401,24 +4426,22 @@ function NamedImports(b: Builder): void {
             pos,                // 5 = start
             punctuator("{"),    // 4
             whitespace,         // 3
-        ]);
-        b.choice([              // 2 = imports
-            () => {
-                b.item(ImportsList);
-                b.item(whitespace);
-                b.opt(() => {
-                    b.item(punctuator(","));
+            choice([            // 2 = imports
+                () => {
+                    b.item(ImportsList);
                     b.item(whitespace);
-                    b.pop();
-                });
-                b.assertLengthIs(oldLength+6);
-                b.popAboveAndSet(2,b.get(2));
-            },
-            () => {
-                b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
-            },
-        ]);
-        b.items([
+                    b.opt(() => {
+                        b.item(punctuator(","));
+                        b.item(whitespace);
+                        b.pop();
+                    });
+                    b.assertLengthIs(oldLength+6);
+                    b.popAboveAndSet(2,b.get(2));
+                },
+                () => {
+                    b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[]));
+                },
+            ]),
             punctuator("}"),    // 1
             pos,                // 0 = end
         ]);
@@ -4628,28 +4651,25 @@ function ExportClause(b: Builder): void {
             pos,                       // 5
             punctuator("{"),           // 4
             whitespace,                // 3
-        ]);
-        b.choice([                     // 2
-            () => {
-                b.item(ExportsList);
-                b.item(whitespace);
-                b.opt(() => {
-                    b.item(punctuator(","));
+            choice([                   // 2
+                () => {
+                    b.item(ExportsList);
                     b.item(whitespace);
-                    b.pop();
-                });
-                b.assertLengthIs(oldLength+6);
-                b.popAboveAndSet(2,b.get(2));
-                b.assertLengthIs(oldLength+4);
-            },
-            () => {
-                b.item(pos);
-                const curPos = checkNumber(b.get(0));
-                b.popAboveAndSet(0,new ListNode(new Range(curPos,curPos),[]));
-            },
-        ]);
-        b.assertLengthIs(oldLength+4);
-        b.items([
+                    b.opt(() => {
+                        b.item(punctuator(","));
+                        b.item(whitespace);
+                        b.pop();
+                    });
+                    b.assertLengthIs(oldLength+6);
+                    b.popAboveAndSet(2,b.get(2));
+                    b.assertLengthIs(oldLength+4);
+                },
+                () => {
+                    b.item(pos);
+                    const curPos = checkNumber(b.get(0));
+                    b.popAboveAndSet(0,new ListNode(new Range(curPos,curPos),[]));
+                },
+            ]),
             punctuator("}"),           // 1
             pos,                       // 0
         ]);
@@ -4689,26 +4709,28 @@ function ExportsList(b: Builder): void {
 function ExportSpecifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.item(pos);
-        b.item(IdentifierName);
-        b.choice([
-            () => {
-                b.items([
-                    whitespace,        // 4
-                    keyword("as"),     // 3
-                    whitespace,        // 2
-                    IdentifierName,    // 1
-                    pos,               // 0
-                ]);
-                b.assertLengthIs(oldLength+7);
-                b.popAboveAndSet(4,makeNode(b,6,0,"ExportAsSpecifier",[5,1]));
-                b.assertLengthIs(oldLength+3);
-            },
-            () => {
-                b.item(pos);
-                b.assertLengthIs(oldLength+3);
-                b.popAboveAndSet(0,makeNode(b,2,0,"ExportNormalSpecifier",[1]));
-            },
+        b.items([
+            pos,
+            IdentifierName,
+            choice([
+                () => {
+                    b.items([
+                        whitespace,        // 4
+                        keyword("as"),     // 3
+                        whitespace,        // 2
+                        IdentifierName,    // 1
+                        pos,               // 0
+                    ]);
+                    b.assertLengthIs(oldLength+7);
+                    b.popAboveAndSet(4,makeNode(b,6,0,"ExportAsSpecifier",[5,1]));
+                    b.assertLengthIs(oldLength+3);
+                },
+                () => {
+                    b.item(pos);
+                    b.assertLengthIs(oldLength+3);
+                    b.popAboveAndSet(0,makeNode(b,2,0,"ExportNormalSpecifier",[1]));
+                },
+            ]),
         ]);
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));

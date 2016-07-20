@@ -187,6 +187,10 @@ export function opt(f: (b: Builder) => void): (b: Builder) => void {
     return (b: Builder) => b.opt(f);
 }
 
+export function choice(list: ((b: Builder) => void)[]): (b: Builder) => void {
+    return (b: Builder) => b.choice(list);
+}
+
 export function pos(b: Builder) {
     b.push(b.parser.pos);
 }
