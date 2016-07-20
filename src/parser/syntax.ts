@@ -2014,12 +2014,12 @@ function Declaration_b(b: Builder): void {
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
+function HoistableDeclaration(p: Parser): ASTNode {
     const b = new Builder(p);
     const oldLength = b.length;
     b.bchoice([
-        bfun(() => FunctionDeclaration(p,flags)),
-        bfun(() => GeneratorDeclaration(p,flags)),
+        bfun(() => FunctionDeclaration(p)),
+        bfun(() => GeneratorDeclaration(p)),
     ]);
     b.assertLengthIs(oldLength+1);
     return checkNode(b.get(0));
@@ -3546,22 +3546,18 @@ function FunctionDeclaration_unnamed_b(b: Builder): void {
 
 // FunctionDeclaration
 
-function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
-    if (flags === undefined)
-        flags = {};
+function FunctionDeclaration(p: Parser): ASTNode {
     try {
         return pfun(FunctionDeclaration_named_b)(p);
     } catch (e) {
         if (!(e instanceof ParseFailure))
             throw e;
     }
-    if (flags.Default) {
-        try {
-            return pfun(FunctionDeclaration_unnamed_b)(p);
-        } catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-        }
+    try {
+        return pfun(FunctionDeclaration_unnamed_b)(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
     }
     throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
 }
@@ -4037,22 +4033,18 @@ function GeneratorDeclaration_2_b(b: Builder): void {
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
-    if (flags === undefined)
-        flags = {};
+function GeneratorDeclaration(p: Parser): ASTNode {
     try {
         return pfun(GeneratorDeclaration_1_b)(p);
     } catch (e) {
         if (!(e instanceof ParseFailure))
             throw e;
     }
-    if (flags.Default) {
-        try {
-            return pfun(GeneratorDeclaration_2_b)(p);
-        } catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-        }
+    try {
+        return pfun(GeneratorDeclaration_2_b)(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
     }
     throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
 }
@@ -4220,22 +4212,18 @@ function ClassDeclaration_2_b(b: Builder): void {
 
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
-    if (flags === undefined)
-        flags = {};
+function ClassDeclaration(p: Parser): ASTNode {
     try {
         return pfun(ClassDeclaration_1_b)(p);
     } catch (e) {
         if (!(e instanceof ParseFailure))
             throw e;
     }
-    if (flags.Default) {
-        try {
-            return pfun(ClassDeclaration_2_b)(p);
-        } catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-        }
+    try {
+        return pfun(ClassDeclaration_2_b)(p);
+    } catch (e) {
+        if (!(e instanceof ParseFailure))
+            throw e;
     }
     throw new ParseError(p,p.pos,"Expected ClassDeclaration");
 }
@@ -4785,7 +4773,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     keyword("default"),                              // 3
                     whitespace,                                      // 2
-                    bfun(() => HoistableDeclaration(b.parser,{ Default: true })), // 1
+                    bfun(() => HoistableDeclaration(b.parser,)), // 1
                     pos,                                             // 0
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -4795,7 +4783,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     keyword("default"), // 3
                     whitespace, // 2
-                    bfun(() => ClassDeclaration(b.parser,{ Default: true })), // 1
+                    bfun(() => ClassDeclaration(b.parser)), // 1
                     pos, // 0
                 ]);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
