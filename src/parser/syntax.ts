@@ -1504,10 +1504,10 @@ function Declaration(p: Parser): DeclarationNode | ErrorNode {
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): DeclarationNode | ErrorNode {
+function HoistableDeclaration(p: Parser): DeclarationNode | ErrorNode {
     return p.choice<DeclarationNode | ErrorNode>([
-        () => FunctionDeclaration(p,flags),
-        () => GeneratorDeclaration(p,flags),
+        () => FunctionDeclaration(p),
+        () => GeneratorDeclaration(p),
     ]);
 }
 
@@ -2611,12 +2611,9 @@ function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | Error
 
 // FunctionDeclaration
 
-function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): FunctionDeclarationNode | ErrorNode {
-    if (flags === undefined)
-        flags = {};
+function FunctionDeclaration(p: Parser): FunctionDeclarationNode | ErrorNode {
     try { return FunctionDeclaration_named(p); } catch (e) {}
-    if (flags.Default)
-        try { return FunctionDeclaration_unnamed(p); } catch (e) {}
+    try { return FunctionDeclaration_unnamed(p); } catch (e) {}
     throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
 }
 
@@ -2976,12 +2973,9 @@ function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | Er
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): DeclarationNode | ErrorNode {
-    if (flags === undefined)
-        flags = {};
+function GeneratorDeclaration(p: Parser): DeclarationNode | ErrorNode {
     try { return GeneratorDeclaration_1(p); } catch (e) {}
-    if (flags.Default)
-        try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
+    try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
     throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
 }
 
@@ -3091,12 +3085,9 @@ function ClassDeclaration_2(p: Parser): ClassDeclarationNode | ErrorNode {
 
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ClassDeclarationNode | ErrorNode {
-    if (flags === undefined)
-        flags = {};
+function ClassDeclaration(p: Parser): ClassDeclarationNode | ErrorNode {
     try { return ClassDeclaration_1(p); } catch (e) {}
-    if (flags.Default)
-        try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
+    try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
     throw new ParseError(p,p.pos,"Expected ClassDeclaration");
 }
 
@@ -3470,12 +3461,12 @@ function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
             () => p.seq3([
                 keyword("default"),
                 whitespace,
-                () => HoistableDeclaration(p,{ Default: true })],
+                () => HoistableDeclaration(p)],
                 ([,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
             () => p.seq3([
                 keyword("default"),
                 whitespace,
-                () => ClassDeclaration(p,{ Default: true })],
+                () => ClassDeclaration(p)],
                 ([,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
             () => p.seq7([
                 keyword("default"),
