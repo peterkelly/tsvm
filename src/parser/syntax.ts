@@ -284,8 +284,11 @@ const IdentifierName_b = bfun(IdentifierName);
 
 // Identifier
 
-export function Identifier(p: Parser): IdentifierNode | ErrorNode {
-    return p.attempt((start) => {
+function Identifier_b(b: Builder): void {
+    b.attempt((): void => {
+        const p = b.parser;
+        const start = p.pos;
+        const oldLength = b.length;
         if ((p.cur != null) && isIdStart(p.cur)) {
             p.next();
             while ((p.cur != null) && isIdChar(p.cur))
@@ -294,7 +297,9 @@ export function Identifier(p: Parser): IdentifierNode | ErrorNode {
             const value = p.text.substring(range.start,range.end);
             if (isKeyword(value))
                 throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-            return new IdentifierNode(range,value);
+            b.push(new IdentifierNode(range,value));
+            b.assertLengthIs(oldLength+1);
+            checkNode(b.get(0));
         }
         else {
             throw new ParseError(p,p.pos,"Expected Identifier");
@@ -302,15 +307,14 @@ export function Identifier(p: Parser): IdentifierNode | ErrorNode {
     });
 }
 
-const Identifier_b = bfun(Identifier);
+export const Identifier = pfun(Identifier_b);
 
 // Section 12.2
 
 // This
 
-function This(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function This_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -320,11 +324,9 @@ function This(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"This",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
-
-const This_b = bfun(This);
 
 // PrimaryExpression
 
@@ -360,7 +362,7 @@ function ParenthesizedExpression(p: Parser): ASTNode {
         b.pitems([
             punctuator("("), // 4
             whitespace,      // 3
-            Expression,      // 2 = expr
+            pfun(Expression_b),      // 2 = expr
             whitespace,      // 1
             punctuator(")"), // 0
         ]);
@@ -545,7 +547,7 @@ function ArrayLiteral_b(b: Builder): void {
                         b.assertLengthIs(oldLength+5);
                     },
                     () => {
-                        b.pitem(AssignmentExpression);
+                        b.pitem(pfun(AssignmentExpression_b));
                         b.pitem(whitespace);
                         b.bopt(() => {
                             b.pitem(punctuator(","));
@@ -557,7 +559,7 @@ function ArrayLiteral_b(b: Builder): void {
                         b.assertLengthIs(oldLength+5);
                     },
                     () => {
-                        b.pitem(SpreadElement);
+                        b.pitem(pfun(SpreadElement_b));
                         b.pitem(whitespace);
                         b.bopt(() => {
                             b.pitem(punctuator(","));
@@ -591,8 +593,6 @@ function ArrayLiteral_b(b: Builder): void {
     });
 }
 
-const ArrayLiteral = pfun(ArrayLiteral_b);
-
 // SpreadElement
 
 function SpreadElement_b(b: Builder): void {
@@ -602,7 +602,7 @@ function SpreadElement_b(b: Builder): void {
             pos,
             punctuator("..."),
             whitespace,
-            AssignmentExpression,
+            pfun(AssignmentExpression_b),
             pos,
         ]);
         b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
@@ -610,8 +610,6 @@ function SpreadElement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const SpreadElement = pfun(SpreadElement_b);
 
 // Section 12.2.6
 
@@ -625,7 +623,7 @@ function ObjectLiteral_b(b: Builder): void {
         b.pitem(whitespace);      // 3
         b.bchoice([               // 2 = properties
             () => {
-                b.pitem(PropertyDefinitionList);
+                b.pitem(pfun(PropertyDefinitionList_b));
                 b.pitem(whitespace);
                 b.bopt(() => {
                     b.pitem(punctuator(","));
@@ -647,8 +645,6 @@ function ObjectLiteral_b(b: Builder): void {
     });
 }
 
-const ObjectLiteral = pfun(ObjectLiteral_b);
-
 // PropertyDefinitionList
 
 function PropertyDefinitionList_b(b: Builder): void {
@@ -656,14 +652,14 @@ function PropertyDefinitionList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(PropertyDefinition);
+                b.pitem(pfun(PropertyDefinition_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    PropertyDefinition,
+                    pfun(PropertyDefinition_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -673,8 +669,6 @@ function PropertyDefinitionList_b(b: Builder): void {
     });
 }
 
-const PropertyDefinitionList = pfun(PropertyDefinitionList_b);
-
 // PropertyDefinition_colon
 
 function PropertyDefinition_colon_b(b: Builder): void {
@@ -682,11 +676,11 @@ function PropertyDefinition_colon_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,                  // 6 = start
-            PropertyName,         // 5 = name
+            pfun(PropertyName_b),         // 5 = name
             whitespace,           // 4
             punctuator(":"),      // 3
             whitespace,           // 2
-            AssignmentExpression, // 1 = init
+            pfun(AssignmentExpression_b), // 1 = init
             pos,                  // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -695,8 +689,6 @@ function PropertyDefinition_colon_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const PropertyDefinition_colon = pfun(PropertyDefinition_colon_b);
 
 // PropertyDefinition
 
@@ -712,8 +704,6 @@ function PropertyDefinition_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const PropertyDefinition = pfun(PropertyDefinition_b);
-
 // PropertyName
 
 function PropertyName_b(b: Builder): void {
@@ -725,8 +715,6 @@ function PropertyName_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const PropertyName = pfun(PropertyName_b);
 
 // LiteralPropertyName
 
@@ -741,8 +729,6 @@ function LiteralPropertyName_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const LiteralPropertyName = pfun(LiteralPropertyName_b);
-
 // ComputedPropertyName
 
 function ComputedPropertyName_b(b: Builder): void {
@@ -752,7 +738,7 @@ function ComputedPropertyName_b(b: Builder): void {
             pos,                  // 6 = start
             punctuator("["),      // 5
             whitespace,           // 4
-            AssignmentExpression, // 3 = expr
+            pfun(AssignmentExpression_b), // 3 = expr
             whitespace,           // 2
             punctuator("]"),      // 1
             pos,                  // 0 = end
@@ -764,8 +750,6 @@ function ComputedPropertyName_b(b: Builder): void {
     });
 }
 
-const ComputedPropertyName = pfun(ComputedPropertyName_b);
-
 // CoverInitializedName
 
 function CoverInitializedName_b(b: Builder): void {
@@ -775,7 +759,7 @@ function CoverInitializedName_b(b: Builder): void {
             pos,                 // 4 = start
             IdentifierReference, // 3 = ident
             whitespace,          // 2
-            Initializer,         // 1 = init
+            pfun(Initializer_b),         // 1 = init
             pos,                 // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -785,8 +769,6 @@ function CoverInitializedName_b(b: Builder): void {
     });
 }
 
-const CoverInitializedName = pfun(CoverInitializedName_b);
-
 // Initializer
 
 function Initializer_b(b: Builder): void {
@@ -795,7 +777,7 @@ function Initializer_b(b: Builder): void {
         b.pitems([
             punctuator("="),
             whitespace,
-            AssignmentExpression,
+            pfun(AssignmentExpression_b),
         ]);
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
@@ -803,8 +785,6 @@ function Initializer_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const Initializer = pfun(Initializer_b);
 
 // Section 12.2.9
 
@@ -831,9 +811,9 @@ function MemberExpression_new_b(b: Builder): void {
             pos,              // 6 = start
             keyword("new"),   // 5
             whitespace,       // 4
-            MemberExpression, // 3 = expr
+            pfun(MemberExpression_b), // 3 = expr
             whitespace,       // 2
-            Arguments,        // 1 = args
+            pfun(Arguments_b),        // 1 = args
             pos,              // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -842,8 +822,6 @@ function MemberExpression_new_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const MemberExpression_new = pfun(MemberExpression_new_b);
 
 // MemberExpression_start
 
@@ -859,22 +837,20 @@ function MemberExpression_start_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const MemberExpression_start = pfun(MemberExpression_start_b);
-
 // MemberExpression
 
 function MemberExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
-        b.pitem(MemberExpression_start);
+        b.pitem(pfun(MemberExpression_start_b));
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,      // 6
                     punctuator("["), // 5
                     whitespace,      // 4
-                    Expression,      // 3 = expr
+                    pfun(Expression_b),      // 3 = expr
                     whitespace,      // 2
                     punctuator("]"), // 1
                     pos,             // 0 = end
@@ -902,8 +878,6 @@ function MemberExpression_b(b: Builder): void {
     });
 }
 
-const MemberExpression = pfun(MemberExpression_b);
-
 // SuperProperty
 
 function SuperProperty_b(b: Builder): void {
@@ -917,7 +891,7 @@ function SuperProperty_b(b: Builder): void {
                     whitespace,       // 6
                     punctuator("["),  // 5
                     whitespace,       // 4
-                    Expression,       // 3 = expr
+                    pfun(Expression_b),       // 3 = expr
                     whitespace,       // 2
                     punctuator("]"),  // 1
                     pos,              // 0 = end
@@ -946,12 +920,10 @@ function SuperProperty_b(b: Builder): void {
     });
 }
 
-const SuperProperty = pfun(SuperProperty_b);
-
 // MetaProperty
 
 function MetaProperty(p: Parser): ASTNode {
-    return NewTarget(p);
+    return pfun(NewTarget_b)(p);
 }
 
 const MetaProperty_b = bfun(MetaProperty);
@@ -977,8 +949,6 @@ function NewTarget_b(b: Builder): void {
     });
 }
 
-const NewTarget = pfun(NewTarget_b);
-
 // NewExpression
 
 function NewExpression_b(b: Builder): void {
@@ -986,14 +956,14 @@ function NewExpression_b(b: Builder): void {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.pitem(MemberExpression);
+                b.pitem(pfun(MemberExpression_b));
             },
             () => {
                 b.pitems([
                     pos,            // 4 = start
                     keyword("new"), // 3
                     whitespace,     // 2
-                    NewExpression,  // 1 = expr
+                    pfun(NewExpression_b),  // 1 = expr
                     pos,            // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1008,8 +978,6 @@ function NewExpression_b(b: Builder): void {
     });
 }
 
-const NewExpression = pfun(NewExpression_b);
-
 // CallExpression_start
 
 function CallExpression_start_b(b: Builder): void {
@@ -1017,14 +985,14 @@ function CallExpression_start_b(b: Builder): void {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.pitem(SuperCall);
+                b.pitem(pfun(SuperCall_b));
             },
             () => {
                 b.pitems([
                     pos,              // 4 = start
-                    MemberExpression, // 3 = fun
+                    pfun(MemberExpression_b), // 3 = fun
                     whitespace,       // 2
-                    Arguments,        // 1 = args
+                    pfun(Arguments_b),        // 1 = args
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1036,20 +1004,18 @@ function CallExpression_start_b(b: Builder): void {
     });
 }
 
-const CallExpression_start = pfun(CallExpression_start_b);
-
 // CallExpression
 
 function CallExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
-        b.pitem(CallExpression_start);
+        b.pitem(pfun(CallExpression_start_b));
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,      // 2
-                    Arguments,       // 1
+                    pfun(Arguments_b),       // 1
                     pos,             // 0
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1060,7 +1026,7 @@ function CallExpression_b(b: Builder): void {
                     whitespace,      // 6
                     punctuator("["), // 5
                     whitespace,      // 4
-                    Expression,      // 3 = expr
+                    pfun(Expression_b),      // 3 = expr
                     whitespace,      // 2
                     punctuator("]"), // 1
                     pos,             // 0 = end
@@ -1090,8 +1056,6 @@ function CallExpression_b(b: Builder): void {
     });
 }
 
-const CallExpression = pfun(CallExpression_b);
-
 // SuperCall
 
 function SuperCall_b(b: Builder): void {
@@ -1101,7 +1065,7 @@ function SuperCall_b(b: Builder): void {
             pos,              // 4 = start
             keyword("super"), // 3
             whitespace,       // 2
-            Arguments,        // 1 = args
+            pfun(Arguments_b),        // 1 = args
             pos,              // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -1110,8 +1074,6 @@ function SuperCall_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const SuperCall = pfun(SuperCall_b);
 
 // Arguments
 
@@ -1140,7 +1102,7 @@ function Arguments_b(b: Builder): void {
                     pos,             // 6 = start
                     punctuator("("), // 5
                     whitespace,      // 4
-                    ArgumentList,    // 3 = args
+                    pfun(ArgumentList_b),    // 3 = args
                     whitespace,      // 2
                     punctuator(")"), // 1
                     pos,             // 0 = end
@@ -1154,8 +1116,6 @@ function Arguments_b(b: Builder): void {
     });
 }
 
-const Arguments = pfun(Arguments_b);
-
 // ArgumentList_item
 
 function ArgumentList_item_b(b: Builder): void {
@@ -1167,22 +1127,20 @@ function ArgumentList_item_b(b: Builder): void {
                     pos,                  // 4 = start
                     punctuator("..."),    // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = expr
+                    pfun(AssignmentExpression_b), // 1 = expr
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
             },
             () => {
-                b.pitem(AssignmentExpression);
+                b.pitem(pfun(AssignmentExpression_b));
             },
         ]);
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
     });
 }
-
-const ArgumentList_item = pfun(ArgumentList_item_b);
 
 // ArgumentList
 
@@ -1191,14 +1149,14 @@ function ArgumentList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(ArgumentList_item);
+                b.pitem(pfun(ArgumentList_item_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    ArgumentList_item,
+                    pfun(ArgumentList_item_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -1207,8 +1165,6 @@ function ArgumentList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ArgumentList = pfun(ArgumentList_b);
 
 // LeftHandSideExpression
 
@@ -1224,8 +1180,6 @@ function LeftHandSideExpression_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const LeftHandSideExpression = pfun(LeftHandSideExpression_b);
-
 // Section 12.4
 
 // PostfixExpression
@@ -1234,7 +1188,7 @@ function PostfixExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
-        b.pitem(LeftHandSideExpression);
+        b.pitem(pfun(LeftHandSideExpression_b));
         b.bchoice([
             () => {
                 b.pitems([
@@ -1263,8 +1217,6 @@ function PostfixExpression_b(b: Builder): void {
     });
 }
 
-const PostfixExpression = pfun(PostfixExpression_b);
-
 // Section 12.5
 
 // UnaryExpression
@@ -1278,7 +1230,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,               // 4 = start
                     keyword("delete"), // 3
                     whitespace,        // 2
-                    UnaryExpression,   // 1 = expr
+                    pfun(UnaryExpression_b),   // 1 = expr
                     pos,               // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1289,7 +1241,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     keyword("void"), // 3
                     whitespace,      // 2
-                    UnaryExpression, // 1 = expr
+                    pfun(UnaryExpression_b), // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1300,7 +1252,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,               // 4 = start
                     keyword("typeof"), // 3
                     whitespace,        // 2
-                    UnaryExpression,   // 1 = expr
+                    pfun(UnaryExpression_b),   // 1 = expr
                     pos,               // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1311,7 +1263,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,              // 4 = start
                     punctuator("++"), // 3
                     whitespace,       // 2
-                    UnaryExpression,  // 1 = expr
+                    pfun(UnaryExpression_b),  // 1 = expr
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1322,7 +1274,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,              // 4 = start
                     punctuator("--"), // 3
                     whitespace,       // 2
-                    UnaryExpression,  // 1 = expr
+                    pfun(UnaryExpression_b),  // 1 = expr
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1333,7 +1285,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("+"), // 3
                     whitespace,      // 2
-                    UnaryExpression, // 1 = expr
+                    pfun(UnaryExpression_b), // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1344,7 +1296,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("-"), // 3
                     whitespace,      // 2
-                    UnaryExpression, // 1 = expr
+                    pfun(UnaryExpression_b), // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1355,7 +1307,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("~"), // 3
                     whitespace,      // 2
-                    UnaryExpression, // 1 = expr
+                    pfun(UnaryExpression_b), // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1366,22 +1318,20 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("!"), // 3
                     whitespace,      // 2
-                    UnaryExpression, // 1 = expr
+                    pfun(UnaryExpression_b), // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryLogicalNot",[1]));
             },
             () => {
-                b.pitem(PostfixExpression);
+                b.pitem(pfun(PostfixExpression_b));
             },
         ]);
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
     });
 }
-
-const UnaryExpression = pfun(UnaryExpression_b);
 
 // Section 12.6
 
@@ -1391,14 +1341,14 @@ function MultiplicativeExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
-        b.pitem(UnaryExpression);      // 5 = left
+        b.pitem(pfun(UnaryExpression_b));      // 5 = left
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,       // 4
                     punctuator("*"),  // 3
                     whitespace,       // 2
-                    UnaryExpression,  // 1 = right
+                    pfun(UnaryExpression_b),  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Multiply",[5,1]));
@@ -1408,7 +1358,7 @@ function MultiplicativeExpression_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator("/"),  // 3
                     whitespace,       // 2
-                    UnaryExpression,  // 1 = right
+                    pfun(UnaryExpression_b),  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Divide",[5,1]));
@@ -1418,7 +1368,7 @@ function MultiplicativeExpression_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator("%"),  // 3
                     whitespace,       // 2
-                    UnaryExpression,  // 1 = right
+                    pfun(UnaryExpression_b),  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Modulo",[5,1]));
@@ -1432,8 +1382,6 @@ function MultiplicativeExpression_b(b: Builder): void {
     });
 }
 
-const MultiplicativeExpression = pfun(MultiplicativeExpression_b);
-
 // Section 12.7
 
 // AdditiveExpression
@@ -1442,14 +1390,14 @@ function AdditiveExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                          // 6 = start
-        b.pitem(MultiplicativeExpression);     // 5 = left
+        b.pitem(pfun(MultiplicativeExpression_b));     // 5 = left
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,               // 4
                     punctuator("+"),          // 3
                     whitespace,               // 2
-                    MultiplicativeExpression, // 1 = right
+                    pfun(MultiplicativeExpression_b), // 1 = right
                     pos,                      // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Add",[5,1]));
@@ -1459,7 +1407,7 @@ function AdditiveExpression_b(b: Builder): void {
                     whitespace,               // 4
                     punctuator("-"),          // 3
                     whitespace,               // 2
-                    MultiplicativeExpression, // 1 = right
+                    pfun(MultiplicativeExpression_b), // 1 = right
                     pos,                      // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Subtract",[5,1]));
@@ -1472,8 +1420,6 @@ function AdditiveExpression_b(b: Builder): void {
     });
 }
 
-const AdditiveExpression = pfun(AdditiveExpression_b);
-
 // Section 12.8
 
 // ShiftExpression
@@ -1482,14 +1428,14 @@ function ShiftExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                    // 6 = start
-        b.pitem(AdditiveExpression);     // 5 = left
+        b.pitem(pfun(AdditiveExpression_b));     // 5 = left
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,         // 4
                     punctuator("<<"),   // 3
                     whitespace,         // 2
-                    AdditiveExpression, // 1 = right
+                    pfun(AdditiveExpression_b), // 1 = right
                     pos,                // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"LeftShift",[5,1]));
@@ -1499,7 +1445,7 @@ function ShiftExpression_b(b: Builder): void {
                     whitespace,         // 4
                     punctuator(">>>"),  // 3
                     whitespace,         // 2
-                    AdditiveExpression, // 1 = right
+                    pfun(AdditiveExpression_b), // 1 = right
                     pos,                // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"UnsignedRightShift",[5,1]));
@@ -1509,7 +1455,7 @@ function ShiftExpression_b(b: Builder): void {
                     whitespace,         // 4
                     punctuator(">>"),   // 3
                     whitespace,         // 2
-                    AdditiveExpression, // 1 = right
+                    pfun(AdditiveExpression_b), // 1 = right
                     pos,                // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"SignedRightShift",[5,1]));
@@ -1523,8 +1469,6 @@ function ShiftExpression_b(b: Builder): void {
     });
 }
 
-const ShiftExpression = pfun(ShiftExpression_b);
-
 // Section 12.9
 
 // RelationalExpression
@@ -1533,14 +1477,14 @@ function RelationalExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);             // 6 = start
-        b.pitem(ShiftExpression); // 5 = left
+        b.pitem(pfun(ShiftExpression_b)); // 5 = left
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,       // 4
                     punctuator("<="), // 3
                     whitespace,       // 2
-                    ShiftExpression,  // 1 = right
+                    pfun(ShiftExpression_b),  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1552,7 +1496,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator(">="), // 3
                     whitespace,       // 2
-                    ShiftExpression,  // 1 = right
+                    pfun(ShiftExpression_b),  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1564,7 +1508,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,      // 4
                     punctuator("<"), // 3
                     whitespace,      // 2
-                    ShiftExpression, // 1 = right
+                    pfun(ShiftExpression_b), // 1 = right
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1576,7 +1520,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,      // 4
                     punctuator(">"), // 3
                     whitespace,      // 2
-                    ShiftExpression, // 1 = right
+                    pfun(ShiftExpression_b), // 1 = right
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1588,7 +1532,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,            // 4
                     keyword("instanceof"), // 3
                     whitespace,            // 2
-                    ShiftExpression,       // 1 = right
+                    pfun(ShiftExpression_b),       // 1 = right
                     pos,                   // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1600,7 +1544,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,      // 4
                     keyword("in"),   // 3
                     whitespace,      // 2
-                    ShiftExpression, // 1 = right
+                    pfun(ShiftExpression_b), // 1 = right
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1615,8 +1559,6 @@ function RelationalExpression_b(b: Builder): void {
     });
 }
 
-const RelationalExpression = pfun(RelationalExpression_b);
-
 // Section 12.10
 
 // EqualityExpression
@@ -1625,14 +1567,14 @@ function EqualityExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                      // 6 = start
-        b.pitem(RelationalExpression);     // 5 = left
+        b.pitem(pfun(RelationalExpression_b));     // 5 = left
         b.brepeatChoice([
             () => {
                 b.pitems([
                     whitespace,           // 4
                     punctuator("==="),    // 3
                     whitespace,           // 2
-                    RelationalExpression, // 1 = right
+                    pfun(RelationalExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1644,7 +1586,7 @@ function EqualityExpression_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("!=="),    // 3
                     whitespace,           // 2
-                    RelationalExpression, // 1 = right
+                    pfun(RelationalExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1656,7 +1598,7 @@ function EqualityExpression_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("=="),     // 3
                     whitespace,           // 2
-                    RelationalExpression, // 1 = right
+                    pfun(RelationalExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1668,7 +1610,7 @@ function EqualityExpression_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("!="),     // 3
                     whitespace,           // 2
-                    RelationalExpression, // 1 = right
+                    pfun(RelationalExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1683,8 +1625,6 @@ function EqualityExpression_b(b: Builder): void {
     });
 }
 
-const EqualityExpression = pfun(EqualityExpression_b);
-
 // Section 12.11
 
 // BitwiseANDExpression
@@ -1693,13 +1633,13 @@ function BitwiseANDExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                // 6 = start
-        b.pitem(EqualityExpression); // 5 = left
+        b.pitem(pfun(EqualityExpression_b)); // 5 = left
         b.brepeat(() => {
             b.pitems([
                 whitespace,         // 4
                 punctuator("&"),    // 3
                 whitespace,         // 2
-                EqualityExpression, // 1 = right
+                pfun(EqualityExpression_b), // 1 = right
                 pos,                // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseAND",[5,1]));
@@ -1712,21 +1652,19 @@ function BitwiseANDExpression_b(b: Builder): void {
     });
 }
 
-const BitwiseANDExpression = pfun(BitwiseANDExpression_b);
-
 // BitwiseXORExpression
 
 function BitwiseXORExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
-        b.pitem(BitwiseANDExpression); // 5 = left
+        b.pitem(pfun(BitwiseANDExpression_b)); // 5 = left
         b.brepeat(() => {
             b.pitems([
                 whitespace,           // 4
                 punctuator("^"),      // 3
                 whitespace,           // 2
-                BitwiseANDExpression, // 1 = right
+                pfun(BitwiseANDExpression_b), // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseXOR",[5,1]));
@@ -1738,21 +1676,19 @@ function BitwiseXORExpression_b(b: Builder): void {
     });
 }
 
-const BitwiseXORExpression = pfun(BitwiseXORExpression_b);
-
 // BitwiseORExpression
 
 function BitwiseORExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
-        b.pitem(BitwiseXORExpression); // 5 = left
+        b.pitem(pfun(BitwiseXORExpression_b)); // 5 = left
         b.brepeat(() => {
             b.pitems([
                 whitespace,           // 4
                 punctuator("|"),      // 3
                 whitespace,           // 2
-                BitwiseXORExpression, // 1 = right
+                pfun(BitwiseXORExpression_b), // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseOR",[5,1]));
@@ -1764,8 +1700,6 @@ function BitwiseORExpression_b(b: Builder): void {
     });
 }
 
-const BitwiseORExpression = pfun(BitwiseORExpression_b);
-
 // Section 12.12
 
 // LogicalANDExpression
@@ -1774,13 +1708,13 @@ function LogicalANDExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                 // 6 = start
-        b.pitem(BitwiseORExpression); // 5 = left
+        b.pitem(pfun(BitwiseORExpression_b)); // 5 = left
         b.brepeat(() => {
             b.pitems([
                 whitespace,          // 4
                 punctuator("&&"),    // 3
                 whitespace,          // 2
-                BitwiseORExpression, // 1 = right
+                pfun(BitwiseORExpression_b), // 1 = right
                 pos,                 // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalAND",[5,1]));
@@ -1792,21 +1726,19 @@ function LogicalANDExpression_b(b: Builder): void {
     });
 }
 
-const LogicalANDExpression = pfun(LogicalANDExpression_b);
-
 // LogicalORExpression
 
 function LogicalORExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
-        b.pitem(LogicalANDExpression); // 5 = left
+        b.pitem(pfun(LogicalANDExpression_b)); // 5 = left
         b.brepeat(() => {
             b.pitems([
                 whitespace,           // 4
                 punctuator("||"),     // 3
                 whitespace,           // 2
-                LogicalANDExpression, // 1 = right
+                pfun(LogicalANDExpression_b), // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalOR",[5,1]));
@@ -1818,8 +1750,6 @@ function LogicalORExpression_b(b: Builder): void {
     });
 }
 
-const LogicalORExpression = pfun(LogicalORExpression_b);
-
 // Section 12.13
 
 // ConditionalExpression
@@ -1828,18 +1758,18 @@ function ConditionalExpression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                      // 10 = start
-        b.pitem(LogicalORExpression);      // 9 = condition
+        b.pitem(pfun(LogicalORExpression_b));      // 9 = condition
         b.bchoice([
             () => {
                 b.pitems([
                     whitespace,           // 8
                     punctuator("?"),      // 7
                     whitespace,           // 6
-                    AssignmentExpression, // 5 = trueExpr
+                    pfun(AssignmentExpression_b), // 5 = trueExpr
                     whitespace,           // 4
                     punctuator(":"),      // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = falseExpr
+                    pfun(AssignmentExpression_b), // 1 = falseExpr
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(9,makeNode(b,10,0,"Conditional",[9,5,1]));
@@ -1853,8 +1783,6 @@ function ConditionalExpression_b(b: Builder): void {
     });
 }
 
-const ConditionalExpression = pfun(ConditionalExpression_b);
-
 // Section 12.14
 
 // AssignmentExpression_plain
@@ -1863,14 +1791,14 @@ function AssignmentExpression_plain_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                      // 6 = start
-        b.pitem(LeftHandSideExpression);   // 5 = left
+        b.pitem(pfun(LeftHandSideExpression_b));   // 5 = left
         b.bchoice([
             () => {
                 b.pitems([
                     whitespace,           // 4
                     punctuator("="),      // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Assign",[5,1]));
@@ -1880,7 +1808,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("*="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignMultiply",[5,1]));
@@ -1890,7 +1818,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("/="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignDivide",[5,1]));
@@ -1900,7 +1828,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("%="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignModulo",[5,1]));
@@ -1910,7 +1838,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("+="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignAdd",[5,1]));
@@ -1920,7 +1848,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("-="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignSubtract",[5,1]));
@@ -1930,7 +1858,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("<<="),    // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignLeftShift",[5,1]));
@@ -1940,7 +1868,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator(">>="),    // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignSignedRightShift",[5,1]));
@@ -1950,7 +1878,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator(">>>="),   // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignUnsignedRightShift",[5,1]));
@@ -1960,7 +1888,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("&="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseAND",[5,1]));
@@ -1970,7 +1898,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("^="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseXOR",[5,1]));
@@ -1980,7 +1908,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("|="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression, // 1 = right
+                    pfun(AssignmentExpression_b), // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseOR",[5,1]));
@@ -1992,8 +1920,6 @@ function AssignmentExpression_plain_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const AssignmentExpression_plain = pfun(AssignmentExpression_plain_b);
 
 // AssignmentExpression
 
@@ -2010,8 +1936,6 @@ function AssignmentExpression_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const AssignmentExpression = pfun(AssignmentExpression_b);
-
 // Section 12.15
 
 // Expression
@@ -2020,13 +1944,13 @@ function Expression_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);                  // 6 = start
-        b.pitem(AssignmentExpression); // 5 = left
+        b.pitem(pfun(AssignmentExpression_b)); // 5 = left
         b.brepeat(() => {
             b.pitems([
                 whitespace,           // 4
                 punctuator(","),      // 3
                 whitespace,           // 2
-                AssignmentExpression, // 1 = right
+                pfun(AssignmentExpression_b), // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"Comma",[5,1]));
@@ -2037,8 +1961,6 @@ function Expression_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const Expression = pfun(Expression_b);
 
 // Section 13
 
@@ -2066,8 +1988,6 @@ function Statement_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const Statement = pfun(Statement_b);
-
 // Declaration
 
 function Declaration_b(b: Builder): void {
@@ -2080,8 +2000,6 @@ function Declaration_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const Declaration = pfun(Declaration_b);
 
 // HoistableDeclaration
 
@@ -2110,14 +2028,12 @@ function BreakableStatement_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const BreakableStatement = pfun(BreakableStatement_b);
-
 // Section 13.2
 
 // BlockStatement
 
 function BlockStatement(p: Parser): ASTNode {
-    return Block(p);
+    return pfun(Block_b)(p);
 }
 
 const BlockStatement_b = bfun(BlockStatement);
@@ -2132,7 +2048,7 @@ function Block_b(b: Builder): void {
         b.pitem(whitespace);      // 3
         b.bchoice([               // 2 = statements
             () => {
-                b.pitem(StatementList);
+                b.pitem(pfun(StatementList_b));
                 b.pitem(whitespace);
                 b.popAboveAndSet(1,b.get(1));
             },
@@ -2150,8 +2066,6 @@ function Block_b(b: Builder): void {
     });
 }
 
-const Block = pfun(Block_b);
-
 // StatementList
 
 function StatementList_b(b: Builder): void {
@@ -2159,12 +2073,12 @@ function StatementList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(StatementListItem);
+                b.pitem(pfun(StatementListItem_b));
             },
             () => {
                 b.pitems([
                     whitespace,
-                    StatementListItem,
+                    pfun(StatementListItem_b),
                 ]);
                 b.popAboveAndSet(1,b.get(0));
             },
@@ -2173,8 +2087,6 @@ function StatementList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const StatementList = pfun(StatementList_b);
 
 // StatementListItem
 
@@ -2187,8 +2099,6 @@ function StatementListItem_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const StatementListItem = pfun(StatementListItem_b);
 
 // Section 13.3.1
 
@@ -2203,7 +2113,7 @@ function LexicalDeclaration_b(b: Builder): void {
                     pos,              // 6 = start
                     keyword("let"),   // 5
                     whitespace,       // 4
-                    BindingList,      // 3 = bindings
+                    pfun(BindingList_b),      // 3 = bindings
                     whitespace,       // 2
                     punctuator(";"),  // 1
                     pos,              // 0 = end
@@ -2215,7 +2125,7 @@ function LexicalDeclaration_b(b: Builder): void {
                     pos,              // 6 = start
                     keyword("const"), // 5
                     whitespace,       // 4
-                    BindingList,      // 3 = bindings
+                    pfun(BindingList_b),      // 3 = bindings
                     whitespace,       // 2
                     punctuator(";"),  // 1
                     pos,              // 0 = end
@@ -2228,8 +2138,6 @@ function LexicalDeclaration_b(b: Builder): void {
     });
 }
 
-const LexicalDeclaration = pfun(LexicalDeclaration_b);
-
 // BindingList
 
 function BindingList_b(b: Builder): void {
@@ -2237,14 +2145,14 @@ function BindingList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(LexicalBinding);
+                b.pitem(pfun(LexicalBinding_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    LexicalBinding,
+                    pfun(LexicalBinding_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -2253,8 +2161,6 @@ function BindingList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const BindingList = pfun(BindingList_b);
 
 // LexicalBinding_identifier
 
@@ -2265,7 +2171,7 @@ function LexicalBinding_identifier_b(b: Builder): void {
         b.pitem(BindingIdentifier); // 2 = identifier
         b.bopt(() => {              // 1 = initializer
             b.pitem(whitespace);
-            b.pitem(Initializer);
+            b.pitem(pfun(Initializer_b));
             b.popAboveAndSet(1,b.get(0));
         });
         b.pitem(pos);               // 0 = end
@@ -2276,8 +2182,6 @@ function LexicalBinding_identifier_b(b: Builder): void {
     });
 }
 
-const LexicalBinding_identifier = pfun(LexicalBinding_identifier_b);
-
 // LexicalBinding_pattern
 
 function LexicalBinding_pattern_b(b: Builder): void {
@@ -2285,9 +2189,9 @@ function LexicalBinding_pattern_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,            // 4 = start
-            BindingPattern, // 3 = pattern
+            pfun(BindingPattern_b), // 3 = pattern
             whitespace,     // 2
-            Initializer,    // 1 = initializer
+            pfun(Initializer_b),    // 1 = initializer
             pos,            // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -2296,8 +2200,6 @@ function LexicalBinding_pattern_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const LexicalBinding_pattern = pfun(LexicalBinding_pattern_b);
 
 // LexicalBinding
 
@@ -2311,8 +2213,6 @@ function LexicalBinding_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const LexicalBinding = pfun(LexicalBinding_b);
-
 // Section 13.3.2
 
 // VariableStatement
@@ -2324,7 +2224,7 @@ function VariableStatement_b(b: Builder): void {
             pos,                     // 6 = start
             keyword("var"),          // 5
             whitespace,              // 4
-            VariableDeclarationList, // 3 = declarations
+            pfun(VariableDeclarationList_b), // 3 = declarations
             whitespace,              // 2
             punctuator(";"),         // 1
             pos,                     // 0 = end
@@ -2335,8 +2235,6 @@ function VariableStatement_b(b: Builder): void {
     });
 }
 
-const VariableStatement = pfun(VariableStatement_b);
-
 // VariableDeclarationList
 
 function VariableDeclarationList_b(b: Builder): void {
@@ -2344,14 +2242,14 @@ function VariableDeclarationList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(VariableDeclaration);
+                b.pitem(pfun(VariableDeclaration_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    VariableDeclaration,
+                    pfun(VariableDeclaration_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -2360,8 +2258,6 @@ function VariableDeclarationList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const VariableDeclarationList = pfun(VariableDeclarationList_b);
 
 // VariableDeclaration_identifier
 
@@ -2374,7 +2270,7 @@ function VariableDeclaration_identifier_b(b: Builder): void {
             () => {
                 b.pitems([
                     whitespace,
-                    Initializer,
+                    pfun(Initializer_b),
                     pos,
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -2392,8 +2288,6 @@ function VariableDeclaration_identifier_b(b: Builder): void {
     });
 }
 
-const VariableDeclaration_identifier = pfun(VariableDeclaration_identifier_b);
-
 // VariableDeclaration_pattern
 
 function VariableDeclaration_pattern_b(b: Builder): void {
@@ -2401,9 +2295,9 @@ function VariableDeclaration_pattern_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,            // 4 = start
-            BindingPattern, // 3 = pattern
+            pfun(BindingPattern_b), // 3 = pattern
             whitespace,     // 2
-            Initializer,    // 1 = initializer
+            pfun(Initializer_b),    // 1 = initializer
             pos,            // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -2412,8 +2306,6 @@ function VariableDeclaration_pattern_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const VariableDeclaration_pattern = pfun(VariableDeclaration_pattern_b);
 
 // VariableDeclaration
 
@@ -2426,8 +2318,6 @@ function VariableDeclaration_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const VariableDeclaration = pfun(VariableDeclaration_b);
 
 // Section 13.3.3
 
@@ -2443,8 +2333,6 @@ function BindingPattern_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const BindingPattern = pfun(BindingPattern_b);
-
 // ObjectBindingPattern
 
 function ObjectBindingPattern_b(b: Builder): void {
@@ -2456,7 +2344,7 @@ function ObjectBindingPattern_b(b: Builder): void {
         b.pitem(pos);              // 3
         b.bchoice([                // 2 = properties
             () => {
-                b.pitem(BindingPropertyList),
+                b.pitem(pfun(BindingPropertyList_b)),
                 b.pitem(whitespace),
                 b.bopt(() => {
                     b.pitem(punctuator(","));
@@ -2482,8 +2370,6 @@ function ObjectBindingPattern_b(b: Builder): void {
     });
 }
 
-const ObjectBindingPattern = pfun(ObjectBindingPattern_b);
-
 // ArrayBindingPattern
 
 function ArrayBindingPattern_b(b: Builder): void {
@@ -2493,11 +2379,11 @@ function ArrayBindingPattern_b(b: Builder): void {
             pos,                 // 7 = start
             punctuator("["),     // 6
             whitespace,          // 5
-            BindingElementList,  // 4 = elements
+            pfun(BindingElementList_b),  // 4 = elements
             whitespace,          // 3
         ]);
         b.bopt(() => {            // 2 = rest
-            b.pitem(BindingRestElement);
+            b.pitem(pfun(BindingRestElement_b));
             b.pitem(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
@@ -2512,8 +2398,6 @@ function ArrayBindingPattern_b(b: Builder): void {
     });
 }
 
-const ArrayBindingPattern = pfun(ArrayBindingPattern_b);
-
 // BindingPropertyList
 
 function BindingPropertyList_b(b: Builder): void {
@@ -2521,14 +2405,14 @@ function BindingPropertyList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(BindingProperty);
+                b.pitem(pfun(BindingProperty_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    BindingProperty,
+                    pfun(BindingProperty_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -2537,8 +2421,6 @@ function BindingPropertyList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const BindingPropertyList = pfun(BindingPropertyList_b);
 
 // BindingElementList
 
@@ -2567,7 +2449,7 @@ function BindingElementList_b(b: Builder): void {
                     },
                     () => {
                         b.pitem(whitespace);
-                        b.pitem(BindingElement);
+                        b.pitem(pfun(BindingElement_b));
                         b.bopt(() => {
                             b.pitem(whitespace);
                             b.pitem(punctuator(","));
@@ -2583,8 +2465,6 @@ function BindingElementList_b(b: Builder): void {
     });
 }
 
-const BindingElementList = pfun(BindingElementList_b);
-
 // BindingProperty
 
 function BindingProperty_b(b: Builder): void {
@@ -2594,11 +2474,11 @@ function BindingProperty_b(b: Builder): void {
             () => {
                 b.pitems([
                     pos,             // 6 = start
-                    PropertyName,    // 5 = name
+                    pfun(PropertyName_b),    // 5 = name
                     whitespace,      // 4
                     punctuator(":"), // 3
                     whitespace,      // 2
-                    BindingElement,  // 1 = element
+                    pfun(BindingElement_b),  // 1 = element
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -2607,15 +2487,13 @@ function BindingProperty_b(b: Builder): void {
             () => {
                 // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
                 // and PropertyName will match an identifier at the start of a colon binding
-                b.pitem(SingleNameBinding);
+                b.pitem(pfun(SingleNameBinding_b));
             },
         ]);
         b.assertLengthIs(oldLength+1);
         checkNode(b.get(0));
     });
 }
-
-const BindingProperty = pfun(BindingProperty_b);
 
 // BindingElement
 
@@ -2624,16 +2502,16 @@ function BindingElement_b(b: Builder): void {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.pitem(SingleNameBinding);
+                b.pitem(pfun(SingleNameBinding_b));
             },
             () => {
                 b.pitem(pos);
-                b.pitem(BindingPattern);
+                b.pitem(pfun(BindingPattern_b));
                 b.bchoice([
                     () => {
                         b.pitems([
                             whitespace,
-                            Initializer,
+                            pfun(Initializer_b),
                             pos,
                         ]);
                         b.assertLengthIs(oldLength+5);
@@ -2650,8 +2528,6 @@ function BindingElement_b(b: Builder): void {
     });
 }
 
-const BindingElement = pfun(BindingElement_b);
-
 // SingleNameBinding
 
 function SingleNameBinding_b(b: Builder): void {
@@ -2663,7 +2539,7 @@ function SingleNameBinding_b(b: Builder): void {
             () => {
                 b.pitems([
                     whitespace,
-                    Initializer,
+                    pfun(Initializer_b),
                     pos,
                 ]);
                 b.popAboveAndSet(2,makeNode(b,4,0,"SingleNameBinding",[3,1]));
@@ -2678,8 +2554,6 @@ function SingleNameBinding_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const SingleNameBinding = pfun(SingleNameBinding_b);
 
 // BindingRestElement
 
@@ -2700,8 +2574,6 @@ function BindingRestElement_b(b: Builder): void {
     });
 }
 
-const BindingRestElement = pfun(BindingRestElement_b);
-
 // Section 13.4
 
 // EmptyStatement
@@ -2720,8 +2592,6 @@ function EmptyStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const EmptyStatement = pfun(EmptyStatement_b);
 
 // Section 13.5
 
@@ -2751,7 +2621,7 @@ function ExpressionStatement_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,             // 4 = start
-            Expression,      // 3 = expr
+            pfun(Expression_b),      // 3 = expr
             whitespace,      // 2
             punctuator(";"), // 1
             pos,             // 0 = end
@@ -2762,8 +2632,6 @@ function ExpressionStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ExpressionStatement = pfun(ExpressionStatement_b);
 
 // Section 13.6
 
@@ -2778,18 +2646,18 @@ function IfStatement_b(b: Builder): void {
             whitespace,        // 9
             punctuator("("),   // 8
             whitespace,        // 7
-            Expression,        // 6 = condition
+            pfun(Expression_b),        // 6 = condition
             whitespace,        // 5
             punctuator(")"),   // 4
             whitespace,        // 3
-            Statement,         // 2 = trueBranch
+            pfun(Statement_b),         // 2 = trueBranch
         ]);
         b.bopt(() => {          // 1 = falseBranch
             b.pitems([
                 whitespace,
                 keyword("else"),
                 whitespace,
-                Statement,
+                pfun(Statement_b),
             ]);
             b.popAboveAndSet(3,b.get(0));
         });
@@ -2800,8 +2668,6 @@ function IfStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const IfStatement = pfun(IfStatement_b);
 
 // Section 13.7
 
@@ -2814,13 +2680,13 @@ function IterationStatement_do_b(b: Builder): void {
             pos,              // 14
             keyword("do"),    // 13
             whitespace,       // 12
-            Statement,        // 11 = body
+            pfun(Statement_b),        // 11 = body
             whitespace,       // 10
             keyword("while"), // 9
             whitespace,       // 8
             punctuator("("),  // 7
             whitespace,       // 6
-            Expression,       // 5 = condition
+            pfun(Expression_b),       // 5 = condition
             whitespace,       // 4
             punctuator(")"),  // 3
             whitespace,       // 2
@@ -2834,8 +2700,6 @@ function IterationStatement_do_b(b: Builder): void {
     });
 }
 
-const IterationStatement_do = pfun(IterationStatement_do_b);
-
 // IterationStatement_while
 
 function IterationStatement_while_b(b: Builder): void {
@@ -2847,11 +2711,11 @@ function IterationStatement_while_b(b: Builder): void {
             whitespace,         // 8
             punctuator("("),    // 7
             whitespace,         // 6
-            Expression,         // 5 = condition
+            pfun(Expression_b),         // 5 = condition
             whitespace,         // 4
             punctuator(")"),    // 3
             whitespace,         // 2
-            Statement,          // 1 = body
+            pfun(Statement_b),          // 1 = body
             pos,                // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -2860,8 +2724,6 @@ function IterationStatement_while_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const IterationStatement_while = pfun(IterationStatement_while_b);
 
 // IterationStatement_for_c
 
@@ -2885,7 +2747,7 @@ function IterationStatement_for_c_b(b: Builder): void {
                 b.pitems([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
-                    Expression,
+                    pfun(Expression_b),
                     whitespace,
                     punctuator(";"),
                     whitespace
@@ -2897,7 +2759,7 @@ function IterationStatement_for_c_b(b: Builder): void {
                     pos,                     // 7 = start2
                     keyword("var"),          // 6
                     whitespace,              // 5
-                    VariableDeclarationList, // 4 = declarations
+                    pfun(VariableDeclarationList_b), // 4 = declarations
                     pos,                     // 3 = end
                     whitespace,              // 2
                     punctuator(";"),         // 1
@@ -2907,7 +2769,7 @@ function IterationStatement_for_c_b(b: Builder): void {
             },
             () => {
                 b.pitems([
-                    LexicalDeclaration,
+                    pfun(LexicalDeclaration_b),
                     whitespace,
                 ]);
                 b.popAboveAndSet(1,b.get(1));
@@ -2921,18 +2783,18 @@ function IterationStatement_for_c_b(b: Builder): void {
             },
         ]);
         b.assertLengthIs(oldLength+6);
-        b.pitem(opt(Expression)); // 8 = condition
+        b.pitem(opt(pfun(Expression_b))); // 8 = condition
         b.pitem(whitespace);      // 7
         b.pitem(punctuator(";")); // 6
         b.pitem(whitespace);      // 5
         b.bopt(() => {            // 4 = update
-            b.pitem(Expression);
+            b.pitem(pfun(Expression_b));
             b.pitem(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
         b.pitem(punctuator(")")); // 3
         b.pitem(whitespace);      // 2
-        b.pitem(Statement);       // 1 = body
+        b.pitem(pfun(Statement_b));       // 1 = body
         b.pitem(pos);             // 0 = end
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
@@ -2940,8 +2802,6 @@ function IterationStatement_for_c_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const IterationStatement_for_c = pfun(IterationStatement_for_c_b);
 
 // IterationStatement_for_in
 
@@ -2965,7 +2825,7 @@ function IterationStatement_for_in_b(b: Builder): void {
                 b.pitems([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
-                    LeftHandSideExpression,
+                    pfun(LeftHandSideExpression_b),
                 ]);
                 b.popAboveAndSet(2,b.get(0));
             },
@@ -2974,13 +2834,13 @@ function IterationStatement_for_in_b(b: Builder): void {
                     pos,
                     keyword("var"),
                     whitespace,
-                    ForBinding,
+                    pfun(ForBinding_b),
                     pos,
                 ]);
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
             },
             () => {
-                b.pitem(ForDeclaration);
+                b.pitem(pfun(ForDeclaration_b));
             }
         ]);
         b.assertLengthIs(oldLength+6);
@@ -2988,11 +2848,11 @@ function IterationStatement_for_in_b(b: Builder): void {
             whitespace,                                    // 8
             keyword("in"),                                 // 7
             whitespace,                                    // 6
-            Expression,                                    // 5 = expr
+            pfun(Expression_b),                                    // 5 = expr
             whitespace,                                    // 4
             punctuator(")"),                               // 3
             whitespace,                                    // 2
-            Statement,                                     // 1 = body
+            pfun(Statement_b),                                     // 1 = body
             pos,                                           // 0 = end
         ]);
         b.assertLengthIs(oldLength+15);
@@ -3001,8 +2861,6 @@ function IterationStatement_for_in_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const IterationStatement_for_in = pfun(IterationStatement_for_in_b);
 
 // IterationStatement_for_of
 
@@ -3026,7 +2884,7 @@ function IterationStatement_for_of_b(b: Builder): void {
                 b.pitems([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
-                    LeftHandSideExpression
+                    pfun(LeftHandSideExpression_b)
                 ]);
                 b.popAboveAndSet(2,b.get(0));
             },
@@ -3035,13 +2893,13 @@ function IterationStatement_for_of_b(b: Builder): void {
                     pos,
                     keyword("var"),
                     whitespace,
-                    ForBinding,
+                    pfun(ForBinding_b),
                     pos
                 ]);
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
             },
             () => {
-                b.pitem(ForDeclaration);
+                b.pitem(pfun(ForDeclaration_b));
             },
         ]);
         b.assertLengthIs(oldLength+6);
@@ -3049,11 +2907,11 @@ function IterationStatement_for_of_b(b: Builder): void {
             whitespace,                                    // 8
             keyword("of"),                                 // 7
             whitespace,                                    // 6
-            Expression,                                    // 5 = expr
+            pfun(Expression_b),                                    // 5 = expr
             whitespace,                                    // 4
             punctuator(")"),                               // 3
             whitespace,                                    // 2
-            Statement,                                     // 1 = body
+            pfun(Statement_b),                                     // 1 = body
             pos,                                           // 0 = end
         ]);
         b.assertLengthIs(oldLength+15);
@@ -3062,8 +2920,6 @@ function IterationStatement_for_of_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const IterationStatement_for_of = pfun(IterationStatement_for_of_b);
 
 // IterationStatement_for
 
@@ -3078,8 +2934,6 @@ function IterationStatement_for_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const IterationStatement_for = pfun(IterationStatement_for_b);
-
 // IterationStatement
 
 function IterationStatement_b(b: Builder): void {
@@ -3093,8 +2947,6 @@ function IterationStatement_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const IterationStatement = pfun(IterationStatement_b);
-
 // ForDeclaration
 
 function ForDeclaration_b(b: Builder): void {
@@ -3106,7 +2958,7 @@ function ForDeclaration_b(b: Builder): void {
                     pos,              // 4 = start
                     keyword("let"),   // 3
                     whitespace,       // 2
-                    ForBinding,       // 1 = binding
+                    pfun(ForBinding_b),       // 1 = binding
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -3117,7 +2969,7 @@ function ForDeclaration_b(b: Builder): void {
                     pos,              // 4 = start
                     keyword("const"), // 3
                     whitespace,       // 2
-                    ForBinding,       // 1 = binding
+                    pfun(ForBinding_b),       // 1 = binding
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -3128,8 +2980,6 @@ function ForDeclaration_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ForDeclaration = pfun(ForDeclaration_b);
 
 // ForBinding
 
@@ -3142,8 +2992,6 @@ function ForBinding_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const ForBinding = pfun(ForBinding_b);
 
 // Section 13.8
 
@@ -3184,8 +3032,6 @@ function ContinueStatement_b(b: Builder): void {
     });
 }
 
-const ContinueStatement = pfun(ContinueStatement_b);
-
 // Section 13.9
 
 // BreakStatement
@@ -3225,8 +3071,6 @@ function BreakStatement_b(b: Builder): void {
     });
 }
 
-const BreakStatement = pfun(BreakStatement_b);
-
 // Section 13.10
 
 // ReturnStatement
@@ -3252,7 +3096,7 @@ function ReturnStatement_b(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("return"),   // 5
                     whitespaceNoNewline, // 4
-                    Expression,          // 3 = expr
+                    pfun(Expression_b),          // 3 = expr
                     whitespace,          // 2
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
@@ -3265,8 +3109,6 @@ function ReturnStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ReturnStatement = pfun(ReturnStatement_b);
 
 // Section 13.11
 
@@ -3281,11 +3123,11 @@ function WithStatement_b(b: Builder): void {
             whitespace,      // 8
             punctuator("("), // 7
             whitespace,      // 6
-            Expression,      // 5 = expr
+            pfun(Expression_b),      // 5 = expr
             whitespace,      // 4
             punctuator(")"), // 3
             whitespace,      // 2
-            Statement,       // 1 = body
+            pfun(Statement_b),       // 1 = body
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -3294,8 +3136,6 @@ function WithStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const WithStatement = pfun(WithStatement_b);
 
 // Section 13.12
 
@@ -3310,11 +3150,11 @@ function SwitchStatement_b(b: Builder): void {
             whitespace,        // 8
             punctuator("("),   // 7
             whitespace,        // 6
-            Expression,        // 5 = expr
+            pfun(Expression_b),        // 5 = expr
             whitespace,        // 4
             punctuator(")"),   // 3
             whitespace,        // 2
-            CaseBlock,         // 1 = cases
+            pfun(CaseBlock_b),         // 1 = cases
             pos,               // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -3323,8 +3163,6 @@ function SwitchStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const SwitchStatement = pfun(SwitchStatement_b);
 
 // CaseBlock_1
 
@@ -3339,7 +3177,7 @@ function CaseBlock_1_b(b: Builder): void {
         ]);
         b.bchoice([           // 3 = clauses
             () => {
-                b.pitem(CaseClauses);
+                b.pitem(pfun(CaseClauses_b));
             },
             () => {
                 const midpos = checkNumber(b.get(0));
@@ -3358,8 +3196,6 @@ function CaseBlock_1_b(b: Builder): void {
     });
 }
 
-const CaseBlock_1 = pfun(CaseBlock_1_b);
-
 // CaseBlock_2
 
 function CaseBlock_2_b(b: Builder): void {
@@ -3369,11 +3205,11 @@ function CaseBlock_2_b(b: Builder): void {
             pos,              // 10 = start
             punctuator("{"),  // 9
             whitespace,       // 8
-            opt(CaseClauses), // 7 = clauses1
+            opt(pfun(CaseClauses_b)), // 7 = clauses1
             whitespace,       // 6
-            DefaultClause,    // 5 = defaultClause
+            pfun(DefaultClause_b),    // 5 = defaultClause
             whitespace,       // 4
-            opt(CaseClauses), // 3 = clauses2
+            opt(pfun(CaseClauses_b)), // 3 = clauses2
             whitespace,       // 2
             punctuator("}"),  // 1
             pos,              // 0 = end
@@ -3384,8 +3220,6 @@ function CaseBlock_2_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const CaseBlock_2 = pfun(CaseBlock_2_b);
 
 // CaseBlock
 
@@ -3399,8 +3233,6 @@ function CaseBlock_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const CaseBlock = pfun(CaseBlock_b);
-
 // CaseClauses
 
 function CaseClauses_b(b: Builder): void {
@@ -3408,12 +3240,12 @@ function CaseClauses_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(CaseClause);
+                b.pitem(pfun(CaseClause_b));
             },
             () => {
                 b.pitems([
                     whitespace,
-                    CaseClause,
+                    pfun(CaseClause_b),
                 ]);
                 b.popAboveAndSet(1,b.get(0));
             },
@@ -3422,8 +3254,6 @@ function CaseClauses_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const CaseClauses = pfun(CaseClauses_b);
 
 // CaseClause
 
@@ -3434,11 +3264,11 @@ function CaseClause_b(b: Builder): void {
             pos,             // 8 = start
             keyword("case"), // 7
             whitespace,      // 6
-            Expression,      // 5 = expr
+            pfun(Expression_b),      // 5 = expr
             whitespace,      // 4
             punctuator(":"), // 3
             whitespace,      // 2
-            StatementList,   // 1 = statements
+            pfun(StatementList_b),   // 1 = statements
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+9);
@@ -3447,8 +3277,6 @@ function CaseClause_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const CaseClause = pfun(CaseClause_b);
 
 // DefaultClause
 
@@ -3461,7 +3289,7 @@ function DefaultClause_b(b: Builder): void {
             whitespace,         // 4
             punctuator(":"),    // 3
             whitespace,         // 2
-            StatementList,      // 1 = statements
+            pfun(StatementList_b),      // 1 = statements
             whitespace,         // 0
         ]);
         b.assertLengthIs(oldLength+7);
@@ -3473,8 +3301,6 @@ function DefaultClause_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const DefaultClause = pfun(DefaultClause_b);
 
 // Section 13.13
 
@@ -3489,7 +3315,7 @@ function LabelledStatement_b(b: Builder): void {
             whitespace,      // 4
             punctuator(":"), // 3
             whitespace,      // 2
-            LabelledItem,    // 1 = item
+            pfun(LabelledItem_b),    // 1 = item
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -3498,8 +3324,6 @@ function LabelledStatement_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const LabelledStatement = pfun(LabelledStatement_b);
 
 // LabelledItem
 
@@ -3513,8 +3337,6 @@ function LabelledItem_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const LabelledItem = pfun(LabelledItem_b);
-
 // Section 13.14
 
 // ThrowStatement
@@ -3526,7 +3348,7 @@ function ThrowStatement_b(b: Builder): void {
             pos,                 // 6 = start
             keyword("throw"),    // 5
             whitespaceNoNewline, // 4
-            Expression,          // 3 = expr
+            pfun(Expression_b),          // 3 = expr
             whitespace,          // 2
             punctuator(";"),     // 1
             pos,                 // 0 = end
@@ -3538,8 +3360,6 @@ function ThrowStatement_b(b: Builder): void {
     });
 }
 
-const ThrowStatement = pfun(ThrowStatement_b);
-
 // Section 13.15
 
 // TryStatement
@@ -3550,19 +3370,19 @@ function TryStatement_b(b: Builder): void {
         b.pitem(pos);                   // 7 = start
         b.pitem(keyword("try"));        // 6
         b.pitem(whitespace);            // 5
-        b.pitem(Block);                 // 4 = tryBlock
+        b.pitem(pfun(Block_b));                 // 4 = tryBlock
         b.bchoice([
             () => {
                 b.pitem(whitespace);    // 3
                 b.pitem(value(null));   // 2 = catchBlock
-                b.pitem(Finally);       // 1 = finallyBlock
+                b.pitem(pfun(Finally_b));       // 1 = finallyBlock
             },
             () => {
                 b.pitem(whitespace);    // 3
-                b.pitem(Catch);         // 2 = catchBlock
+                b.pitem(pfun(Catch_b));         // 2 = catchBlock
                 b.bopt(() => {          // 1 = finallyBlock
                     b.pitem(whitespace);
-                    b.pitem(Finally);
+                    b.pitem(pfun(Finally_b));
                     b.popAboveAndSet(1,b.get(0));
                 });
             },
@@ -3575,8 +3395,6 @@ function TryStatement_b(b: Builder): void {
     });
 }
 
-const TryStatement = pfun(TryStatement_b);
-
 // Catch
 
 function Catch_b(b: Builder): void {
@@ -3588,11 +3406,11 @@ function Catch_b(b: Builder): void {
             whitespace,       // 8
             punctuator("("),  // 7
             whitespace,       // 6
-            CatchParameter,   // 5 = param
+            pfun(CatchParameter_b),   // 5 = param
             whitespace,       // 4
             punctuator(")"),  // 3
             whitespace,       // 2
-            Block,            // 1 = block
+            pfun(Block_b),            // 1 = block
             pos,              // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -3601,8 +3419,6 @@ function Catch_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const Catch = pfun(Catch_b);
 
 // Finally
 
@@ -3613,7 +3429,7 @@ function Finally_b(b: Builder): void {
             pos,                // 4
             keyword("finally"), // 3
             whitespace,         // 2
-            Block,              // 1
+            pfun(Block_b),              // 1
             pos,                // 0
         ]);
         b.assertLengthIs(oldLength+5);
@@ -3622,8 +3438,6 @@ function Finally_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const Finally = pfun(Finally_b);
 
 // CatchParameter
 
@@ -3636,8 +3450,6 @@ function CatchParameter_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const CatchParameter = pfun(CatchParameter_b);
 
 // Section 13.16
 
@@ -3660,8 +3472,6 @@ function DebuggerStatement_b(b: Builder): void {
     });
 }
 
-const DebuggerStatement = pfun(DebuggerStatement_b);
-
 // Section 14.1
 
 // FunctionDeclaration_named
@@ -3677,7 +3487,7 @@ function FunctionDeclaration_named_b(b: Builder): void {
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters,    // 9 = params
+            pfun(FormalParameters_b),    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
@@ -3695,8 +3505,6 @@ function FunctionDeclaration_named_b(b: Builder): void {
     });
 }
 
-const FunctionDeclaration_named = pfun(FunctionDeclaration_named_b);
-
 // FunctionDeclaration_unnamed
 
 function FunctionDeclaration_unnamed_b(b: Builder): void {
@@ -3709,7 +3517,7 @@ function FunctionDeclaration_unnamed_b(b: Builder): void {
             punctuator("("),     // 12
             whitespace,          // 11
             value(null),         // 10 = null
-            FormalParameters,    // 9 = params
+            pfun(FormalParameters_b),    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
@@ -3727,22 +3535,20 @@ function FunctionDeclaration_unnamed_b(b: Builder): void {
     });
 }
 
-const FunctionDeclaration_unnamed = pfun(FunctionDeclaration_unnamed_b);
-
 // FunctionDeclaration
 
 function FunctionDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     if (flags === undefined)
         flags = {};
     try {
-        return FunctionDeclaration_named(p);
+        return pfun(FunctionDeclaration_named_b)(p);
     } catch (e) {
         if (!(e instanceof ParseFailure))
             throw e;
     }
     if (flags.Default) {
         try {
-            return FunctionDeclaration_unnamed(p);
+            return pfun(FunctionDeclaration_unnamed_b)(p);
         } catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
@@ -3771,7 +3577,7 @@ function FunctionExpression_b(b: Builder): void {
         b.pitems([
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters,    // 9 = params
+            pfun(FormalParameters_b),    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
@@ -3789,12 +3595,10 @@ function FunctionExpression_b(b: Builder): void {
     });
 }
 
-const FunctionExpression = pfun(FunctionExpression_b);
-
 // StrictFormalParameters
 
 function StrictFormalParameters(p: Parser): ASTNode {
-    return FormalParameters(p);
+    return pfun(FormalParameters_b)(p);
 }
 
 const StrictFormalParameters_b = bfun(StrictFormalParameters);
@@ -3806,7 +3610,7 @@ function FormalParameters_b(b: Builder): void {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.pitem(FormalParameterList);
+                b.pitem(pfun(FormalParameterList_b));
             },
             () => {
                 b.pitem(pos);
@@ -3817,8 +3621,6 @@ function FormalParameters_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const FormalParameters = pfun(FormalParameters_b);
 
 // FormalParameterList
 
@@ -3837,7 +3639,7 @@ function FormalParameterList_b(b: Builder): void {
             },
             () => {
                 b.pitem(pos);           // 3 = start
-                b.pitem(FormalsList);   // 2 = formals
+                b.pitem(pfun(FormalsList_b));   // 2 = formals
                 b.bchoice([
                     () => {
                         b.pitems([
@@ -3861,8 +3663,6 @@ function FormalParameterList_b(b: Builder): void {
         b.assertLengthIs(oldLength+1);
     });
 }
-
-const FormalParameterList = pfun(FormalParameterList_b);
 
 // FormalsList
 
@@ -3888,12 +3688,10 @@ function FormalsList_b(b: Builder): void {
     });
 }
 
-const FormalsList = pfun(FormalsList_b);
-
 // FunctionRestParameter
 
 function FunctionRestParameter(p: Parser): ASTNode {
-    return BindingRestElement(p);
+    return pfun(BindingRestElement_b)(p);
 }
 
 const FunctionRestParameter_b = bfun(FunctionRestParameter);
@@ -3901,15 +3699,15 @@ const FunctionRestParameter_b = bfun(FunctionRestParameter);
 // FormalParameter
 
 function FormalParameter(p: Parser): ASTNode {
-    return BindingElement(p);
+    return pfun(BindingElement_b)(p);
 }
 
 const FormalParameter_b = bfun(FormalParameter);
 
-// FunctionBody
+// v
 
 function FunctionBody(p: Parser): ASTNode {
-    return FunctionStatementList(p);
+    return pfun(FunctionStatementList_b)(p);
 }
 
 const FunctionBody_b = bfun(FunctionBody);
@@ -3926,8 +3724,6 @@ function FunctionStatementList_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const FunctionStatementList = pfun(FunctionStatementList_b);
-
 // Section 14.2
 
 // ArrowFunction
@@ -3937,11 +3733,11 @@ function ArrowFunction_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 6 = start
-            ArrowParameters,     // 5 = params
+            pfun(ArrowParameters_b),     // 5 = params
             whitespaceNoNewline, // 4
             punctuator("=>"),    // 3
             whitespace,          // 2
-            ConciseBody,         // 1 = body
+            pfun(ConciseBody_b),         // 1 = body
             pos,                 // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -3950,8 +3746,6 @@ function ArrowFunction_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ArrowFunction = pfun(ArrowFunction_b);
 
 // ArrowParameters
 
@@ -3965,14 +3759,12 @@ function ArrowParameters_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const ArrowParameters = pfun(ArrowParameters_b);
-
 // ConciseBody
 
 function ConciseBody_1(p: Parser): ASTNode {
     if (p.lookaheadPunctuator("{"))
         throw new ParseIgnore();
-    return AssignmentExpression(p);
+    return pfun(AssignmentExpression_b)(p);
 }
 
 const ConciseBody_1_b = bfun(ConciseBody_1);
@@ -3996,8 +3788,6 @@ function ConciseBody_2_b(b: Builder): void {
     });
 }
 
-const ConciseBody_2 = pfun(ConciseBody_2_b);
-
 // ConciseBody
 
 function ConciseBody_b(b: Builder): void {
@@ -4009,8 +3799,6 @@ function ConciseBody_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const ConciseBody = pfun(ConciseBody_b);
 
 // ArrowFormalParameters
 
@@ -4031,8 +3819,6 @@ function ArrowFormalParameters_b(b: Builder): void {
     });
 }
 
-const ArrowFormalParameters = pfun(ArrowFormalParameters_b);
-
 // Section 14.3
 
 // MethodDefinition_1
@@ -4042,7 +3828,7 @@ function MethodDefinition_1_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,                    // 14 = start
-            PropertyName,           // 13 = name
+            pfun(PropertyName_b),           // 13 = name
             whitespace,             // 12
             punctuator("("),        // 11
             whitespace,             // 10
@@ -4064,15 +3850,11 @@ function MethodDefinition_1_b(b: Builder): void {
     });
 }
 
-const MethodDefinition_1 = pfun(MethodDefinition_1_b);
-
 // MethodDefinition_2
 
 function MethodDefinition_2(p: Parser): ASTNode {
-    return GeneratorMethod(p);
+    return pfun(GeneratorMethod_b)(p);
 }
-
-const MethodDefinition_2_b = bfun(MethodDefinition_2);
 
 // MethodDefinition_3
 
@@ -4083,7 +3865,7 @@ function MethodDefinition_3_b(b: Builder): void {
             pos,               // 14 = start
             identifier("get"), // 13 "get" is not a reserved word, so we can't use keyword here
             whitespace,        // 12
-            PropertyName,      // 11 = name
+            pfun(PropertyName_b),      // 11 = name
             whitespace,        // 10
             punctuator("("),   // 9
             whitespace,        // 8
@@ -4103,8 +3885,6 @@ function MethodDefinition_3_b(b: Builder): void {
     });
 }
 
-const MethodDefinition_3 = pfun(MethodDefinition_3_b);
-
 // MethodDefinition_4
 
 function MethodDefinition_4_b(b: Builder): void {
@@ -4114,7 +3894,7 @@ function MethodDefinition_4_b(b: Builder): void {
             pos,                      // 16 = start
             identifier("set"),        // 15
             whitespace,               // 14
-            PropertyName,             // 13 = name
+            pfun(PropertyName_b),             // 13 = name
             whitespace,               // 12
             punctuator("("),          // 11
             whitespace,               // 10
@@ -4136,23 +3916,19 @@ function MethodDefinition_4_b(b: Builder): void {
     });
 }
 
-const MethodDefinition_4 = pfun(MethodDefinition_4_b);
-
 // MethodDefinition
 
 function MethodDefinition_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         MethodDefinition_1_b,
-        MethodDefinition_2_b,
+        bfun(MethodDefinition_2),
         MethodDefinition_3_b,
         MethodDefinition_4_b,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const MethodDefinition = pfun(MethodDefinition_b);
 
 // PropertySetParameterList
 
@@ -4173,7 +3949,7 @@ function GeneratorMethod_b(b: Builder): void {
             pos,                    // 16 = start
             punctuator("*"),        // 15
             whitespace,             // 14
-            PropertyName,           // 13 = name
+            pfun(PropertyName_b),           // 13 = name
             whitespace,             // 12
             punctuator("("),        // 11
             whitespace,             // 10
@@ -4195,8 +3971,6 @@ function GeneratorMethod_b(b: Builder): void {
     });
 }
 
-const GeneratorMethod = pfun(GeneratorMethod_b);
-
 // GeneratorDeclaration_1
 
 function GeneratorDeclaration_1_b(b: Builder): void {
@@ -4212,7 +3986,7 @@ function GeneratorDeclaration_1_b(b: Builder): void {
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters,    // 9 = params
+            pfun(FormalParameters_b),    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
@@ -4230,8 +4004,6 @@ function GeneratorDeclaration_1_b(b: Builder): void {
     });
 }
 
-const GeneratorDeclaration_1 = pfun(GeneratorDeclaration_1_b);
-
 // GeneratorDeclaration_2
 
 function GeneratorDeclaration_2_b(b: Builder): void {
@@ -4245,7 +4017,7 @@ function GeneratorDeclaration_2_b(b: Builder): void {
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters,    // 9 = params
+            pfun(FormalParameters_b),    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
@@ -4264,22 +4036,20 @@ function GeneratorDeclaration_2_b(b: Builder): void {
     });
 }
 
-const GeneratorDeclaration_2 = pfun(GeneratorDeclaration_2_b);
-
 // GeneratorDeclaration
 
 function GeneratorDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     if (flags === undefined)
         flags = {};
     try {
-        return GeneratorDeclaration_1(p);
+        return pfun(GeneratorDeclaration_1_b)(p);
     } catch (e) {
         if (!(e instanceof ParseFailure))
             throw e;
     }
     if (flags.Default) {
         try {
-            return GeneratorDeclaration_2(p);
+            return pfun(GeneratorDeclaration_2_b)(p);
         } catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
@@ -4312,7 +4082,7 @@ function GeneratorExpression_b(b: Builder): void {
         b.pitems([
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters,    // 9 = params
+            pfun(FormalParameters_b),    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
@@ -4330,15 +4100,11 @@ function GeneratorExpression_b(b: Builder): void {
     });
 }
 
-const GeneratorExpression = pfun(GeneratorExpression_b);
-
 // GeneratorBody
 
 function GeneratorBody(p: Parser): ASTNode {
     return FunctionBody(p);
 }
-
-const GeneratorBody_b = bfun(GeneratorBody);
 
 // YieldExpression_1
 
@@ -4351,7 +4117,7 @@ function YieldExpression_1_b(b: Builder): void {
             whitespaceNoNewline,  // 4
             punctuator("*"),      // 3
             whitespace,           // 2
-            AssignmentExpression, // 1
+            pfun(AssignmentExpression_b), // 1
             pos,                  // 0
         ]);
         b.assertLengthIs(oldLength+7);
@@ -4360,8 +4126,6 @@ function YieldExpression_1_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const YieldExpression_1 = pfun(YieldExpression_1_b);
 
 // YieldExpression_2
 
@@ -4372,7 +4136,7 @@ function YieldExpression_2_b(b: Builder): void {
             pos,                  // 4
             keyword("yield"),     // 3
             whitespaceNoNewline,  // 2
-            AssignmentExpression, // 1
+            pfun(AssignmentExpression_b), // 1
             pos,                  // 0
         ]);
         b.assertLengthIs(oldLength+5);
@@ -4381,8 +4145,6 @@ function YieldExpression_2_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const YieldExpression_2 = pfun(YieldExpression_2_b);
 
 // YieldExpression_3
 
@@ -4401,8 +4163,6 @@ function YieldExpression_3_b(b: Builder): void {
     });
 }
 
-const YieldExpression_3 = pfun(YieldExpression_3_b);
-
 // YieldExpression
 
 function YieldExpression_b(b: Builder): void {
@@ -4415,8 +4175,6 @@ function YieldExpression_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const YieldExpression = pfun(YieldExpression_b);
 
 // Section 14.5
 
@@ -4431,7 +4189,7 @@ function ClassDeclaration_1_b(b: Builder): void {
             whitespace,        // 4
             BindingIdentifier, // 3 = ident
             whitespace,        // 2
-            ClassTail,         // 1 = tail
+            pfun(ClassTail_b),         // 1 = tail
             pos,               // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -4440,8 +4198,6 @@ function ClassDeclaration_1_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ClassDeclaration_1 = pfun(ClassDeclaration_1_b);
 
 // ClassDeclaration_2
 
@@ -4453,7 +4209,7 @@ function ClassDeclaration_2_b(b: Builder): void {
             keyword("class"), // 4
             whitespace,       // 3
             value(null),      // 2
-            ClassTail,        // 1
+            pfun(ClassTail_b),        // 1
             pos,              // 0
         ]);
         b.assertLengthIs(oldLength+6);
@@ -4463,22 +4219,20 @@ function ClassDeclaration_2_b(b: Builder): void {
     });
 }
 
-const ClassDeclaration_2 = pfun(ClassDeclaration_2_b);
-
 // ClassDeclaration
 
 function ClassDeclaration(p: Parser, flags?: { Yield?: boolean, Default?: boolean }): ASTNode {
     if (flags === undefined)
         flags = {};
     try {
-        return ClassDeclaration_1(p);
+        return pfun(ClassDeclaration_1_b)(p);
     } catch (e) {
         if (!(e instanceof ParseFailure))
             throw e;
     }
     if (flags.Default) {
         try {
-            return ClassDeclaration_2(p);
+            return pfun(ClassDeclaration_2_b)(p);
         } catch (e) {
             if (!(e instanceof ParseFailure))
                 throw e;
@@ -4504,7 +4258,7 @@ function ClassExpression_b(b: Builder): void {
             ]);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.pitem(ClassTail);        // 1
+        b.pitem(pfun(ClassTail_b));        // 1
         b.pitem(pos);              // 0
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassExpression",[2,1]));
@@ -4512,8 +4266,6 @@ function ClassExpression_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ClassExpression = pfun(ClassExpression_b);
 
 // ClassTail
 
@@ -4523,7 +4275,7 @@ function ClassTail_b(b: Builder): void {
         b.pitem(pos);               // 6 = start
         b.bopt(() => {              // 5 = heritage
             b.pitems([
-                ClassHeritage,
+                pfun(ClassHeritage_b),
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
@@ -4552,8 +4304,6 @@ function ClassTail_b(b: Builder): void {
     });
 }
 
-const ClassTail = pfun(ClassTail_b);
-
 // ClassHeritage
 
 function ClassHeritage_b(b: Builder): void {
@@ -4563,7 +4313,7 @@ function ClassHeritage_b(b: Builder): void {
             pos,                    // 4 = start
             keyword("extends"),     // 3
             whitespace,             // 2
-            LeftHandSideExpression, // 1 = expr
+            pfun(LeftHandSideExpression_b), // 1 = expr
             pos,                    // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -4573,12 +4323,10 @@ function ClassHeritage_b(b: Builder): void {
     });
 }
 
-const ClassHeritage = pfun(ClassHeritage_b);
-
 // ClassBody
 
 function ClassBody(p: Parser): ASTNode {
-    return ClassElementList(p);
+    return pfun(ClassElementList_b)(p);
 }
 
 const ClassBody_b = bfun(ClassBody);
@@ -4590,11 +4338,11 @@ function ClassElementList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(ClassElement);
+                b.pitem(pfun(ClassElement_b));
             },
             () => {
                 b.pitem(whitespace);
-                b.pitem(ClassElement);
+                b.pitem(pfun(ClassElement_b));
                 b.popAboveAndSet(1,b.get(0));
             },
         );
@@ -4603,12 +4351,10 @@ function ClassElementList_b(b: Builder): void {
     });
 }
 
-const ClassElementList = pfun(ClassElementList_b);
-
-// ClassElement_1
+// ClassElement
 
 function ClassElement_1(p: Parser): ASTNode {
-    return MethodDefinition(p);
+    return pfun(MethodDefinition_b)(p);
 }
 
 const ClassElement_1_b = bfun(ClassElement_1);
@@ -4622,7 +4368,7 @@ function ClassElement_2_b(b: Builder): void {
             pos,
             keyword("static"),
             whitespace,
-            MethodDefinition,
+            pfun(MethodDefinition_b),
             pos,
         ]);
         b.assertLengthIs(oldLength+5);
@@ -4631,8 +4377,6 @@ function ClassElement_2_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ClassElement_2 = pfun(ClassElement_2_b);
 
 // ClassElement_3
 
@@ -4651,8 +4395,6 @@ function ClassElement_3_b(b: Builder): void {
     });
 }
 
-const ClassElement_3 = pfun(ClassElement_3_b);
-
 // ClassElement
 
 function ClassElement_b(b: Builder): void {
@@ -4665,8 +4407,6 @@ function ClassElement_b(b: Builder): void {
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
 }
-
-const ClassElement = pfun(ClassElement_b);
 
 // Section 15.1
 
@@ -4691,7 +4431,7 @@ const Script_b = bfun(Script);
 // ScriptBody
 
 function ScriptBody(p: Parser): ASTNode {
-    return StatementList(p);
+    return pfun(StatementList_b)(p);
 }
 
 const ScriptBody_b = bfun(ScriptBody);
@@ -4719,7 +4459,7 @@ const Module_b = bfun(Module);
 // ModuleBody
 
 function ModuleBody(p: Parser): ASTNode {
-    return ModuleItemList(p);
+    return pfun(ModuleItemList_b)(p);
 }
 
 const ModuleBody_b = bfun(ModuleBody);
@@ -4731,11 +4471,11 @@ function ModuleItemList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(ModuleItem);
+                b.pitem(pfun(ModuleItem_b));
             },
             () => {
                 b.pitem(whitespace);
-                b.pitem(ModuleItem);
+                b.pitem(pfun(ModuleItem_b));
                 b.popAboveAndSet(1,b.get(0));
             },
         );
@@ -4743,8 +4483,6 @@ function ModuleItemList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ModuleItemList = pfun(ModuleItemList_b);
 
 // ModuleItem
 
@@ -4759,8 +4497,6 @@ function ModuleItem_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const ModuleItem = pfun(ModuleItem_b);
-
 // Section 15.2.2
 
 // ImportDeclaration_from
@@ -4772,9 +4508,9 @@ function ImportDeclaration_from_b(b: Builder): void {
             pos,               // 8 = start
             keyword("import"), // 7
             whitespace,        // 6
-            ImportClause,      // 5 = importClause
+            pfun(ImportClause_b),      // 5 = importClause
             whitespace,        // 4
-            FromClause,        // 3 = fromClause
+            pfun(FromClause_b),        // 3 = fromClause
             whitespace,        // 2
             punctuator(";"),   // 1
             pos,               // 0 = end
@@ -4785,8 +4521,6 @@ function ImportDeclaration_from_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ImportDeclaration_from = pfun(ImportDeclaration_from_b);
 
 // ImportDeclaration_module
 
@@ -4809,8 +4543,6 @@ function ImportDeclaration_module_b(b: Builder): void {
     });
 }
 
-const ImportDeclaration_module = pfun(ImportDeclaration_module_b);
-
 // ImportDeclaration
 
 function ImportDeclaration_b(b: Builder): void {
@@ -4823,8 +4555,6 @@ function ImportDeclaration_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-const ImportDeclaration = pfun(ImportDeclaration_b);
-
 // ImportClause
 
 function ImportClause_b(b: Builder): void {
@@ -4832,10 +4562,10 @@ function ImportClause_b(b: Builder): void {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.pitem(NameSpaceImport);
+                b.pitem(pfun(NameSpaceImport_b));
             },
             () => {
-                b.pitem(NamedImports);
+                b.pitem(pfun(NamedImports_b));
             },
             () => {
                 b.pitem(pos);                    // 6 = start
@@ -4846,7 +4576,7 @@ function ImportClause_b(b: Builder): void {
                             whitespace,         // 4
                             punctuator(","),    // 3
                             whitespace,         // 2
-                            NameSpaceImport,    // 1 = nsimport
+                            pfun(NameSpaceImport_b),    // 1 = nsimport
                             pos,                // 0 = end
                         ]);
                         b.assertLengthIs(oldLength+7);
@@ -4857,7 +4587,7 @@ function ImportClause_b(b: Builder): void {
                             whitespace,         // 4
                             punctuator(","),    // 3
                             whitespace,         // 2
-                            NamedImports,       // 1 = nsimports
+                            pfun(NamedImports_b),       // 1 = nsimports
                             pos,                // 0 = end
                         ]);
                         b.assertLengthIs(oldLength+7);
@@ -4874,8 +4604,6 @@ function ImportClause_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ImportClause = pfun(ImportClause_b);
 
 // ImportedDefaultBinding
 
@@ -4906,8 +4634,6 @@ function NameSpaceImport_b(b: Builder): void {
     });
 }
 
-const NameSpaceImport = pfun(NameSpaceImport_b);
-
 // NamedImports
 
 function NamedImports_b(b: Builder): void {
@@ -4920,7 +4646,7 @@ function NamedImports_b(b: Builder): void {
         ]);
         b.bchoice([              // 2 = imports
             () => {
-                b.pitem(ImportsList);
+                b.pitem(pfun(ImportsList_b));
                 b.pitem(whitespace);
                 b.bopt(() => {
                     b.pitem(punctuator(","));
@@ -4945,8 +4671,6 @@ function NamedImports_b(b: Builder): void {
     });
 }
 
-const NamedImports = pfun(NamedImports_b);
-
 // FromClause
 
 function FromClause_b(b: Builder): void {
@@ -4964,8 +4688,6 @@ function FromClause_b(b: Builder): void {
     });
 }
 
-const FromClause = pfun(FromClause_b);
-
 // ImportsList
 
 function ImportsList_b(b: Builder): void {
@@ -4973,14 +4695,14 @@ function ImportsList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(ImportSpecifier);
+                b.pitem(pfun(ImportSpecifier_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    ImportSpecifier,
+                    pfun(ImportSpecifier_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -4989,8 +4711,6 @@ function ImportsList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ImportsList = pfun(ImportsList_b);
 
 // ImportSpecifier
 
@@ -5025,8 +4745,6 @@ function ImportSpecifier_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ImportSpecifier = pfun(ImportSpecifier_b);
 
 // ModuleSpecifier
 
@@ -5083,7 +4801,7 @@ function ExportDeclaration_b(b: Builder): void {
                     whitespace, // 6
                     notKeyword("function"), // 5 FIXME: need tests for this
                     notKeyword("class"), // 4 FIXME: need tests for this
-                    AssignmentExpression, // 3
+                    pfun(AssignmentExpression_b), // 3
                     whitespace, // 2
                     punctuator(";"), // 1
                     pos, // 0
@@ -5095,7 +4813,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.pitems([
                     punctuator("*"), // 5
                     whitespace,      // 4
-                    FromClause,      // 3
+                    pfun(FromClause_b),      // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
                     pos,             // 0
@@ -5105,9 +4823,9 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.pitems([
-                    ExportClause,    // 5
+                    pfun(ExportClause_b),    // 5
                     whitespace,      // 4
-                    FromClause,      // 3
+                    pfun(FromClause_b),      // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
                     pos,             // 0
@@ -5117,7 +4835,7 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.pitems([
-                    ExportClause,    // 3
+                    pfun(ExportClause_b),    // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
                     pos,             // 0
@@ -5127,7 +4845,7 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.pitems([
-                    VariableStatement, // 1
+                    pfun(VariableStatement_b), // 1
                     pos,               // 0
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -5135,7 +4853,7 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.pitems([
-                    Declaration, // 1
+                    pfun(Declaration_b), // 1
                     pos,         // 0
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -5146,8 +4864,6 @@ function ExportDeclaration_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ExportDeclaration = pfun(ExportDeclaration_b);
 
 // ExportClause
 
@@ -5161,7 +4877,7 @@ function ExportClause_b(b: Builder): void {
         ]);
         b.bchoice([                     // 2
             () => {
-                b.pitem(ExportsList);
+                b.pitem(pfun(ExportsList_b));
                 b.pitem(whitespace);
                 b.bopt(() => {
                     b.pitem(punctuator(","));
@@ -5190,8 +4906,6 @@ function ExportClause_b(b: Builder): void {
     });
 }
 
-const ExportClause = pfun(ExportClause_b);
-
 // ExportsList
 
 function ExportsList_b(b: Builder): void {
@@ -5199,14 +4913,14 @@ function ExportsList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(ExportSpecifier);
+                b.pitem(pfun(ExportSpecifier_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    ExportSpecifier,
+                    pfun(ExportSpecifier_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -5215,8 +4929,6 @@ function ExportsList_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ExportsList = pfun(ExportsList_b);
 
 // ExportSpecifier
 
@@ -5251,5 +4963,3 @@ function ExportSpecifier_b(b: Builder): void {
         checkNode(b.get(0));
     });
 }
-
-const ExportSpecifier = pfun(ExportSpecifier_b);
