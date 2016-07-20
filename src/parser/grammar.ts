@@ -51,13 +51,6 @@ export class Builder {
         for (const f of funs)
             f(this);
     }
-    public pitem(f: (p: Parser) => any): void {
-        this.stack.push(f(this.parser));
-    }
-    public pitems(funs: ((p: Parser) => any)[]): void {
-        for (const f of funs)
-            this.pitem(f);
-    }
     public push(value: any): void {
         this.stack.push(value);
     }
@@ -255,24 +248,6 @@ export function whitespace(b: Builder): void {
 export function whitespaceNoNewline(b: Builder): void {
     b.parser.skipWhitespaceNoNewline();
     b.push(null);
-}
-
-export function bfun(f: (p: Parser) => any): (b: Builder) => void {
-    return (b: Builder) => {
-        b.pitem(f);
-    };
-}
-
-export function pfun(f: (b: Builder) => void): (p: Parser) => any {
-    return (p: Parser) => {
-        return p.attempt(() => {
-            const b = new Builder(p);
-            const oldLength = b.length;
-            f(b);
-            b.assertLengthIs(oldLength+1);
-            return checkNode(b.get(0));
-        });
-    }
 }
 
 export function checkNode(value: any): ASTNode | null {
