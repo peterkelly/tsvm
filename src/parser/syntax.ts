@@ -329,7 +329,7 @@ function This(b: Builder): void {
 
 function PrimaryExpression(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         This,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
         Literal,
@@ -371,7 +371,7 @@ function ParenthesizedExpression(b: Builder): void {
 
 function Literal(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         NullLiteral,
         BooleanLiteral,
         NumericLiteral,
@@ -402,7 +402,7 @@ function NullLiteral(b: Builder): void {
 
 function BooleanLiteral(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         () => {
             b.items([
                 pos,
@@ -545,7 +545,7 @@ function ArrayLiteral(b: Builder): void {
             }
 
             try {
-                b.bchoice([
+                b.choice([
                     () => {
                         b.items([
                             pos,             // 3 = before
@@ -632,7 +632,7 @@ function ObjectLiteral(b: Builder): void {
         b.item(pos);             // 5
         b.item(punctuator("{")); // 4
         b.item(whitespace);      // 3
-        b.bchoice([               // 2 = properties
+        b.choice([               // 2 = properties
             () => {
                 b.item(PropertyDefinitionList);
                 b.item(whitespace);
@@ -705,7 +705,7 @@ function PropertyDefinition_colon(b: Builder): void {
 
 function PropertyDefinition(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         PropertyDefinition_colon,
         CoverInitializedName,
         MethodDefinition,
@@ -719,7 +719,7 @@ function PropertyDefinition(b: Builder): void {
 
 function PropertyName(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         LiteralPropertyName,
         ComputedPropertyName,
     ]);
@@ -731,7 +731,7 @@ function PropertyName(b: Builder): void {
 
 function LiteralPropertyName(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         IdentifierName,
         StringLiteral,
         NumericLiteral,
@@ -838,7 +838,7 @@ function MemberExpression_new(b: Builder): void {
 
 function MemberExpression_start(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         PrimaryExpression,
         SuperProperty,
         MetaProperty,
@@ -894,7 +894,7 @@ function MemberExpression(b: Builder): void {
 function SuperProperty(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,              // 8 = start
@@ -963,7 +963,7 @@ function NewTarget(b: Builder): void {
 function NewExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.item(MemberExpression);
             },
@@ -992,7 +992,7 @@ function NewExpression(b: Builder): void {
 function CallExpression_start(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.item(SuperCall);
             },
@@ -1089,7 +1089,7 @@ function SuperCall(b: Builder): void {
 function Arguments(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,             // 5 = start
@@ -1130,7 +1130,7 @@ function Arguments(b: Builder): void {
 function ArgumentList_item(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,                  // 4 = start
@@ -1181,7 +1181,7 @@ function LeftHandSideExpression(b: Builder): void {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         CallExpression,
         NewExpression,
     ]);
@@ -1198,7 +1198,7 @@ function PostfixExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);
         b.item(LeftHandSideExpression);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     whitespaceNoNewline,
@@ -1233,7 +1233,7 @@ function PostfixExpression(b: Builder): void {
 function UnaryExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,               // 4 = start
@@ -1768,7 +1768,7 @@ function ConditionalExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                      // 10 = start
         b.item(LogicalORExpression);      // 9 = condition
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     whitespace,           // 8
@@ -1801,7 +1801,7 @@ function AssignmentExpression_plain(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                      // 6 = start
         b.item(LeftHandSideExpression);   // 5 = left
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     whitespace,           // 4
@@ -1935,7 +1935,7 @@ function AssignmentExpression_plain(b: Builder): void {
 function AssignmentExpression(b: Builder): void {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         ArrowFunction,
         AssignmentExpression_plain,
         ConditionalExpression,
@@ -1977,7 +1977,7 @@ function Expression(b: Builder): void {
 
 function Statement(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         BlockStatement,
         VariableStatement,
         EmptyStatement,
@@ -2001,7 +2001,7 @@ function Statement(b: Builder): void {
 
 function Declaration(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         HoistableDeclaration,
         ClassDeclaration,
         LexicalDeclaration,
@@ -2013,7 +2013,7 @@ function Declaration(b: Builder): void {
 // HoistableDeclaration
 
 function HoistableDeclaration(b: Builder): void {
-    b.bchoice([
+    b.choice([
         FunctionDeclaration,
         GeneratorDeclaration,
     ]);
@@ -2023,7 +2023,7 @@ function HoistableDeclaration(b: Builder): void {
 
 function BreakableStatement(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         IterationStatement,
         SwitchStatement,
     ]);
@@ -2047,7 +2047,7 @@ function Block(b: Builder): void {
         b.item(pos);             // 5
         b.item(punctuator("{")); // 4
         b.item(whitespace);      // 3
-        b.bchoice([               // 2 = statements
+        b.choice([               // 2 = statements
             () => {
                 b.item(StatementList);
                 b.item(whitespace);
@@ -2093,7 +2093,7 @@ function StatementList(b: Builder): void {
 
 function StatementListItem(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         Statement,
         Declaration,
     ]);
@@ -2108,7 +2108,7 @@ function StatementListItem(b: Builder): void {
 function LexicalDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,              // 6 = start
@@ -2206,7 +2206,7 @@ function LexicalBinding_pattern(b: Builder): void {
 
 function LexicalBinding(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         LexicalBinding_identifier,
         LexicalBinding_pattern,
     ]);
@@ -2267,7 +2267,7 @@ function VariableDeclaration_identifier(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);
         b.item(BindingIdentifier);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     whitespace,
@@ -2312,7 +2312,7 @@ function VariableDeclaration_pattern(b: Builder): void {
 
 function VariableDeclaration(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         VariableDeclaration_identifier,
         VariableDeclaration_pattern,
     ]);
@@ -2326,7 +2326,7 @@ function VariableDeclaration(b: Builder): void {
 
 function BindingPattern(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         ObjectBindingPattern,
         ArrayBindingPattern,
     ]);
@@ -2343,7 +2343,7 @@ function ObjectBindingPattern(b: Builder): void {
         b.item(punctuator("{"));  // 5
         b.item(whitespace);       // 4
         b.item(pos);              // 3
-        b.bchoice([                // 2 = properties
+        b.choice([                // 2 = properties
             () => {
                 b.item(BindingPropertyList),
                 b.item(whitespace),
@@ -2438,7 +2438,7 @@ function BindingElementList(b: Builder): void {
                 });
             },
             () => {
-                b.bchoice([
+                b.choice([
                     () => {
                         b.items([
                             whitespace,      // 3
@@ -2471,7 +2471,7 @@ function BindingElementList(b: Builder): void {
 function BindingProperty(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,             // 6 = start
@@ -2501,14 +2501,14 @@ function BindingProperty(b: Builder): void {
 function BindingElement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.item(SingleNameBinding);
             },
             () => {
                 b.item(pos);
                 b.item(BindingPattern);
-                b.bchoice([
+                b.choice([
                     () => {
                         b.items([
                             whitespace,
@@ -2536,7 +2536,7 @@ function SingleNameBinding(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);
         b.item(BindingIdentifier);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     whitespace,
@@ -2741,7 +2741,7 @@ function IterationStatement_for_c(b: Builder): void {
             whitespace,                                                     // 10
         ]);
         b.assertLengthIs(oldLength+5);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
@@ -2819,7 +2819,7 @@ function IterationStatement_for_in(b: Builder): void {
             whitespace,                                    // 10
         ]);
         b.assertLengthIs(oldLength+5);
-        b.bchoice([ // 9 = binding
+        b.choice([ // 9 = binding
             () => {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
@@ -2878,7 +2878,7 @@ function IterationStatement_for_of(b: Builder): void {
             whitespace,                                    // 10
         ]);
         b.assertLengthIs(oldLength+5);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
@@ -2924,7 +2924,7 @@ function IterationStatement_for_of(b: Builder): void {
 
 function IterationStatement_for(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         IterationStatement_for_c,
         IterationStatement_for_in,
         IterationStatement_for_of,
@@ -2937,7 +2937,7 @@ function IterationStatement_for(b: Builder): void {
 
 function IterationStatement(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         IterationStatement_do,
         IterationStatement_while,
         IterationStatement_for,
@@ -2951,7 +2951,7 @@ function IterationStatement(b: Builder): void {
 function ForDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,              // 4 = start
@@ -2984,7 +2984,7 @@ function ForDeclaration(b: Builder): void {
 
 function ForBinding(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         BindingIdentifier,
         BindingPattern, // FIXME: Need test cases for this
     ]);
@@ -2999,7 +2999,7 @@ function ForBinding(b: Builder): void {
 function ContinueStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,                 // 5 = start
@@ -3038,7 +3038,7 @@ function ContinueStatement(b: Builder): void {
 function BreakStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,              // 5 = start
@@ -3077,7 +3077,7 @@ function BreakStatement(b: Builder): void {
 function ReturnStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,               // 5 = start
@@ -3174,7 +3174,7 @@ function CaseBlock_1(b: Builder): void {
             whitespace,      // 5
             pos,             // 4 = midpos
         ]);
-        b.bchoice([           // 3 = clauses
+        b.choice([           // 3 = clauses
             () => {
                 b.item(CaseClauses);
             },
@@ -3224,7 +3224,7 @@ function CaseBlock_2(b: Builder): void {
 
 function CaseBlock(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         CaseBlock_1,
         CaseBlock_2,
     ]);
@@ -3328,7 +3328,7 @@ function LabelledStatement(b: Builder): void {
 
 function LabelledItem(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         Statement,
         FunctionDeclaration,
     ]);
@@ -3370,7 +3370,7 @@ function TryStatement(b: Builder): void {
         b.item(keyword("try"));        // 6
         b.item(whitespace);            // 5
         b.item(Block);                 // 4 = tryBlock
-        b.bchoice([
+        b.choice([
             () => {
                 b.item(whitespace);    // 3
                 b.item(value(null));   // 2 = catchBlock
@@ -3442,7 +3442,7 @@ function Finally(b: Builder): void {
 
 function CatchParameter(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         BindingIdentifier,
         BindingPattern,
     ]);
@@ -3537,7 +3537,7 @@ function FunctionDeclaration_unnamed(b: Builder): void {
 // FunctionDeclaration
 
 function FunctionDeclaration(b: Builder): void {
-    b.bchoice([
+    b.choice([
         FunctionDeclaration_named,
         FunctionDeclaration_unnamed,
     ]);
@@ -3590,7 +3590,7 @@ function StrictFormalParameters(b: Builder): void {
 function FormalParameters(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.item(FormalParameterList);
             },
@@ -3609,7 +3609,7 @@ function FormalParameters(b: Builder): void {
 function FormalParameterList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,                   // 2 = start
@@ -3622,7 +3622,7 @@ function FormalParameterList(b: Builder): void {
             () => {
                 b.item(pos);           // 3 = start
                 b.item(FormalsList);   // 2 = formals
-                b.bchoice([
+                b.choice([
                     () => {
                         b.items([
                             whitespace,
@@ -3692,7 +3692,7 @@ function FunctionBody(b: Builder): void {
 
 function FunctionStatementList(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         StatementList,
         () => b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[])),
     ]);
@@ -3727,7 +3727,7 @@ function ArrowFunction(b: Builder): void {
 
 function ArrowParameters(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         BindingIdentifier,
         ArrowFormalParameters,
     ]);
@@ -3766,7 +3766,7 @@ function ConciseBody_2(b: Builder): void {
 
 function ConciseBody(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         ConciseBody_1,
         ConciseBody_2,
     ]);
@@ -3893,7 +3893,7 @@ function MethodDefinition_4(b: Builder): void {
 // MethodDefinition
 
 function MethodDefinition(b: Builder): void {
-    b.bchoice([
+    b.choice([
         MethodDefinition_1,
         MethodDefinition_2,
         MethodDefinition_3,
@@ -4008,7 +4008,7 @@ function GeneratorDeclaration_2(b: Builder): void {
 // GeneratorDeclaration
 
 function GeneratorDeclaration(b: Builder): void {
-    b.bchoice([
+    b.choice([
         GeneratorDeclaration_1,
         GeneratorDeclaration_2,
     ]);
@@ -4121,7 +4121,7 @@ function YieldExpression_3(b: Builder): void {
 
 function YieldExpression(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         YieldExpression_1,
         YieldExpression_2,
         YieldExpression_3,
@@ -4176,7 +4176,7 @@ function ClassDeclaration_2(b: Builder): void {
 // ClassDeclaration
 
 function ClassDeclaration(b: Builder): void {
-    b.bchoice([
+    b.choice([
         ClassDeclaration_1,
         ClassDeclaration_2,
     ]);
@@ -4221,7 +4221,7 @@ function ClassTail(b: Builder): void {
         });
         b.item(punctuator("{"));   // 4
         b.item(whitespace);        // 3
-        b.bchoice([                 // 2 = body
+        b.choice([                 // 2 = body
             () => {
                 b.items([
                     ClassBody,
@@ -4334,7 +4334,7 @@ function ClassElement_3(b: Builder): void {
 
 function ClassElement(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         ClassElement_1,
         ClassElement_2,
         ClassElement_3,
@@ -4350,7 +4350,7 @@ function ClassElement(b: Builder): void {
 function Script(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
-    b.bchoice([
+    b.choice([
         () => {
             b.item(ScriptBody);
         },
@@ -4383,7 +4383,7 @@ function ScriptBody(b: Builder): void {
 function Module(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
-    b.bchoice([
+    b.choice([
         () => {
             b.item(ModuleBody);
         },
@@ -4433,7 +4433,7 @@ function ModuleItemList(b: Builder): void {
 
 function ModuleItem(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         ImportDeclaration,
         ExportDeclaration,
         StatementListItem,
@@ -4492,7 +4492,7 @@ function ImportDeclaration_module(b: Builder): void {
 
 function ImportDeclaration(b: Builder): void {
     const oldLength = b.length;
-    b.bchoice([
+    b.choice([
         ImportDeclaration_from,
         ImportDeclaration_module,
     ]);
@@ -4505,7 +4505,7 @@ function ImportDeclaration(b: Builder): void {
 function ImportClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.item(NameSpaceImport);
             },
@@ -4515,7 +4515,7 @@ function ImportClause(b: Builder): void {
             () => {
                 b.item(pos);                    // 6 = start
                 b.item(ImportedDefaultBinding); // 5 = defbinding
-                b.bchoice([
+                b.choice([
                     () => {
                         b.items([
                             whitespace,         // 4
@@ -4587,7 +4587,7 @@ function NamedImports(b: Builder): void {
             punctuator("{"),    // 4
             whitespace,         // 3
         ]);
-        b.bchoice([              // 2 = imports
+        b.choice([              // 2 = imports
             () => {
                 b.item(ImportsList);
                 b.item(whitespace);
@@ -4660,7 +4660,7 @@ function ImportsList(b: Builder): void {
 function ImportSpecifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     pos,             // 6 = start
@@ -4714,7 +4714,7 @@ function ExportDeclaration(b: Builder): void {
             whitespace,
         ]);
         b.assertLengthIs(oldLength+3);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     keyword("default"),                              // 3
@@ -4814,7 +4814,7 @@ function ExportClause(b: Builder): void {
             punctuator("{"),           // 4
             whitespace,                // 3
         ]);
-        b.bchoice([                     // 2
+        b.choice([                     // 2
             () => {
                 b.item(ExportsList);
                 b.item(whitespace);
@@ -4876,7 +4876,7 @@ function ExportSpecifier(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);
         b.item(IdentifierName);
-        b.bchoice([
+        b.choice([
             () => {
                 b.items([
                     whitespace,        // 4

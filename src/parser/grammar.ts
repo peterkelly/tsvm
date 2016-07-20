@@ -107,7 +107,7 @@ export class Builder {
         }
     }
 
-    public bchoice(list: ((b: Builder) => void)[]): void {
+    public choice(list: ((b: Builder) => void)[]): void {
         const start = this.parser.pos;
         const length = this.stack.length;
         for (const item of list) {
@@ -143,7 +143,7 @@ export class Builder {
     }
 
     public brepeatChoice(list: ((b: Builder) => void)[]): void {
-        this.brepeat(() => this.bchoice(list));
+        this.brepeat(() => this.choice(list));
     }
 
     public list(first: (b: Builder) => void, rest: (b: Builder) => void): void {
