@@ -521,7 +521,7 @@ function ArrayLiteral(b: Builder): void {
 
         b.assertLengthIs(oldLength+3);
 
-        b.bopt(() => {
+        b.opt(() => {
             b.item(pos);             // 3 = before
             b.item(punctuator(",")); // 2
             b.item(pos);             // 1 = after
@@ -560,7 +560,7 @@ function ArrayLiteral(b: Builder): void {
                     () => {
                         b.item(AssignmentExpression);
                         b.item(whitespace);
-                        b.bopt(() => {
+                        b.opt(() => {
                             b.item(punctuator(","));
                             b.item(whitespace);
                             b.pop();
@@ -572,7 +572,7 @@ function ArrayLiteral(b: Builder): void {
                     () => {
                         b.item(SpreadElement);
                         b.item(whitespace);
-                        b.bopt(() => {
+                        b.opt(() => {
                             b.item(punctuator(","));
                             b.item(whitespace);
                             b.pop();
@@ -636,7 +636,7 @@ function ObjectLiteral(b: Builder): void {
             () => {
                 b.item(PropertyDefinitionList);
                 b.item(whitespace);
-                b.bopt(() => {
+                b.opt(() => {
                     b.item(punctuator(","));
                     b.item(whitespace);
                     b.popAboveAndSet(1,0);
@@ -2170,7 +2170,7 @@ function LexicalBinding_identifier(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);               // 3 = start
         b.item(BindingIdentifier); // 2 = identifier
-        b.bopt(() => {              // 1 = initializer
+        b.opt(() => {              // 1 = initializer
             b.item(whitespace);
             b.item(Initializer);
             b.popAboveAndSet(1,b.get(0));
@@ -2347,7 +2347,7 @@ function ObjectBindingPattern(b: Builder): void {
             () => {
                 b.item(BindingPropertyList),
                 b.item(whitespace),
-                b.bopt(() => {
+                b.opt(() => {
                     b.item(punctuator(","));
                     b.item(whitespace);
                     b.popAboveAndSet(1,null);
@@ -2383,7 +2383,7 @@ function ArrayBindingPattern(b: Builder): void {
             BindingElementList,  // 4 = elements
             whitespace,          // 3
         ]);
-        b.bopt(() => {            // 2 = rest
+        b.opt(() => {            // 2 = rest
             b.item(BindingRestElement);
             b.item(whitespace);
             b.popAboveAndSet(1,b.get(1));
@@ -2430,7 +2430,7 @@ function BindingElementList(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.bopt(() => {
+                b.opt(() => {
                     b.item(pos);
                     b.item(punctuator(","));
                     b.item(pos);
@@ -2451,7 +2451,7 @@ function BindingElementList(b: Builder): void {
                     () => {
                         b.item(whitespace);
                         b.item(BindingElement);
-                        b.bopt(() => {
+                        b.opt(() => {
                             b.item(whitespace);
                             b.item(punctuator(","));
                             b.pop();
@@ -2651,7 +2651,7 @@ function IfStatement(b: Builder): void {
             whitespace,        // 3
             Statement,         // 2 = trueBranch
         ]);
-        b.bopt(() => {          // 1 = falseBranch
+        b.opt(() => {          // 1 = falseBranch
             b.items([
                 whitespace,
                 keyword("else"),
@@ -2786,7 +2786,7 @@ function IterationStatement_for_c(b: Builder): void {
         b.item(whitespace);      // 7
         b.item(punctuator(";")); // 6
         b.item(whitespace);      // 5
-        b.bopt(() => {            // 4 = update
+        b.opt(() => {            // 4 = update
             b.item(Expression);
             b.item(whitespace);
             b.popAboveAndSet(1,b.get(1));
@@ -3379,7 +3379,7 @@ function TryStatement(b: Builder): void {
             () => {
                 b.item(whitespace);    // 3
                 b.item(Catch);         // 2 = catchBlock
-                b.bopt(() => {          // 1 = finallyBlock
+                b.opt(() => {          // 1 = finallyBlock
                     b.item(whitespace);
                     b.item(Finally);
                     b.popAboveAndSet(1,b.get(0));
@@ -3553,7 +3553,7 @@ function FunctionExpression(b: Builder): void {
             keyword("function"), // 14
             whitespace,          // 13
         ]);
-        b.bopt(() => {
+        b.opt(() => {
             b.item(BindingIdentifier);
             b.item(whitespace);
             b.popAboveAndSet(1,b.get(1));
@@ -4026,7 +4026,7 @@ function GeneratorExpression(b: Builder): void {
             punctuator("*"),     // 14
             whitespace,          // 13
         ]);
-        b.bopt(() => {            // 12 = ident
+        b.opt(() => {            // 12 = ident
             b.items([
                 BindingIdentifier,
                 whitespace,
@@ -4190,7 +4190,7 @@ function ClassExpression(b: Builder): void {
         b.item(pos);              // 5
         b.item(keyword("class")); // 4
         b.item(whitespace);       // 3
-        b.bopt(() => {             // 2
+        b.opt(() => {             // 2
             b.items([
                 BindingIdentifier,
                 whitespace,
@@ -4212,7 +4212,7 @@ function ClassTail(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);               // 6 = start
-        b.bopt(() => {              // 5 = heritage
+        b.opt(() => {              // 5 = heritage
             b.items([
                 ClassHeritage,
                 whitespace,
@@ -4591,7 +4591,7 @@ function NamedImports(b: Builder): void {
             () => {
                 b.item(ImportsList);
                 b.item(whitespace);
-                b.bopt(() => {
+                b.opt(() => {
                     b.item(punctuator(","));
                     b.item(whitespace);
                     b.pop();
@@ -4818,7 +4818,7 @@ function ExportClause(b: Builder): void {
             () => {
                 b.item(ExportsList);
                 b.item(whitespace);
-                b.bopt(() => {
+                b.opt(() => {
                     b.item(punctuator(","));
                     b.item(whitespace);
                     b.pop();
