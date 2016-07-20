@@ -32,6 +32,7 @@ import {
     ErrorNode,
     GenericNode,
     ExpressionNode,
+    IdentifierNode,
 } from "./ast";
 
 export class Builder {
@@ -42,6 +43,13 @@ export class Builder {
     }
     public get length(): number {
         return this.stack.length;
+    }
+    public item(f: (b: Builder) => void): void {
+        f(this);
+    }
+    public items(funs: ((b: Builder) => void)[]): void {
+        for (const f of funs)
+            f(this);
     }
     public pitem(f: (p: Parser) => any): void {
         this.stack.push(f(this.parser));
@@ -186,37 +194,79 @@ export function opt<T>(f: (p: Parser) => T): (p: Parser) => T {
     return (p: Parser): T => p.opt(f);
 }
 
+export function opt_b(f: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.bopt(f);
+}
+
 export function pos(p: Parser) {
     return p.pos;
+}
+
+export function pos_b(b: Builder) {
+    b.push(b.parser.pos);
 }
 
 export function value<T>(value: T): (p: Parser) => T {
     return (p: Parser) => value;
 }
 
+export function value_b(value: any): (b: Builder) => void {
+    return (b: Builder) => b.push(value);
+}
+
 export function keyword(str: string): ((p: Parser) => void) {
     return (p: Parser): void => p.expectKeyword(str);
+}
+
+export function keyword_b(str: string): ((b: Builder) => void) {
+    return (b: Builder): void => {
+        b.parser.expectKeyword(str);
+        b.push(null);
+    }
 }
 
 export function punctuator(str: string): (p: Parser) => void {
     return (p: Parser): void => p.expectPunctuator(str);
 }
 
-export function notKeyword(str: string) {
+export function punctuator_b(str: string): (b: Builder) => void {
+    return (b: Builder): void => {
+        b.parser.expectPunctuator(str);
+        b.push(null);
+    }
+}
+
+export function notKeyword(str: string): (p: Parser) => void {
     return (p: Parser): void => {
         if (p.lookaheadKeyword(str))
             throw new ParseError(p,p.pos,"Unexpected "+str);
     };
 }
 
-export function notPunctuator(str: string) {
+export function notKeyword_b(str: string): (b: Builder) => void {
+    return (b: Builder): void => {
+        if (b.parser.lookaheadKeyword(str))
+            throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
+        b.push(null);
+    };
+}
+
+export function notPunctuator(str: string): (p: Parser) => void {
     return (p: Parser): void => {
         if (p.lookaheadPunctuator(str))
             throw new ParseError(p,p.pos,"Unexpected "+str);
     };
 }
 
-export function identifier(str: string) {
+export function notPunctuator_b(str: string): (b: Builder) => void {
+    return (b: Builder): void => {
+        if (b.parser.lookaheadPunctuator(str))
+            throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
+        b.push(null);
+    };
+}
+
+export function identifier(str: string): (p: Parser) => void {
     return (p: Parser): void => {
         const ident = pfun(Identifier_b)(p);
         if (ident instanceof ErrorNode)
@@ -226,12 +276,35 @@ export function identifier(str: string) {
     };
 }
 
+export function identifier_b(str: string): (b: Builder) => void {
+    return (b: Builder): void => {
+        b.attempt((): void => {
+            const start = b.parser.pos;
+            Identifier_b(b);
+            const ident = checkNode(b.get(0));
+            if (!(ident instanceof IdentifierNode) || (ident.value != str))
+                throw new ParseError(b.parser,start,"Expected "+str);
+            b.push(null);
+        })
+    };
+}
+
 export function whitespace(p: Parser): void {
     p.skipWhitespace();
 }
 
+export function whitespace_b(b: Builder): void {
+    b.parser.skipWhitespace();
+    b.push(null);
+}
+
 export function whitespaceNoNewline(p: Parser): void {
     p.skipWhitespaceNoNewline();
+}
+
+export function whitespaceNoNewline_b(b: Builder): void {
+    b.parser.skipWhitespaceNoNewline();
+    b.push(null);
 }
 
 export function bfun(f: (p: Parser) => any): (b: Builder) => void {
