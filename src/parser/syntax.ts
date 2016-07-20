@@ -240,51 +240,52 @@ import {
 
 // IdentifierReference
 
-function IdentifierReference(p: Parser): ASTNode {
-    const ident = Identifier(p);
-    if (ident instanceof ErrorNode)
-        return ident;
-    else
-        return new IdentifierReferenceNode(ident.range,ident.value);
+function IdentifierReference_b(b: Builder): void {
+    const oldLength = b.length;
+    b.pitem(pfun(Identifier_b));
+    b.assertLengthIs(oldLength+1);
+    const ident = checkNode(b.get(0));
+    if (ident instanceof IdentifierNode)
+        b.popAboveAndSet(0,new IdentifierReferenceNode(ident.range,ident.value));
+    b.assertLengthIs(oldLength+1);
+    checkNode(b.get(0));
 }
-
-const IdentifierReference_b = bfun(IdentifierReference);
 
 // BindingIdentifier
 
-function BindingIdentifier(p: Parser): BindingIdentifierNode | ErrorNode {
-    const ident = Identifier(p);
-    if (ident instanceof ErrorNode)
-        return ident;
-    else
-        return new BindingIdentifierNode(ident.range,ident.value);
+function BindingIdentifier_b(b: Builder): void {
+    const oldLength = b.length;
+    b.pitem(pfun(Identifier_b));
+    b.assertLengthIs(oldLength+1);
+    const ident = checkNode(b.get(0));
+    if (ident instanceof IdentifierNode)
+        b.popAboveAndSet(0,new BindingIdentifierNode(ident.range,ident.value));
+    b.assertLengthIs(oldLength+1);
+    checkNode(b.get(0));
 }
-
-const BindingIdentifier_b = bfun(BindingIdentifier);
 
 // LabelIdentifier
 
-function LabelIdentifier(p: Parser): ASTNode {
-    const ident = Identifier(p);
-    if (ident instanceof ErrorNode)
-        return ident;
-    else
-        return new LabelIdentifierNode(ident.range,ident.value);
+function LabelIdentifier_b(b: Builder): void {
+    const oldLength = b.length;
+    b.pitem(pfun(Identifier_b));
+    b.assertLengthIs(oldLength+1);
+    const ident = checkNode(b.get(0));
+    if (ident instanceof IdentifierNode)
+        b.popAboveAndSet(0,new LabelIdentifierNode(ident.range,ident.value));
+    b.assertLengthIs(oldLength+1);
+    checkNode(b.get(0));
 }
-
-const LabelIdentifier_b = bfun(LabelIdentifier);
 
 // IdentifierName
 
-function IdentifierName(p: Parser): ASTNode {
-    return Identifier(p);
+function IdentifierName_b(b: Builder): void {
+    b.pitem(pfun(Identifier_b));
 }
-
-const IdentifierName_b = bfun(IdentifierName);
 
 // Identifier
 
-function Identifier_b(b: Builder): void {
+export function Identifier_b(b: Builder): void {
     b.attempt((): void => {
         const p = b.parser;
         const start = p.pos;
@@ -307,8 +308,6 @@ function Identifier_b(b: Builder): void {
     });
 }
 
-export const Identifier = pfun(Identifier_b);
-
 // Section 12.2
 
 // This
@@ -330,8 +329,7 @@ function This_b(b: Builder): void {
 
 // PrimaryExpression
 
-function PrimaryExpression(p: Parser): ASTNode {
-    const b = new Builder(p);
+function PrimaryExpression_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         This_b,
@@ -348,16 +346,13 @@ function PrimaryExpression(p: Parser): ASTNode {
         ParenthesizedExpression_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
-
-const PrimaryExpression_b = bfun(PrimaryExpression);
 
 // ParenthesizedExpression
 
-function ParenthesizedExpression(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function ParenthesizedExpression_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             punctuator("("), // 4
@@ -368,18 +363,15 @@ function ParenthesizedExpression(p: Parser): ASTNode {
         ]);
         b.popAboveAndSet(4,b.get(2));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
-
-const ParenthesizedExpression_b = bfun(ParenthesizedExpression);
 
 // Section 12.2.4
 
 // Literal
 
-function Literal(p: Parser): ASTNode {
-    const b = new Builder(p);
+function Literal_b(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         NullLiteral_b,
@@ -388,16 +380,13 @@ function Literal(p: Parser): ASTNode {
         StringLiteral_b,
     ]);
     b.assertLengthIs(oldLength+1);
-    return checkNode(b.get(0));
+    checkNode(b.get(0));
 }
-
-const Literal_b = bfun(Literal);
 
 // NullLiteral
 
-function NullLiteral(p: Parser): ASTNode {
-    return p.attempt(() => {
-        const b = new Builder(p);
+function NullLiteral_b(b: Builder): void {
+    b.attempt((): void => {
         const oldLength = b.length;
         b.pitems([
             pos,
@@ -407,30 +396,50 @@ function NullLiteral(p: Parser): ASTNode {
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,makeNode(b,2,0,"NullLiteral",[]));
         b.assertLengthIs(oldLength+1);
-        return checkNode(b.get(0));
+        checkNode(b.get(0));
     });
 }
 
-const NullLiteral_b = bfun(NullLiteral);
-
 // BooleanLiteral
 
-function BooleanLiteral(p: Parser): ASTNode {
-    const start = p.pos;
-    if (p.matchKeyword("true"))
-        return new BooleanLiteralNode(new Range(start,p.pos),true);
-    if (p.matchKeyword("false"))
-        return new BooleanLiteralNode(new Range(start,p.pos),false);
-    throw new ParseError(p,p.pos,"Expected BooleanLiteral");
+function BooleanLiteral_b(b: Builder): void {
+    const oldLength = b.length;
+    b.bchoice([
+        () => {
+            b.pitems([
+                pos,
+                keyword("true"),
+                pos,
+            ]);
+            b.assertLengthIs(oldLength+3);
+            const start = checkNumber(b.get(2));
+            const end = checkNumber(b.get(0));
+            b.popAboveAndSet(2,new BooleanLiteralNode(new Range(start,end),true));
+        },
+        () => {
+            b.pitems([
+                pos,
+                keyword("false"),
+                pos,
+            ]);
+            b.assertLengthIs(oldLength+3);
+            const start = checkNumber(b.get(2));
+            const end = checkNumber(b.get(0));
+            b.popAboveAndSet(2,new BooleanLiteralNode(new Range(start,end),false));
+        },
+    ]);
+    b.assertLengthIs(oldLength+1);
+    checkNode(b.get(0));
 }
-
-const BooleanLiteral_b = bfun(BooleanLiteral);
 
 // NumericLiteral
 
-function NumericLiteral(p: Parser): ASTNode {
+function NumericLiteral_b(b: Builder): void {
     // TODO: Complete numeric literal syntax according to spec
-    return p.attempt((start) => {
+    b.attempt((): void => {
+        const oldLength = b.length;
+        const p = b.parser;
+        const start = p.pos;
         while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
             p.next();
         if (p.pos == start)
@@ -444,17 +453,20 @@ function NumericLiteral(p: Parser): ASTNode {
                 throw new ParseError(p,p.pos,"Invalid number");
         }
         const value = parseFloat(p.text.substring(start,p.pos));
-        return new NumericLiteralNode(new Range(start,p.pos),value);
+        b.push(new NumericLiteralNode(new Range(start,p.pos),value));
+        b.assertLengthIs(oldLength+1);
+        checkNode(b.get(0));
     });
 }
 
-const NumericLiteral_b = bfun(NumericLiteral);
-
 // StringLiteral
 
-function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
+function StringLiteral_b(b: Builder): void {
     // TODO: Complete string literal syntax according to spec
-    return p.attempt((start) => {
+    b.attempt((): void => {
+        const oldLength = b.length;
+        const p = b.parser;
+        const start = p.pos;
         if ((p.cur == "\"") || (p.cur == "'")) {
             const quote = p.cur;
             p.next();
@@ -484,13 +496,14 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
                     throw new ParseError(p,p.pos,"Unterminated string");
                 }
             }
-            return new StringLiteralNode(new Range(start,p.pos),value);
+            b.push(new StringLiteralNode(new Range(start,p.pos),value));
+            b.assertLengthIs(oldLength+1);
+            checkNode(b.get(0));
+            return;
         }
         throw new ParseError(p,p.pos,"Invalid string");
     });
 }
-
-const StringLiteral_b = bfun(StringLiteral);
 
 // Section 12.2.5
 
@@ -757,7 +770,7 @@ function CoverInitializedName_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,                 // 4 = start
-            IdentifierReference, // 3 = ident
+            pfun(IdentifierReference_b), // 3 = ident
             whitespace,          // 2
             pfun(Initializer_b),         // 1 = init
             pos,                 // 0 = end
@@ -863,7 +876,7 @@ function MemberExpression_b(b: Builder): void {
                     whitespace,      // 5
                     punctuator("."), // 4
                     whitespace,      // 3
-                    IdentifierName,  // 2 = ident
+                    pfun(IdentifierName_b),  // 2 = ident
                     pos,             // 1 = end
                     whitespace,      // 0
                 ]);
@@ -907,7 +920,7 @@ function SuperProperty_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator("."),  // 3
                     whitespace,       // 2
-                    Identifier,       // 1 = ident
+                    pfun(Identifier_b),       // 1 = ident
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -922,11 +935,9 @@ function SuperProperty_b(b: Builder): void {
 
 // MetaProperty
 
-function MetaProperty(p: Parser): ASTNode {
-    return pfun(NewTarget_b)(p);
+function MetaProperty_b(b: Builder): void {
+    b.pitem(pfun(NewTarget_b));
 }
-
-const MetaProperty_b = bfun(MetaProperty);
 
 // NewTarget
 
@@ -1039,7 +1050,7 @@ function CallExpression_b(b: Builder): void {
                     whitespace,      // 4
                     punctuator("."), // 3
                     whitespace,      // 2
-                    IdentifierName,  // 1 = idname
+                    pfun(IdentifierName_b),  // 1 = idname
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -2032,11 +2043,11 @@ function BreakableStatement_b(b: Builder): void {
 
 // BlockStatement
 
-function BlockStatement(p: Parser): ASTNode {
-    return pfun(Block_b)(p);
+function BlockStatement_b(b: Builder): void {
+    b.pitem(pfun(Block_b));
 }
 
-const BlockStatement_b = bfun(BlockStatement);
+const BlockStatement = pfun(BlockStatement_b);
 
 // Block
 
@@ -2168,7 +2179,7 @@ function LexicalBinding_identifier_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);               // 3 = start
-        b.pitem(BindingIdentifier); // 2 = identifier
+        b.pitem(pfun(BindingIdentifier_b)); // 2 = identifier
         b.bopt(() => {              // 1 = initializer
             b.pitem(whitespace);
             b.pitem(pfun(Initializer_b));
@@ -2265,7 +2276,7 @@ function VariableDeclaration_identifier_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
-        b.pitem(BindingIdentifier);
+        b.pitem(pfun(BindingIdentifier_b));
         b.bchoice([
             () => {
                 b.pitems([
@@ -2534,7 +2545,7 @@ function SingleNameBinding_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
-        b.pitem(BindingIdentifier);
+        b.pitem(pfun(BindingIdentifier_b));
         b.bchoice([
             () => {
                 b.pitems([
@@ -2564,7 +2575,7 @@ function BindingRestElement_b(b: Builder): void {
             pos,               // 4 = start
             punctuator("..."), // 3
             whitespace,        // 2
-            BindingIdentifier, // 1 = ident
+            pfun(BindingIdentifier_b), // 1 = ident
             pos,               // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -3018,7 +3029,7 @@ function ContinueStatement_b(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("continue"), // 5
                     whitespaceNoNewline, // 4
-                    LabelIdentifier,     // 3 = ident
+                    pfun(LabelIdentifier_b),     // 3 = ident
                     whitespace,          // 2
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
@@ -3057,7 +3068,7 @@ function BreakStatement_b(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("break"),    // 5
                     whitespaceNoNewline, // 4
-                    LabelIdentifier,     // 3 = ident
+                    pfun(LabelIdentifier_b),     // 3 = ident
                     whitespace,          // 2
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
@@ -3311,7 +3322,7 @@ function LabelledStatement_b(b: Builder): void {
         const oldLength = b.length;
         b.pitems([
             pos,             // 6 = start
-            LabelIdentifier, // 5 = ident
+            pfun(LabelIdentifier_b), // 5 = ident
             whitespace,      // 4
             punctuator(":"), // 3
             whitespace,      // 2
@@ -3483,7 +3494,7 @@ function FunctionDeclaration_named_b(b: Builder): void {
             pos,                 // 16 = start
             keyword("function"), // 15
             whitespace,          // 14
-            BindingIdentifier,   // 13 = ident
+            pfun(BindingIdentifier_b),   // 13 = ident
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
@@ -3570,7 +3581,7 @@ function FunctionExpression_b(b: Builder): void {
             whitespace,          // 13
         ]);
         b.bopt(() => {
-            b.pitem(BindingIdentifier);
+            b.pitem(pfun(BindingIdentifier_b));
             b.pitem(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
@@ -3597,11 +3608,9 @@ function FunctionExpression_b(b: Builder): void {
 
 // StrictFormalParameters
 
-function StrictFormalParameters(p: Parser): ASTNode {
-    return pfun(FormalParameters_b)(p);
+function StrictFormalParameters_b(b: Builder): void {
+    b.pitem(pfun(FormalParameters_b));
 }
-
-const StrictFormalParameters_b = bfun(StrictFormalParameters);
 
 // FormalParameters
 
@@ -3631,7 +3640,7 @@ function FormalParameterList_b(b: Builder): void {
             () => {
                 b.pitems([
                     pos,                   // 2 = start
-                    FunctionRestParameter, // 1 = rest
+                    pfun(FunctionRestParameter_b), // 1 = rest
                     pos,                   // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+3);
@@ -3646,7 +3655,7 @@ function FormalParameterList_b(b: Builder): void {
                             whitespace,
                             punctuator(","),
                             whitespace,
-                            FunctionRestParameter,
+                            pfun(FunctionRestParameter_b),
                             pos,
                         ]);
                         b.assertLengthIs(oldLength+7);
@@ -3671,14 +3680,14 @@ function FormalsList_b(b: Builder): void {
         const oldLength = b.length;
         b.list(
             () => {
-                b.pitem(FormalParameter);
+                b.pitem(pfun(FormalParameter_b));
             },
             () => {
                 b.pitems([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    FormalParameter,
+                    pfun(FormalParameter_b),
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -3690,27 +3699,23 @@ function FormalsList_b(b: Builder): void {
 
 // FunctionRestParameter
 
-function FunctionRestParameter(p: Parser): ASTNode {
-    return pfun(BindingRestElement_b)(p);
+function FunctionRestParameter_b(b: Builder): void {
+    b.pitem(pfun(BindingRestElement_b));
 }
-
-const FunctionRestParameter_b = bfun(FunctionRestParameter);
 
 // FormalParameter
 
-function FormalParameter(p: Parser): ASTNode {
-    return pfun(BindingElement_b)(p);
+function FormalParameter_b(b: Builder): void {
+    b.pitem(pfun(BindingElement_b));
 }
 
-const FormalParameter_b = bfun(FormalParameter);
+// FunctionBody
 
-// v
-
-function FunctionBody(p: Parser): ASTNode {
-    return pfun(FunctionStatementList_b)(p);
+function FunctionBody_b(b: Builder): void {
+    b.pitem(pfun(FunctionStatementList_b));
 }
 
-const FunctionBody_b = bfun(FunctionBody);
+const FunctionBody = pfun(FunctionBody_b);
 
 // FunctionStatementList
 
@@ -3759,15 +3764,13 @@ function ArrowParameters_b(b: Builder): void {
     checkNode(b.get(0));
 }
 
-// ConciseBody
+// ConciseBody_1
 
-function ConciseBody_1(p: Parser): ASTNode {
-    if (p.lookaheadPunctuator("{"))
+function ConciseBody_1_b(b: Builder): void {
+    if (b.parser.lookaheadPunctuator("{"))
         throw new ParseIgnore();
-    return pfun(AssignmentExpression_b)(p);
+    b.pitem(pfun(AssignmentExpression_b));
 }
-
-const ConciseBody_1_b = bfun(ConciseBody_1);
 
 // ConciseBody_2
 
@@ -3808,7 +3811,7 @@ function ArrowFormalParameters_b(b: Builder): void {
         b.pitems([
             punctuator("("),        // 4
             whitespace,             // 3
-            StrictFormalParameters, // 2
+            pfun(StrictFormalParameters_b), // 2
             whitespace,             // 1
             punctuator(")"),        // 0
         ]);
@@ -3832,7 +3835,7 @@ function MethodDefinition_1_b(b: Builder): void {
             whitespace,             // 12
             punctuator("("),        // 11
             whitespace,             // 10
-            StrictFormalParameters, // 9 = params
+            pfun(StrictFormalParameters_b), // 9 = params
             whitespace,             // 8
             punctuator(")"),        // 7
             whitespace,             // 6
@@ -3898,7 +3901,7 @@ function MethodDefinition_4_b(b: Builder): void {
             whitespace,               // 12
             punctuator("("),          // 11
             whitespace,               // 10
-            PropertySetParameterList, // 9 = param
+            pfun(PropertySetParameterList_b), // 9 = param
             whitespace,               // 8
             punctuator(")"),          // 7
             whitespace,               // 6
@@ -3932,11 +3935,9 @@ function MethodDefinition_b(b: Builder): void {
 
 // PropertySetParameterList
 
-function PropertySetParameterList(p: Parser): ASTNode {
-    return FormalParameter(p);
+function PropertySetParameterList_b(b: Builder): void {
+    b.pitem(pfun(FormalParameter_b));
 }
-
-const PropertySetParameterList_b = bfun(PropertySetParameterList);
 
 // Section 14.4
 
@@ -3953,7 +3954,7 @@ function GeneratorMethod_b(b: Builder): void {
             whitespace,             // 12
             punctuator("("),        // 11
             whitespace,             // 10
-            StrictFormalParameters, // 9 = params
+            pfun(StrictFormalParameters_b), // 9 = params
             whitespace,             // 8
             punctuator(")"),        // 7
             whitespace,             // 6
@@ -3982,7 +3983,7 @@ function GeneratorDeclaration_1_b(b: Builder): void {
             whitespace,          // 16
             punctuator("*"),     // 15
             whitespace,          // 14
-            BindingIdentifier,   // 13 = ident
+            pfun(BindingIdentifier_b),   // 13 = ident
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
@@ -4074,7 +4075,7 @@ function GeneratorExpression_b(b: Builder): void {
         ]);
         b.bopt(() => {            // 12 = ident
             b.pitems([
-                BindingIdentifier,
+                pfun(BindingIdentifier_b),
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
@@ -4187,7 +4188,7 @@ function ClassDeclaration_1_b(b: Builder): void {
             pos,               // 6 = start
             keyword("class"),  // 5
             whitespace,        // 4
-            BindingIdentifier, // 3 = ident
+            pfun(BindingIdentifier_b), // 3 = ident
             whitespace,        // 2
             pfun(ClassTail_b),         // 1 = tail
             pos,               // 0 = end
@@ -4253,7 +4254,7 @@ function ClassExpression_b(b: Builder): void {
         b.pitem(whitespace);       // 3
         b.bopt(() => {             // 2
             b.pitems([
-                BindingIdentifier,
+                pfun(BindingIdentifier_b),
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
@@ -4285,7 +4286,7 @@ function ClassTail_b(b: Builder): void {
         b.bchoice([                 // 2 = body
             () => {
                 b.pitems([
-                    ClassBody,
+                    pfun(ClassBody_b),
                     whitespace,
                 ]);
                 b.popAboveAndSet(1,b.get(1));
@@ -4325,11 +4326,9 @@ function ClassHeritage_b(b: Builder): void {
 
 // ClassBody
 
-function ClassBody(p: Parser): ASTNode {
-    return pfun(ClassElementList_b)(p);
+function ClassBody_b(b: Builder): void {
+    b.pitem(pfun(ClassElementList_b));
 }
-
-const ClassBody_b = bfun(ClassBody);
 
 // ClassElementList
 
@@ -4351,13 +4350,11 @@ function ClassElementList_b(b: Builder): void {
     });
 }
 
-// ClassElement
+// ClassElement_1
 
-function ClassElement_1(p: Parser): ASTNode {
-    return pfun(MethodDefinition_b)(p);
+function ClassElement_1_b(b: Builder): void {
+    b.pitem(pfun(MethodDefinition_b));
 }
-
-const ClassElement_1_b = bfun(ClassElement_1);
 
 // ClassElement_2
 
@@ -4412,57 +4409,71 @@ function ClassElement_b(b: Builder): void {
 
 // Script
 
-export function Script(p: Parser): ScriptNode | ErrorNode {
-    const start = p.pos;
-    let body: ASTNode = null;
-    try {
-        body = ScriptBody(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    if (body == null)
-        body = new ListNode(new Range(start,p.pos),[]);
-    return new ScriptNode(new Range(start,p.pos),body);
+export function Script_b(b: Builder): void {
+    const oldLength = b.length;
+    b.pitem(pos);
+    b.bchoice([
+        () => {
+            b.pitem(pfun(ScriptBody_b));
+        },
+        () => {
+            const start = checkNumber(b.get(0));
+            b.push(new ListNode(new Range(start,start),[]));
+        },
+    ]);
+    b.assertLengthIs(oldLength+2);
+    b.pitem(pos);
+    b.assertLengthIs(oldLength+3);
+    const start = checkNumber(b.get(2));
+    const end = checkNumber(b.get(0));
+    const body = checkNode(b.get(1));
+    b.popAboveAndSet(2,new ScriptNode(new Range(start,end),body));
+    b.assertLengthIs(oldLength+1);
+    checkNode(b.get(0));
 }
 
-const Script_b = bfun(Script);
+export const Script = pfun(Script_b);
 
 // ScriptBody
 
-function ScriptBody(p: Parser): ASTNode {
-    return pfun(StatementList_b)(p);
+function ScriptBody_b(b: Builder): void {
+    b.pitem(pfun(StatementList_b));
 }
-
-const ScriptBody_b = bfun(ScriptBody);
 
 // Section 15.2
 
 // Module
 
-export function Module(p: Parser): ModuleNode | ErrorNode {
-    const start = p.pos;
-    let body: ASTNode = null;
-    try {
-        body = ModuleBody(p);
-    } catch (e) {
-        if (!(e instanceof ParseFailure))
-            throw e;
-    }
-    if (body == null)
-        body = new ListNode(new Range(start,p.pos),[]);
-    return new ModuleNode(new Range(start,p.pos),body);
+export function Module_b(b: Builder): void {
+    const oldLength = b.length;
+    b.pitem(pos);
+    b.bchoice([
+        () => {
+            b.pitem(pfun(ModuleBody_b));
+        },
+        () => {
+            const start = checkNumber(b.get(0));
+            b.push(new ListNode(new Range(start,start),[]));
+        },
+    ]);
+    b.assertLengthIs(oldLength+2);
+    b.pitem(pos);
+    b.assertLengthIs(oldLength+3);
+    const start = checkNumber(b.get(2));
+    const end = checkNumber(b.get(0));
+    const body = checkNode(b.get(1));
+    b.popAboveAndSet(2,new ModuleNode(new Range(start,end),body));
+    b.assertLengthIs(oldLength+1);
+    checkNode(b.get(0));
 }
 
-const Module_b = bfun(Module);
+export const Module = pfun(Module_b);
 
 // ModuleBody
 
-function ModuleBody(p: Parser): ASTNode {
-    return pfun(ModuleItemList_b)(p);
+function ModuleBody_b(b: Builder): void {
+    b.pitem(pfun(ModuleItemList_b));
 }
-
-const ModuleBody_b = bfun(ModuleBody);
 
 // ModuleItemList
 
@@ -4607,11 +4618,11 @@ function ImportClause_b(b: Builder): void {
 
 // ImportedDefaultBinding
 
-function ImportedDefaultBinding(p: Parser): ASTNode {
-    return ImportedBinding(p);
+function ImportedDefaultBinding_b(b: Builder): void {
+    b.pitem(pfun(ImportedBinding_b));
 }
 
-const ImportedDefaultBinding_b = bfun(ImportedDefaultBinding);
+const ImportedDefaultBinding = pfun(ImportedDefaultBinding_b);
 
 // NameSpaceImport
 
@@ -4624,7 +4635,7 @@ function NameSpaceImport_b(b: Builder): void {
             whitespace,      // 4
             keyword("as"),   // 3
             whitespace,      // 2
-            ImportedBinding, // 1 = binding
+            pfun(ImportedBinding_b), // 1 = binding
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -4721,11 +4732,11 @@ function ImportSpecifier_b(b: Builder): void {
             () => {
                 b.pitems([
                     pos,             // 6 = start
-                    IdentifierName,  // 5 = name
+                    pfun(IdentifierName_b),  // 5 = name
                     whitespace,      // 4
                     keyword("as"),   // 3
                     whitespace,      // 2
-                    ImportedBinding, // 1 = binding
+                    pfun(ImportedBinding_b), // 1 = binding
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -4734,7 +4745,7 @@ function ImportSpecifier_b(b: Builder): void {
             () => {
                 b.pitems([
                     pos,             // 2 = start
-                    ImportedBinding, // 1 = binding
+                    pfun(ImportedBinding_b), // 1 = binding
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+3);
@@ -4748,19 +4759,17 @@ function ImportSpecifier_b(b: Builder): void {
 
 // ModuleSpecifier
 
-function ModuleSpecifier(p: Parser): ASTNode {
-    return StringLiteral(p);
+function ModuleSpecifier_b(b: Builder): void {
+    b.pitem(pfun(StringLiteral_b));
 }
 
-const ModuleSpecifier_b = bfun(ModuleSpecifier);
+const ModuleSpecifier = pfun(ModuleSpecifier_b);
 
 // ImportedBinding
 
-function ImportedBinding(p: Parser): ASTNode {
-    return BindingIdentifier(p);
+function ImportedBinding_b(b: Builder): void {
+    b.pitem(pfun(BindingIdentifier_b));
 }
-
-const ImportedBinding_b = bfun(ImportedBinding);
 
 // Section 15.2.3
 
@@ -4936,7 +4945,7 @@ function ExportSpecifier_b(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.pitem(pos);
-        b.pitem(IdentifierName);
+        b.pitem(pfun(IdentifierName_b));
         b.bchoice([
             () => {
                 // let asIdent: IdentifierNode | ErrorNode;
@@ -4944,7 +4953,7 @@ function ExportSpecifier_b(b: Builder): void {
                     whitespace,        // 4
                     keyword("as"),     // 3
                     whitespace,        // 2
-                    IdentifierName,    // 1
+                    pfun(IdentifierName_b),    // 1
                     pos,               // 0
                 ]);
                 b.assertLengthIs(oldLength+7);

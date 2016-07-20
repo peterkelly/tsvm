@@ -22,7 +22,7 @@ import {
     ParseIgnore,
 } from "./parser";
 import {
-    Identifier
+    Identifier_b
 } from "./syntax";
 import {
     CastError,
@@ -218,7 +218,7 @@ export function notPunctuator(str: string) {
 
 export function identifier(str: string) {
     return (p: Parser): void => {
-        const ident = Identifier(p);
+        const ident = pfun(Identifier_b)(p);
         if (ident instanceof ErrorNode)
             throw new ParseError(p,p.pos,"Expected "+str);
         if (ident.value != str)
