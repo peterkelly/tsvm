@@ -279,12 +279,14 @@ export function identifier(str: string): (p: Parser) => void {
 export function identifier_b(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         b.attempt((): void => {
+            const oldLength = b.stack.length;
             const start = b.parser.pos;
             Identifier_b(b);
+            b.assertLengthIs(oldLength+1);
             const ident = checkNode(b.get(0));
             if (!(ident instanceof IdentifierNode) || (ident.value != str))
                 throw new ParseError(b.parser,start,"Expected "+str);
-            b.push(null);
+            // Identifier_b will already have pushed onto the stack
         })
     };
 }
