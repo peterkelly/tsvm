@@ -238,9 +238,9 @@ import {
 
 // IdentifierReference
 
-function IdentifierReference_b(b: Builder): void {
+function IdentifierReference(b: Builder): void {
     const oldLength = b.length;
-    b.item(Identifier_b);
+    b.item(Identifier);
     b.assertLengthIs(oldLength+1);
     const ident = checkNode(b.get(0));
     if (ident instanceof IdentifierNode)
@@ -251,9 +251,9 @@ function IdentifierReference_b(b: Builder): void {
 
 // BindingIdentifier
 
-function BindingIdentifier_b(b: Builder): void {
+function BindingIdentifier(b: Builder): void {
     const oldLength = b.length;
-    b.item(Identifier_b);
+    b.item(Identifier);
     b.assertLengthIs(oldLength+1);
     const ident = checkNode(b.get(0));
     if (ident instanceof IdentifierNode)
@@ -264,9 +264,9 @@ function BindingIdentifier_b(b: Builder): void {
 
 // LabelIdentifier
 
-function LabelIdentifier_b(b: Builder): void {
+function LabelIdentifier(b: Builder): void {
     const oldLength = b.length;
-    b.item(Identifier_b);
+    b.item(Identifier);
     b.assertLengthIs(oldLength+1);
     const ident = checkNode(b.get(0));
     if (ident instanceof IdentifierNode)
@@ -277,13 +277,13 @@ function LabelIdentifier_b(b: Builder): void {
 
 // IdentifierName
 
-function IdentifierName_b(b: Builder): void {
-    b.item(Identifier_b);
+function IdentifierName(b: Builder): void {
+    b.item(Identifier);
 }
 
 // Identifier
 
-export function Identifier_b(b: Builder): void {
+export function Identifier(b: Builder): void {
     b.attempt((): void => {
         const p = b.parser;
         const start = p.pos;
@@ -310,7 +310,7 @@ export function Identifier_b(b: Builder): void {
 
 // This
 
-function This_b(b: Builder): void {
+function This(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -327,21 +327,21 @@ function This_b(b: Builder): void {
 
 // PrimaryExpression
 
-function PrimaryExpression_b(b: Builder): void {
+function PrimaryExpression(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        This_b,
+        This,
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
-        Literal_b,
-        IdentifierReference_b,
-        ArrayLiteral_b,
-        ObjectLiteral_b,
-        FunctionExpression_b,
-        ClassExpression_b,
-        GeneratorExpression_b,
+        Literal,
+        IdentifierReference,
+        ArrayLiteral,
+        ObjectLiteral,
+        FunctionExpression,
+        ClassExpression,
+        GeneratorExpression,
         // RegularExpressionLiteral_b, // TODO
         // TemplateLiteral_b, // TODO
-        ParenthesizedExpression_b,
+        ParenthesizedExpression,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -349,13 +349,13 @@ function PrimaryExpression_b(b: Builder): void {
 
 // ParenthesizedExpression
 
-function ParenthesizedExpression_b(b: Builder): void {
+function ParenthesizedExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             punctuator("("), // 4
             whitespace,      // 3
-            Expression_b,      // 2 = expr
+            Expression,      // 2 = expr
             whitespace,      // 1
             punctuator(")"), // 0
         ]);
@@ -369,13 +369,13 @@ function ParenthesizedExpression_b(b: Builder): void {
 
 // Literal
 
-function Literal_b(b: Builder): void {
+function Literal(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        NullLiteral_b,
-        BooleanLiteral_b,
-        NumericLiteral_b,
-        StringLiteral_b,
+        NullLiteral,
+        BooleanLiteral,
+        NumericLiteral,
+        StringLiteral,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -383,7 +383,7 @@ function Literal_b(b: Builder): void {
 
 // NullLiteral
 
-function NullLiteral_b(b: Builder): void {
+function NullLiteral(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -400,7 +400,7 @@ function NullLiteral_b(b: Builder): void {
 
 // BooleanLiteral
 
-function BooleanLiteral_b(b: Builder): void {
+function BooleanLiteral(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
         () => {
@@ -432,7 +432,7 @@ function BooleanLiteral_b(b: Builder): void {
 
 // NumericLiteral
 
-function NumericLiteral_b(b: Builder): void {
+function NumericLiteral(b: Builder): void {
     // TODO: Complete numeric literal syntax according to spec
     b.attempt((): void => {
         const oldLength = b.length;
@@ -459,7 +459,7 @@ function NumericLiteral_b(b: Builder): void {
 
 // StringLiteral
 
-function StringLiteral_b(b: Builder): void {
+function StringLiteral(b: Builder): void {
     // TODO: Complete string literal syntax according to spec
     b.attempt((): void => {
         const oldLength = b.length;
@@ -507,7 +507,7 @@ function StringLiteral_b(b: Builder): void {
 
 // ArrayLiteral
 
-function ArrayLiteral_b(b: Builder): void {
+function ArrayLiteral(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         const start = b.parser.pos;
@@ -558,7 +558,7 @@ function ArrayLiteral_b(b: Builder): void {
                         b.assertLengthIs(oldLength+5);
                     },
                     () => {
-                        b.item(AssignmentExpression_b);
+                        b.item(AssignmentExpression);
                         b.item(whitespace);
                         b.bopt(() => {
                             b.item(punctuator(","));
@@ -570,7 +570,7 @@ function ArrayLiteral_b(b: Builder): void {
                         b.assertLengthIs(oldLength+5);
                     },
                     () => {
-                        b.item(SpreadElement_b);
+                        b.item(SpreadElement);
                         b.item(whitespace);
                         b.bopt(() => {
                             b.item(punctuator(","));
@@ -606,14 +606,14 @@ function ArrayLiteral_b(b: Builder): void {
 
 // SpreadElement
 
-function SpreadElement_b(b: Builder): void {
+function SpreadElement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
             punctuator("..."),
             whitespace,
-            AssignmentExpression_b,
+            AssignmentExpression,
             pos,
         ]);
         b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
@@ -626,7 +626,7 @@ function SpreadElement_b(b: Builder): void {
 
 // ObjectLiteral
 
-function ObjectLiteral_b(b: Builder): void {
+function ObjectLiteral(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);             // 5
@@ -634,7 +634,7 @@ function ObjectLiteral_b(b: Builder): void {
         b.item(whitespace);      // 3
         b.bchoice([               // 2 = properties
             () => {
-                b.item(PropertyDefinitionList_b);
+                b.item(PropertyDefinitionList);
                 b.item(whitespace);
                 b.bopt(() => {
                     b.item(punctuator(","));
@@ -658,19 +658,19 @@ function ObjectLiteral_b(b: Builder): void {
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList_b(b: Builder): void {
+function PropertyDefinitionList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(PropertyDefinition_b);
+                b.item(PropertyDefinition);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    PropertyDefinition_b,
+                    PropertyDefinition,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -682,16 +682,16 @@ function PropertyDefinitionList_b(b: Builder): void {
 
 // PropertyDefinition_colon
 
-function PropertyDefinition_colon_b(b: Builder): void {
+function PropertyDefinition_colon(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                  // 6 = start
-            PropertyName_b,         // 5 = name
+            PropertyName,         // 5 = name
             whitespace,           // 4
             punctuator(":"),      // 3
             whitespace,           // 2
-            AssignmentExpression_b, // 1 = init
+            AssignmentExpression, // 1 = init
             pos,                  // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -703,13 +703,13 @@ function PropertyDefinition_colon_b(b: Builder): void {
 
 // PropertyDefinition
 
-function PropertyDefinition_b(b: Builder): void {
+function PropertyDefinition(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        PropertyDefinition_colon_b,
-        CoverInitializedName_b,
-        MethodDefinition_b,
-        IdentifierReference_b,
+        PropertyDefinition_colon,
+        CoverInitializedName,
+        MethodDefinition,
+        IdentifierReference,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -717,11 +717,11 @@ function PropertyDefinition_b(b: Builder): void {
 
 // PropertyName
 
-function PropertyName_b(b: Builder): void {
+function PropertyName(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        LiteralPropertyName_b,
-        ComputedPropertyName_b,
+        LiteralPropertyName,
+        ComputedPropertyName,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -729,12 +729,12 @@ function PropertyName_b(b: Builder): void {
 
 // LiteralPropertyName
 
-function LiteralPropertyName_b(b: Builder): void {
+function LiteralPropertyName(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        IdentifierName_b,
-        StringLiteral_b,
-        NumericLiteral_b,
+        IdentifierName,
+        StringLiteral,
+        NumericLiteral,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -742,14 +742,14 @@ function LiteralPropertyName_b(b: Builder): void {
 
 // ComputedPropertyName
 
-function ComputedPropertyName_b(b: Builder): void {
+function ComputedPropertyName(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                  // 6 = start
             punctuator("["),      // 5
             whitespace,           // 4
-            AssignmentExpression_b, // 3 = expr
+            AssignmentExpression, // 3 = expr
             whitespace,           // 2
             punctuator("]"),      // 1
             pos,                  // 0 = end
@@ -763,14 +763,14 @@ function ComputedPropertyName_b(b: Builder): void {
 
 // CoverInitializedName
 
-function CoverInitializedName_b(b: Builder): void {
+function CoverInitializedName(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 4 = start
-            IdentifierReference_b, // 3 = ident
+            IdentifierReference, // 3 = ident
             whitespace,          // 2
-            Initializer_b,         // 1 = init
+            Initializer,         // 1 = init
             pos,                 // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -782,13 +782,13 @@ function CoverInitializedName_b(b: Builder): void {
 
 // Initializer
 
-function Initializer_b(b: Builder): void {
+function Initializer(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             punctuator("="),
             whitespace,
-            AssignmentExpression_b,
+            AssignmentExpression,
         ]);
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
@@ -815,16 +815,16 @@ function TemplateMiddleList(b: Builder): void { throw new ParseError(b.parser,b.
 
 // MemberExpression_new
 
-function MemberExpression_new_b(b: Builder): void {
+function MemberExpression_new(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,              // 6 = start
             keyword("new"),   // 5
             whitespace,       // 4
-            MemberExpression_b, // 3 = expr
+            MemberExpression, // 3 = expr
             whitespace,       // 2
-            Arguments_b,        // 1 = args
+            Arguments,        // 1 = args
             pos,              // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -836,13 +836,13 @@ function MemberExpression_new_b(b: Builder): void {
 
 // MemberExpression_start
 
-function MemberExpression_start_b(b: Builder): void {
+function MemberExpression_start(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        PrimaryExpression_b,
-        SuperProperty_b,
-        MetaProperty_b,
-        MemberExpression_new_b,
+        PrimaryExpression,
+        SuperProperty,
+        MetaProperty,
+        MemberExpression_new,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -850,18 +850,18 @@ function MemberExpression_start_b(b: Builder): void {
 
 // MemberExpression
 
-function MemberExpression_b(b: Builder): void {
+function MemberExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);
-        b.item(MemberExpression_start_b);
+        b.item(MemberExpression_start);
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,      // 6
                     punctuator("["), // 5
                     whitespace,      // 4
-                    Expression_b,      // 3 = expr
+                    Expression,      // 3 = expr
                     whitespace,      // 2
                     punctuator("]"), // 1
                     pos,             // 0 = end
@@ -874,7 +874,7 @@ function MemberExpression_b(b: Builder): void {
                     whitespace,      // 5
                     punctuator("."), // 4
                     whitespace,      // 3
-                    IdentifierName_b,  // 2 = ident
+                    IdentifierName,  // 2 = ident
                     pos,             // 1 = end
                     whitespace,      // 0
                 ]);
@@ -891,7 +891,7 @@ function MemberExpression_b(b: Builder): void {
 
 // SuperProperty
 
-function SuperProperty_b(b: Builder): void {
+function SuperProperty(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -902,7 +902,7 @@ function SuperProperty_b(b: Builder): void {
                     whitespace,       // 6
                     punctuator("["),  // 5
                     whitespace,       // 4
-                    Expression_b,       // 3 = expr
+                    Expression,       // 3 = expr
                     whitespace,       // 2
                     punctuator("]"),  // 1
                     pos,              // 0 = end
@@ -918,7 +918,7 @@ function SuperProperty_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator("."),  // 3
                     whitespace,       // 2
-                    Identifier_b,       // 1 = ident
+                    Identifier,       // 1 = ident
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -933,13 +933,13 @@ function SuperProperty_b(b: Builder): void {
 
 // MetaProperty
 
-function MetaProperty_b(b: Builder): void {
-    b.item(NewTarget_b);
+function MetaProperty(b: Builder): void {
+    b.item(NewTarget);
 }
 
 // NewTarget
 
-function NewTarget_b(b: Builder): void {
+function NewTarget(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -960,19 +960,19 @@ function NewTarget_b(b: Builder): void {
 
 // NewExpression
 
-function NewExpression_b(b: Builder): void {
+function NewExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.item(MemberExpression_b);
+                b.item(MemberExpression);
             },
             () => {
                 b.items([
                     pos,            // 4 = start
                     keyword("new"), // 3
                     whitespace,     // 2
-                    NewExpression_b,  // 1 = expr
+                    NewExpression,  // 1 = expr
                     pos,            // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -989,19 +989,19 @@ function NewExpression_b(b: Builder): void {
 
 // CallExpression_start
 
-function CallExpression_start_b(b: Builder): void {
+function CallExpression_start(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.item(SuperCall_b);
+                b.item(SuperCall);
             },
             () => {
                 b.items([
                     pos,              // 4 = start
-                    MemberExpression_b, // 3 = fun
+                    MemberExpression, // 3 = fun
                     whitespace,       // 2
-                    Arguments_b,        // 1 = args
+                    Arguments,        // 1 = args
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1015,16 +1015,16 @@ function CallExpression_start_b(b: Builder): void {
 
 // CallExpression
 
-function CallExpression_b(b: Builder): void {
+function CallExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);
-        b.item(CallExpression_start_b);
+        b.item(CallExpression_start);
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,      // 2
-                    Arguments_b,       // 1
+                    Arguments,       // 1
                     pos,             // 0
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1035,7 +1035,7 @@ function CallExpression_b(b: Builder): void {
                     whitespace,      // 6
                     punctuator("["), // 5
                     whitespace,      // 4
-                    Expression_b,      // 3 = expr
+                    Expression,      // 3 = expr
                     whitespace,      // 2
                     punctuator("]"), // 1
                     pos,             // 0 = end
@@ -1048,7 +1048,7 @@ function CallExpression_b(b: Builder): void {
                     whitespace,      // 4
                     punctuator("."), // 3
                     whitespace,      // 2
-                    IdentifierName_b,  // 1 = idname
+                    IdentifierName,  // 1 = idname
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1067,14 +1067,14 @@ function CallExpression_b(b: Builder): void {
 
 // SuperCall
 
-function SuperCall_b(b: Builder): void {
+function SuperCall(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,              // 4 = start
             keyword("super"), // 3
             whitespace,       // 2
-            Arguments_b,        // 1 = args
+            Arguments,        // 1 = args
             pos,              // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -1086,7 +1086,7 @@ function SuperCall_b(b: Builder): void {
 
 // Arguments
 
-function Arguments_b(b: Builder): void {
+function Arguments(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -1111,7 +1111,7 @@ function Arguments_b(b: Builder): void {
                     pos,             // 6 = start
                     punctuator("("), // 5
                     whitespace,      // 4
-                    ArgumentList_b,    // 3 = args
+                    ArgumentList,    // 3 = args
                     whitespace,      // 2
                     punctuator(")"), // 1
                     pos,             // 0 = end
@@ -1127,7 +1127,7 @@ function Arguments_b(b: Builder): void {
 
 // ArgumentList_item
 
-function ArgumentList_item_b(b: Builder): void {
+function ArgumentList_item(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -1136,14 +1136,14 @@ function ArgumentList_item_b(b: Builder): void {
                     pos,                  // 4 = start
                     punctuator("..."),    // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = expr
+                    AssignmentExpression, // 1 = expr
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"SpreadElement",[1]));
             },
             () => {
-                b.item(AssignmentExpression_b);
+                b.item(AssignmentExpression);
             },
         ]);
         b.assertLengthIs(oldLength+1);
@@ -1153,19 +1153,19 @@ function ArgumentList_item_b(b: Builder): void {
 
 // ArgumentList
 
-function ArgumentList_b(b: Builder): void {
+function ArgumentList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(ArgumentList_item_b);
+                b.item(ArgumentList_item);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    ArgumentList_item_b,
+                    ArgumentList_item,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -1177,13 +1177,13 @@ function ArgumentList_b(b: Builder): void {
 
 // LeftHandSideExpression
 
-function LeftHandSideExpression_b(b: Builder): void {
+function LeftHandSideExpression(b: Builder): void {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
     const oldLength = b.length;
     b.bchoice([
-        CallExpression_b,
-        NewExpression_b,
+        CallExpression,
+        NewExpression,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -1193,11 +1193,11 @@ function LeftHandSideExpression_b(b: Builder): void {
 
 // PostfixExpression
 
-function PostfixExpression_b(b: Builder): void {
+function PostfixExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);
-        b.item(LeftHandSideExpression_b);
+        b.item(LeftHandSideExpression);
         b.bchoice([
             () => {
                 b.items([
@@ -1230,7 +1230,7 @@ function PostfixExpression_b(b: Builder): void {
 
 // UnaryExpression
 
-function UnaryExpression_b(b: Builder): void {
+function UnaryExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -1239,7 +1239,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,               // 4 = start
                     keyword("delete"), // 3
                     whitespace,        // 2
-                    UnaryExpression_b,   // 1 = expr
+                    UnaryExpression,   // 1 = expr
                     pos,               // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1250,7 +1250,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     keyword("void"), // 3
                     whitespace,      // 2
-                    UnaryExpression_b, // 1 = expr
+                    UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1261,7 +1261,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,               // 4 = start
                     keyword("typeof"), // 3
                     whitespace,        // 2
-                    UnaryExpression_b,   // 1 = expr
+                    UnaryExpression,   // 1 = expr
                     pos,               // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1272,7 +1272,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,              // 4 = start
                     punctuator("++"), // 3
                     whitespace,       // 2
-                    UnaryExpression_b,  // 1 = expr
+                    UnaryExpression,  // 1 = expr
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1283,7 +1283,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,              // 4 = start
                     punctuator("--"), // 3
                     whitespace,       // 2
-                    UnaryExpression_b,  // 1 = expr
+                    UnaryExpression,  // 1 = expr
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1294,7 +1294,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("+"), // 3
                     whitespace,      // 2
-                    UnaryExpression_b, // 1 = expr
+                    UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1305,7 +1305,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("-"), // 3
                     whitespace,      // 2
-                    UnaryExpression_b, // 1 = expr
+                    UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1316,7 +1316,7 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("~"), // 3
                     whitespace,      // 2
-                    UnaryExpression_b, // 1 = expr
+                    UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -1327,14 +1327,14 @@ function UnaryExpression_b(b: Builder): void {
                     pos,             // 4 = start
                     punctuator("!"), // 3
                     whitespace,      // 2
-                    UnaryExpression_b, // 1 = expr
+                    UnaryExpression, // 1 = expr
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
                 b.popAboveAndSet(4,makeNode(b,4,0,"UnaryLogicalNot",[1]));
             },
             () => {
-                b.item(PostfixExpression_b);
+                b.item(PostfixExpression);
             },
         ]);
         b.assertLengthIs(oldLength+1);
@@ -1346,18 +1346,18 @@ function UnaryExpression_b(b: Builder): void {
 
 // MultiplicativeExpression
 
-function MultiplicativeExpression_b(b: Builder): void {
+function MultiplicativeExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
-        b.item(UnaryExpression_b);      // 5 = left
+        b.item(UnaryExpression);      // 5 = left
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,       // 4
                     punctuator("*"),  // 3
                     whitespace,       // 2
-                    UnaryExpression_b,  // 1 = right
+                    UnaryExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Multiply",[5,1]));
@@ -1367,7 +1367,7 @@ function MultiplicativeExpression_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator("/"),  // 3
                     whitespace,       // 2
-                    UnaryExpression_b,  // 1 = right
+                    UnaryExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Divide",[5,1]));
@@ -1377,7 +1377,7 @@ function MultiplicativeExpression_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator("%"),  // 3
                     whitespace,       // 2
-                    UnaryExpression_b,  // 1 = right
+                    UnaryExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Modulo",[5,1]));
@@ -1395,18 +1395,18 @@ function MultiplicativeExpression_b(b: Builder): void {
 
 // AdditiveExpression
 
-function AdditiveExpression_b(b: Builder): void {
+function AdditiveExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                          // 6 = start
-        b.item(MultiplicativeExpression_b);     // 5 = left
+        b.item(MultiplicativeExpression);     // 5 = left
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,               // 4
                     punctuator("+"),          // 3
                     whitespace,               // 2
-                    MultiplicativeExpression_b, // 1 = right
+                    MultiplicativeExpression, // 1 = right
                     pos,                      // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Add",[5,1]));
@@ -1416,7 +1416,7 @@ function AdditiveExpression_b(b: Builder): void {
                     whitespace,               // 4
                     punctuator("-"),          // 3
                     whitespace,               // 2
-                    MultiplicativeExpression_b, // 1 = right
+                    MultiplicativeExpression, // 1 = right
                     pos,                      // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Subtract",[5,1]));
@@ -1433,18 +1433,18 @@ function AdditiveExpression_b(b: Builder): void {
 
 // ShiftExpression
 
-function ShiftExpression_b(b: Builder): void {
+function ShiftExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                    // 6 = start
-        b.item(AdditiveExpression_b);     // 5 = left
+        b.item(AdditiveExpression);     // 5 = left
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,         // 4
                     punctuator("<<"),   // 3
                     whitespace,         // 2
-                    AdditiveExpression_b, // 1 = right
+                    AdditiveExpression, // 1 = right
                     pos,                // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"LeftShift",[5,1]));
@@ -1454,7 +1454,7 @@ function ShiftExpression_b(b: Builder): void {
                     whitespace,         // 4
                     punctuator(">>>"),  // 3
                     whitespace,         // 2
-                    AdditiveExpression_b, // 1 = right
+                    AdditiveExpression, // 1 = right
                     pos,                // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"UnsignedRightShift",[5,1]));
@@ -1464,7 +1464,7 @@ function ShiftExpression_b(b: Builder): void {
                     whitespace,         // 4
                     punctuator(">>"),   // 3
                     whitespace,         // 2
-                    AdditiveExpression_b, // 1 = right
+                    AdditiveExpression, // 1 = right
                     pos,                // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"SignedRightShift",[5,1]));
@@ -1482,18 +1482,18 @@ function ShiftExpression_b(b: Builder): void {
 
 // RelationalExpression
 
-function RelationalExpression_b(b: Builder): void {
+function RelationalExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);             // 6 = start
-        b.item(ShiftExpression_b); // 5 = left
+        b.item(ShiftExpression); // 5 = left
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,       // 4
                     punctuator("<="), // 3
                     whitespace,       // 2
-                    ShiftExpression_b,  // 1 = right
+                    ShiftExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1505,7 +1505,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,       // 4
                     punctuator(">="), // 3
                     whitespace,       // 2
-                    ShiftExpression_b,  // 1 = right
+                    ShiftExpression,  // 1 = right
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1517,7 +1517,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,      // 4
                     punctuator("<"), // 3
                     whitespace,      // 2
-                    ShiftExpression_b, // 1 = right
+                    ShiftExpression, // 1 = right
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1529,7 +1529,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,      // 4
                     punctuator(">"), // 3
                     whitespace,      // 2
-                    ShiftExpression_b, // 1 = right
+                    ShiftExpression, // 1 = right
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1541,7 +1541,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,            // 4
                     keyword("instanceof"), // 3
                     whitespace,            // 2
-                    ShiftExpression_b,       // 1 = right
+                    ShiftExpression,       // 1 = right
                     pos,                   // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1553,7 +1553,7 @@ function RelationalExpression_b(b: Builder): void {
                     whitespace,      // 4
                     keyword("in"),   // 3
                     whitespace,      // 2
-                    ShiftExpression_b, // 1 = right
+                    ShiftExpression, // 1 = right
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1572,18 +1572,18 @@ function RelationalExpression_b(b: Builder): void {
 
 // EqualityExpression
 
-function EqualityExpression_b(b: Builder): void {
+function EqualityExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                      // 6 = start
-        b.item(RelationalExpression_b);     // 5 = left
+        b.item(RelationalExpression);     // 5 = left
         b.brepeatChoice([
             () => {
                 b.items([
                     whitespace,           // 4
                     punctuator("==="),    // 3
                     whitespace,           // 2
-                    RelationalExpression_b, // 1 = right
+                    RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1595,7 +1595,7 @@ function EqualityExpression_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("!=="),    // 3
                     whitespace,           // 2
-                    RelationalExpression_b, // 1 = right
+                    RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1607,7 +1607,7 @@ function EqualityExpression_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("=="),     // 3
                     whitespace,           // 2
-                    RelationalExpression_b, // 1 = right
+                    RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1619,7 +1619,7 @@ function EqualityExpression_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("!="),     // 3
                     whitespace,           // 2
-                    RelationalExpression_b, // 1 = right
+                    RelationalExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -1638,17 +1638,17 @@ function EqualityExpression_b(b: Builder): void {
 
 // BitwiseANDExpression
 
-function BitwiseANDExpression_b(b: Builder): void {
+function BitwiseANDExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                // 6 = start
-        b.item(EqualityExpression_b); // 5 = left
+        b.item(EqualityExpression); // 5 = left
         b.brepeat(() => {
             b.items([
                 whitespace,         // 4
                 punctuator("&"),    // 3
                 whitespace,         // 2
-                EqualityExpression_b, // 1 = right
+                EqualityExpression, // 1 = right
                 pos,                // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseAND",[5,1]));
@@ -1663,17 +1663,17 @@ function BitwiseANDExpression_b(b: Builder): void {
 
 // BitwiseXORExpression
 
-function BitwiseXORExpression_b(b: Builder): void {
+function BitwiseXORExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
-        b.item(BitwiseANDExpression_b); // 5 = left
+        b.item(BitwiseANDExpression); // 5 = left
         b.brepeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator("^"),      // 3
                 whitespace,           // 2
-                BitwiseANDExpression_b, // 1 = right
+                BitwiseANDExpression, // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseXOR",[5,1]));
@@ -1687,17 +1687,17 @@ function BitwiseXORExpression_b(b: Builder): void {
 
 // BitwiseORExpression
 
-function BitwiseORExpression_b(b: Builder): void {
+function BitwiseORExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
-        b.item(BitwiseXORExpression_b); // 5 = left
+        b.item(BitwiseXORExpression); // 5 = left
         b.brepeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator("|"),      // 3
                 whitespace,           // 2
-                BitwiseXORExpression_b, // 1 = right
+                BitwiseXORExpression, // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"BitwiseOR",[5,1]));
@@ -1713,17 +1713,17 @@ function BitwiseORExpression_b(b: Builder): void {
 
 // LogicalANDExpression
 
-function LogicalANDExpression_b(b: Builder): void {
+function LogicalANDExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                 // 6 = start
-        b.item(BitwiseORExpression_b); // 5 = left
+        b.item(BitwiseORExpression); // 5 = left
         b.brepeat(() => {
             b.items([
                 whitespace,          // 4
                 punctuator("&&"),    // 3
                 whitespace,          // 2
-                BitwiseORExpression_b, // 1 = right
+                BitwiseORExpression, // 1 = right
                 pos,                 // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalAND",[5,1]));
@@ -1737,17 +1737,17 @@ function LogicalANDExpression_b(b: Builder): void {
 
 // LogicalORExpression
 
-function LogicalORExpression_b(b: Builder): void {
+function LogicalORExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
-        b.item(LogicalANDExpression_b); // 5 = left
+        b.item(LogicalANDExpression); // 5 = left
         b.brepeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator("||"),     // 3
                 whitespace,           // 2
-                LogicalANDExpression_b, // 1 = right
+                LogicalANDExpression, // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"LogicalOR",[5,1]));
@@ -1763,22 +1763,22 @@ function LogicalORExpression_b(b: Builder): void {
 
 // ConditionalExpression
 
-function ConditionalExpression_b(b: Builder): void {
+function ConditionalExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                      // 10 = start
-        b.item(LogicalORExpression_b);      // 9 = condition
+        b.item(LogicalORExpression);      // 9 = condition
         b.bchoice([
             () => {
                 b.items([
                     whitespace,           // 8
                     punctuator("?"),      // 7
                     whitespace,           // 6
-                    AssignmentExpression_b, // 5 = trueExpr
+                    AssignmentExpression, // 5 = trueExpr
                     whitespace,           // 4
                     punctuator(":"),      // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = falseExpr
+                    AssignmentExpression, // 1 = falseExpr
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(9,makeNode(b,10,0,"Conditional",[9,5,1]));
@@ -1796,18 +1796,18 @@ function ConditionalExpression_b(b: Builder): void {
 
 // AssignmentExpression_plain
 
-function AssignmentExpression_plain_b(b: Builder): void {
+function AssignmentExpression_plain(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                      // 6 = start
-        b.item(LeftHandSideExpression_b);   // 5 = left
+        b.item(LeftHandSideExpression);   // 5 = left
         b.bchoice([
             () => {
                 b.items([
                     whitespace,           // 4
                     punctuator("="),      // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"Assign",[5,1]));
@@ -1817,7 +1817,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("*="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignMultiply",[5,1]));
@@ -1827,7 +1827,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("/="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignDivide",[5,1]));
@@ -1837,7 +1837,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("%="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignModulo",[5,1]));
@@ -1847,7 +1847,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("+="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignAdd",[5,1]));
@@ -1857,7 +1857,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("-="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignSubtract",[5,1]));
@@ -1867,7 +1867,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("<<="),    // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignLeftShift",[5,1]));
@@ -1877,7 +1877,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator(">>="),    // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignSignedRightShift",[5,1]));
@@ -1887,7 +1887,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator(">>>="),   // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignUnsignedRightShift",[5,1]));
@@ -1897,7 +1897,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("&="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseAND",[5,1]));
@@ -1907,7 +1907,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("^="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseXOR",[5,1]));
@@ -1917,7 +1917,7 @@ function AssignmentExpression_plain_b(b: Builder): void {
                     whitespace,           // 4
                     punctuator("|="),     // 3
                     whitespace,           // 2
-                    AssignmentExpression_b, // 1 = right
+                    AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
                 ]);
                 b.popAboveAndSet(5,makeNode(b,6,0,"AssignBitwiseOR",[5,1]));
@@ -1932,14 +1932,14 @@ function AssignmentExpression_plain_b(b: Builder): void {
 
 // AssignmentExpression
 
-function AssignmentExpression_b(b: Builder): void {
+function AssignmentExpression(b: Builder): void {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
     const oldLength = b.length;
     b.bchoice([
-        ArrowFunction_b,
-        AssignmentExpression_plain_b,
-        ConditionalExpression_b,
-        YieldExpression_b,
+        ArrowFunction,
+        AssignmentExpression_plain,
+        ConditionalExpression,
+        YieldExpression,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -1949,17 +1949,17 @@ function AssignmentExpression_b(b: Builder): void {
 
 // Expression
 
-function Expression_b(b: Builder): void {
+function Expression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
-        b.item(AssignmentExpression_b); // 5 = left
+        b.item(AssignmentExpression); // 5 = left
         b.brepeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator(","),      // 3
                 whitespace,           // 2
-                AssignmentExpression_b, // 1 = right
+                AssignmentExpression, // 1 = right
                 pos,                  // 0 = end
             ]);
             b.popAboveAndSet(5,makeNode(b,6,0,"Comma",[5,1]));
@@ -1975,23 +1975,23 @@ function Expression_b(b: Builder): void {
 
 // Statement
 
-function Statement_b(b: Builder): void {
+function Statement(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        BlockStatement_b,
-        VariableStatement_b,
-        EmptyStatement_b,
-        ExpressionStatement_b,
-        IfStatement_b,
-        BreakableStatement_b,
-        ContinueStatement_b,
-        BreakStatement_b,
-        ReturnStatement_b,
-        WithStatement_b,
-        LabelledStatement_b,
-        ThrowStatement_b,
-        TryStatement_b,
-        DebuggerStatement_b,
+        BlockStatement,
+        VariableStatement,
+        EmptyStatement,
+        ExpressionStatement,
+        IfStatement,
+        BreakableStatement,
+        ContinueStatement,
+        BreakStatement,
+        ReturnStatement,
+        WithStatement,
+        LabelledStatement,
+        ThrowStatement,
+        TryStatement,
+        DebuggerStatement,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -1999,12 +1999,12 @@ function Statement_b(b: Builder): void {
 
 // Declaration
 
-function Declaration_b(b: Builder): void {
+function Declaration(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        HoistableDeclaration_b,
-        ClassDeclaration_b,
-        LexicalDeclaration_b,
+        HoistableDeclaration,
+        ClassDeclaration,
+        LexicalDeclaration,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2012,20 +2012,20 @@ function Declaration_b(b: Builder): void {
 
 // HoistableDeclaration
 
-function HoistableDeclaration_b(b: Builder): void {
+function HoistableDeclaration(b: Builder): void {
     b.bchoice([
-        FunctionDeclaration_b,
-        GeneratorDeclaration_b,
+        FunctionDeclaration,
+        GeneratorDeclaration,
     ]);
 }
 
 // BreakableStatement
 
-function BreakableStatement_b(b: Builder): void {
+function BreakableStatement(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        IterationStatement_b,
-        SwitchStatement_b,
+        IterationStatement,
+        SwitchStatement,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2035,13 +2035,13 @@ function BreakableStatement_b(b: Builder): void {
 
 // BlockStatement
 
-function BlockStatement_b(b: Builder): void {
-    b.item(Block_b);
+function BlockStatement(b: Builder): void {
+    b.item(Block);
 }
 
 // Block
 
-function Block_b(b: Builder): void {
+function Block(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);             // 5
@@ -2049,7 +2049,7 @@ function Block_b(b: Builder): void {
         b.item(whitespace);      // 3
         b.bchoice([               // 2 = statements
             () => {
-                b.item(StatementList_b);
+                b.item(StatementList);
                 b.item(whitespace);
                 b.popAboveAndSet(1,b.get(1));
             },
@@ -2069,17 +2069,17 @@ function Block_b(b: Builder): void {
 
 // StatementList
 
-function StatementList_b(b: Builder): void {
+function StatementList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(StatementListItem_b);
+                b.item(StatementListItem);
             },
             () => {
                 b.items([
                     whitespace,
-                    StatementListItem_b,
+                    StatementListItem,
                 ]);
                 b.popAboveAndSet(1,b.get(0));
             },
@@ -2091,11 +2091,11 @@ function StatementList_b(b: Builder): void {
 
 // StatementListItem
 
-function StatementListItem_b(b: Builder): void {
+function StatementListItem(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        Statement_b,
-        Declaration_b,
+        Statement,
+        Declaration,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2105,7 +2105,7 @@ function StatementListItem_b(b: Builder): void {
 
 // LexicalDeclaration
 
-function LexicalDeclaration_b(b: Builder): void {
+function LexicalDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -2114,7 +2114,7 @@ function LexicalDeclaration_b(b: Builder): void {
                     pos,              // 6 = start
                     keyword("let"),   // 5
                     whitespace,       // 4
-                    BindingList_b,      // 3 = bindings
+                    BindingList,      // 3 = bindings
                     whitespace,       // 2
                     punctuator(";"),  // 1
                     pos,              // 0 = end
@@ -2126,7 +2126,7 @@ function LexicalDeclaration_b(b: Builder): void {
                     pos,              // 6 = start
                     keyword("const"), // 5
                     whitespace,       // 4
-                    BindingList_b,      // 3 = bindings
+                    BindingList,      // 3 = bindings
                     whitespace,       // 2
                     punctuator(";"),  // 1
                     pos,              // 0 = end
@@ -2141,19 +2141,19 @@ function LexicalDeclaration_b(b: Builder): void {
 
 // BindingList
 
-function BindingList_b(b: Builder): void {
+function BindingList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(LexicalBinding_b);
+                b.item(LexicalBinding);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    LexicalBinding_b,
+                    LexicalBinding,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -2165,14 +2165,14 @@ function BindingList_b(b: Builder): void {
 
 // LexicalBinding_identifier
 
-function LexicalBinding_identifier_b(b: Builder): void {
+function LexicalBinding_identifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);               // 3 = start
-        b.item(BindingIdentifier_b); // 2 = identifier
+        b.item(BindingIdentifier); // 2 = identifier
         b.bopt(() => {              // 1 = initializer
             b.item(whitespace);
-            b.item(Initializer_b);
+            b.item(Initializer);
             b.popAboveAndSet(1,b.get(0));
         });
         b.item(pos);               // 0 = end
@@ -2185,14 +2185,14 @@ function LexicalBinding_identifier_b(b: Builder): void {
 
 // LexicalBinding_pattern
 
-function LexicalBinding_pattern_b(b: Builder): void {
+function LexicalBinding_pattern(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,            // 4 = start
-            BindingPattern_b, // 3 = pattern
+            BindingPattern, // 3 = pattern
             whitespace,     // 2
-            Initializer_b,    // 1 = initializer
+            Initializer,    // 1 = initializer
             pos,            // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -2204,11 +2204,11 @@ function LexicalBinding_pattern_b(b: Builder): void {
 
 // LexicalBinding
 
-function LexicalBinding_b(b: Builder): void {
+function LexicalBinding(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        LexicalBinding_identifier_b,
-        LexicalBinding_pattern_b,
+        LexicalBinding_identifier,
+        LexicalBinding_pattern,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2218,14 +2218,14 @@ function LexicalBinding_b(b: Builder): void {
 
 // VariableStatement
 
-function VariableStatement_b(b: Builder): void {
+function VariableStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                     // 6 = start
             keyword("var"),          // 5
             whitespace,              // 4
-            VariableDeclarationList_b, // 3 = declarations
+            VariableDeclarationList, // 3 = declarations
             whitespace,              // 2
             punctuator(";"),         // 1
             pos,                     // 0 = end
@@ -2238,19 +2238,19 @@ function VariableStatement_b(b: Builder): void {
 
 // VariableDeclarationList
 
-function VariableDeclarationList_b(b: Builder): void {
+function VariableDeclarationList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(VariableDeclaration_b);
+                b.item(VariableDeclaration);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    VariableDeclaration_b,
+                    VariableDeclaration,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -2262,16 +2262,16 @@ function VariableDeclarationList_b(b: Builder): void {
 
 // VariableDeclaration_identifier
 
-function VariableDeclaration_identifier_b(b: Builder): void {
+function VariableDeclaration_identifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);
-        b.item(BindingIdentifier_b);
+        b.item(BindingIdentifier);
         b.bchoice([
             () => {
                 b.items([
                     whitespace,
-                    Initializer_b,
+                    Initializer,
                     pos,
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -2291,14 +2291,14 @@ function VariableDeclaration_identifier_b(b: Builder): void {
 
 // VariableDeclaration_pattern
 
-function VariableDeclaration_pattern_b(b: Builder): void {
+function VariableDeclaration_pattern(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,            // 4 = start
-            BindingPattern_b, // 3 = pattern
+            BindingPattern, // 3 = pattern
             whitespace,     // 2
-            Initializer_b,    // 1 = initializer
+            Initializer,    // 1 = initializer
             pos,            // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -2310,11 +2310,11 @@ function VariableDeclaration_pattern_b(b: Builder): void {
 
 // VariableDeclaration
 
-function VariableDeclaration_b(b: Builder): void {
+function VariableDeclaration(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        VariableDeclaration_identifier_b,
-        VariableDeclaration_pattern_b,
+        VariableDeclaration_identifier,
+        VariableDeclaration_pattern,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2324,11 +2324,11 @@ function VariableDeclaration_b(b: Builder): void {
 
 // BindingPattern
 
-function BindingPattern_b(b: Builder): void {
+function BindingPattern(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        ObjectBindingPattern_b,
-        ArrayBindingPattern_b,
+        ObjectBindingPattern,
+        ArrayBindingPattern,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2336,7 +2336,7 @@ function BindingPattern_b(b: Builder): void {
 
 // ObjectBindingPattern
 
-function ObjectBindingPattern_b(b: Builder): void {
+function ObjectBindingPattern(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);              // 6 = start
@@ -2345,7 +2345,7 @@ function ObjectBindingPattern_b(b: Builder): void {
         b.item(pos);              // 3
         b.bchoice([                // 2 = properties
             () => {
-                b.item(BindingPropertyList_b),
+                b.item(BindingPropertyList),
                 b.item(whitespace),
                 b.bopt(() => {
                     b.item(punctuator(","));
@@ -2373,18 +2373,18 @@ function ObjectBindingPattern_b(b: Builder): void {
 
 // ArrayBindingPattern
 
-function ArrayBindingPattern_b(b: Builder): void {
+function ArrayBindingPattern(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 7 = start
             punctuator("["),     // 6
             whitespace,          // 5
-            BindingElementList_b,  // 4 = elements
+            BindingElementList,  // 4 = elements
             whitespace,          // 3
         ]);
         b.bopt(() => {            // 2 = rest
-            b.item(BindingRestElement_b);
+            b.item(BindingRestElement);
             b.item(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
@@ -2401,19 +2401,19 @@ function ArrayBindingPattern_b(b: Builder): void {
 
 // BindingPropertyList
 
-function BindingPropertyList_b(b: Builder): void {
+function BindingPropertyList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(BindingProperty_b);
+                b.item(BindingProperty);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    BindingProperty_b,
+                    BindingProperty,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -2425,7 +2425,7 @@ function BindingPropertyList_b(b: Builder): void {
 
 // BindingElementList
 
-function BindingElementList_b(b: Builder): void {
+function BindingElementList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
@@ -2450,7 +2450,7 @@ function BindingElementList_b(b: Builder): void {
                     },
                     () => {
                         b.item(whitespace);
-                        b.item(BindingElement_b);
+                        b.item(BindingElement);
                         b.bopt(() => {
                             b.item(whitespace);
                             b.item(punctuator(","));
@@ -2468,18 +2468,18 @@ function BindingElementList_b(b: Builder): void {
 
 // BindingProperty
 
-function BindingProperty_b(b: Builder): void {
+function BindingProperty(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
                 b.items([
                     pos,             // 6 = start
-                    PropertyName_b,    // 5 = name
+                    PropertyName,    // 5 = name
                     whitespace,      // 4
                     punctuator(":"), // 3
                     whitespace,      // 2
-                    BindingElement_b,  // 1 = element
+                    BindingElement,  // 1 = element
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -2488,7 +2488,7 @@ function BindingProperty_b(b: Builder): void {
             () => {
                 // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
                 // and PropertyName will match an identifier at the start of a colon binding
-                b.item(SingleNameBinding_b);
+                b.item(SingleNameBinding);
             },
         ]);
         b.assertLengthIs(oldLength+1);
@@ -2498,21 +2498,21 @@ function BindingProperty_b(b: Builder): void {
 
 // BindingElement
 
-function BindingElement_b(b: Builder): void {
+function BindingElement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.item(SingleNameBinding_b);
+                b.item(SingleNameBinding);
             },
             () => {
                 b.item(pos);
-                b.item(BindingPattern_b);
+                b.item(BindingPattern);
                 b.bchoice([
                     () => {
                         b.items([
                             whitespace,
-                            Initializer_b,
+                            Initializer,
                             pos,
                         ]);
                         b.assertLengthIs(oldLength+5);
@@ -2531,16 +2531,16 @@ function BindingElement_b(b: Builder): void {
 
 // SingleNameBinding
 
-function SingleNameBinding_b(b: Builder): void {
+function SingleNameBinding(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);
-        b.item(BindingIdentifier_b);
+        b.item(BindingIdentifier);
         b.bchoice([
             () => {
                 b.items([
                     whitespace,
-                    Initializer_b,
+                    Initializer,
                     pos,
                 ]);
                 b.popAboveAndSet(2,makeNode(b,4,0,"SingleNameBinding",[3,1]));
@@ -2558,14 +2558,14 @@ function SingleNameBinding_b(b: Builder): void {
 
 // BindingRestElement
 
-function BindingRestElement_b(b: Builder): void {
+function BindingRestElement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 4 = start
             punctuator("..."), // 3
             whitespace,        // 2
-            BindingIdentifier_b, // 1 = ident
+            BindingIdentifier, // 1 = ident
             pos,               // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -2579,7 +2579,7 @@ function BindingRestElement_b(b: Builder): void {
 
 // EmptyStatement
 
-function EmptyStatement_b(b: Builder): void {
+function EmptyStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -2598,7 +2598,7 @@ function EmptyStatement_b(b: Builder): void {
 
 // ExpressionStatement
 
-function ExpressionStatement_b(b: Builder): void {
+function ExpressionStatement(b: Builder): void {
     const p = b.parser;
     const start2 = p.pos;
 
@@ -2620,7 +2620,7 @@ function ExpressionStatement_b(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,             // 4 = start
-            Expression_b,      // 3 = expr
+            Expression,      // 3 = expr
             whitespace,      // 2
             punctuator(";"), // 1
             pos,             // 0 = end
@@ -2636,7 +2636,7 @@ function ExpressionStatement_b(b: Builder): void {
 
 // IfStatement
 
-function IfStatement_b(b: Builder): void {
+function IfStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -2645,18 +2645,18 @@ function IfStatement_b(b: Builder): void {
             whitespace,        // 9
             punctuator("("),   // 8
             whitespace,        // 7
-            Expression_b,        // 6 = condition
+            Expression,        // 6 = condition
             whitespace,        // 5
             punctuator(")"),   // 4
             whitespace,        // 3
-            Statement_b,         // 2 = trueBranch
+            Statement,         // 2 = trueBranch
         ]);
         b.bopt(() => {          // 1 = falseBranch
             b.items([
                 whitespace,
                 keyword("else"),
                 whitespace,
-                Statement_b,
+                Statement,
             ]);
             b.popAboveAndSet(3,b.get(0));
         });
@@ -2672,20 +2672,20 @@ function IfStatement_b(b: Builder): void {
 
 // IterationStatement_do
 
-function IterationStatement_do_b(b: Builder): void {
+function IterationStatement_do(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,              // 14
             keyword("do"),    // 13
             whitespace,       // 12
-            Statement_b,        // 11 = body
+            Statement,        // 11 = body
             whitespace,       // 10
             keyword("while"), // 9
             whitespace,       // 8
             punctuator("("),  // 7
             whitespace,       // 6
-            Expression_b,       // 5 = condition
+            Expression,       // 5 = condition
             whitespace,       // 4
             punctuator(")"),  // 3
             whitespace,       // 2
@@ -2701,7 +2701,7 @@ function IterationStatement_do_b(b: Builder): void {
 
 // IterationStatement_while
 
-function IterationStatement_while_b(b: Builder): void {
+function IterationStatement_while(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -2710,11 +2710,11 @@ function IterationStatement_while_b(b: Builder): void {
             whitespace,         // 8
             punctuator("("),    // 7
             whitespace,         // 6
-            Expression_b,         // 5 = condition
+            Expression,         // 5 = condition
             whitespace,         // 4
             punctuator(")"),    // 3
             whitespace,         // 2
-            Statement_b,          // 1 = body
+            Statement,          // 1 = body
             pos,                // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -2726,7 +2726,7 @@ function IterationStatement_while_b(b: Builder): void {
 
 // IterationStatement_for_c
 
-function IterationStatement_for_c_b(b: Builder): void {
+function IterationStatement_for_c(b: Builder): void {
     // for ( [lookahead ∉ {let [}] Expression-opt ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
@@ -2746,7 +2746,7 @@ function IterationStatement_for_c_b(b: Builder): void {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
-                    Expression_b,
+                    Expression,
                     whitespace,
                     punctuator(";"),
                     whitespace,
@@ -2758,7 +2758,7 @@ function IterationStatement_for_c_b(b: Builder): void {
                     pos,                     // 7 = start2
                     keyword("var"),          // 6
                     whitespace,              // 5
-                    VariableDeclarationList_b, // 4 = declarations
+                    VariableDeclarationList, // 4 = declarations
                     pos,                     // 3 = end
                     whitespace,              // 2
                     punctuator(";"),         // 1
@@ -2768,7 +2768,7 @@ function IterationStatement_for_c_b(b: Builder): void {
             },
             () => {
                 b.items([
-                    LexicalDeclaration_b,
+                    LexicalDeclaration,
                     whitespace,
                 ]);
                 b.popAboveAndSet(1,b.get(1));
@@ -2782,18 +2782,18 @@ function IterationStatement_for_c_b(b: Builder): void {
             },
         ]);
         b.assertLengthIs(oldLength+6);
-        b.item(opt(Expression_b)); // 8 = condition
+        b.item(opt(Expression)); // 8 = condition
         b.item(whitespace);      // 7
         b.item(punctuator(";")); // 6
         b.item(whitespace);      // 5
         b.bopt(() => {            // 4 = update
-            b.item(Expression_b);
+            b.item(Expression);
             b.item(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
         b.item(punctuator(")")); // 3
         b.item(whitespace);      // 2
-        b.item(Statement_b);       // 1 = body
+        b.item(Statement);       // 1 = body
         b.item(pos);             // 0 = end
         b.assertLengthIs(oldLength+15);
         b.popAboveAndSet(14,makeNode(b,14,0,"ForC",[9,8,4,1]));
@@ -2804,7 +2804,7 @@ function IterationStatement_for_c_b(b: Builder): void {
 
 // IterationStatement_for_in
 
-function IterationStatement_for_in_b(b: Builder): void {
+function IterationStatement_for_in(b: Builder): void {
     // for ( [lookahead ∉ {let [}] LeftHandSideExpression in Expression )             Statement[?Yield, ?Return]
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
@@ -2824,7 +2824,7 @@ function IterationStatement_for_in_b(b: Builder): void {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
-                    LeftHandSideExpression_b,
+                    LeftHandSideExpression,
                 ]);
                 b.popAboveAndSet(2,b.get(0));
             },
@@ -2833,13 +2833,13 @@ function IterationStatement_for_in_b(b: Builder): void {
                     pos,
                     keyword("var"),
                     whitespace,
-                    ForBinding_b,
+                    ForBinding,
                     pos,
                 ]);
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
             },
             () => {
-                b.item(ForDeclaration_b);
+                b.item(ForDeclaration);
             }
         ]);
         b.assertLengthIs(oldLength+6);
@@ -2847,11 +2847,11 @@ function IterationStatement_for_in_b(b: Builder): void {
             whitespace,                                    // 8
             keyword("in"),                                 // 7
             whitespace,                                    // 6
-            Expression_b,                                    // 5 = expr
+            Expression,                                    // 5 = expr
             whitespace,                                    // 4
             punctuator(")"),                               // 3
             whitespace,                                    // 2
-            Statement_b,                                     // 1 = body
+            Statement,                                     // 1 = body
             pos,                                           // 0 = end
         ]);
         b.assertLengthIs(oldLength+15);
@@ -2863,7 +2863,7 @@ function IterationStatement_for_in_b(b: Builder): void {
 
 // IterationStatement_for_of
 
-function IterationStatement_for_of_b(b: Builder): void {
+function IterationStatement_for_of(b: Builder): void {
     // for ( [lookahead ≠ let ] LeftHandSideExpression    of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
@@ -2883,7 +2883,7 @@ function IterationStatement_for_of_b(b: Builder): void {
                 b.items([
                     notKeyword("let"), // FIXME: need tests for this
                     notPunctuator("["), // FIXME: need tests for this
-                    LeftHandSideExpression_b,
+                    LeftHandSideExpression,
                 ]);
                 b.popAboveAndSet(2,b.get(0));
             },
@@ -2892,13 +2892,13 @@ function IterationStatement_for_of_b(b: Builder): void {
                     pos,
                     keyword("var"),
                     whitespace,
-                    ForBinding_b,
+                    ForBinding,
                     pos,
                 ]);
                 b.popAboveAndSet(4,makeNode(b,4,0,"VarForDeclaration",[1]));
             },
             () => {
-                b.item(ForDeclaration_b);
+                b.item(ForDeclaration);
             },
         ]);
         b.assertLengthIs(oldLength+6);
@@ -2906,11 +2906,11 @@ function IterationStatement_for_of_b(b: Builder): void {
             whitespace,                                    // 8
             keyword("of"),                                 // 7
             whitespace,                                    // 6
-            Expression_b,                                    // 5 = expr
+            Expression,                                    // 5 = expr
             whitespace,                                    // 4
             punctuator(")"),                               // 3
             whitespace,                                    // 2
-            Statement_b,                                     // 1 = body
+            Statement,                                     // 1 = body
             pos,                                           // 0 = end
         ]);
         b.assertLengthIs(oldLength+15);
@@ -2922,12 +2922,12 @@ function IterationStatement_for_of_b(b: Builder): void {
 
 // IterationStatement_for
 
-function IterationStatement_for_b(b: Builder): void {
+function IterationStatement_for(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        IterationStatement_for_c_b,
-        IterationStatement_for_in_b,
-        IterationStatement_for_of_b,
+        IterationStatement_for_c,
+        IterationStatement_for_in,
+        IterationStatement_for_of,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2935,12 +2935,12 @@ function IterationStatement_for_b(b: Builder): void {
 
 // IterationStatement
 
-function IterationStatement_b(b: Builder): void {
+function IterationStatement(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        IterationStatement_do_b,
-        IterationStatement_while_b,
-        IterationStatement_for_b,
+        IterationStatement_do,
+        IterationStatement_while,
+        IterationStatement_for,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2948,7 +2948,7 @@ function IterationStatement_b(b: Builder): void {
 
 // ForDeclaration
 
-function ForDeclaration_b(b: Builder): void {
+function ForDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -2957,7 +2957,7 @@ function ForDeclaration_b(b: Builder): void {
                     pos,              // 4 = start
                     keyword("let"),   // 3
                     whitespace,       // 2
-                    ForBinding_b,       // 1 = binding
+                    ForBinding,       // 1 = binding
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -2968,7 +2968,7 @@ function ForDeclaration_b(b: Builder): void {
                     pos,              // 4 = start
                     keyword("const"), // 3
                     whitespace,       // 2
-                    ForBinding_b,       // 1 = binding
+                    ForBinding,       // 1 = binding
                     pos,              // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -2982,11 +2982,11 @@ function ForDeclaration_b(b: Builder): void {
 
 // ForBinding
 
-function ForBinding_b(b: Builder): void {
+function ForBinding(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        BindingIdentifier_b,
-        BindingPattern_b, // FIXME: Need test cases for this
+        BindingIdentifier,
+        BindingPattern, // FIXME: Need test cases for this
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -2996,7 +2996,7 @@ function ForBinding_b(b: Builder): void {
 
 // ContinueStatement
 
-function ContinueStatement_b(b: Builder): void {
+function ContinueStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -3017,7 +3017,7 @@ function ContinueStatement_b(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("continue"), // 5
                     whitespaceNoNewline, // 4
-                    LabelIdentifier_b,     // 3 = ident
+                    LabelIdentifier,     // 3 = ident
                     whitespace,          // 2
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
@@ -3035,7 +3035,7 @@ function ContinueStatement_b(b: Builder): void {
 
 // BreakStatement
 
-function BreakStatement_b(b: Builder): void {
+function BreakStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -3056,7 +3056,7 @@ function BreakStatement_b(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("break"),    // 5
                     whitespaceNoNewline, // 4
-                    LabelIdentifier_b,     // 3 = ident
+                    LabelIdentifier,     // 3 = ident
                     whitespace,          // 2
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
@@ -3074,7 +3074,7 @@ function BreakStatement_b(b: Builder): void {
 
 // ReturnStatement
 
-function ReturnStatement_b(b: Builder): void {
+function ReturnStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
@@ -3095,7 +3095,7 @@ function ReturnStatement_b(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("return"),   // 5
                     whitespaceNoNewline, // 4
-                    Expression_b,          // 3 = expr
+                    Expression,          // 3 = expr
                     whitespace,          // 2
                     punctuator(";"),     // 1
                     pos,                 // 0 = end
@@ -3113,7 +3113,7 @@ function ReturnStatement_b(b: Builder): void {
 
 // WithStatement
 
-function WithStatement_b(b: Builder): void {
+function WithStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3122,11 +3122,11 @@ function WithStatement_b(b: Builder): void {
             whitespace,      // 8
             punctuator("("), // 7
             whitespace,      // 6
-            Expression_b,      // 5 = expr
+            Expression,      // 5 = expr
             whitespace,      // 4
             punctuator(")"), // 3
             whitespace,      // 2
-            Statement_b,       // 1 = body
+            Statement,       // 1 = body
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -3140,7 +3140,7 @@ function WithStatement_b(b: Builder): void {
 
 // SwitchStatement
 
-function SwitchStatement_b(b: Builder): void {
+function SwitchStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3149,11 +3149,11 @@ function SwitchStatement_b(b: Builder): void {
             whitespace,        // 8
             punctuator("("),   // 7
             whitespace,        // 6
-            Expression_b,        // 5 = expr
+            Expression,        // 5 = expr
             whitespace,        // 4
             punctuator(")"),   // 3
             whitespace,        // 2
-            CaseBlock_b,         // 1 = cases
+            CaseBlock,         // 1 = cases
             pos,               // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -3165,7 +3165,7 @@ function SwitchStatement_b(b: Builder): void {
 
 // CaseBlock_1
 
-function CaseBlock_1_b(b: Builder): void {
+function CaseBlock_1(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3176,7 +3176,7 @@ function CaseBlock_1_b(b: Builder): void {
         ]);
         b.bchoice([           // 3 = clauses
             () => {
-                b.item(CaseClauses_b);
+                b.item(CaseClauses);
             },
             () => {
                 const midpos = checkNumber(b.get(0));
@@ -3197,18 +3197,18 @@ function CaseBlock_1_b(b: Builder): void {
 
 // CaseBlock_2
 
-function CaseBlock_2_b(b: Builder): void {
+function CaseBlock_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,              // 10 = start
             punctuator("{"),  // 9
             whitespace,       // 8
-            opt(CaseClauses_b), // 7 = clauses1
+            opt(CaseClauses), // 7 = clauses1
             whitespace,       // 6
-            DefaultClause_b,    // 5 = defaultClause
+            DefaultClause,    // 5 = defaultClause
             whitespace,       // 4
-            opt(CaseClauses_b), // 3 = clauses2
+            opt(CaseClauses), // 3 = clauses2
             whitespace,       // 2
             punctuator("}"),  // 1
             pos,              // 0 = end
@@ -3222,11 +3222,11 @@ function CaseBlock_2_b(b: Builder): void {
 
 // CaseBlock
 
-function CaseBlock_b(b: Builder): void {
+function CaseBlock(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        CaseBlock_1_b,
-        CaseBlock_2_b,
+        CaseBlock_1,
+        CaseBlock_2,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -3234,17 +3234,17 @@ function CaseBlock_b(b: Builder): void {
 
 // CaseClauses
 
-function CaseClauses_b(b: Builder): void {
+function CaseClauses(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(CaseClause_b);
+                b.item(CaseClause);
             },
             () => {
                 b.items([
                     whitespace,
-                    CaseClause_b,
+                    CaseClause,
                 ]);
                 b.popAboveAndSet(1,b.get(0));
             },
@@ -3256,18 +3256,18 @@ function CaseClauses_b(b: Builder): void {
 
 // CaseClause
 
-function CaseClause_b(b: Builder): void {
+function CaseClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,             // 8 = start
             keyword("case"), // 7
             whitespace,      // 6
-            Expression_b,      // 5 = expr
+            Expression,      // 5 = expr
             whitespace,      // 4
             punctuator(":"), // 3
             whitespace,      // 2
-            StatementList_b,   // 1 = statements
+            StatementList,   // 1 = statements
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+9);
@@ -3279,7 +3279,7 @@ function CaseClause_b(b: Builder): void {
 
 // DefaultClause
 
-function DefaultClause_b(b: Builder): void {
+function DefaultClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3288,7 +3288,7 @@ function DefaultClause_b(b: Builder): void {
             whitespace,         // 4
             punctuator(":"),    // 3
             whitespace,         // 2
-            StatementList_b,      // 1 = statements
+            StatementList,      // 1 = statements
             whitespace,         // 0
         ]);
         b.assertLengthIs(oldLength+7);
@@ -3305,16 +3305,16 @@ function DefaultClause_b(b: Builder): void {
 
 // LabelledStatement
 
-function LabelledStatement_b(b: Builder): void {
+function LabelledStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,             // 6 = start
-            LabelIdentifier_b, // 5 = ident
+            LabelIdentifier, // 5 = ident
             whitespace,      // 4
             punctuator(":"), // 3
             whitespace,      // 2
-            LabelledItem_b,    // 1 = item
+            LabelledItem,    // 1 = item
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -3326,11 +3326,11 @@ function LabelledStatement_b(b: Builder): void {
 
 // LabelledItem
 
-function LabelledItem_b(b: Builder): void {
+function LabelledItem(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        Statement_b,
-        FunctionDeclaration_b,
+        Statement,
+        FunctionDeclaration,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -3340,14 +3340,14 @@ function LabelledItem_b(b: Builder): void {
 
 // ThrowStatement
 
-function ThrowStatement_b(b: Builder): void {
+function ThrowStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 6 = start
             keyword("throw"),    // 5
             whitespaceNoNewline, // 4
-            Expression_b,          // 3 = expr
+            Expression,          // 3 = expr
             whitespace,          // 2
             punctuator(";"),     // 1
             pos,                 // 0 = end
@@ -3363,25 +3363,25 @@ function ThrowStatement_b(b: Builder): void {
 
 // TryStatement
 
-function TryStatement_b(b: Builder): void {
+function TryStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);                   // 7 = start
         b.item(keyword("try"));        // 6
         b.item(whitespace);            // 5
-        b.item(Block_b);                 // 4 = tryBlock
+        b.item(Block);                 // 4 = tryBlock
         b.bchoice([
             () => {
                 b.item(whitespace);    // 3
                 b.item(value(null));   // 2 = catchBlock
-                b.item(Finally_b);       // 1 = finallyBlock
+                b.item(Finally);       // 1 = finallyBlock
             },
             () => {
                 b.item(whitespace);    // 3
-                b.item(Catch_b);         // 2 = catchBlock
+                b.item(Catch);         // 2 = catchBlock
                 b.bopt(() => {          // 1 = finallyBlock
                     b.item(whitespace);
-                    b.item(Finally_b);
+                    b.item(Finally);
                     b.popAboveAndSet(1,b.get(0));
                 });
             },
@@ -3396,7 +3396,7 @@ function TryStatement_b(b: Builder): void {
 
 // Catch
 
-function Catch_b(b: Builder): void {
+function Catch(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3405,11 +3405,11 @@ function Catch_b(b: Builder): void {
             whitespace,       // 8
             punctuator("("),  // 7
             whitespace,       // 6
-            CatchParameter_b,   // 5 = param
+            CatchParameter,   // 5 = param
             whitespace,       // 4
             punctuator(")"),  // 3
             whitespace,       // 2
-            Block_b,            // 1 = block
+            Block,            // 1 = block
             pos,              // 0 = end
         ]);
         b.assertLengthIs(oldLength+11);
@@ -3421,14 +3421,14 @@ function Catch_b(b: Builder): void {
 
 // Finally
 
-function Finally_b(b: Builder): void {
+function Finally(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                // 4
             keyword("finally"), // 3
             whitespace,         // 2
-            Block_b,              // 1
+            Block,              // 1
             pos,                // 0
         ]);
         b.assertLengthIs(oldLength+5);
@@ -3440,11 +3440,11 @@ function Finally_b(b: Builder): void {
 
 // CatchParameter
 
-function CatchParameter_b(b: Builder): void {
+function CatchParameter(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        BindingIdentifier_b,
-        BindingPattern_b,
+        BindingIdentifier,
+        BindingPattern,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -3454,7 +3454,7 @@ function CatchParameter_b(b: Builder): void {
 
 // DebuggerStatement
 
-function DebuggerStatement_b(b: Builder): void {
+function DebuggerStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3475,24 +3475,24 @@ function DebuggerStatement_b(b: Builder): void {
 
 // FunctionDeclaration_named
 
-function FunctionDeclaration_named_b(b: Builder): void {
+function FunctionDeclaration_named(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 16 = start
             keyword("function"), // 15
             whitespace,          // 14
-            BindingIdentifier_b,   // 13 = ident
+            BindingIdentifier,   // 13 = ident
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters_b,    // 9 = params
+            FormalParameters,    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            FunctionBody_b,        // 3 = body
+            FunctionBody,        // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -3506,7 +3506,7 @@ function FunctionDeclaration_named_b(b: Builder): void {
 
 // FunctionDeclaration_unnamed
 
-function FunctionDeclaration_unnamed_b(b: Builder): void {
+function FunctionDeclaration_unnamed(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3516,13 +3516,13 @@ function FunctionDeclaration_unnamed_b(b: Builder): void {
             punctuator("("),     // 12
             whitespace,          // 11
             value(null),         // 10 = null
-            FormalParameters_b,    // 9 = params
+            FormalParameters,    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            FunctionBody_b,        // 3 = body
+            FunctionBody,        // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -3536,16 +3536,16 @@ function FunctionDeclaration_unnamed_b(b: Builder): void {
 
 // FunctionDeclaration
 
-function FunctionDeclaration_b(b: Builder): void {
+function FunctionDeclaration(b: Builder): void {
     b.bchoice([
-        FunctionDeclaration_named_b,
-        FunctionDeclaration_unnamed_b,
+        FunctionDeclaration_named,
+        FunctionDeclaration_unnamed,
     ]);
 }
 
 // FunctionExpression
 
-function FunctionExpression_b(b: Builder): void {
+function FunctionExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3554,20 +3554,20 @@ function FunctionExpression_b(b: Builder): void {
             whitespace,          // 13
         ]);
         b.bopt(() => {
-            b.item(BindingIdentifier_b);
+            b.item(BindingIdentifier);
             b.item(whitespace);
             b.popAboveAndSet(1,b.get(1));
         });
         b.items([
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters_b,    // 9 = params
+            FormalParameters,    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            FunctionBody_b,        // 3 = body
+            FunctionBody,        // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -3581,18 +3581,18 @@ function FunctionExpression_b(b: Builder): void {
 
 // StrictFormalParameters
 
-function StrictFormalParameters_b(b: Builder): void {
-    b.item(FormalParameters_b);
+function StrictFormalParameters(b: Builder): void {
+    b.item(FormalParameters);
 }
 
 // FormalParameters
 
-function FormalParameters_b(b: Builder): void {
+function FormalParameters(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.item(FormalParameterList_b);
+                b.item(FormalParameterList);
             },
             () => {
                 b.item(pos);
@@ -3606,14 +3606,14 @@ function FormalParameters_b(b: Builder): void {
 
 // FormalParameterList
 
-function FormalParameterList_b(b: Builder): void {
+function FormalParameterList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
                 b.items([
                     pos,                   // 2 = start
-                    FunctionRestParameter_b, // 1 = rest
+                    FunctionRestParameter, // 1 = rest
                     pos,                   // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+3);
@@ -3621,14 +3621,14 @@ function FormalParameterList_b(b: Builder): void {
             },
             () => {
                 b.item(pos);           // 3 = start
-                b.item(FormalsList_b);   // 2 = formals
+                b.item(FormalsList);   // 2 = formals
                 b.bchoice([
                     () => {
                         b.items([
                             whitespace,
                             punctuator(","),
                             whitespace,
-                            FunctionRestParameter_b,
+                            FunctionRestParameter,
                             pos,
                         ]);
                         b.assertLengthIs(oldLength+7);
@@ -3648,19 +3648,19 @@ function FormalParameterList_b(b: Builder): void {
 
 // FormalsList
 
-function FormalsList_b(b: Builder): void {
+function FormalsList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(FormalParameter_b);
+                b.item(FormalParameter);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    FormalParameter_b,
+                    FormalParameter,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -3672,28 +3672,28 @@ function FormalsList_b(b: Builder): void {
 
 // FunctionRestParameter
 
-function FunctionRestParameter_b(b: Builder): void {
-    b.item(BindingRestElement_b);
+function FunctionRestParameter(b: Builder): void {
+    b.item(BindingRestElement);
 }
 
 // FormalParameter
 
-function FormalParameter_b(b: Builder): void {
-    b.item(BindingElement_b);
+function FormalParameter(b: Builder): void {
+    b.item(BindingElement);
 }
 
 // FunctionBody
 
-function FunctionBody_b(b: Builder): void {
-    b.item(FunctionStatementList_b);
+function FunctionBody(b: Builder): void {
+    b.item(FunctionStatementList);
 }
 
 // FunctionStatementList
 
-function FunctionStatementList_b(b: Builder): void {
+function FunctionStatementList(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        StatementList_b,
+        StatementList,
         () => b.push(new ListNode(new Range(b.parser.pos,b.parser.pos),[])),
     ]);
     b.assertLengthIs(oldLength+1);
@@ -3704,16 +3704,16 @@ function FunctionStatementList_b(b: Builder): void {
 
 // ArrowFunction
 
-function ArrowFunction_b(b: Builder): void {
+function ArrowFunction(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 6 = start
-            ArrowParameters_b,     // 5 = params
+            ArrowParameters,     // 5 = params
             whitespaceNoNewline, // 4
             punctuator("=>"),    // 3
             whitespace,          // 2
-            ConciseBody_b,         // 1 = body
+            ConciseBody,         // 1 = body
             pos,                 // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -3725,11 +3725,11 @@ function ArrowFunction_b(b: Builder): void {
 
 // ArrowParameters
 
-function ArrowParameters_b(b: Builder): void {
+function ArrowParameters(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        BindingIdentifier_b,
-        ArrowFormalParameters_b,
+        BindingIdentifier,
+        ArrowFormalParameters,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -3737,21 +3737,21 @@ function ArrowParameters_b(b: Builder): void {
 
 // ConciseBody_1
 
-function ConciseBody_1_b(b: Builder): void {
+function ConciseBody_1(b: Builder): void {
     if (b.parser.lookaheadPunctuator("{"))
         throw new ParseIgnore();
-    b.item(AssignmentExpression_b);
+    b.item(AssignmentExpression);
 }
 
 // ConciseBody_2
 
-function ConciseBody_2_b(b: Builder): void {
+function ConciseBody_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             punctuator("{"), // 4
             whitespace,      // 3
-            FunctionBody_b,    // 2
+            FunctionBody,    // 2
             whitespace,      // 1
             punctuator("}"), // 0
         ]);
@@ -3764,11 +3764,11 @@ function ConciseBody_2_b(b: Builder): void {
 
 // ConciseBody
 
-function ConciseBody_b(b: Builder): void {
+function ConciseBody(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        ConciseBody_1_b,
-        ConciseBody_2_b,
+        ConciseBody_1,
+        ConciseBody_2,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -3776,13 +3776,13 @@ function ConciseBody_b(b: Builder): void {
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters_b(b: Builder): void {
+function ArrowFormalParameters(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             punctuator("("),        // 4
             whitespace,             // 3
-            StrictFormalParameters_b, // 2
+            StrictFormalParameters, // 2
             whitespace,             // 1
             punctuator(")"),        // 0
         ]);
@@ -3797,22 +3797,22 @@ function ArrowFormalParameters_b(b: Builder): void {
 
 // MethodDefinition_1
 
-function MethodDefinition_1_b(b: Builder): void {
+function MethodDefinition_1(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                    // 14 = start
-            PropertyName_b,           // 13 = name
+            PropertyName,           // 13 = name
             whitespace,             // 12
             punctuator("("),        // 11
             whitespace,             // 10
-            StrictFormalParameters_b, // 9 = params
+            StrictFormalParameters, // 9 = params
             whitespace,             // 8
             punctuator(")"),        // 7
             whitespace,             // 6
             punctuator("{"),        // 5
             whitespace,             // 4
-            FunctionBody_b,           // 3 = body
+            FunctionBody,           // 3 = body
             whitespace,             // 2
             punctuator("}"),        // 1
             pos,                    // 0 = end
@@ -3826,20 +3826,20 @@ function MethodDefinition_1_b(b: Builder): void {
 
 // MethodDefinition_2
 
-function MethodDefinition_2_b(b: Builder): void {
-    b.item(GeneratorMethod_b);
+function MethodDefinition_2(b: Builder): void {
+    b.item(GeneratorMethod);
 }
 
 // MethodDefinition_3
 
-function MethodDefinition_3_b(b: Builder): void {
+function MethodDefinition_3(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 14 = start
             identifier("get"), // 13 "get" is not a reserved word, so we can't use keyword here
             whitespace,        // 12
-            PropertyName_b,      // 11 = name
+            PropertyName,      // 11 = name
             whitespace,        // 10
             punctuator("("),   // 9
             whitespace,        // 8
@@ -3847,7 +3847,7 @@ function MethodDefinition_3_b(b: Builder): void {
             whitespace,        // 6
             punctuator("{"),   // 5
             whitespace,        // 4
-            FunctionBody_b,      // 3 = body
+            FunctionBody,      // 3 = body
             whitespace,        // 2
             punctuator("}"),   // 1
             pos,               // 0 = end
@@ -3861,24 +3861,24 @@ function MethodDefinition_3_b(b: Builder): void {
 
 // MethodDefinition_4
 
-function MethodDefinition_4_b(b: Builder): void {
+function MethodDefinition_4(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                      // 16 = start
             identifier("set"),        // 15
             whitespace,               // 14
-            PropertyName_b,             // 13 = name
+            PropertyName,             // 13 = name
             whitespace,               // 12
             punctuator("("),          // 11
             whitespace,               // 10
-            PropertySetParameterList_b, // 9 = param
+            PropertySetParameterList, // 9 = param
             whitespace,               // 8
             punctuator(")"),          // 7
             whitespace,               // 6
             punctuator("{"),          // 5
             whitespace,               // 4
-            FunctionBody_b,             // 3 = body
+            FunctionBody,             // 3 = body
             whitespace,               // 2
             punctuator("}"),          // 1
             pos,                      // 0 = end
@@ -3892,43 +3892,43 @@ function MethodDefinition_4_b(b: Builder): void {
 
 // MethodDefinition
 
-function MethodDefinition_b(b: Builder): void {
+function MethodDefinition(b: Builder): void {
     b.bchoice([
-        MethodDefinition_1_b,
-        MethodDefinition_2_b,
-        MethodDefinition_3_b,
-        MethodDefinition_4_b,
+        MethodDefinition_1,
+        MethodDefinition_2,
+        MethodDefinition_3,
+        MethodDefinition_4,
     ]);
 }
 
 // PropertySetParameterList
 
-function PropertySetParameterList_b(b: Builder): void {
-    b.item(FormalParameter_b);
+function PropertySetParameterList(b: Builder): void {
+    b.item(FormalParameter);
 }
 
 // Section 14.4
 
 // GeneratorMethod
 
-function GeneratorMethod_b(b: Builder): void {
+function GeneratorMethod(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                    // 16 = start
             punctuator("*"),        // 15
             whitespace,             // 14
-            PropertyName_b,           // 13 = name
+            PropertyName,           // 13 = name
             whitespace,             // 12
             punctuator("("),        // 11
             whitespace,             // 10
-            StrictFormalParameters_b, // 9 = params
+            StrictFormalParameters, // 9 = params
             whitespace,             // 8
             punctuator(")"),        // 7
             whitespace,             // 6
             punctuator("{"),        // 5
             whitespace,             // 4
-            GeneratorBody_b,          // 3 = body
+            GeneratorBody,          // 3 = body
             whitespace,             // 2
             punctuator("}"),        // 1
             pos,                    // 0 = end
@@ -3942,7 +3942,7 @@ function GeneratorMethod_b(b: Builder): void {
 
 // GeneratorDeclaration_1
 
-function GeneratorDeclaration_1_b(b: Builder): void {
+function GeneratorDeclaration_1(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3951,17 +3951,17 @@ function GeneratorDeclaration_1_b(b: Builder): void {
             whitespace,          // 16
             punctuator("*"),     // 15
             whitespace,          // 14
-            BindingIdentifier_b,   // 13 = ident
+            BindingIdentifier,   // 13 = ident
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters_b,    // 9 = params
+            FormalParameters,    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            GeneratorBody_b,       // 3 = body
+            GeneratorBody,       // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -3975,7 +3975,7 @@ function GeneratorDeclaration_1_b(b: Builder): void {
 
 // GeneratorDeclaration_2
 
-function GeneratorDeclaration_2_b(b: Builder): void {
+function GeneratorDeclaration_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3986,13 +3986,13 @@ function GeneratorDeclaration_2_b(b: Builder): void {
             whitespace,          // 12
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters_b,    // 9 = params
+            FormalParameters,    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            GeneratorBody_b,       // 3 = body
+            GeneratorBody,       // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -4007,16 +4007,16 @@ function GeneratorDeclaration_2_b(b: Builder): void {
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration_b(b: Builder): void {
+function GeneratorDeclaration(b: Builder): void {
     b.bchoice([
-        GeneratorDeclaration_1_b,
-        GeneratorDeclaration_2_b,
+        GeneratorDeclaration_1,
+        GeneratorDeclaration_2,
     ]);
 }
 
 // GeneratorExpression
 
-function GeneratorExpression_b(b: Builder): void {
+function GeneratorExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4028,7 +4028,7 @@ function GeneratorExpression_b(b: Builder): void {
         ]);
         b.bopt(() => {            // 12 = ident
             b.items([
-                BindingIdentifier_b,
+                BindingIdentifier,
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
@@ -4036,13 +4036,13 @@ function GeneratorExpression_b(b: Builder): void {
         b.items([
             punctuator("("),     // 11
             whitespace,          // 10
-            FormalParameters_b,    // 9 = params
+            FormalParameters,    // 9 = params
             whitespace,          // 8
             punctuator(")"),     // 7
             whitespace,          // 6
             punctuator("{"),     // 5
             whitespace,          // 4
-            GeneratorBody_b,       // 3 = body
+            GeneratorBody,       // 3 = body
             whitespace,          // 2
             punctuator("}"),     // 1
             pos,                 // 0 = end
@@ -4056,13 +4056,13 @@ function GeneratorExpression_b(b: Builder): void {
 
 // GeneratorBody
 
-function GeneratorBody_b(b: Builder): void {
-    b.item(FunctionBody_b);
+function GeneratorBody(b: Builder): void {
+    b.item(FunctionBody);
 }
 
 // YieldExpression_1
 
-function YieldExpression_1_b(b: Builder): void {
+function YieldExpression_1(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4071,7 +4071,7 @@ function YieldExpression_1_b(b: Builder): void {
             whitespaceNoNewline,  // 4
             punctuator("*"),      // 3
             whitespace,           // 2
-            AssignmentExpression_b, // 1
+            AssignmentExpression, // 1
             pos,                  // 0
         ]);
         b.assertLengthIs(oldLength+7);
@@ -4083,14 +4083,14 @@ function YieldExpression_1_b(b: Builder): void {
 
 // YieldExpression_2
 
-function YieldExpression_2_b(b: Builder): void {
+function YieldExpression_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                  // 4
             keyword("yield"),     // 3
             whitespaceNoNewline,  // 2
-            AssignmentExpression_b, // 1
+            AssignmentExpression, // 1
             pos,                  // 0
         ]);
         b.assertLengthIs(oldLength+5);
@@ -4102,7 +4102,7 @@ function YieldExpression_2_b(b: Builder): void {
 
 // YieldExpression_3
 
-function YieldExpression_3_b(b: Builder): void {
+function YieldExpression_3(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4119,12 +4119,12 @@ function YieldExpression_3_b(b: Builder): void {
 
 // YieldExpression
 
-function YieldExpression_b(b: Builder): void {
+function YieldExpression(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        YieldExpression_1_b,
-        YieldExpression_2_b,
-        YieldExpression_3_b,
+        YieldExpression_1,
+        YieldExpression_2,
+        YieldExpression_3,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -4134,16 +4134,16 @@ function YieldExpression_b(b: Builder): void {
 
 // ClassDeclaration_1
 
-function ClassDeclaration_1_b(b: Builder): void {
+function ClassDeclaration_1(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 6 = start
             keyword("class"),  // 5
             whitespace,        // 4
-            BindingIdentifier_b, // 3 = ident
+            BindingIdentifier, // 3 = ident
             whitespace,        // 2
-            ClassTail_b,         // 1 = tail
+            ClassTail,         // 1 = tail
             pos,               // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -4155,7 +4155,7 @@ function ClassDeclaration_1_b(b: Builder): void {
 
 // ClassDeclaration_2
 
-function ClassDeclaration_2_b(b: Builder): void {
+function ClassDeclaration_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4163,7 +4163,7 @@ function ClassDeclaration_2_b(b: Builder): void {
             keyword("class"), // 4
             whitespace,       // 3
             value(null),      // 2
-            ClassTail_b,        // 1
+            ClassTail,        // 1
             pos,              // 0
         ]);
         b.assertLengthIs(oldLength+6);
@@ -4175,16 +4175,16 @@ function ClassDeclaration_2_b(b: Builder): void {
 
 // ClassDeclaration
 
-function ClassDeclaration_b(b: Builder): void {
+function ClassDeclaration(b: Builder): void {
     b.bchoice([
-        ClassDeclaration_1_b,
-        ClassDeclaration_2_b,
+        ClassDeclaration_1,
+        ClassDeclaration_2,
     ]);
 }
 
 // ClassExpression
 
-function ClassExpression_b(b: Builder): void {
+function ClassExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);              // 5
@@ -4192,12 +4192,12 @@ function ClassExpression_b(b: Builder): void {
         b.item(whitespace);       // 3
         b.bopt(() => {             // 2
             b.items([
-                BindingIdentifier_b,
+                BindingIdentifier,
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
         });
-        b.item(ClassTail_b);        // 1
+        b.item(ClassTail);        // 1
         b.item(pos);              // 0
         b.assertLengthIs(oldLength+6);
         b.popAboveAndSet(5,makeNode(b,5,0,"ClassExpression",[2,1]));
@@ -4208,13 +4208,13 @@ function ClassExpression_b(b: Builder): void {
 
 // ClassTail
 
-function ClassTail_b(b: Builder): void {
+function ClassTail(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);               // 6 = start
         b.bopt(() => {              // 5 = heritage
             b.items([
-                ClassHeritage_b,
+                ClassHeritage,
                 whitespace,
             ]);
             b.popAboveAndSet(1,b.get(1));
@@ -4224,7 +4224,7 @@ function ClassTail_b(b: Builder): void {
         b.bchoice([                 // 2 = body
             () => {
                 b.items([
-                    ClassBody_b,
+                    ClassBody,
                     whitespace,
                 ]);
                 b.popAboveAndSet(1,b.get(1));
@@ -4245,14 +4245,14 @@ function ClassTail_b(b: Builder): void {
 
 // ClassHeritage
 
-function ClassHeritage_b(b: Builder): void {
+function ClassHeritage(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                    // 4 = start
             keyword("extends"),     // 3
             whitespace,             // 2
-            LeftHandSideExpression_b, // 1 = expr
+            LeftHandSideExpression, // 1 = expr
             pos,                    // 0 = end
         ]);
         b.assertLengthIs(oldLength+5);
@@ -4264,22 +4264,22 @@ function ClassHeritage_b(b: Builder): void {
 
 // ClassBody
 
-function ClassBody_b(b: Builder): void {
-    b.item(ClassElementList_b);
+function ClassBody(b: Builder): void {
+    b.item(ClassElementList);
 }
 
 // ClassElementList
 
-function ClassElementList_b(b: Builder): void {
+function ClassElementList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(ClassElement_b);
+                b.item(ClassElement);
             },
             () => {
                 b.item(whitespace);
-                b.item(ClassElement_b);
+                b.item(ClassElement);
                 b.popAboveAndSet(1,b.get(0));
             },
         );
@@ -4290,20 +4290,20 @@ function ClassElementList_b(b: Builder): void {
 
 // ClassElement_1
 
-function ClassElement_1_b(b: Builder): void {
-    b.item(MethodDefinition_b);
+function ClassElement_1(b: Builder): void {
+    b.item(MethodDefinition);
 }
 
 // ClassElement_2
 
-function ClassElement_2_b(b: Builder): void {
+function ClassElement_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
             keyword("static"),
             whitespace,
-            MethodDefinition_b,
+            MethodDefinition,
             pos,
         ]);
         b.assertLengthIs(oldLength+5);
@@ -4315,7 +4315,7 @@ function ClassElement_2_b(b: Builder): void {
 
 // ClassElement_3
 
-function ClassElement_3_b(b: Builder): void {
+function ClassElement_3(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4332,12 +4332,12 @@ function ClassElement_3_b(b: Builder): void {
 
 // ClassElement
 
-function ClassElement_b(b: Builder): void {
+function ClassElement(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        ClassElement_1_b,
-        ClassElement_2_b,
-        ClassElement_3_b,
+        ClassElement_1,
+        ClassElement_2,
+        ClassElement_3,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -4347,12 +4347,12 @@ function ClassElement_b(b: Builder): void {
 
 // Script
 
-function Script_b(b: Builder): void {
+function Script(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
     b.bchoice([
         () => {
-            b.item(ScriptBody_b);
+            b.item(ScriptBody);
         },
         () => {
             const start = checkNumber(b.get(0));
@@ -4372,20 +4372,20 @@ function Script_b(b: Builder): void {
 
 // ScriptBody
 
-function ScriptBody_b(b: Builder): void {
-    b.item(StatementList_b);
+function ScriptBody(b: Builder): void {
+    b.item(StatementList);
 }
 
 // Section 15.2
 
 // Module
 
-function Module_b(b: Builder): void {
+function Module(b: Builder): void {
     const oldLength = b.length;
     b.item(pos);
     b.bchoice([
         () => {
-            b.item(ModuleBody_b);
+            b.item(ModuleBody);
         },
         () => {
             const start = checkNumber(b.get(0));
@@ -4405,22 +4405,22 @@ function Module_b(b: Builder): void {
 
 // ModuleBody
 
-function ModuleBody_b(b: Builder): void {
-    b.item(ModuleItemList_b);
+function ModuleBody(b: Builder): void {
+    b.item(ModuleItemList);
 }
 
 // ModuleItemList
 
-function ModuleItemList_b(b: Builder): void {
+function ModuleItemList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(ModuleItem_b);
+                b.item(ModuleItem);
             },
             () => {
                 b.item(whitespace);
-                b.item(ModuleItem_b);
+                b.item(ModuleItem);
                 b.popAboveAndSet(1,b.get(0));
             },
         );
@@ -4431,12 +4431,12 @@ function ModuleItemList_b(b: Builder): void {
 
 // ModuleItem
 
-function ModuleItem_b(b: Builder): void {
+function ModuleItem(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        ImportDeclaration_b,
-        ExportDeclaration_b,
-        StatementListItem_b,
+        ImportDeclaration,
+        ExportDeclaration,
+        StatementListItem,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -4446,16 +4446,16 @@ function ModuleItem_b(b: Builder): void {
 
 // ImportDeclaration_from
 
-function ImportDeclaration_from_b(b: Builder): void {
+function ImportDeclaration_from(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 8 = start
             keyword("import"), // 7
             whitespace,        // 6
-            ImportClause_b,      // 5 = importClause
+            ImportClause,      // 5 = importClause
             whitespace,        // 4
-            FromClause_b,        // 3 = fromClause
+            FromClause,        // 3 = fromClause
             whitespace,        // 2
             punctuator(";"),   // 1
             pos,               // 0 = end
@@ -4469,14 +4469,14 @@ function ImportDeclaration_from_b(b: Builder): void {
 
 // ImportDeclaration_module
 
-function ImportDeclaration_module_b(b: Builder): void {
+function ImportDeclaration_module(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 6 = start
             keyword("import"), // 5
             whitespace,        // 4
-            ModuleSpecifier_b,   // 3 = specifier
+            ModuleSpecifier,   // 3 = specifier
             whitespace,        // 2
             punctuator(";"),   // 1
             pos,               // 0 = end
@@ -4490,11 +4490,11 @@ function ImportDeclaration_module_b(b: Builder): void {
 
 // ImportDeclaration
 
-function ImportDeclaration_b(b: Builder): void {
+function ImportDeclaration(b: Builder): void {
     const oldLength = b.length;
     b.bchoice([
-        ImportDeclaration_from_b,
-        ImportDeclaration_module_b,
+        ImportDeclaration_from,
+        ImportDeclaration_module,
     ]);
     b.assertLengthIs(oldLength+1);
     checkNode(b.get(0));
@@ -4502,26 +4502,26 @@ function ImportDeclaration_b(b: Builder): void {
 
 // ImportClause
 
-function ImportClause_b(b: Builder): void {
+function ImportClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
-                b.item(NameSpaceImport_b);
+                b.item(NameSpaceImport);
             },
             () => {
-                b.item(NamedImports_b);
+                b.item(NamedImports);
             },
             () => {
                 b.item(pos);                    // 6 = start
-                b.item(ImportedDefaultBinding_b); // 5 = defbinding
+                b.item(ImportedDefaultBinding); // 5 = defbinding
                 b.bchoice([
                     () => {
                         b.items([
                             whitespace,         // 4
                             punctuator(","),    // 3
                             whitespace,         // 2
-                            NameSpaceImport_b,    // 1 = nsimport
+                            NameSpaceImport,    // 1 = nsimport
                             pos,                // 0 = end
                         ]);
                         b.assertLengthIs(oldLength+7);
@@ -4532,7 +4532,7 @@ function ImportClause_b(b: Builder): void {
                             whitespace,         // 4
                             punctuator(","),    // 3
                             whitespace,         // 2
-                            NamedImports_b,       // 1 = nsimports
+                            NamedImports,       // 1 = nsimports
                             pos,                // 0 = end
                         ]);
                         b.assertLengthIs(oldLength+7);
@@ -4552,13 +4552,13 @@ function ImportClause_b(b: Builder): void {
 
 // ImportedDefaultBinding
 
-function ImportedDefaultBinding_b(b: Builder): void {
-    b.item(ImportedBinding_b);
+function ImportedDefaultBinding(b: Builder): void {
+    b.item(ImportedBinding);
 }
 
 // NameSpaceImport
 
-function NameSpaceImport_b(b: Builder): void {
+function NameSpaceImport(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4567,7 +4567,7 @@ function NameSpaceImport_b(b: Builder): void {
             whitespace,      // 4
             keyword("as"),   // 3
             whitespace,      // 2
-            ImportedBinding_b, // 1 = binding
+            ImportedBinding, // 1 = binding
             pos,             // 0 = end
         ]);
         b.assertLengthIs(oldLength+7);
@@ -4579,7 +4579,7 @@ function NameSpaceImport_b(b: Builder): void {
 
 // NamedImports
 
-function NamedImports_b(b: Builder): void {
+function NamedImports(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4589,7 +4589,7 @@ function NamedImports_b(b: Builder): void {
         ]);
         b.bchoice([              // 2 = imports
             () => {
-                b.item(ImportsList_b);
+                b.item(ImportsList);
                 b.item(whitespace);
                 b.bopt(() => {
                     b.item(punctuator(","));
@@ -4616,13 +4616,13 @@ function NamedImports_b(b: Builder): void {
 
 // FromClause
 
-function FromClause_b(b: Builder): void {
+function FromClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             keyword("from"),
             whitespace,
-            ModuleSpecifier_b,
+            ModuleSpecifier,
         ]);
         b.assertLengthIs(oldLength+3);
         b.popAboveAndSet(2,b.get(0));
@@ -4633,19 +4633,19 @@ function FromClause_b(b: Builder): void {
 
 // ImportsList
 
-function ImportsList_b(b: Builder): void {
+function ImportsList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(ImportSpecifier_b);
+                b.item(ImportSpecifier);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    ImportSpecifier_b,
+                    ImportSpecifier,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -4657,18 +4657,18 @@ function ImportsList_b(b: Builder): void {
 
 // ImportSpecifier
 
-function ImportSpecifier_b(b: Builder): void {
+function ImportSpecifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.bchoice([
             () => {
                 b.items([
                     pos,             // 6 = start
-                    IdentifierName_b,  // 5 = name
+                    IdentifierName,  // 5 = name
                     whitespace,      // 4
                     keyword("as"),   // 3
                     whitespace,      // 2
-                    ImportedBinding_b, // 1 = binding
+                    ImportedBinding, // 1 = binding
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -4677,7 +4677,7 @@ function ImportSpecifier_b(b: Builder): void {
             () => {
                 b.items([
                     pos,             // 2 = start
-                    ImportedBinding_b, // 1 = binding
+                    ImportedBinding, // 1 = binding
                     pos,             // 0 = end
                 ]);
                 b.assertLengthIs(oldLength+3);
@@ -4691,21 +4691,21 @@ function ImportSpecifier_b(b: Builder): void {
 
 // ModuleSpecifier
 
-function ModuleSpecifier_b(b: Builder): void {
-    b.item(StringLiteral_b);
+function ModuleSpecifier(b: Builder): void {
+    b.item(StringLiteral);
 }
 
 // ImportedBinding
 
-function ImportedBinding_b(b: Builder): void {
-    b.item(BindingIdentifier_b);
+function ImportedBinding(b: Builder): void {
+    b.item(BindingIdentifier);
 }
 
 // Section 15.2.3
 
 // ExportDeclaration
 
-function ExportDeclaration_b(b: Builder): void {
+function ExportDeclaration(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4719,7 +4719,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     keyword("default"),                              // 3
                     whitespace,                                      // 2
-                    HoistableDeclaration_b, // 1
+                    HoistableDeclaration, // 1
                     pos,                                             // 0
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -4729,7 +4729,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     keyword("default"), // 3
                     whitespace, // 2
-                    ClassDeclaration_b, // 1
+                    ClassDeclaration, // 1
                     pos, // 0
                 ]);
                 b.popAboveAndSet(6,makeNode(b,6,0,"ExportDefault",[1]));
@@ -4740,7 +4740,7 @@ function ExportDeclaration_b(b: Builder): void {
                     whitespace, // 6
                     notKeyword("function"), // 5 FIXME: need tests for this
                     notKeyword("class"), // 4 FIXME: need tests for this
-                    AssignmentExpression_b, // 3
+                    AssignmentExpression, // 3
                     whitespace, // 2
                     punctuator(";"), // 1
                     pos, // 0
@@ -4752,7 +4752,7 @@ function ExportDeclaration_b(b: Builder): void {
                 b.items([
                     punctuator("*"), // 5
                     whitespace,      // 4
-                    FromClause_b,      // 3
+                    FromClause,      // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
                     pos,             // 0
@@ -4762,9 +4762,9 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.items([
-                    ExportClause_b,    // 5
+                    ExportClause,    // 5
                     whitespace,      // 4
-                    FromClause_b,      // 3
+                    FromClause,      // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
                     pos,             // 0
@@ -4774,7 +4774,7 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.items([
-                    ExportClause_b,    // 3
+                    ExportClause,    // 3
                     whitespace,      // 2
                     punctuator(";"), // 1
                     pos,             // 0
@@ -4784,7 +4784,7 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.items([
-                    VariableStatement_b, // 1
+                    VariableStatement, // 1
                     pos,               // 0
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -4792,7 +4792,7 @@ function ExportDeclaration_b(b: Builder): void {
             },
             () => {
                 b.items([
-                    Declaration_b, // 1
+                    Declaration, // 1
                     pos,         // 0
                 ]);
                 b.assertLengthIs(oldLength+5);
@@ -4806,7 +4806,7 @@ function ExportDeclaration_b(b: Builder): void {
 
 // ExportClause
 
-function ExportClause_b(b: Builder): void {
+function ExportClause(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4816,7 +4816,7 @@ function ExportClause_b(b: Builder): void {
         ]);
         b.bchoice([                     // 2
             () => {
-                b.item(ExportsList_b);
+                b.item(ExportsList);
                 b.item(whitespace);
                 b.bopt(() => {
                     b.item(punctuator(","));
@@ -4847,19 +4847,19 @@ function ExportClause_b(b: Builder): void {
 
 // ExportsList
 
-function ExportsList_b(b: Builder): void {
+function ExportsList(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
             () => {
-                b.item(ExportSpecifier_b);
+                b.item(ExportSpecifier);
             },
             () => {
                 b.items([
                     whitespace,
                     punctuator(","),
                     whitespace,
-                    ExportSpecifier_b,
+                    ExportSpecifier,
                 ]);
                 b.popAboveAndSet(3,b.get(0));
             },
@@ -4871,19 +4871,18 @@ function ExportsList_b(b: Builder): void {
 
 // ExportSpecifier
 
-function ExportSpecifier_b(b: Builder): void {
+function ExportSpecifier(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(pos);
-        b.item(IdentifierName_b);
+        b.item(IdentifierName);
         b.bchoice([
             () => {
-                // let asIdent: IdentifierNode | ErrorNode;
                 b.items([
                     whitespace,        // 4
                     keyword("as"),     // 3
                     whitespace,        // 2
-                    IdentifierName_b,    // 1
+                    IdentifierName,    // 1
                     pos,               // 0
                 ]);
                 b.assertLengthIs(oldLength+7);
@@ -4906,7 +4905,7 @@ function ExportSpecifier_b(b: Builder): void {
 export function parseScript(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        Script_b(b);
+        Script(b);
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -4915,7 +4914,7 @@ export function parseScript(p: Parser): ASTNode {
 export function parseModule(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(p);
-        Module_b(b);
+        Module(b);
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
