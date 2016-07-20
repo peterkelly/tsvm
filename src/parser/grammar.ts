@@ -183,8 +183,32 @@ export class Builder {
     }
 }
 
+export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.list(first,rest);
+}
+
+export function items(funs: ((b: Builder) => void)[]): (b: Builder) => void {
+    return (b: Builder) => b.items(funs);
+}
+
 export function popAboveAndSet(index: number, value: any): (b: Builder) => void {
     return (b: Builder) => b.popAboveAndSet(index,value);
+}
+
+export function popAboveAndSet2(index: number, fun: (b: Builder) => any): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,fun(b));
+}
+
+export function popAboveAndReplace(index: number, srcIndex: number): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,b.get(srcIndex));
+}
+
+export function popAboveAndMakeNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,makeNode(b,startIndex,endIndex,name,childIndices));
+}
+
+export function popAboveAndMakeEmptyList(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,makeEmptyListNode(b,startIndex,endIndex));
 }
 
 export function assertLengthIs(length: number): (b: Builder) => void {
@@ -205,6 +229,14 @@ export function opt(f: (b: Builder) => void): (b: Builder) => void {
 
 export function choice(list: ((b: Builder) => void)[]): (b: Builder) => void {
     return (b: Builder) => b.choice(list);
+}
+
+export function repeat(f: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.repeat(f);
+}
+
+export function repeatChoice(list: ((b: Builder) => void)[]): (b: Builder) => void {
+    return (b: Builder) => b.repeatChoice(list);
 }
 
 export function pos(b: Builder) {
