@@ -855,7 +855,7 @@ function MemberExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);
         b.item(MemberExpression_start);
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,      // 6
@@ -1020,7 +1020,7 @@ function CallExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);
         b.item(CallExpression_start);
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,      // 2
@@ -1351,7 +1351,7 @@ function MultiplicativeExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
         b.item(UnaryExpression);      // 5 = left
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,       // 4
@@ -1400,7 +1400,7 @@ function AdditiveExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                          // 6 = start
         b.item(MultiplicativeExpression);     // 5 = left
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,               // 4
@@ -1438,7 +1438,7 @@ function ShiftExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                    // 6 = start
         b.item(AdditiveExpression);     // 5 = left
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,         // 4
@@ -1487,7 +1487,7 @@ function RelationalExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);             // 6 = start
         b.item(ShiftExpression); // 5 = left
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,       // 4
@@ -1577,7 +1577,7 @@ function EqualityExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                      // 6 = start
         b.item(RelationalExpression);     // 5 = left
-        b.brepeatChoice([
+        b.repeatChoice([
             () => {
                 b.items([
                     whitespace,           // 4
@@ -1643,7 +1643,7 @@ function BitwiseANDExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                // 6 = start
         b.item(EqualityExpression); // 5 = left
-        b.brepeat(() => {
+        b.repeat(() => {
             b.items([
                 whitespace,         // 4
                 punctuator("&"),    // 3
@@ -1668,7 +1668,7 @@ function BitwiseXORExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
         b.item(BitwiseANDExpression); // 5 = left
-        b.brepeat(() => {
+        b.repeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator("^"),      // 3
@@ -1692,7 +1692,7 @@ function BitwiseORExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
         b.item(BitwiseXORExpression); // 5 = left
-        b.brepeat(() => {
+        b.repeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator("|"),      // 3
@@ -1718,7 +1718,7 @@ function LogicalANDExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                 // 6 = start
         b.item(BitwiseORExpression); // 5 = left
-        b.brepeat(() => {
+        b.repeat(() => {
             b.items([
                 whitespace,          // 4
                 punctuator("&&"),    // 3
@@ -1742,7 +1742,7 @@ function LogicalORExpression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
         b.item(LogicalANDExpression); // 5 = left
-        b.brepeat(() => {
+        b.repeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator("||"),     // 3
@@ -1954,7 +1954,7 @@ function Expression(b: Builder): void {
         const oldLength = b.length;
         b.item(pos);                  // 6 = start
         b.item(AssignmentExpression); // 5 = left
-        b.brepeat(() => {
+        b.repeat(() => {
             b.items([
                 whitespace,           // 4
                 punctuator(","),      // 3

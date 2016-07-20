@@ -124,7 +124,7 @@ export class Builder {
         throw new ParseError(this.parser,this.parser.pos,"No valid alternative found");
     }
 
-    public brepeat(f: (b: Builder) => void): void {
+    public repeat(f: (b: Builder) => void): void {
         while (true) {
             const start = this.parser.pos;
             const length = this.stack.length;
@@ -142,8 +142,8 @@ export class Builder {
         }
     }
 
-    public brepeatChoice(list: ((b: Builder) => void)[]): void {
-        this.brepeat(() => this.choice(list));
+    public repeatChoice(list: ((b: Builder) => void)[]): void {
+        this.repeat(() => this.choice(list));
     }
 
     public list(first: (b: Builder) => void, rest: (b: Builder) => void): void {
@@ -160,7 +160,7 @@ export class Builder {
             this.stack.pop();
 
             this.assertLengthIs(initialLength);
-            this.brepeat(() => {
+            this.repeat(() => {
                 rest(this);
                 this.assertLengthIs(initialLength+1);
                 const node = this.get(0);
