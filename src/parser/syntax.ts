@@ -239,20 +239,9 @@ function keyword(str: string): ((p: Parser) => void) {
     return (p: Parser): void => p.expectKeyword(str);
 }
 
-function punctuator(str: string): (p: Parser) => void {
-    return (p: Parser): void => p.expectPunctuator(str);
-}
-
 function notKeyword(str: string) {
     return (p: Parser): void => {
         if (p.lookaheadKeyword(str))
-            throw new ParseError(p,p.pos,"Unexpected "+str);
-    };
-}
-
-function notPunctuator(str: string) {
-    return (p: Parser): void => {
-        if (p.lookaheadPunctuator(str))
             throw new ParseError(p,p.pos,"Unexpected "+str);
     };
 }
@@ -366,11 +355,11 @@ function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
 
 function ParenthesizedExpression(p: Parser): ExpressionNode | ErrorNode {
     return p.seq5([
-        punctuator("("),
+        keyword("("),
         whitespace,
         Expression,
         whitespace,
-        punctuator(")")],
+        keyword(")")],
         ([,,expr,,]) => expr);
 }
 
@@ -477,7 +466,7 @@ function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
 function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
     return p.attempt((start): ArrayLiteralNode | ErrorNode => {
         p.sequence([
-            punctuator("["),
+            keyword("["),
             whitespace,
         ]);
 
@@ -487,7 +476,7 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
 
         p.opt(() => {
             const before = p.pos;
-            p.expectPunctuator(",");
+            p.expectKeyword(",");
             const after = p.pos;
             listEnd = p.pos;
             p.skipWhitespace();
@@ -495,8 +484,8 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
         });
 
         while (true) {
-            if (p.lookaheadPunctuator("]")) {
-                p.expectPunctuator("]");
+            if (p.lookaheadKeyword("]")) {
+                p.expectKeyword("]");
                 break;
             }
 
@@ -504,18 +493,18 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
                 const item = p.choice<ArrayLiteralItemType | ErrorNode>([
                     () => p.seq4([
                         pos,
-                        punctuator(","),
+                        keyword(","),
                         pos,
                         whitespace],([before,,after,]) => new ElisionNode(new Range(before,after))),
                     () => p.seq3([
                         AssignmentExpression,
                         whitespace,
-                        opt(() => p.sequence([punctuator(","),whitespace]))],
+                        opt(() => p.sequence([keyword(","),whitespace]))],
                         ([assign,arg2,arg3]) => assign),
                     () => p.seq3([
                         SpreadElement,
                         whitespace,
-                        opt(() => p.sequence([punctuator(","),whitespace]))],
+                        opt(() => p.sequence([keyword(","),whitespace]))],
                         ([spread,arg2,arg3]) => spread),
                 ]);
 
@@ -537,7 +526,7 @@ function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
 function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
     return p.seq4([
         pos,
-        punctuator("..."),
+        keyword("..."),
         whitespace,
         AssignmentExpression],
         ([start,,,assign]) => new SpreadElementNode(new Range(start,p.pos),assign));
@@ -550,17 +539,17 @@ function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
 function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
     return p.seq5([
         pos,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => p.choice([
             () => p.seq3([
                 PropertyDefinitionList,
                 whitespace,
-                opt(() => p.seq2([punctuator(","),whitespace,],() => {}))],
+                opt(() => p.seq2([keyword(","),whitespace,],() => {}))],
                 ([inner,,]) => inner),
             () => new PropertyDefinitionListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}")],
+        keyword("}")],
         ([start,,,properties,]) => new ObjectLiteralNode(new Range(start,p.pos),properties));
 }
 
@@ -574,7 +563,7 @@ function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNo
         try {
             const defn = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 PropertyDefinition],
                 ([,,,propdef]) => propdef);
@@ -593,7 +582,7 @@ function PropertyDefinition_colon(p: Parser): ColonPropertyDefinitionNode | Erro
         pos,
         PropertyName,
         whitespace,
-        punctuator(":"),
+        keyword(":"),
         whitespace,
         AssignmentExpression],
         ([start,name,,,,init]) => new ColonPropertyDefinitionNode(new Range(start,p.pos),name,init));
@@ -634,11 +623,11 @@ function LiteralPropertyName(p: Parser): LiteralPropertyNameType | ErrorNode {
 function ComputedPropertyName(p: Parser): ComputedPropertyNameNode | ErrorNode {
     return p.seq6([
         pos,
-        punctuator("["),
+        keyword("["),
         whitespace,
         AssignmentExpression,
         whitespace,
-        punctuator("]")],
+        keyword("]")],
         ([start,,,expr,,]) => new ComputedPropertyNameNode(new Range(start,p.pos),expr));
 }
 
@@ -658,7 +647,7 @@ function CoverInitializedName(p: Parser): CoverInitializedNameNode | ErrorNode {
 
 function Initializer(p: Parser): ExpressionNode | ErrorNode {
     return p.seq3([
-        punctuator("="),
+        keyword("="),
         whitespace,
         AssignmentExpression],
         ([,,expr]) => expr);
@@ -715,15 +704,15 @@ function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
                 left = p.choice<ExpressionNode | ErrorNode>([
                     () => p.seq6([
                         whitespace,
-                        punctuator("["),
+                        keyword("["),
                         whitespace,
                         Expression,
                         whitespace,
-                        punctuator("]")],
+                        keyword("]")],
                         ([,,,expr,,]) => new MemberAccessExprNode(new Range(start,p.pos),left,expr)),
                     () => p.seq6([
                         whitespace,
-                        punctuator("."),
+                        keyword("."),
                         whitespace,
                         IdentifierName,
                         pos,
@@ -746,17 +735,17 @@ function SuperProperty(p: Parser): SuperPropertyExprNode | SuperPropertyIdentNod
             pos,
             keyword("super"),
             whitespace,
-            punctuator("["),
+            keyword("["),
             whitespace,
             Expression,
             whitespace,
-            punctuator("]")],
+            keyword("]")],
             ([start,,,,,expr,,]) => new SuperPropertyExprNode(new Range(start,p.pos),expr)),
         () => p.seq6([
             pos,
             keyword("super"),
             whitespace,
-            punctuator("."),
+            keyword("."),
             whitespace,
             Identifier],
             ([start,,,,,ident]) => new SuperPropertyIdentNode(new Range(start,p.pos),ident)),
@@ -776,7 +765,7 @@ function NewTarget(p: Parser): NewTargetNode | ErrorNode {
         pos,
         keyword("new"),
         whitespace,
-        punctuator("."),
+        keyword("."),
         whitespace,
         identifier("target")], // "target" is not a reserved word, so we can't use keyword here
         ([start,arg2,arg3,arg4,arg5,arg6]) => new NewTargetNode(new Range(start,p.pos))
@@ -825,15 +814,15 @@ function CallExpression(p: Parser): ExpressionNode | ErrorNode {
                     ([,args]) => new CallNode(new Range(start,p.pos),left,args)),
                 () => p.seq6([
                     whitespace,
-                    punctuator("["),
+                    keyword("["),
                     whitespace,
                     Expression,
                     whitespace,
-                    punctuator("]")],
+                    keyword("]")],
                     ([,,,expr,,]) => new MemberAccessExprNode(new Range(start,p.pos),left,expr)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("."),
+                    keyword("."),
                     whitespace,
                     IdentifierName],
                     ([,,,idname]) => new MemberAccessIdentNode(new Range(start,p.pos),left,idname)),
@@ -866,21 +855,21 @@ function Arguments(p: Parser): ArgumentsNode | ErrorNode {
     return p.choice<ArgumentsNode | ErrorNode>([
         () => p.seq5([
             pos,
-            punctuator("("),
+            keyword("("),
             whitespace,
             pos,
-            punctuator(")")],
+            keyword(")")],
             ([start,,,listpos,]) => {
                 const args = new ArgumentListNode(new Range(listpos,listpos),[]);
                 return new ArgumentsNode(new Range(start,p.pos),args);
             }),
         () => p.seq6([
             pos,
-            punctuator("("),
+            keyword("("),
             whitespace,
             ArgumentList,
             whitespace,
-            punctuator(")")],
+            keyword(")")],
             ([start,,,args,,]) => new ArgumentsNode(new Range(start,p.pos),args)),
     ]);
 }
@@ -891,7 +880,7 @@ function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
     return p.choice<ArgumentType | ErrorNode>([
         () => p.seq4([
             pos,
-            punctuator("..."),
+            keyword("..."),
             whitespace,
             AssignmentExpression],
             ([start,,,expr]) => new SpreadElementNode(new Range(start,p.pos),expr)),
@@ -909,7 +898,7 @@ function ArgumentList(p: Parser): ArgumentListNode | ErrorNode {
         try {
             const arg = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 ArgumentList_item],
                 ([,,,item]) => item);
@@ -945,11 +934,11 @@ function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
         () => result = p.choice<ExpressionNode | ErrorNode>([
             () => p.seq2([
                 whitespaceNoNewline,
-                punctuator("++")],
+                keyword("++")],
                 () => new PostIncrementNode(new Range(start,p.pos),expr)),
             () => p.seq2([
                 whitespaceNoNewline,
-                punctuator("--")],
+                keyword("--")],
                 () => new PostDecrementNode(new Range(start,p.pos),expr)),
             () => expr,
         ]),
@@ -983,37 +972,37 @@ function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
             ([start,,,expr]) => new TypeOfNode(new Range(start,p.pos),expr)),
         () => p.seq4([
             pos,
-            punctuator("++"),
+            keyword("++"),
             whitespace,
             UnaryExpression],
             ([start,,,expr]) => new PreIncrementNode(new Range(start,p.pos),expr)),
         () => p.seq4([
             pos,
-            punctuator("--"),
+            keyword("--"),
             whitespace,
             UnaryExpression],
             ([start,,,expr]) => new PreDecrementNode(new Range(start,p.pos),expr)),
         () => p.seq4([
             pos,
-            punctuator("+"),
+            keyword("+"),
             whitespace,
             UnaryExpression],
             ([start,,,expr]) => new UnaryPlusNode(new Range(start,p.pos),expr)),
         () => p.seq4([
             pos,
-            punctuator("-"),
+            keyword("-"),
             whitespace,
             UnaryExpression],
             ([start,,,expr]) => new UnaryMinusNode(new Range(start,p.pos),expr)),
         () => p.seq4([
             pos,
-            punctuator("~"),
+            keyword("~"),
             whitespace,
             UnaryExpression],
             ([start,,,expr]) => new UnaryBitwiseNotNode(new Range(start,p.pos),expr)),
         () => p.seq4([
             pos,
-            punctuator("!"),
+            keyword("!"),
             whitespace,
             UnaryExpression],
             ([start,,,expr]) => new UnaryLogicalNotNode(new Range(start,p.pos),expr)),
@@ -1033,19 +1022,19 @@ function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
             left = p.choice<ExpressionNode | ErrorNode>([
                 () => p.seq4([
                     whitespace,
-                    punctuator("*"),
+                    keyword("*"),
                     whitespace,
                     UnaryExpression],
                     ([,,,right]) => new MultiplyNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("/"),
+                    keyword("/"),
                     whitespace,
                     UnaryExpression],
                     ([,,,right]) => new DivideNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("%"),
+                    keyword("%"),
                     whitespace,
                     UnaryExpression],
                     ([,,,right]) => new ModuloNode(new Range(start,p.pos),left,right)),
@@ -1069,13 +1058,13 @@ function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
             left = p.choice<ExpressionNode | ErrorNode>([
                 () => p.seq4([
                     whitespace,
-                    punctuator("+"),
+                    keyword("+"),
                     whitespace,
                     MultiplicativeExpression],
                     ([,,,right]) => new AddNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("-"),
+                    keyword("-"),
                     whitespace,
                     MultiplicativeExpression],
                     ([,,,right]) => new SubtractNode(new Range(start,p.pos),left,right)),
@@ -1099,19 +1088,19 @@ function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
             left = p.choice<ExpressionNode | ErrorNode>([
                 () => p.seq4([
                     whitespace,
-                    punctuator("<<"),
+                    keyword("<<"),
                     whitespace,
                     AdditiveExpression],
                     ([,,,right]) => new LeftShiftNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator(">>>"),
+                    keyword(">>>"),
                     whitespace,
                     AdditiveExpression],
                     ([,,,right]) => new UnsignedRightShiftNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator(">>"),
+                    keyword(">>"),
                     whitespace,
                     AdditiveExpression],
                     ([,,,right]) => new SignedRightShiftNode(new Range(start,p.pos),left,right)),
@@ -1135,25 +1124,25 @@ function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
             left = p.choice<ExpressionNode | ErrorNode>([
                 () => p.seq4([
                     whitespace,
-                    punctuator("<="),
+                    keyword("<="),
                     whitespace,
                     ShiftExpression],
                     ([,,,right]) => new LessEqualNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator(">="),
+                    keyword(">="),
                     whitespace,
                     ShiftExpression],
                     ([,,,right]) => new GreaterEqualNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("<"),
+                    keyword("<"),
                     whitespace,
                     ShiftExpression],
                     ([,,,right]) => new LessThanNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator(">"),
+                    keyword(">"),
                     whitespace,
                     ShiftExpression],
                     ([,,,right]) => new GreaterThanNode(new Range(start,p.pos),left,right)),
@@ -1189,25 +1178,25 @@ function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
             left = p.choice<ExpressionNode | ErrorNode>([
                 () => p.seq4([
                     whitespace,
-                    punctuator("==="),
+                    keyword("==="),
                     whitespace,
                     RelationalExpression],
                     ([,,,right]) => new StrictEqualsNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("!=="),
+                    keyword("!=="),
                     whitespace,
                     RelationalExpression],
                     ([,,,right]) => new StrictNotEqualsNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("=="),
+                    keyword("=="),
                     whitespace,
                     RelationalExpression],
                     ([,,,right]) => new AbstractEqualsNode(new Range(start,p.pos),left,right)),
                 () => p.seq4([
                     whitespace,
-                    punctuator("!="),
+                    keyword("!="),
                     whitespace,
                     RelationalExpression],
                     ([,,,right]) => new AbstractNotEqualsNode(new Range(start,p.pos),left,right)),
@@ -1230,7 +1219,7 @@ function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
         try {
             left = p.seq4([
                 whitespace,
-                punctuator("&"),
+                keyword("&"),
                 whitespace,
                 EqualityExpression],
                 ([,,,right]) => new BitwiseANDNode(new Range(start,p.pos),left,right));
@@ -1250,7 +1239,7 @@ function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
         try {
             left = p.seq4([
                 whitespace,
-                punctuator("^"),
+                keyword("^"),
                 whitespace,
                 BitwiseANDExpression],
                 ([,,,right]) => new BitwiseXORNode(new Range(start,p.pos),left,right));
@@ -1270,7 +1259,7 @@ function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
         try {
             left = p.seq4([
                 whitespace,
-                punctuator("|"),
+                keyword("|"),
                 whitespace,
                 BitwiseXORExpression],
                 ([,,,right]) => new BitwiseORNode(new Range(start,p.pos),left,right));
@@ -1292,7 +1281,7 @@ function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
         try {
             left = p.seq4([
                 whitespace,
-                punctuator("&&"),
+                keyword("&&"),
                 whitespace,
                 BitwiseORExpression],
                 ([,,,right]) => new LogicalANDNode(new Range(start,p.pos),left,right));
@@ -1312,7 +1301,7 @@ function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
         try {
             left = p.seq4([
                 whitespace,
-                punctuator("||"),
+                keyword("||"),
                 whitespace,
                 LogicalANDExpression],
                 ([,,,right]) => new LogicalORNode(new Range(start,p.pos),left,right));
@@ -1333,11 +1322,11 @@ function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
     return p.choice([
         () => p.seq8([
             whitespace,
-            punctuator("?"),
+            keyword("?"),
             whitespace,
             AssignmentExpression,
             whitespace,
-            punctuator(":"),
+            keyword(":"),
             whitespace,
             AssignmentExpression],
             ([,,,trueExpr,,,,falseExpr]) =>
@@ -1359,73 +1348,73 @@ function AssignmentExpression_plain(p: Parser): ExpressionNode | ErrorNode {
         () => result = p.choice<ExpressionNode | ErrorNode>([
             () => p.seq4([
                 whitespace,
-                punctuator("="),
+                keyword("="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("*="),
+                keyword("*="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignMultiplyNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("/="),
+                keyword("/="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignDivideNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("%="),
+                keyword("%="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignModuloNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("+="),
+                keyword("+="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignAddNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("-="),
+                keyword("-="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignSubtractNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("<<="),
+                keyword("<<="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignLeftShiftNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator(">>="),
+                keyword(">>="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignSignedRightShiftNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator(">>>="),
+                keyword(">>>="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("&="),
+                keyword("&="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignBitwiseANDNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("^="),
+                keyword("^="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignBitwiseXORNode(new Range(start,p.pos),left,right)),
             () => p.seq4([
                 whitespace,
-                punctuator("|="),
+                keyword("|="),
                 whitespace,
                 AssignmentExpression],
                 ([,,,right]) => new AssignBitwiseORNode(new Range(start,p.pos),left,right)),
@@ -1457,7 +1446,7 @@ function Expression(p: Parser): ExpressionNode | ErrorNode {
         try {
             left = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 () => AssignmentExpression(p)],
                 ([,,,right]) => new CommaNode(new Range(start,p.pos),left,right)
@@ -1534,7 +1523,7 @@ function BlockStatement(p: Parser): BlockNode | ErrorNode {
 function Block(p: Parser): BlockNode | ErrorNode {
     return p.seq5([
         pos,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => p.choice([
             () => p.seq2([
@@ -1543,7 +1532,7 @@ function Block(p: Parser): BlockNode | ErrorNode {
                 ([inner,]) => inner),
             () => new StatementListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}")],
+        keyword("}")],
         ([start,,,statements,]) => new BlockNode(new Range(start,p.pos),statements));
 }
 
@@ -1591,7 +1580,7 @@ function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
             whitespace,
             BindingList,
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,bindings,,]) => new LetNode(new Range(start,p.pos),bindings)),
         () => p.seq6([
             pos,
@@ -1599,7 +1588,7 @@ function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
             whitespace,
             BindingList,
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,bindings,,]) => new ConstNode(new Range(start,p.pos),bindings)),
     ]);
 }
@@ -1614,7 +1603,7 @@ function BindingList(p: Parser): BindingListNode | ErrorNode {
         try {
             const lexbnd = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 LexicalBinding],
                 ([,,,bnd]) => bnd);
@@ -1673,7 +1662,7 @@ function VariableStatement(p: Parser): VarNode | ErrorNode {
         whitespace,
         VariableDeclarationList,
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,,,declarations,,]) => new VarNode(new Range(start,p.pos),declarations));
 }
 
@@ -1687,7 +1676,7 @@ function VariableDeclarationList(p: Parser): VariableDeclarationListNode | Error
         try {
             const decl = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 VariableDeclaration],
                 ([,,,d]) => d);
@@ -1755,7 +1744,7 @@ function BindingPattern(p: Parser): BindingPatternNode | ErrorNode {
 function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
     return p.seq5([
         pos,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => p.choice([
             () => p.seq3([
@@ -1763,14 +1752,14 @@ function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
                 whitespace,
                 opt(() => {
                     p.sequence([
-                        punctuator(","),
+                        keyword(","),
                         whitespace,
                     ]);
                 })],
                 ([inner,,]) => inner),
             () => new BindingPropertyListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}")],
+        keyword("}")],
         ([start,,,properties,]) => new ObjectBindingPatternNode(new Range(start,p.pos),properties));
 }
 
@@ -1779,7 +1768,7 @@ function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
 function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
     return p.seq8([
         pos,
-        punctuator("["),
+        keyword("["),
         whitespace,
         pos,
         BindingElementList,
@@ -1790,7 +1779,7 @@ function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
                 whitespace],
                 ([inner,]) => inner);
         }),
-        punctuator("]")],
+        keyword("]")],
         ([start,,,start2,elements,,rest,]) => {
             return new ArrayBindingPatternNode(new Range(start,p.pos),elements,rest);
         });
@@ -1806,7 +1795,7 @@ function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
         try {
             const prop = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 BindingProperty],
                 ([,,,p]) => p);
@@ -1828,7 +1817,7 @@ function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
     p.opt(() => {
         const item = p.seq3([
             pos,
-            punctuator(","),
+            keyword(","),
             pos,
         ],([before,,after]) => new ElisionNode(new Range(before,after)));
         elements.push(item);
@@ -1842,7 +1831,7 @@ function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
                     () => p.seq4([
                         whitespace,
                         pos,
-                        punctuator(","),
+                        keyword(","),
                         pos],
                         ([,before,,after]) => new ElisionNode(new Range(before,after))),
                     () => p.seq3([
@@ -1850,7 +1839,7 @@ function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
                         BindingElement,
                         opt(() => {
                             p.skipWhitespace();
-                            p.expectPunctuator(",");
+                            p.expectKeyword(",");
                         })],
                         ([arg1,binding,arg3]) => binding),
                 ]);
@@ -1873,7 +1862,7 @@ function BindingProperty(p: Parser): BindingPropertyType | ErrorNode {
             pos,
             PropertyName,
             whitespace,
-            punctuator(":"),
+            keyword(":"),
             whitespace,
             BindingElement],
             ([start,name,,,,element]) =>
@@ -1927,7 +1916,7 @@ function SingleNameBinding(p: Parser): SingleNameBindingType | ErrorNode {
 function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
     return p.seq4([
         pos,
-        punctuator("..."),
+        keyword("..."),
         whitespace,
         BindingIdentifier],
         ([start,,,ident]) => new BindingRestElementNode(new Range(start,p.pos),ident));
@@ -1940,7 +1929,7 @@ function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
 function EmptyStatement(p: Parser): EmptyStatementNode | ErrorNode {
     return p.seq2([
         pos,
-        punctuator(";")],
+        keyword(";")],
         ([start,]) => new EmptyStatementNode(new Range(start,p.pos)));
 }
 
@@ -1953,14 +1942,14 @@ function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
 
     // Lookahead not in one of the four sequences <{> <function> <class> <let [>
 
-    if (p.lookaheadPunctuator("{") || p.lookaheadKeyword("function") || p.lookaheadKeyword("class"))
+    if (p.lookaheadKeyword("{") || p.lookaheadKeyword("function") || p.lookaheadKeyword("class"))
         throw new ParseIgnore();
 
     if (p.matchKeyword("let")) {
         p.sequence([
             whitespace,
         ]);
-        if (p.matchPunctuator("[")) {
+        if (p.matchKeyword("[")) {
             p.pos = start2;
             throw new ParseIgnore();
         }
@@ -1971,7 +1960,7 @@ function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
         pos,
         Expression,
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,expr,,,]) => new ExpressionStatementNode(new Range(start,p.pos),expr));
 }
 
@@ -1984,11 +1973,11 @@ function IfStatement(p: Parser): IfStatementNode | ErrorNode {
         pos,
         keyword("if"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Statement,
         opt(() => p.seq4([
@@ -2015,13 +2004,13 @@ function IterationStatement_do(p: Parser): DoStatementNode | ErrorNode {
         whitespace,
         keyword("while"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,,,body,,,,,,condition,,,,]) =>
             new DoStatementNode(new Range(start,p.pos),body,condition)
     );
@@ -2035,11 +2024,11 @@ function IterationStatement_while(p: Parser): WhileStatementNode | ErrorNode {
         pos,
         keyword("while"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Statement],
         ([start,,,,,condition,,,,body]) => {
@@ -2058,15 +2047,15 @@ function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
         pos,
         keyword("for"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         () => p.choice<ForCInitType | ErrorNode>([
             () => p.seq6([
                 notKeyword("let"), // FIXME: need tests for this
-                notPunctuator("["), // FIXME: need tests for this
+                notKeyword("["), // FIXME: need tests for this
                 Expression,
                 whitespace,
-                punctuator(";"),
+                keyword(";"),
                 whitespace],
                 ([,,inner,,,]) => inner),
             () => p.seq8([
@@ -2076,20 +2065,20 @@ function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
                 VariableDeclarationList,
                 pos,
                 whitespace,
-                punctuator(";"),
+                keyword(";"),
                 whitespace],
                 ([start2,,,declarations,end,,,]) =>
                     new VarNode(new Range(start2,end),declarations)),
             () => p.seq2([LexicalDeclaration,whitespace],([decl,]) => decl),
             // initializer part can be empty, but need to distinguish this from an error
-            () => p.seq1([punctuator(";")],() => null),
+            () => p.seq1([keyword(";")],() => null),
         ]),
         opt(Expression),
         whitespace,
-        punctuator(";"),
+        keyword(";"),
         whitespace,
         opt(() => p.seq2([Expression,whitespace],([inner,]) => inner)),
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Statement,
     ],([start,,,,,init,condition,,,,update,,,body]) => {
@@ -2108,12 +2097,12 @@ function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
         pos,
         keyword("for"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         () => p.choice<ForInBindingType | ErrorNode>([
             () => p.seq3([
                 notKeyword("let"), // FIXME: need tests for this
-                notPunctuator("["), // FIXME: need tests for this
+                notKeyword("["), // FIXME: need tests for this
                 () => LeftHandSideExpression(p)],
                 ([,,inner]) => inner
             ),
@@ -2131,7 +2120,7 @@ function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Statement],
         ([start,,,,,binding,,,,expr,,,,body]) => new ForInNode(new Range(start,p.pos),binding,expr,body));
@@ -2148,12 +2137,12 @@ function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
         pos,
         keyword("for"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         () => p.choice<ForOfBindingType | ErrorNode>([
             () => p.seq3([
                 notKeyword("let"), // FIXME: need tests for this
-                notPunctuator("["), // FIXME: need tests for this
+                notKeyword("["), // FIXME: need tests for this
                 LeftHandSideExpression],
                 ([,,inner]) => inner),
             () => p.seq4([
@@ -2169,7 +2158,7 @@ function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Statement],
         ([start,,,,,binding,,,,expr,,,,body]) =>
@@ -2234,7 +2223,7 @@ function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
             pos,
             keyword("continue"),
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,]) => new ContinueStatementNode(new Range(start,p.pos),null)),
         () => p.seq6([
             pos,
@@ -2242,7 +2231,7 @@ function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
             whitespaceNoNewline,
             LabelIdentifier,
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,ident,,]) => new ContinueStatementNode(new Range(start,p.pos),ident)),
     ]);
 }
@@ -2257,7 +2246,7 @@ function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
             pos,
             keyword("break"),
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,]) => new BreakStatementNode(new Range(start,p.pos),null)),
         () => p.seq6([
             pos,
@@ -2265,7 +2254,7 @@ function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
             whitespaceNoNewline,
             LabelIdentifier,
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,ident,,]) => new BreakStatementNode(new Range(start,p.pos),ident)),
     ]);
 }
@@ -2280,7 +2269,7 @@ function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
             pos,
             keyword("return"),
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,]) => new ReturnStatementNode(new Range(start,p.pos),null)),
         () => p.seq6([
             pos,
@@ -2288,7 +2277,7 @@ function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
             whitespaceNoNewline,
             Expression,
             whitespace,
-            punctuator(";")],
+            keyword(";")],
             ([start,,,expr,,]) => new ReturnStatementNode(new Range(start,p.pos),expr)),
     ]);
 }
@@ -2302,11 +2291,11 @@ function WithStatement(p: Parser): WithStatementNode | ErrorNode {
         pos,
         keyword("with"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Statement],
         ([start,,,,,expr,,,,body]) =>
@@ -2322,11 +2311,11 @@ function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
         pos,
         keyword("switch"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         Expression,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         CaseBlock],
         ([start,arg2,arg3,arg4,arg5,expr,arg7,arg8,arg9,cases]) =>
@@ -2338,14 +2327,14 @@ function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
 function CaseBlock_1(p: Parser): CaseBlockNode | ErrorNode {
     return p.seq7([
         pos,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => p.choice([
             CaseClauses,
             () => new CaseClauseListNode(new Range(p.pos,p.pos),[]),
         ]),
         whitespace,
-        punctuator("}"),
+        keyword("}"),
         pos],
         ([start,,,clauses,,,end]) => {
             return new CaseBlock1Node(new Range(start,end),clauses);
@@ -2357,7 +2346,7 @@ function CaseBlock_1(p: Parser): CaseBlockNode | ErrorNode {
 function CaseBlock_2(p: Parser): CaseBlockNode | ErrorNode {
     return p.seq11([
         pos,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         opt(CaseClauses),
         whitespace,
@@ -2365,7 +2354,7 @@ function CaseBlock_2(p: Parser): CaseBlockNode | ErrorNode {
         whitespace,
         opt(CaseClauses),
         whitespace,
-        punctuator("}"),
+        keyword("}"),
         pos],
         ([start,,,clauses1,,defaultClause,,clauses2,,,end]) => {
             return new CaseBlock2Node(new Range(start,end),clauses1,defaultClause,clauses2);
@@ -2413,7 +2402,7 @@ function CaseClause(p: Parser): CaseClauseNode | ErrorNode {
         whitespace,
         Expression,
         whitespace,
-        punctuator(":"),
+        keyword(":"),
         whitespace,
         StatementList],
         ([start,,,expr,,,,statements]) => new CaseClauseNode(new Range(start,statements.range.end),expr,statements));
@@ -2426,7 +2415,7 @@ function DefaultClause(p: Parser): DefaultClauseNode | ErrorNode {
         pos,
         keyword("default"),
         whitespace,
-        punctuator(":"),
+        keyword(":"),
         whitespace,
         StatementList],
         ([start,arg2,arg3,arg4,arg5,statements]) =>
@@ -2442,7 +2431,7 @@ function LabelledStatement(p: Parser): LabelledStatementNode | ErrorNode {
         pos,
         LabelIdentifier,
         whitespace,
-        punctuator(":"),
+        keyword(":"),
         whitespace,
         LabelledItem],
         ([start,ident,,,,item]) =>
@@ -2469,7 +2458,7 @@ function ThrowStatement(p: Parser): ThrowStatementNode | ErrorNode {
         whitespaceNoNewline,
         Expression,
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,,,expr,,]) =>
             new ThrowStatementNode(new Range(start,p.pos),expr));
 }
@@ -2516,11 +2505,11 @@ function Catch(p: Parser): CatchNode | ErrorNode {
         pos,
         keyword("catch"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         CatchParameter,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
         Block],
         ([start,,,,,param,,,,block]) =>
@@ -2558,7 +2547,7 @@ function DebuggerStatement(p: Parser): DebuggerStatementNode | ErrorNode {
         pos,
         keyword("debugger"),
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,,,]) => new DebuggerStatementNode(new Range(start,p.pos)));
 }
 
@@ -2573,17 +2562,17 @@ function FunctionDeclaration_named(p: Parser): FunctionDeclarationNode | ErrorNo
         whitespace,
         BindingIdentifier,
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         FormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,ident,,,,params,,,,,,body,,]) =>
             new FunctionDeclarationNode(new Range(start,p.pos),ident,params,body));
 }
@@ -2595,17 +2584,17 @@ function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | Error
         pos,
         keyword("function"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         FormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,,,params,,,,,,body,,]) =>
             new FunctionDeclarationNode(new Range(start,p.pos),null,params,body));
 }
@@ -2629,17 +2618,17 @@ function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
             BindingIdentifier,
             whitespace],
             ([inner,]) => inner)),
-        punctuator("("),
+        keyword("("),
         whitespace,
         FormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,ident,,,params,,,,,,body,,]) =>
             new FunctionExpressionNode(new Range(start,p.pos),ident,params,body));
 }
@@ -2674,7 +2663,7 @@ function FormalParameterList(p: Parser): FormalParametersNode | ErrorNode {
             FormalsList,
             opt(() => p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 FunctionRestParameter],
                 ([,,,rest]) => rest)),
@@ -2699,7 +2688,7 @@ function FormalsList(p: Parser): FormalParameterListNode | ErrorNode {
             // let param: BindingElementType | ErrorNode;
             const param = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 FormalParameter],
                 ([,,,p]) => p);
@@ -2747,7 +2736,7 @@ function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
         pos,
         ArrowParameters,
         whitespaceNoNewline,
-        punctuator("=>"),
+        keyword("=>"),
         whitespace,
         ConciseBody],
         ([start,params,,,,body]) => new ArrowFunctionNode(new Range(start,p.pos),params,body));
@@ -2765,7 +2754,7 @@ function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParametersNod
 // ConciseBody_1
 
 function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
-    if (p.lookaheadPunctuator("{"))
+    if (p.lookaheadKeyword("{"))
         throw new ParseIgnore();
     return AssignmentExpression(p);
 }
@@ -2774,11 +2763,11 @@ function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
 
 function ConciseBody_2(p: Parser): StatementListNode | ErrorNode {
     return p.seq5([
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([,,body,,]) => body);
 }
 
@@ -2795,11 +2784,11 @@ function ConciseBody(p: Parser): ExpressionNode | StatementListNode | ErrorNode 
 
 function ArrowFormalParameters(p: Parser): FormalParametersNode | ErrorNode {
     return p.seq5([
-        punctuator("("),
+        keyword("("),
         whitespace,
         StrictFormalParameters,
         whitespace,
-        punctuator(")")],
+        keyword(")")],
         ([,,params,,]) => params);
 }
 
@@ -2812,17 +2801,17 @@ function MethodDefinition_1(p: Parser): MethodNode | ErrorNode {
         pos,
         PropertyName,
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         StrictFormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,name,,,,params,,,,,,body,,]) =>
             new MethodNode(new Range(start,p.pos),name,params,body));
 }
@@ -2842,15 +2831,15 @@ function MethodDefinition_3(p: Parser): GetterNode | ErrorNode {
         whitespace,
         PropertyName,
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,name,,,,,,,,body,,]) =>
             new GetterNode(new Range(start,p.pos),name,body));
 }
@@ -2864,17 +2853,17 @@ function MethodDefinition_4(p: Parser): SetterNode | ErrorNode {
         whitespace,
         PropertyName,
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         PropertySetParameterList,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         FunctionBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,name,,,,param,,,,,,body,,]) =>
             new SetterNode(new Range(start,p.pos),name,param,body));
 }
@@ -2903,21 +2892,21 @@ function PropertySetParameterList(p: Parser): BindingElementType | ErrorNode {
 function GeneratorMethod(p: Parser): GeneratorMethodNode | ErrorNode {
     return p.seq16([
         pos,
-        punctuator("*"),
+        keyword("*"),
         whitespace,
         PropertyName,
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         StrictFormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         GeneratorBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,name,,,,params,,,,,,body,,]) =>
             new GeneratorMethodNode(new Range(start,p.pos),name,params,body));
 }
@@ -2929,21 +2918,21 @@ function GeneratorDeclaration_1(p: Parser): GeneratorDeclarationNode | ErrorNode
         pos,
         keyword("function"),
         whitespace,
-        punctuator("*"),
+        keyword("*"),
         whitespace,
         BindingIdentifier,
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         FormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         GeneratorBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,,,ident,,,,params,,,,,,body,,]) =>
             new GeneratorDeclarationNode(new Range(start,p.pos),ident,params,body));
 }
@@ -2955,19 +2944,19 @@ function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | Er
         pos,
         keyword("function"),
         whitespace,
-        punctuator("*"),
+        keyword("*"),
         whitespace,
-        punctuator("("),
+        keyword("("),
         whitespace,
         FormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         GeneratorBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,,,,,params,,,,,,body,,]) =>
             new DefaultGeneratorDeclarationNode(new Range(start,p.pos),params,body));
 }
@@ -2987,23 +2976,23 @@ function GeneratorExpression(p: Parser): GeneratorExpressionNode | ErrorNode {
         pos,
         keyword("function"),
         whitespace,
-        punctuator("*"),
+        keyword("*"),
         whitespace,
         opt(() => p.seq2([
             BindingIdentifier,
             whitespace],
             ([inner,]) => inner)),
-        punctuator("("),
+        keyword("("),
         whitespace,
         FormalParameters,
         whitespace,
-        punctuator(")"),
+        keyword(")"),
         whitespace,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         GeneratorBody,
         whitespace,
-        punctuator("}")],
+        keyword("}")],
         ([start,,,,,ident,,,params,,,,,,body,,]) =>
             new GeneratorExpressionNode(new Range(start,p.pos),ident,params,body));
 }
@@ -3021,7 +3010,7 @@ function YieldExpression_1(p: Parser): YieldStarNode | ErrorNode {
         pos,
         keyword("yield"),
         whitespaceNoNewline,
-        punctuator("*"),
+        keyword("*"),
         whitespace,
         AssignmentExpression],
         ([start,,,,,expr]) => new YieldStarNode(new Range(start,p.pos),expr));
@@ -3121,7 +3110,7 @@ function ClassTail(p: Parser): ClassTailNode | ErrorNode {
                 whitespace
             ],([inner,]) => inner)
         ),
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => p.choice([
             () => p.seq2([
@@ -3130,7 +3119,7 @@ function ClassTail(p: Parser): ClassTailNode | ErrorNode {
                 ([inner,]) => inner),
             () => new ClassElementListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}")],
+        keyword("}")],
         ([start,heritage,,,body,]) =>
             new ClassTailNode(new Range(start,p.pos),heritage,body));
 }
@@ -3194,7 +3183,7 @@ function ClassElement_2(p: Parser): StaticMethodDefinitionNode | ErrorNode {
 function ClassElement_3(p: Parser): EmptyClassElementNode | ErrorNode {
     return p.seq2([
         pos,
-        punctuator(";")],
+        keyword(";")],
         ([start,]) => new EmptyClassElementNode(new Range(start,p.pos)));
 }
 
@@ -3289,7 +3278,7 @@ function ImportDeclaration_from(p: Parser): ImportFromNode | ErrorNode {
         whitespace,
         FromClause,
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,,,importClause,,fromClause,,]) =>
             new ImportFromNode(new Range(start,p.pos),importClause,fromClause));
 }
@@ -3303,7 +3292,7 @@ function ImportDeclaration_module(p: Parser): ImportModuleNode | ErrorNode {
         whitespace,
         ModuleSpecifier,
         whitespace,
-        punctuator(";")],
+        keyword(";")],
         ([start,,,specifier,,]) =>
             new ImportModuleNode(new Range(start,p.pos),specifier));
 }
@@ -3329,13 +3318,13 @@ function ImportClause(p: Parser): ImportClauseNode | ErrorNode {
             return p.choice<ImportClauseNode | ErrorNode>([
                 () => p.seq4([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     NameSpaceImport],
                     ([,,,nsimport]) => new DefaultAndNameSpaceImportsNode(new Range(start,p.pos),defbinding,nsimport)),
                 () => p.seq4([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     NamedImports],
                     ([,,,nimports]) => new DefaultAndNamedImportsNode(new Range(start,p.pos),defbinding,nimports)),
@@ -3356,7 +3345,7 @@ function ImportedDefaultBinding(p: Parser): BindingIdentifierNode | ErrorNode {
 function NameSpaceImport(p: Parser): NameSpaceImportNode | ErrorNode {
     return p.seq6([
         pos,
-        punctuator("*"),
+        keyword("*"),
         whitespace,
         keyword("as"),
         whitespace,
@@ -3369,17 +3358,17 @@ function NameSpaceImport(p: Parser): NameSpaceImportNode | ErrorNode {
 function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
     return p.seq5([
         pos,
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => p.choice([
             () => p.seq3([
                 ImportsList,
                 whitespace,
-                opt(() =>  p.seq2([punctuator(","),whitespace],() => {}))],
+                opt(() =>  p.seq2([keyword(","),whitespace],() => {}))],
                 ([inner,,]) => inner),
             () => new ImportsListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}")],
+        keyword("}")],
         ([start,,,imports,]) =>
             new NamedImportsNode(new Range(start,p.pos),imports));
 }
@@ -3404,7 +3393,7 @@ function ImportsList(p: Parser): ImportsListNode | ErrorNode {
         try {
             const specifier = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 ImportSpecifier],
                 ([,,,spec]) => spec);
@@ -3476,26 +3465,26 @@ function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
                 notKeyword("class"), // FIXME: need tests for this
                 AssignmentExpression,
                 whitespace,
-                punctuator(";")],
+                keyword(";")],
                 ([,,,,node,,]) => new ExportDefaultNode(new Range(start,p.pos),node)),
             () => p.seq5([
-                punctuator("*"),
+                keyword("*"),
                 whitespace,
                 FromClause,
                 whitespace,
-                punctuator(";")],
+                keyword(";")],
                 ([,,from,,]) => new ExportStarNode(new Range(start,p.pos),from)),
             () => p.seq5([
                 ExportClause,
                 whitespace,
                 FromClause,
                 whitespace,
-                punctuator(";")],
+                keyword(";")],
                 ([exportClause,,fromClause,,]) => new ExportFromNode(new Range(start,p.pos),exportClause,fromClause)),
             () => p.seq3([
                 ExportClause,
                 whitespace,
-                punctuator(";")],
+                keyword(";")],
                 ([exportClause,,]) => new ExportPlainNode(new Range(start,p.pos),exportClause)),
             () => p.seq1([
                 VariableStatement],
@@ -3513,7 +3502,7 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
     const start = p.pos;
     let exports: ExportsListNode | ErrorNode;
     p.sequence([
-        punctuator("{"),
+        keyword("{"),
         whitespace,
         () => exports = p.choice([
             () => {
@@ -3522,7 +3511,7 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
                     whitespace,
                     opt(() => {
                         p.sequence([
-                            punctuator(","),
+                            keyword(","),
                             whitespace,
                         ]);
                     })],
@@ -3530,7 +3519,7 @@ function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
             },
             () => new ExportsListNode(new Range(p.pos,p.pos),[]),
         ]),
-        punctuator("}"),
+        keyword("}"),
     ]);
     return new ExportClauseNode(new Range(start,p.pos),exports);
 }
@@ -3545,7 +3534,7 @@ function ExportsList(p: Parser): ExportsListNode | ErrorNode {
         try {
             const specifier = p.seq4([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 ExportSpecifier],
                 ([,,,spec]) => spec);
