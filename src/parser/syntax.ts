@@ -106,9 +106,7 @@ grm.define("LabelIdentifier",
 grm.define("IdentifierName",
     ref("Identifier"));
 
-// Identifier
-
-grm.define("Identifier",(b: Builder): void => {
+function identifier_token(b: Builder): void {
     b.attempt((): void => {
         const p = b.parser;
         const start = p.pos;
@@ -129,7 +127,12 @@ grm.define("Identifier",(b: Builder): void => {
             throw new ParseError(p,p.pos,"Expected Identifier");
         }
     });
-});
+}
+
+// Identifier
+
+grm.define("Identifier",
+    identifier_token);
 
 // Section 12.2
 
@@ -213,9 +216,7 @@ grm.define("BooleanLiteral",
         ]),
     ]));
 
-// NumericLiteral
-
-grm.define("NumericLiteral",(b: Builder): void => {
+function numeric_literal_token(b: Builder): void {
     // TODO: Complete numeric literal syntax according to spec
     const p = b.parser;
     const start = p.pos;
@@ -233,11 +234,14 @@ grm.define("NumericLiteral",(b: Builder): void => {
     }
     const value = parseFloat(p.text.substring(start,p.pos));
     b.item(push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value)));
-});
+}
 
-// StringLiteral
+// NumericLiteral
 
-grm.define("StringLiteral",(b: Builder): void => {
+grm.define("NumericLiteral",
+    numeric_literal_token);
+
+function string_literal_token(b: Builder): void {
     // TODO: Complete string literal syntax according to spec
     const p = b.parser;
     const start = p.pos;
@@ -275,7 +279,12 @@ grm.define("StringLiteral",(b: Builder): void => {
         return;
     }
     throw new ParseError(p,p.pos,"Invalid string");
-});
+}
+
+// StringLiteral
+
+grm.define("StringLiteral",
+    string_literal_token);
 
 // Section 12.2.5
 
