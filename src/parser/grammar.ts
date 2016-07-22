@@ -230,15 +230,15 @@ export function popAboveAndSet2(index: number, fun: (b: Builder) => any): (b: Bu
     return (b: Builder) => b.popAboveAndSet(index,fun(b));
 }
 
-export function popAboveAndReplace(index: number, srcIndex: number): (b: Builder) => void {
+export function spliceReplace(index: number, srcIndex: number): (b: Builder) => void {
     return (b: Builder) => b.popAboveAndSet(index,b.get(srcIndex));
 }
 
-export function popAboveAndMakeNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
+export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
     return (b: Builder) => b.popAboveAndSet(index,makeNode(b,startIndex,endIndex,name,childIndices));
 }
 
-export function popAboveAndMakeEmptyList(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
+export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
     return (b: Builder) => b.popAboveAndSet(index,makeEmptyListNode(b,startIndex,endIndex));
 }
 
