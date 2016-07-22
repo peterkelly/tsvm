@@ -52,131 +52,6 @@ export class Grammar {
     }
 }
 
-export function not(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.not(f);
-}
-
-export function ref(name: string): (b: Builder) => void {
-    return (b: Builder) => {
-        const production = b.grammar.lookup(name);
-        if (production == null)
-            throw new Error("Production "+name+" not defined");
-        production(b);
-    }
-}
-
-export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.list(first,rest);
-}
-
-export function sequence(funs: ((b: Builder) => void)[]): (b: Builder) => void {
-    return (b: Builder) => b.sequence(funs);
-}
-
-export function spliceNull(index: number): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,null);
-}
-
-export function spliceReplace(index: number, srcIndex: number): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,b.get(srcIndex));
-}
-
-export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,makeNode(b,startIndex,endIndex,name,childIndices));
-}
-
-export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
-    return (b: Builder) => {
-        const start = checkNumber(b.get(startIndex));
-        const end = checkNumber(b.get(endIndex));
-        const range = new Range(start,end);
-        const valueNode = checkStringNode(b.get(valueIndex));
-        b.popAboveAndSet(index,new GenericStringNode(range,name,valueNode.value));
-    };
-}
-
-export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
-    return (b: Builder) => {
-        const start = checkNumber(b.get(startIndex));
-        const end = checkNumber(b.get(endIndex));
-        const range = new Range(start,end);
-        const valueNode = checkNumberNode(b.get(valueIndex));
-        b.popAboveAndSet(index,new GenericNumberNode(range,name,valueNode.value));
-    };
-}
-
-export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,makeEmptyListNode(b,startIndex,endIndex));
-}
-
-export function assertLengthIs(length: number): (b: Builder) => void {
-    return (b: Builder) => b.assertLengthIs(length);
-}
-
-export function push(value: any): (b: Builder) => void {
-    return (b: Builder) => b.push(value);
-}
-
-export function pop(b: Builder): void {
-    b.pop();
-}
-
-export function opt(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.opt(f);
-}
-
-export function choice(list: ((b: Builder) => void)[]): (b: Builder) => void {
-    return (b: Builder) => b.choice(list);
-}
-
-export function repeat(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.repeat(f);
-}
-
-export function repeatChoice(list: ((b: Builder) => void)[]): (b: Builder) => void {
-    return (b: Builder) => b.repeatChoice(list);
-}
-
-export function pos(b: Builder) {
-    b.push(b.parser.pos);
-}
-
-export function value(value: any): (b: Builder) => void {
-    return (b: Builder) => b.push(value);
-}
-
-export function keyword(str: string): ((b: Builder) => void) {
-    return (b: Builder): void => {
-        b.parser.expectKeyword(str);
-        b.push(null);
-    }
-}
-
-export function identifier(str: string): (b: Builder) => void {
-    return (b: Builder): void => {
-        b.attempt((): void => {
-            const oldLength = b.stack.length;
-            const start = b.parser.pos;
-            ref("Identifier")(b);
-            b.item(assertLengthIs(oldLength+1));
-            const ident = checkNode(b.get(0));
-            if (!(ident instanceof GenericStringNode) || (ident.value != str))
-                throw new ParseError(b.parser,start,"Expected "+str);
-            // Identifier_b will already have pushed onto the stack
-        })
-    };
-}
-
-export function whitespace(b: Builder): void {
-    b.parser.skipWhitespace();
-    b.push(null);
-}
-
-export function whitespaceNoNewline(b: Builder): void {
-    b.parser.skipWhitespaceNoNewline();
-    b.push(null);
-}
-
 export class Builder {
     public grammar: Grammar;
     public parser: Parser;
@@ -309,10 +184,6 @@ export class Builder {
         }
     }
 
-    public repeatChoice(list: ((b: Builder) => void)[]): void {
-        this.repeat(() => this.choice(list));
-    }
-
     public list(first: (b: Builder) => void, rest: (b: Builder) => void): void {
         this.attempt(() => {
             const start = this.parser.pos;
@@ -348,6 +219,127 @@ export class Builder {
             throw new Error("Expected b to have exactly "+length+
                             " items on the stack; have "+this.stack.length);
     }
+}
+
+export function not(f: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.not(f);
+}
+
+export function ref(name: string): (b: Builder) => void {
+    return (b: Builder) => {
+        const production = b.grammar.lookup(name);
+        if (production == null)
+            throw new Error("Production "+name+" not defined");
+        production(b);
+    }
+}
+
+export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.list(first,rest);
+}
+
+export function sequence(funs: ((b: Builder) => void)[]): (b: Builder) => void {
+    return (b: Builder) => b.sequence(funs);
+}
+
+export function spliceNull(index: number): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,null);
+}
+
+export function spliceReplace(index: number, srcIndex: number): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,b.get(srcIndex));
+}
+
+export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,makeNode(b,startIndex,endIndex,name,childIndices));
+}
+
+export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
+    return (b: Builder) => {
+        const start = checkNumber(b.get(startIndex));
+        const end = checkNumber(b.get(endIndex));
+        const range = new Range(start,end);
+        const valueNode = checkStringNode(b.get(valueIndex));
+        b.popAboveAndSet(index,new GenericStringNode(range,name,valueNode.value));
+    };
+}
+
+export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
+    return (b: Builder) => {
+        const start = checkNumber(b.get(startIndex));
+        const end = checkNumber(b.get(endIndex));
+        const range = new Range(start,end);
+        const valueNode = checkNumberNode(b.get(valueIndex));
+        b.popAboveAndSet(index,new GenericNumberNode(range,name,valueNode.value));
+    };
+}
+
+export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,makeEmptyListNode(b,startIndex,endIndex));
+}
+
+export function assertLengthIs(length: number): (b: Builder) => void {
+    return (b: Builder) => b.assertLengthIs(length);
+}
+
+export function push(value: any): (b: Builder) => void {
+    return (b: Builder) => b.push(value);
+}
+
+export function pop(b: Builder): void {
+    b.pop();
+}
+
+export function opt(f: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.opt(f);
+}
+
+export function choice(list: ((b: Builder) => void)[]): (b: Builder) => void {
+    return (b: Builder) => b.choice(list);
+}
+
+export function repeat(f: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.repeat(f);
+}
+
+export function pos(b: Builder) {
+    b.push(b.parser.pos);
+}
+
+export function value(value: any): (b: Builder) => void {
+    return (b: Builder) => b.push(value);
+}
+
+export function keyword(str: string): ((b: Builder) => void) {
+    return (b: Builder): void => {
+        b.parser.expectKeyword(str);
+        b.push(null);
+    }
+}
+
+export function identifier(str: string): (b: Builder) => void {
+    return (b: Builder): void => {
+        b.attempt((): void => {
+            const oldLength = b.stack.length;
+            const start = b.parser.pos;
+            ref("Identifier")(b);
+            b.item(assertLengthIs(oldLength+1));
+            const ident = checkNode(b.get(0));
+            if (!(ident instanceof GenericStringNode) || (ident.value != str))
+                throw new ParseError(b.parser,start,"Expected "+str);
+            // Identifier_b will already have pushed onto the stack
+        })
+    };
+}
+
+export function whitespace(b: Builder): void {
+    b.parser.skipWhitespace();
+    b.push(null);
+}
+
+export function whitespaceNoNewline(b: Builder): void {
+    b.parser.skipWhitespaceNoNewline();
+    b.push(null);
 }
 
 export function checkNode(value: any): ASTNode | null {
