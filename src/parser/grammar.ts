@@ -254,24 +254,9 @@ export function keyword(str: string): ((b: Builder) => void) {
     }
 }
 
-export function punctuator(str: string): (b: Builder) => void {
-    return (b: Builder): void => {
-        b.parser.expectPunctuator(str);
-        b.push(null);
-    }
-}
-
 export function notKeyword(str: string): (b: Builder) => void {
     return (b: Builder): void => {
         if (b.parser.lookaheadKeyword(str))
-            throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
-        b.push(null);
-    };
-}
-
-export function notPunctuator(str: string): (b: Builder) => void {
-    return (b: Builder): void => {
-        if (b.parser.lookaheadPunctuator(str))
             throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
         b.push(null);
     };
