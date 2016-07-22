@@ -1751,8 +1751,8 @@ grm.define("EmptyStatement",
 
 // ExpressionStatement
 
-grm.define("ExpressionStatement",(b: Builder): void => {
-    b.items([
+grm.define("ExpressionStatement",
+    items([
         not(keyword("{")),
         not(keyword("function")),
         not(keyword("class")),
@@ -1761,23 +1761,13 @@ grm.define("ExpressionStatement",(b: Builder): void => {
             whitespace,
             keyword("["),
         ])),
-    ]);
-
-    b.attempt((): void => {
-        const oldLength = b.length;
-        b.items([
-            pos,               // 4 = start
-            ref("Expression"), // 3 = expr
-            whitespace,        // 2
-            keyword(";"),      // 1
-            pos,               // 0 = end
-            assertLengthIs(oldLength+5),
-            spliceNode(4,"ExpressionStatement",4,0,[3]),
-            assertLengthIs(oldLength+1),
-        ]);
-        checkNode(b.get(0));
-    });
-});
+        pos,               // 4 = start
+        ref("Expression"), // 3 = expr
+        whitespace,        // 2
+        keyword(";"),      // 1
+        pos,               // 0 = end
+        spliceNode(4,"ExpressionStatement",4,0,[3]),
+    ]));
 
 // Section 13.6
 
