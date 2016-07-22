@@ -36,7 +36,7 @@ const keywords = arrayToSet([
     "import",
     "in",
     "instanceof",
-    "let", // Note: in strict mode, treated as a reserved keyword through static semantic restrictions
+    // "let", // Note: in strict mode, treated as a reserved keyword through static semantic restrictions
     "new",
     "return",
     "static", // Note: in strict mode, treated as a reserved keyword through static semantic restrictions

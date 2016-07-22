@@ -21,9 +21,6 @@ import {
     ParseError,
     ParseIgnore,
 } from "./parser";
-// import {
-//     Identifier
-// } from "./syntax";
 import {
     CastError,
     Range,
@@ -111,6 +108,29 @@ export class Builder {
             this.stack.length = length;
             throw e;
         }
+    }
+
+    public not(f: (b: Builder) => void): void {
+        const start = this.parser.pos;
+        const length = this.stack.length;
+
+        let hadException = false;
+        try {
+            f(this);
+        }
+        catch (e) {
+            this.parser.pos = start;
+            this.stack.length = length;
+            if (!(e instanceof ParseFailure))
+                throw e;
+            hadException = true;
+        }
+
+        this.parser.pos = start;
+        this.stack.length = length;
+
+        if (!hadException)
+            throw new ParseError(this.parser,this.parser.pos,"NOT predicate failed");
     }
 
     // F must either throw an exception or result in exactly one extra item on the stack
@@ -205,6 +225,10 @@ export class Builder {
     }
 }
 
+export function not(f: (b: Builder) => void): (b: Builder) => void {
+    return (b: Builder) => b.not(f);
+}
+
 export function ref(name: string): (b: Builder) => void {
     return (b: Builder) => {
         const production = b.grammar.lookup(name);
@@ -283,14 +307,6 @@ export function keyword(str: string): ((b: Builder) => void) {
         b.parser.expectKeyword(str);
         b.push(null);
     }
-}
-
-export function notKeyword(str: string): (b: Builder) => void {
-    return (b: Builder): void => {
-        if (b.parser.lookaheadKeyword(str))
-            throw new ParseError(b.parser,b.parser.pos,"Unexpected "+str);
-        b.push(null);
-    };
 }
 
 export function identifier(str: string): (b: Builder) => void {
