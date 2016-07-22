@@ -246,12 +246,8 @@ export function items(funs: ((b: Builder) => void)[]): (b: Builder) => void {
     return (b: Builder) => b.items(funs);
 }
 
-export function popAboveAndSet(index: number, value: any): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,value);
-}
-
-export function popAboveAndSet2(index: number, fun: (b: Builder) => any): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,fun(b));
+export function spliceNull(index: number): (b: Builder) => void {
+    return (b: Builder) => b.popAboveAndSet(index,null);
 }
 
 export function spliceReplace(index: number, srcIndex: number): (b: Builder) => void {
