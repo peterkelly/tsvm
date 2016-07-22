@@ -2357,7 +2357,7 @@ export class ErrorNode extends ASTNode {
     }
 }
 
-export class GenericNode extends ErrorNode {
+export class GenericNode extends ASTNode {
     _nominal_type_GenericNode: any ;
     public readonly kind: string;
     public readonly _children: ASTNode[];
