@@ -57,7 +57,8 @@ import {
     IdentifierNode,
     ThisNode,
     NullLiteralNode,
-    BooleanLiteralNode,
+    TrueNode,
+    FalseNode,
     NumericLiteralNode,
     StringLiteralNode,
     ArrayLiteralNode,
@@ -398,12 +399,12 @@ function NullLiteral(p: Parser): NullLiteralNode | ErrorNode {
 
 // BooleanLiteral
 
-function BooleanLiteral(p: Parser): BooleanLiteralNode | ErrorNode {
+function BooleanLiteral(p: Parser): ExpressionNode | ErrorNode {
     const start = p.pos;
     if (p.matchKeyword("true"))
-        return new BooleanLiteralNode(new Range(start,p.pos),true);
+        return new TrueNode(new Range(start,p.pos));
     if (p.matchKeyword("false"))
-        return new BooleanLiteralNode(new Range(start,p.pos),false);
+        return new FalseNode(new Range(start,p.pos));
     throw new ParseError(p,p.pos,"Expected BooleanLiteral");
 }
 

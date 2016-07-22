@@ -6,5 +6,5 @@ ast-module
 Module 0-7 "false ;"
   [] 0-7 "false ;"
     ExpressionStatement 0-7 "false ;"
-      false 0-5 "false"
+      False 0-5 "false"
 *******************************************************************************/
