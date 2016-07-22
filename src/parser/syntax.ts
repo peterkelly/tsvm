@@ -42,6 +42,8 @@ import {
     popAboveAndSet2,
     spliceReplace,
     spliceNode,
+    spliceStringNode,
+    spliceNumberNode,
     spliceEmptyListNode,
     assertLengthIs,
     push,
@@ -57,6 +59,8 @@ import {
     whitespace,
     whitespaceNoNewline,
     checkNode,
+    checkStringNode,
+    checkNumberNode,
     checkListNode,
     checkNumber,
     makeNode,
@@ -69,48 +73,38 @@ const grm = new Grammar();
 
 // IdentifierReference
 
-grm.define("IdentifierReference",(b: Builder): void => {
-    const oldLength = b.length;
-    b.item(ref("Identifier"));
-    b.item(assertLengthIs(oldLength+1));
-    const ident = checkNode(b.get(0));
-    if (ident instanceof GenericStringNode)
-        b.item(popAboveAndSet(0,new GenericStringNode(ident.range,"IdentifierReference",ident.value)));
-    b.item(assertLengthIs(oldLength+1));
-    checkNode(b.get(0));
-});
+grm.define("IdentifierReference",
+    items([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"IdentifierReference",2,0,1),
+    ]));
 
 // BindingIdentifier
 
-grm.define("BindingIdentifier",(b: Builder): void => {
-    const oldLength = b.length;
-    b.item(ref("Identifier"));
-    b.item(assertLengthIs(oldLength+1));
-    const ident = checkNode(b.get(0));
-    if (ident instanceof GenericStringNode)
-        b.item(popAboveAndSet(0,new GenericStringNode(ident.range,"BindingIdentifier",ident.value)));
-    b.item(assertLengthIs(oldLength+1));
-    checkNode(b.get(0));
-});
+grm.define("BindingIdentifier",
+    items([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"BindingIdentifier",2,0,1),
+    ]));
 
-// LabelIdentifier
+// BindingIdentifier
 
-grm.define("LabelIdentifier",(b: Builder): void => {
-    const oldLength = b.length;
-    b.item(ref("Identifier"));
-    b.item(assertLengthIs(oldLength+1));
-    const ident = checkNode(b.get(0));
-    if (ident instanceof GenericStringNode)
-        b.item(popAboveAndSet(0,new GenericStringNode(ident.range,"LabelIdentifier",ident.value)));
-    b.item(assertLengthIs(oldLength+1));
-    checkNode(b.get(0));
-});
+grm.define("LabelIdentifier",
+    items([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"LabelIdentifier",2,0,1),
+    ]));
 
 // IdentifierName
 
-grm.define("IdentifierName",(b: Builder): void => {
-    b.item(ref("Identifier"));
-});
+grm.define("IdentifierName",
+    ref("Identifier"));
 
 // Identifier
 

@@ -262,6 +262,26 @@ export function spliceNode(index: number, name: string, startIndex: number, endI
     return (b: Builder) => b.popAboveAndSet(index,makeNode(b,startIndex,endIndex,name,childIndices));
 }
 
+export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
+    return (b: Builder) => {
+        const start = checkNumber(b.get(startIndex));
+        const end = checkNumber(b.get(endIndex));
+        const range = new Range(start,end);
+        const valueNode = checkStringNode(b.get(valueIndex));
+        b.popAboveAndSet(index,new GenericStringNode(range,name,valueNode.value));
+    };
+}
+
+export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
+    return (b: Builder) => {
+        const start = checkNumber(b.get(startIndex));
+        const end = checkNumber(b.get(endIndex));
+        const range = new Range(start,end);
+        const valueNode = checkNumberNode(b.get(valueIndex));
+        b.popAboveAndSet(index,new GenericNumberNode(range,name,valueNode.value));
+    };
+}
+
 export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
     return (b: Builder) => b.popAboveAndSet(index,makeEmptyListNode(b,startIndex,endIndex));
 }
@@ -339,6 +359,20 @@ export function checkNode(value: any): ASTNode | null {
         return value;
     else
         throw new CastError(value,"ASTNode | null");
+}
+
+export function checkStringNode(value: any): GenericStringNode | null {
+    if ((value === null) || (value instanceof GenericStringNode))
+        return value;
+    else
+        throw new CastError(value,"GenericStringNode | null");
+}
+
+export function checkNumberNode(value: any): GenericNumberNode | null {
+    if ((value === null) || (value instanceof GenericNumberNode))
+        return value;
+    else
+        throw new CastError(value,"GenericNumberNode | null");
 }
 
 export function checkListNode(value: any): ListNode | ErrorNode | null {
