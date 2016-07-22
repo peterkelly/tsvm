@@ -66,7 +66,7 @@ export class Builder {
     public item(f: (b: Builder) => void): void {
         f(this);
     }
-    public items(funs: ((b: Builder) => void)[]): void {
+    public sequence(funs: ((b: Builder) => void)[]): void {
         for (const f of funs)
             f(this);
     }
@@ -242,8 +242,8 @@ export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (
     return (b: Builder) => b.list(first,rest);
 }
 
-export function items(funs: ((b: Builder) => void)[]): (b: Builder) => void {
-    return (b: Builder) => b.items(funs);
+export function sequence(funs: ((b: Builder) => void)[]): (b: Builder) => void {
+    return (b: Builder) => b.sequence(funs);
 }
 
 export function spliceNull(index: number): (b: Builder) => void {
