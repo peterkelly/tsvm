@@ -291,66 +291,51 @@ grm.define("StringLiteral",(b: Builder): void => {
 
 // ArrayLiteral
 
-grm.define("ArrayLiteral",(b: Builder): void => {
-    b.attempt((): void => {
-        const oldLength = b.length;
-        const start = b.parser.pos;
-        b.items([
-            pos,             // 5 = start
-            keyword("["),    // 4
-            whitespace,      // 3
-            list(            // 2 = list
-                (b: Builder): void => {
-                    b.push(null);
-                },
-                (b: Builder): void => {
-                    b.item(assertLengthIs(oldLength+3));
-                    b.choice([
-                        items([
-                            pos,          // 3 = before
-                            keyword(","), // 2
-                            pos,          // 1 = after
-                            whitespace,   // 0
-                            assertLengthIs(oldLength+7),
-                            spliceNode(3,"Elision",3,1,[]),
-                            assertLengthIs(oldLength+4),
-                        ]),
-                        items([
-                            ref("AssignmentExpression"),
+grm.define("ArrayLiteral",
+    items([
+        pos,             // 5 = start
+        keyword("["),    // 4
+        whitespace,      // 3
+        list(            // 2 = list
+            (b: Builder): void => {
+                b.push(null);
+            },
+            (b: Builder): void => {
+                b.choice([
+                    items([
+                        pos,          // 3 = before
+                        keyword(","), // 2
+                        pos,          // 1 = after
+                        whitespace,   // 0
+                        spliceNode(3,"Elision",3,1,[]),
+                    ]),
+                    items([
+                        ref("AssignmentExpression"),
+                        whitespace,
+                        opt(items([
+                            keyword(","),
                             whitespace,
-                            opt(items([
-                                keyword(","),
-                                whitespace,
-                                pop,
-                            ])),
-                            assertLengthIs(oldLength+6),
-                            spliceReplace(2,2),
-                            assertLengthIs(oldLength+4),
-                        ]),
-                        items([
-                            ref("SpreadElement"),
+                            pop,
+                        ])),
+                        spliceReplace(2,2),
+                    ]),
+                    items([
+                        ref("SpreadElement"),
+                        whitespace,
+                        opt(items([
+                            keyword(","),
                             whitespace,
-                            opt(items([
-                                keyword(","),
-                                whitespace,
-                                pop,
-                            ])),
-                            assertLengthIs(oldLength+6),
-                            spliceReplace(2,2),
-                            assertLengthIs(oldLength+4),
-                        ]),
-                    ]);
-                    b.item(assertLengthIs(oldLength+4));
-                }
-            ),
-            keyword("]"),    // 1
-            pos,             // 0 = end
-            assertLengthIs(oldLength+6),
-            spliceNode(5,"ArrayLiteral",5,0,[2]),
-        ]);
-        checkNode(b.get(0));
-    });
-});
+                            pop,
+                        ])),
+                        spliceReplace(2,2),
+                    ]),
+                ]);
+            }
+        ),
+        keyword("]"),    // 1
+        pos,             // 0 = end
+        spliceNode(5,"ArrayLiteral",5,0,[2]),
+    ]));
 
 // SpreadElement
 
