@@ -803,18 +803,16 @@ function NewExpression(b: Builder): void {
         b.items([
             choice([
                 MemberExpression,
-                () => {
-                    b.items([
-                        pos,            // 5 = start
-                        keyword("new"), // 4
-                        whitespace,     // 3
-                        NewExpression,  // 2 = expr
-                        value(null),    // 1 = args
-                        pos,            // 0 = end
-                        assertLengthIs(oldLength+6),
-                        popAboveAndMakeNode(5,"NewExpression",5,0,[2,1]),
-                    ]);
-                },
+                items([
+                    pos,            // 5 = start
+                    keyword("new"), // 4
+                    whitespace,     // 3
+                    NewExpression,  // 2 = expr
+                    value(null),    // 1 = args
+                    pos,            // 0 = end
+                    assertLengthIs(oldLength+6),
+                    popAboveAndMakeNode(5,"NewExpression",5,0,[2,1]),
+                ]),
             ]),
             assertLengthIs(oldLength+1),
         ]);
@@ -1548,7 +1546,7 @@ function ConditionalExpression(b: Builder): void {
                     pos,                  // 0 = end
                     popAboveAndMakeNode(9,"Conditional",10,0,[9,5,1]),
                 ]),
-                () => {},
+                items([]),
             ]),
             assertLengthIs(oldLength+2),
             popAboveAndReplace(1,0),
