@@ -44,7 +44,6 @@ import {
     spliceStringNode,
     spliceNumberNode,
     spliceEmptyListNode,
-    assertLengthIs,
     push,
     pop,
     opt,
@@ -3304,7 +3303,7 @@ export function parseScript(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(grm,p);
         ref("Script")(b);
-        b.item(assertLengthIs(1));
+        b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
 }
@@ -3313,7 +3312,7 @@ export function parseModule(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(grm,p);
         ref("Module")(b);
-        b.item(assertLengthIs(1));
+        b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
 }
