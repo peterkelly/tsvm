@@ -65,6 +65,9 @@ import {
     checkNumber,
     makeNode,
     makeEmptyListNode,
+    identifier_token,
+    numeric_literal_token,
+    string_literal_token,
 } from "./grammar";
 
 const grm = new Grammar();
@@ -105,29 +108,6 @@ grm.define("LabelIdentifier",
 
 grm.define("IdentifierName",
     ref("Identifier"));
-
-function identifier_token(b: Builder): void {
-    b.attempt((): void => {
-        const p = b.parser;
-        const start = p.pos;
-        const oldLength = b.length;
-        if ((p.cur != null) && isIdStart(p.cur)) {
-            p.next();
-            while ((p.cur != null) && isIdChar(p.cur))
-                p.next();
-            const range = new Range(start,p.pos);
-            const value = p.text.substring(range.start,range.end);
-            if (isKeyword(value))
-                throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-            b.item(push(new GenericStringNode(range,"Identifier",value)));
-            b.item(assertLengthIs(oldLength+1));
-            checkNode(b.get(0));
-        }
-        else {
-            throw new ParseError(p,p.pos,"Expected Identifier");
-        }
-    });
-}
 
 // Identifier
 
@@ -216,70 +196,11 @@ grm.define("BooleanLiteral",
         ]),
     ]));
 
-function numeric_literal_token(b: Builder): void {
-    // TODO: Complete numeric literal syntax according to spec
-    const p = b.parser;
-    const start = p.pos;
-    while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-        p.next();
-    if (p.pos == start)
-        throw new ParseError(p,p.pos,"Expected number");
-    if (p.cur == ".") {
-        p.next();
-        const postDecimal = p.pos;
-        while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-            p.next();
-        if (p.pos == postDecimal)
-            throw new ParseError(p,p.pos,"Invalid number");
-    }
-    const value = parseFloat(p.text.substring(start,p.pos));
-    b.item(push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value)));
-}
 
 // NumericLiteral
 
 grm.define("NumericLiteral",
     numeric_literal_token);
-
-function string_literal_token(b: Builder): void {
-    // TODO: Complete string literal syntax according to spec
-    const p = b.parser;
-    const start = p.pos;
-    if ((p.cur == "\"") || (p.cur == "'")) {
-        const quote = p.cur;
-        p.next();
-        let value = "";
-        while (true) {
-            if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "\"")) {
-                value += "\"";
-                p.pos += 2;
-            }
-            else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
-                value += "'";
-                p.pos += 2;
-            }
-            else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
-                p.pos++;
-                break;
-            }
-            else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
-                p.pos++;
-                break;
-            }
-            else if (p.pos < p.len) {
-                value += p.text[p.pos];
-                p.pos++;
-            }
-            else {
-                throw new ParseError(p,p.pos,"Unterminated string");
-            }
-        }
-        b.item(push(new GenericStringNode(new Range(start,p.pos),"StringLiteral",value,true)));
-        checkNode(b.get(0));
-        return;
-    }
-    throw new ParseError(p,p.pos,"Invalid string");
-}
 
 // StringLiteral
 
