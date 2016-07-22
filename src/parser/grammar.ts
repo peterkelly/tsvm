@@ -221,125 +221,484 @@ export class Builder {
     }
 }
 
-export function not(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.not(f);
+export abstract class Action {
+    public readonly kind: string;
+
+    public constructor(kind: string) {
+        this.kind = kind;
+    }
+
+    public abstract execute(b: Builder): void;
 }
 
-export function ref(name: string): (b: Builder) => void {
-    return (b: Builder) => {
-        const production = b.grammar.lookup(name);
+class ProductionAction extends Action {
+    private child: Action;
+
+    public constructor(name: string, child: Action) {
+        super("["+name+"]");
+        this.child = child;
+    }
+
+    public execute(b: Builder): void {
+        b.attempt((): void => {
+            const oldLength = b.length;
+            this.child.execute(b);
+            b.assertLengthIs(oldLength+1);
+            checkNode(b.get(0));
+        });
+    }
+}
+
+class FunctionAction extends Action {
+    private f: (b: Builder) => void;
+
+    public constructor(f: (b: Builder) => void) {
+        super("function");
+        this.f = f;
+    }
+
+    public execute(b: Builder): void {
+        this.f(b);
+    }
+}
+
+class NotAction extends Action {
+    private child: Action;
+
+    public constructor(child: Action) {
+        super("not");
+        this.child = child;
+    }
+
+    public execute(b: Builder): void {
+        b.not((b: Builder) => {
+            this.child.execute(b);
+        });
+    }
+}
+
+export function not(f: (b: Builder) => void): (b: Builder) => void {
+    const fact = new FunctionAction(f);
+    const act = new NotAction(fact);
+    return (b: Builder) => act.execute(b);
+}
+
+class RefAction extends Action {
+    private name: string;
+
+    public constructor(productionName: string) {
+        super("ref");
+        this.name = productionName;
+    }
+
+    public execute(b: Builder): void {
+        const production = b.grammar.lookup(this.name);
         if (production == null)
-            throw new Error("Production "+name+" not defined");
+            throw new Error("Production "+this.name+" not defined");
         production(b);
     }
 }
 
+export function ref(name: string): (b: Builder) => void {
+    const act = new RefAction(name);
+    return (b: Builder) => act.execute(b);
+}
+
+class ListAction extends Action {
+    private first: Action;
+    private rest: Action;
+
+    public constructor(first: Action, rest: Action) {
+        super("list");
+        this.first = first;
+        this.rest = rest;
+    }
+
+    public execute(bx: Builder): void {
+        bx.list(
+            (b: Builder): void => this.first.execute(b),
+            (b: Builder): void => this.rest.execute(b)
+        );
+    }
+}
+
 export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.list(first,rest);
+    const firstAct = new FunctionAction(first);
+    const restAct = new FunctionAction(rest);
+    const act = new ListAction(firstAct,restAct);
+    return (b: Builder) => act.execute(b);
+}
+
+class SequenceAction extends Action {
+    private actions: Action[];
+
+    public constructor(actions: Action[]) {
+        super("sequence");
+        this.actions = actions;
+    }
+
+    public execute(bx: Builder): void {
+        const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
+        bx.sequence(funs);
+    }
 }
 
 export function sequence(funs: ((b: Builder) => void)[]): (b: Builder) => void {
-    return (b: Builder) => b.sequence(funs);
+    const actions = funs.map((f) => new FunctionAction(f));
+    const act = new SequenceAction(actions);
+    return (b: Builder) => act.execute(b);
+}
+
+class SpliceNullAction extends Action {
+    private index: number;
+
+    public constructor(index: number) {
+        super("spliceNull");
+        this.index = index;
+    }
+
+    public execute(b: Builder): void {
+        b.popAboveAndSet(this.index,null);
+    }
 }
 
 export function spliceNull(index: number): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,null);
+    const act = new SpliceNullAction(index);
+    return (b: Builder) => act.execute(b);
+}
+
+class SpliceReplaceAction extends Action {
+    private index: number;
+    private srcIndex: number;
+
+    public constructor(index: number, srcIndex: number) {
+        super("spliceReplace");
+        this.index = index;
+        this.srcIndex = srcIndex;
+    }
+
+    public execute(b: Builder): void {
+        b.popAboveAndSet(this.index,b.get(this.srcIndex));
+    }
 }
 
 export function spliceReplace(index: number, srcIndex: number): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,b.get(srcIndex));
+    const act = new SpliceReplaceAction(index,srcIndex);
+    return (b: Builder) => act.execute(b);
+}
+
+class SpliceNodeAction extends Action {
+    private index: number;
+    private name: string;
+    private startIndex: number;
+    private endIndex: number;
+    private childIndices: number[];
+
+    public constructor(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]) {
+        super("spliceNode");
+        this.index = index;
+        this.name = name;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.childIndices = childIndices;
+    }
+
+    public execute(b: Builder): void {
+        b.popAboveAndSet(this.index,makeNode(b,this.startIndex,this.endIndex,this.name,this.childIndices));
+    }
 }
 
 export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,makeNode(b,startIndex,endIndex,name,childIndices));
+    const act = new SpliceNodeAction(index,name,startIndex,endIndex,childIndices);
+    return (b: Builder) => act.execute(b);
+}
+
+class SpliceStringNodeAction extends Action {
+    private index: number;
+    private nodeName: string;
+    private startIndex: number;
+    private endIndex: number;
+    private valueIndex: number;
+
+    public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
+        super("spliceStringNode");
+        this.index = index;
+        this.nodeName = nodeName;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.valueIndex = valueIndex;
+    }
+
+    public execute(b: Builder): void {
+        const start = checkNumber(b.get(this.startIndex));
+        const end = checkNumber(b.get(this.endIndex));
+        const range = new Range(start,end);
+        const valueNode = checkStringNode(b.get(this.valueIndex));
+        b.popAboveAndSet(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
+    }
 }
 
 export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
-    return (b: Builder) => {
-        const start = checkNumber(b.get(startIndex));
-        const end = checkNumber(b.get(endIndex));
+    const act = new SpliceStringNodeAction(index,name,startIndex,endIndex,valueIndex);
+    return (b: Builder) => act.execute(b);
+}
+
+class SpliceNumberNodeAction extends Action {
+    private index: number;
+    private nodeName: string;
+    private startIndex: number;
+    private endIndex: number;
+    private valueIndex: number;
+
+    public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
+        super("spliceNumberNode");
+        this.index = index;
+        this.nodeName = nodeName;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.valueIndex = valueIndex;
+    }
+
+    public execute(b: Builder): void {
+        const start = checkNumber(b.get(this.startIndex));
+        const end = checkNumber(b.get(this.endIndex));
         const range = new Range(start,end);
-        const valueNode = checkStringNode(b.get(valueIndex));
-        b.popAboveAndSet(index,new GenericStringNode(range,name,valueNode.value));
-    };
+        const valueNode = checkNumberNode(b.get(this.valueIndex));
+        b.popAboveAndSet(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
+    }
 }
 
 export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
-    return (b: Builder) => {
-        const start = checkNumber(b.get(startIndex));
-        const end = checkNumber(b.get(endIndex));
-        const range = new Range(start,end);
-        const valueNode = checkNumberNode(b.get(valueIndex));
-        b.popAboveAndSet(index,new GenericNumberNode(range,name,valueNode.value));
-    };
+    const act = new SpliceNumberNodeAction(index,name,startIndex,endIndex,valueIndex);
+    return (b: Builder) => act.execute(b);
+}
+
+class SpliceEmptyListNodeAction extends Action {
+    private index: number;
+    private startIndex: number;
+    private endIndex: number;
+
+    public constructor(index: number, startIndex: number, endIndex: number) {
+        super("spliceEmptyListNode");
+        this.index = index;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+    }
+
+    public execute(b: Builder): void {
+        b.popAboveAndSet(this.index,makeEmptyListNode(b,this.startIndex,this.endIndex));
+    }
 }
 
 export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
-    return (b: Builder) => b.popAboveAndSet(index,makeEmptyListNode(b,startIndex,endIndex));
+    const act = new SpliceEmptyListNodeAction(index,startIndex,endIndex);
+    return (b: Builder) => act.execute(b);
 }
 
-export function assertLengthIs(length: number): (b: Builder) => void {
-    return (b: Builder) => b.assertLengthIs(length);
+class PushAction extends Action {
+    private value: any;
+
+    public constructor(value: any) {
+        super("push");
+        this.value = value;
+    }
+
+    public execute(b: Builder): void {
+        b.push(this.value);
+    }
 }
 
 export function push(value: any): (b: Builder) => void {
-    return (b: Builder) => b.push(value);
+    const act = new PushAction(value);
+    return (b: Builder) => act.execute(b);
 }
 
+class PopAction extends Action {
+    public constructor() {
+        super("pop");
+    }
+
+    public execute(b: Builder): void {
+        b.pop();
+    }
+}
+
+const popAct: Action = new PopAction();
 export function pop(b: Builder): void {
-    b.pop();
+    popAct.execute(b);
+}
+
+class OptAction extends Action {
+    private child: Action;
+
+    public constructor(child: Action) {
+        super("opt");
+        this.child = child;
+    }
+
+    public execute(b: Builder): void {
+        b.opt((b: Builder) => {
+            this.child.execute(b);
+        });
+    }
 }
 
 export function opt(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.opt(f);
+    const act = new OptAction(new FunctionAction(f));
+    return (b: Builder) => act.execute(b);
+}
+
+class ChoiceAction extends Action {
+    private actions: Action[];
+
+    public constructor(actions: Action[]) {
+        super("choice");
+        this.actions = actions;
+    }
+
+    public execute(bx: Builder): void {
+        const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
+        bx.choice(funs);
+    }
 }
 
 export function choice(list: ((b: Builder) => void)[]): (b: Builder) => void {
-    return (b: Builder) => b.choice(list);
+    const actions = list.map((f) => new FunctionAction(f));
+    const act = new ChoiceAction(actions);
+    return (b: Builder) => act.execute(b);
+}
+
+class RepeatAction extends Action {
+    private child: Action;
+
+    public constructor(child: Action) {
+        super("repeat");
+        this.child = child;
+    }
+
+    public execute(b: Builder): void {
+        b.repeat((b: Builder) => {
+            this.child.execute(b);
+        });
+    }
 }
 
 export function repeat(f: (b: Builder) => void): (b: Builder) => void {
-    return (b: Builder) => b.repeat(f);
+    const fact = new FunctionAction(f);
+    const act = new RepeatAction(fact);
+    return (b: Builder) => act.execute(b);
 }
 
+class PosAction extends Action {
+    public constructor() {
+        super("pos");
+    }
+
+    public execute(b: Builder): void {
+        b.push(b.parser.pos);
+    }
+}
+
+const posAct: Action = new PosAction();
 export function pos(b: Builder) {
-    b.push(b.parser.pos);
+    posAct.execute(b);
 }
 
+class ValueAction extends Action {
+    private value: any;
+
+    public constructor(value: any) {
+        super("value");
+        this.value = value;
+    }
+
+    public execute(b: Builder): void {
+        b.push(this.value);
+    }
+}
+
+// FIXME: Isn't this the same as push?
 export function value(value: any): (b: Builder) => void {
-    return (b: Builder) => b.push(value);
+    const act = new ValueAction(value);
+    return (b: Builder) => act.execute(b);
 }
 
-export function keyword(str: string): ((b: Builder) => void) {
-    return (b: Builder): void => {
-        b.parser.expectKeyword(str);
+class KeywordAction extends Action {
+    private str: string;
+
+    public constructor(str: string) {
+        super("keyword");
+        this.str = str;
+    }
+
+    public execute(b: Builder): void {
+        b.parser.expectKeyword(this.str);
         b.push(null);
     }
 }
 
-export function identifier(str: string): (b: Builder) => void {
-    return (b: Builder): void => {
+export function keyword(str: string): ((b: Builder) => void) {
+    const act = new KeywordAction(str);
+    return (b: Builder) => act.execute(b);
+}
+
+class IdentifierAction extends Action {
+    private str: string;
+
+    public constructor(str: string) {
+        super("identifier");
+        this.str = str;
+    }
+
+    public execute(b: Builder): void {
         b.attempt((): void => {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
             ref("Identifier")(b);
-            b.item(assertLengthIs(oldLength+1));
+            b.assertLengthIs(oldLength+1);
             const ident = checkNode(b.get(0));
-            if (!(ident instanceof GenericStringNode) || (ident.value != str))
-                throw new ParseError(b.parser,start,"Expected "+str);
+            if (!(ident instanceof GenericStringNode) || (ident.value != this.str))
+                throw new ParseError(b.parser,start,"Expected "+this.str);
             // Identifier_b will already have pushed onto the stack
-        })
-    };
+        });
+    }
 }
 
+export function identifier(str: string): (b: Builder) => void {
+    const act = new IdentifierAction(str);
+    return (b: Builder) => act.execute(b);
+}
+
+class WhitespaceAction extends Action {
+    public constructor() {
+        super("whitespace");
+    }
+
+    public execute(b: Builder): void {
+        b.parser.skipWhitespace();
+        b.push(null);
+    }
+}
+
+const whitespaceAct = new WhitespaceAction();
 export function whitespace(b: Builder): void {
-    b.parser.skipWhitespace();
-    b.push(null);
+    whitespaceAct.execute(b);
 }
 
+class WhitespaceNoNewlineAction extends Action {
+    public constructor() {
+        super("whitespaceNoNewline");
+    }
+
+    public execute(b: Builder): void {
+        b.parser.skipWhitespaceNoNewline();
+        b.push(null);
+    }
+}
+
+const whitespaceNoNewlineAct = new WhitespaceNoNewlineAction();
 export function whitespaceNoNewline(b: Builder): void {
-    b.parser.skipWhitespaceNoNewline();
-    b.push(null);
+    whitespaceNoNewlineAct.execute(b);
 }
 
 export function checkNode(value: any): ASTNode | null {
@@ -392,85 +751,118 @@ export function makeEmptyListNode(b: Builder, startIndex: number, endIndex: numb
     return new ListNode(new Range(start,end),[]);
 }
 
-export function identifier_token(b: Builder): void {
-    b.attempt((): void => {
-        const p = b.parser;
-        const start = p.pos;
-        const oldLength = b.length;
-        if ((p.cur != null) && isIdStart(p.cur)) {
-            p.next();
-            while ((p.cur != null) && isIdChar(p.cur))
-                p.next();
-            const range = new Range(start,p.pos);
-            const value = p.text.substring(range.start,range.end);
-            if (isKeyword(value))
-                throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-            b.item(push(new GenericStringNode(range,"Identifier",value)));
-            b.item(assertLengthIs(oldLength+1));
-            checkNode(b.get(0));
-        }
-        else {
-            throw new ParseError(p,p.pos,"Expected Identifier");
-        }
-    });
-}
-
-export function numeric_literal_token(b: Builder): void {
-    // TODO: Complete numeric literal syntax according to spec
-    const p = b.parser;
-    const start = p.pos;
-    while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-        p.next();
-    if (p.pos == start)
-        throw new ParseError(p,p.pos,"Expected number");
-    if (p.cur == ".") {
-        p.next();
-        const postDecimal = p.pos;
-        while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-            p.next();
-        if (p.pos == postDecimal)
-            throw new ParseError(p,p.pos,"Invalid number");
+class IdentifierTokenAction extends Action {
+    public constructor() {
+        super("identifier_token");
     }
-    const value = parseFloat(p.text.substring(start,p.pos));
-    b.item(push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value)));
-}
 
-export function string_literal_token(b: Builder): void {
-    // TODO: Complete string literal syntax according to spec
-    const p = b.parser;
-    const start = p.pos;
-    if ((p.cur == "\"") || (p.cur == "'")) {
-        const quote = p.cur;
-        p.next();
-        let value = "";
-        while (true) {
-            if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "\"")) {
-                value += "\"";
-                p.pos += 2;
-            }
-            else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
-                value += "'";
-                p.pos += 2;
-            }
-            else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
-                p.pos++;
-                break;
-            }
-            else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
-                p.pos++;
-                break;
-            }
-            else if (p.pos < p.len) {
-                value += p.text[p.pos];
-                p.pos++;
+    public execute(b: Builder): void {
+        b.attempt((): void => {
+            const p = b.parser;
+            const start = p.pos;
+            const oldLength = b.length;
+            if ((p.cur != null) && isIdStart(p.cur)) {
+                p.next();
+                while ((p.cur != null) && isIdChar(p.cur))
+                    p.next();
+                const range = new Range(start,p.pos);
+                const value = p.text.substring(range.start,range.end);
+                if (isKeyword(value))
+                    throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
+                b.push(new GenericStringNode(range,"Identifier",value));
+                b.assertLengthIs(oldLength+1);
+                checkNode(b.get(0));
             }
             else {
-                throw new ParseError(p,p.pos,"Unterminated string");
+                throw new ParseError(p,p.pos,"Expected Identifier");
             }
-        }
-        b.item(push(new GenericStringNode(new Range(start,p.pos),"StringLiteral",value,true)));
-        checkNode(b.get(0));
-        return;
+        });
     }
-    throw new ParseError(p,p.pos,"Invalid string");
+}
+
+const identifierTokenAct: Action = new IdentifierTokenAction();
+export function identifier_token(b: Builder): void {
+    identifierTokenAct.execute(b);
+}
+
+class NumericLiteralTokenAction extends Action {
+    public constructor() {
+        super("numeric_literal_token");
+    }
+
+    public execute(b: Builder): void {
+        // TODO: Complete numeric literal syntax according to spec
+        const p = b.parser;
+        const start = p.pos;
+        while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
+            p.next();
+        if (p.pos == start)
+            throw new ParseError(p,p.pos,"Expected number");
+        if (p.cur == ".") {
+            p.next();
+            const postDecimal = p.pos;
+            while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
+                p.next();
+            if (p.pos == postDecimal)
+                throw new ParseError(p,p.pos,"Invalid number");
+        }
+        const value = parseFloat(p.text.substring(start,p.pos));
+        b.push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value));
+    }
+}
+
+const numericLiteralTokenAct: Action = new NumericLiteralTokenAction();
+export function numeric_literal_token(b: Builder): void {
+    numericLiteralTokenAct.execute(b);
+}
+
+class StringLiteralTokenAction extends Action {
+    public constructor() {
+        super("string_literal_token");
+    }
+
+    public execute(b: Builder): void {
+        // TODO: Complete string literal syntax according to spec
+        const p = b.parser;
+        const start = p.pos;
+        if ((p.cur == "\"") || (p.cur == "'")) {
+            const quote = p.cur;
+            p.next();
+            let value = "";
+            while (true) {
+                if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "\"")) {
+                    value += "\"";
+                    p.pos += 2;
+                }
+                else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
+                    value += "'";
+                    p.pos += 2;
+                }
+                else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
+                    p.pos++;
+                    break;
+                }
+                else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
+                    p.pos++;
+                    break;
+                }
+                else if (p.pos < p.len) {
+                    value += p.text[p.pos];
+                    p.pos++;
+                }
+                else {
+                    throw new ParseError(p,p.pos,"Unterminated string");
+                }
+            }
+            b.push(new GenericStringNode(new Range(start,p.pos),"StringLiteral",value,true));
+            checkNode(b.get(0));
+            return;
+        }
+        throw new ParseError(p,p.pos,"Invalid string");
+    }
+}
+
+const stringLiteralTokenAct = new StringLiteralTokenAction();
+export function string_literal_token(b: Builder): void {
+    stringLiteralTokenAct.execute(b);
 }
