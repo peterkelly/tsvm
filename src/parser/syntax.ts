@@ -37,7 +37,7 @@ import {
     not,
     ref,
     list,
-    items,
+    sequence,
     spliceNull,
     spliceReplace,
     spliceNode,
@@ -70,7 +70,7 @@ const grm = new Grammar();
 // IdentifierReference
 
 grm.define("IdentifierReference",
-    items([
+    sequence([
         pos,
         ref("Identifier"),
         pos,
@@ -80,7 +80,7 @@ grm.define("IdentifierReference",
 // BindingIdentifier
 
 grm.define("BindingIdentifier",
-    items([
+    sequence([
         pos,
         ref("Identifier"),
         pos,
@@ -90,7 +90,7 @@ grm.define("BindingIdentifier",
 // BindingIdentifier
 
 grm.define("LabelIdentifier",
-    items([
+    sequence([
         pos,
         ref("Identifier"),
         pos,
@@ -112,7 +112,7 @@ grm.define("Identifier",
 // This
 
 grm.define("This",
-    items([
+    sequence([
         pos,
         keyword("this"),
         pos,
@@ -140,7 +140,7 @@ grm.define("PrimaryExpression",
 // ParenthesizedExpression
 
 grm.define("ParenthesizedExpression",
-    items([
+    sequence([
         keyword("("),      // 4
         whitespace,        // 3
         ref("Expression"), // 2 = expr
@@ -164,7 +164,7 @@ grm.define("Literal",
 // NullLiteral
 
 grm.define("NullLiteral",
-    items([
+    sequence([
         pos,
         keyword("null"),
         pos,
@@ -175,13 +175,13 @@ grm.define("NullLiteral",
 
 grm.define("BooleanLiteral",
     choice([
-        items([
+        sequence([
             pos,
             keyword("true"),
             pos,
             spliceNode(2,"True",2,0,[]),
         ]),
-        items([
+        sequence([
             pos,
             keyword("false"),
             pos,
@@ -205,7 +205,7 @@ grm.define("StringLiteral",
 // ArrayLiteral
 
 grm.define("ArrayLiteral",
-    items([
+    sequence([
         pos,             // 5 = start
         keyword("["),    // 4
         whitespace,      // 3
@@ -215,27 +215,27 @@ grm.define("ArrayLiteral",
             },
             (b: Builder): void => {
                 b.choice([
-                    items([
+                    sequence([
                         pos,          // 3 = before
                         keyword(","), // 2
                         pos,          // 1 = after
                         whitespace,   // 0
                         spliceNode(3,"Elision",3,1,[]),
                     ]),
-                    items([
+                    sequence([
                         ref("AssignmentExpression"),
                         whitespace,
-                        opt(items([
+                        opt(sequence([
                             keyword(","),
                             whitespace,
                             pop,
                         ])),
                         spliceReplace(2,2),
                     ]),
-                    items([
+                    sequence([
                         ref("SpreadElement"),
                         whitespace,
-                        opt(items([
+                        opt(sequence([
                             keyword(","),
                             whitespace,
                             pop,
@@ -253,7 +253,7 @@ grm.define("ArrayLiteral",
 // SpreadElement
 
 grm.define("SpreadElement",
-    items([
+    sequence([
         pos,
         keyword("..."),
         whitespace,
@@ -267,22 +267,22 @@ grm.define("SpreadElement",
 // ObjectLiteral
 
 grm.define("ObjectLiteral",
-    items([
+    sequence([
         pos,              // 5
         keyword("{"),     // 4
         whitespace,       // 3
         choice([          // 2 = properties
-            items([
+            sequence([
                 ref("PropertyDefinitionList"),
                 whitespace,
-                opt(items([
+                opt(sequence([
                     keyword(","),
                     whitespace,
                     spliceNull(1),
                 ])),
                 spliceReplace(2,2),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -297,7 +297,7 @@ grm.define("ObjectLiteral",
 grm.define("PropertyDefinitionList",
     list(
         ref("PropertyDefinition"),
-        items([
+        sequence([
             whitespace,
             keyword(","),
             whitespace,
@@ -309,7 +309,7 @@ grm.define("PropertyDefinitionList",
 // PropertyDefinition_colon
 
 grm.define("PropertyDefinition_colon",
-    items([
+    sequence([
         pos,                         // 6 = start
         ref("PropertyName"),         // 5 = name
         whitespace,                  // 4
@@ -350,7 +350,7 @@ grm.define("LiteralPropertyName",
 // ComputedPropertyName
 
 grm.define("ComputedPropertyName",
-    items([
+    sequence([
         pos,                         // 6 = start
         keyword("["),                // 5
         whitespace,                  // 4
@@ -364,7 +364,7 @@ grm.define("ComputedPropertyName",
 // CoverInitializedName
 
 grm.define("CoverInitializedName",
-    items([
+    sequence([
         pos,                        // 4 = start
         ref("IdentifierReference"), // 3 = ident
         whitespace,                 // 2
@@ -376,7 +376,7 @@ grm.define("CoverInitializedName",
 // Initializer
 
 grm.define("Initializer",
-    items([
+    sequence([
         keyword("="),
         whitespace,
         ref("AssignmentExpression"),
@@ -402,7 +402,7 @@ function TemplateMiddleList(b: Builder): void { throw new ParseError(b.parser,b.
 // MemberExpression_new
 
 grm.define("MemberExpression_new",
-    items([
+    sequence([
         pos,                     // 6 = start
         keyword("new"),          // 5
         whitespace,              // 4
@@ -426,11 +426,11 @@ grm.define("MemberExpression_start",
 // MemberExpression
 
 grm.define("MemberExpression",
-    items([
+    sequence([
         pos,
         ref("MemberExpression_start"),
         repeatChoice([
-            items([
+            sequence([
                 whitespace,            // 6
                 keyword("["),          // 5
                 whitespace,            // 4
@@ -440,7 +440,7 @@ grm.define("MemberExpression",
                 pos,                   // 0 = end
                 spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
             ]),
-            items([
+            sequence([
                 whitespace,            // 5
                 keyword("."),          // 4
                 whitespace,            // 3
@@ -456,9 +456,9 @@ grm.define("MemberExpression",
 // SuperProperty
 
 grm.define("SuperProperty",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,               // 8 = start
                 keyword("super"),  // 7
                 whitespace,        // 6
@@ -470,7 +470,7 @@ grm.define("SuperProperty",
                 pos,               // 0 = end
                 spliceNode(8,"SuperPropertyExpr",8,0,[3]),
             ]),
-            items([
+            sequence([
                 pos,               // 6 = start
                 keyword("super"),  // 5
                 whitespace,        // 4
@@ -491,7 +491,7 @@ grm.define("MetaProperty",
 // NewTarget
 
 grm.define("NewTarget",
-    items([
+    sequence([
         pos,                  // 6
         keyword("new"),       // 5
         whitespace,           // 4
@@ -507,7 +507,7 @@ grm.define("NewTarget",
 grm.define("NewExpression",
     choice([
         ref("MemberExpression"),
-        items([
+        sequence([
             pos,                  // 5 = start
             keyword("new"),       // 4
             whitespace,           // 3
@@ -523,7 +523,7 @@ grm.define("NewExpression",
 grm.define("CallExpression_start",
     choice([
         ref("SuperCall"),
-        items([
+        sequence([
             pos,                     // 4 = start
             ref("MemberExpression"), // 3 = fun
             whitespace,              // 2
@@ -536,17 +536,17 @@ grm.define("CallExpression_start",
 // CallExpression
 
 grm.define("CallExpression",
-    items([
+    sequence([
         pos,
         ref("CallExpression_start"),
         repeatChoice([
-            items([
+            sequence([
                 whitespace,            // 2
                 ref("Arguments"),      // 1
                 pos,                   // 0
                 spliceNode(3,"Call",4,0,[3,1]),
             ]),
-            items([
+            sequence([
                 whitespace,            // 6
                 keyword("["),          // 5
                 whitespace,            // 4
@@ -556,7 +556,7 @@ grm.define("CallExpression",
                 pos,                   // 0 = end
                 spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
             ]),
-            items([
+            sequence([
                 whitespace,            // 4
                 keyword("."),          // 3
                 whitespace,            // 2
@@ -575,7 +575,7 @@ grm.define("CallExpression",
 // SuperCall
 
 grm.define("SuperCall",
-    items([
+    sequence([
         pos,              // 4 = start
         keyword("super"), // 3
         whitespace,       // 2
@@ -588,7 +588,7 @@ grm.define("SuperCall",
 
 grm.define("Arguments",
     choice([
-        items([
+        sequence([
             pos,                 // 6 = start
             keyword("("),        // 5
             whitespace,          // 4
@@ -599,7 +599,7 @@ grm.define("Arguments",
             spliceEmptyListNode(0,3,3),
             spliceNode(6,"Arguments",6,1,[0]),
         ]),
-        items([
+        sequence([
             pos,                 // 6 = start
             keyword("("),        // 5
             whitespace,          // 4
@@ -615,7 +615,7 @@ grm.define("Arguments",
 
 grm.define("ArgumentList_item",
     choice([
-        items([
+        sequence([
             pos,                         // 4 = start
             keyword("..."),              // 3
             whitespace,                  // 2
@@ -631,7 +631,7 @@ grm.define("ArgumentList_item",
 grm.define("ArgumentList",
     list(
         ref("ArgumentList_item"),
-        items([
+        sequence([
             whitespace,
             keyword(","),
             whitespace,
@@ -655,17 +655,17 @@ grm.define("LeftHandSideExpression",
 // PostfixExpression
 
 grm.define("PostfixExpression",
-    items([
+    sequence([
         pos,
         ref("LeftHandSideExpression"),
         choice([
-            items([
+            sequence([
                 whitespaceNoNewline,
                 keyword("++"),
                 pos,
                 spliceNode(4,"PostIncrement",4,0,[3]),
             ]),
-            items([
+            sequence([
                 whitespaceNoNewline,
                 keyword("--"),
                 pos,
@@ -681,7 +681,7 @@ grm.define("PostfixExpression",
 
 grm.define("UnaryExpression",
     choice([
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("delete"),      // 3
             whitespace,             // 2
@@ -689,7 +689,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"Delete",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("void"),        // 3
             whitespace,             // 2
@@ -697,7 +697,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"Void",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("typeof"),      // 3
             whitespace,             // 2
@@ -705,7 +705,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"TypeOf",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("++"),          // 3
             whitespace,             // 2
@@ -713,7 +713,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"PreIncrement",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("--"),          // 3
             whitespace,             // 2
@@ -721,7 +721,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"PreDecrement",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("+"),           // 3
             whitespace,             // 2
@@ -729,7 +729,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"UnaryPlus",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("-"),           // 3
             whitespace,             // 2
@@ -737,7 +737,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"UnaryMinus",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("~"),           // 3
             whitespace,             // 2
@@ -745,7 +745,7 @@ grm.define("UnaryExpression",
             pos,                    // 0 = end
             spliceNode(4,"UnaryBitwiseNot",4,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                    // 4 = start
             keyword("!"),           // 3
             whitespace,             // 2
@@ -761,11 +761,11 @@ grm.define("UnaryExpression",
 // MultiplicativeExpression
 
 grm.define("MultiplicativeExpression",
-    items([
+    sequence([
         pos,                            // 6 = start
         ref("UnaryExpression"),         // 5 = left
         repeatChoice([
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("*"),           // 3
                 whitespace,             // 2
@@ -773,7 +773,7 @@ grm.define("MultiplicativeExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"Multiply",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("/"),           // 3
                 whitespace,             // 2
@@ -781,7 +781,7 @@ grm.define("MultiplicativeExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"Divide",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("%"),           // 3
                 whitespace,             // 2
@@ -798,11 +798,11 @@ grm.define("MultiplicativeExpression",
 // AdditiveExpression
 
 grm.define("AdditiveExpression",
-    items([
+    sequence([
         pos,                                     // 6 = start
         ref("MultiplicativeExpression"),         // 5 = left
         repeatChoice([
-            items([
+            sequence([
                 whitespace,                      // 4
                 keyword("+"),                    // 3
                 whitespace,                      // 2
@@ -810,7 +810,7 @@ grm.define("AdditiveExpression",
                 pos,                             // 0 = end
                 spliceNode(5,"Add",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                      // 4
                 keyword("-"),                    // 3
                 whitespace,                      // 2
@@ -827,11 +827,11 @@ grm.define("AdditiveExpression",
 // ShiftExpression
 
 grm.define("ShiftExpression",
-    items([
+    sequence([
         pos,                               // 6 = start
         ref("AdditiveExpression"),         // 5 = left
         repeatChoice([
-            items([
+            sequence([
                 whitespace,                // 4
                 keyword("<<"),             // 3
                 whitespace,                // 2
@@ -839,7 +839,7 @@ grm.define("ShiftExpression",
                 pos,                       // 0 = end
                 spliceNode(5,"LeftShift",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                // 4
                 keyword(">>>"),            // 3
                 whitespace,                // 2
@@ -847,7 +847,7 @@ grm.define("ShiftExpression",
                 pos,                       // 0 = end
                 spliceNode(5,"UnsignedRightShift",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                // 4
                 keyword(">>"),             // 3
                 whitespace,                // 2
@@ -864,11 +864,11 @@ grm.define("ShiftExpression",
 // RelationalExpression
 
 grm.define("RelationalExpression",
-    items([
+    sequence([
         pos,                            // 6 = start
         ref("ShiftExpression"),         // 5 = left
         repeatChoice([
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("<="),          // 3
                 whitespace,             // 2
@@ -876,7 +876,7 @@ grm.define("RelationalExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"LessEqual",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword(">="),          // 3
                 whitespace,             // 2
@@ -884,7 +884,7 @@ grm.define("RelationalExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"GreaterEqual",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("<"),           // 3
                 whitespace,             // 2
@@ -892,7 +892,7 @@ grm.define("RelationalExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"LessThan",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword(">"),           // 3
                 whitespace,             // 2
@@ -900,7 +900,7 @@ grm.define("RelationalExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"GreaterThan",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("instanceof"),  // 3
                 whitespace,             // 2
@@ -908,7 +908,7 @@ grm.define("RelationalExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"InstanceOf",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,             // 4
                 keyword("in"),          // 3
                 whitespace,             // 2
@@ -925,11 +925,11 @@ grm.define("RelationalExpression",
 // EqualityExpression
 
 grm.define("EqualityExpression",
-    items([
+    sequence([
         pos,                                 // 6 = start
         ref("RelationalExpression"),         // 5 = left
         repeatChoice([
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("==="),              // 3
                 whitespace,                  // 2
@@ -937,7 +937,7 @@ grm.define("EqualityExpression",
                 pos,                         // 0 = end
                 spliceNode(5,"StrictEquals",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("!=="),              // 3
                 whitespace,                  // 2
@@ -945,7 +945,7 @@ grm.define("EqualityExpression",
                 pos,                         // 0 = end
                 spliceNode(5,"StrictNotEquals",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("=="),               // 3
                 whitespace,                  // 2
@@ -953,7 +953,7 @@ grm.define("EqualityExpression",
                 pos,                         // 0 = end
                 spliceNode(5,"AbstractEquals",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("!="),               // 3
                 whitespace,                  // 2
@@ -970,10 +970,10 @@ grm.define("EqualityExpression",
 // BitwiseANDExpression
 
 grm.define("BitwiseANDExpression",
-    items([
+    sequence([
         pos,                           // 6 = start
         ref("EqualityExpression"),     // 5 = left
-        repeat(items([
+        repeat(sequence([
             whitespace,                // 4
             keyword("&"),              // 3
             whitespace,                // 2
@@ -987,10 +987,10 @@ grm.define("BitwiseANDExpression",
 // BitwiseXORExpression
 
 grm.define("BitwiseXORExpression",
-    items([
+    sequence([
         pos,                             // 6 = start
         ref("BitwiseANDExpression"),     // 5 = left
-        repeat(items([
+        repeat(sequence([
             whitespace,                  // 4
             keyword("^"),                // 3
             whitespace,                  // 2
@@ -1004,10 +1004,10 @@ grm.define("BitwiseXORExpression",
 // BitwiseORExpression
 
 grm.define("BitwiseORExpression",
-    items([
+    sequence([
         pos,                             // 6 = start
         ref("BitwiseXORExpression"),     // 5 = left
-        repeat(items([
+        repeat(sequence([
             whitespace,                  // 4
             keyword("|"),                // 3
             whitespace,                  // 2
@@ -1023,10 +1023,10 @@ grm.define("BitwiseORExpression",
 // LogicalANDExpression
 
 grm.define("LogicalANDExpression",
-    items([
+    sequence([
         pos,                            // 6 = start
         ref("BitwiseORExpression"),     // 5 = left
-        repeat(items([
+        repeat(sequence([
             whitespace,                 // 4
             keyword("&&"),              // 3
             whitespace,                 // 2
@@ -1040,10 +1040,10 @@ grm.define("LogicalANDExpression",
 // LogicalORExpression
 
 grm.define("LogicalORExpression",
-    items([
+    sequence([
         pos,                             // 6 = start
         ref("LogicalANDExpression"),     // 5 = left
-        repeat(items([
+        repeat(sequence([
             whitespace,                  // 4
             keyword("||"),               // 3
             whitespace,                  // 2
@@ -1059,11 +1059,11 @@ grm.define("LogicalORExpression",
 // ConditionalExpression
 
 grm.define("ConditionalExpression",
-    items([
+    sequence([
         pos,                                 // 10 = start
         ref("LogicalORExpression"),          // 9 = condition
         choice([
-            items([
+            sequence([
                 whitespace,                  // 8
                 keyword("?"),                // 7
                 whitespace,                  // 6
@@ -1075,7 +1075,8 @@ grm.define("ConditionalExpression",
                 pos,                         // 0 = end
                 spliceNode(9,"Conditional",10,0,[9,5,1]),
             ]),
-            items([]),
+            sequence([
+            ]),
         ]),
         spliceReplace(1,0),
     ]));
@@ -1085,11 +1086,11 @@ grm.define("ConditionalExpression",
 // AssignmentExpression_plain
 
 grm.define("AssignmentExpression_plain",
-    items([
+    sequence([
         pos,                                 // 6 = start
         ref("LeftHandSideExpression"),       // 5 = left
         choice([
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("="),                // 3
                 whitespace,                  // 2
@@ -1097,7 +1098,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"Assign",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("*="),               // 3
                 whitespace,                  // 2
@@ -1105,7 +1106,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignMultiply",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("/="),               // 3
                 whitespace,                  // 2
@@ -1113,7 +1114,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignDivide",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("%="),               // 3
                 whitespace,                  // 2
@@ -1121,7 +1122,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignModulo",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("+="),               // 3
                 whitespace,                  // 2
@@ -1129,7 +1130,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignAdd",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("-="),               // 3
                 whitespace,                  // 2
@@ -1137,7 +1138,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignSubtract",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("<<="),              // 3
                 whitespace,                  // 2
@@ -1145,7 +1146,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignLeftShift",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword(">>="),              // 3
                 whitespace,                  // 2
@@ -1153,7 +1154,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignSignedRightShift",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword(">>>="),             // 3
                 whitespace,                  // 2
@@ -1161,7 +1162,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignUnsignedRightShift",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("&="),               // 3
                 whitespace,                  // 2
@@ -1169,7 +1170,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignBitwiseAND",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("^="),               // 3
                 whitespace,                  // 2
@@ -1177,7 +1178,7 @@ grm.define("AssignmentExpression_plain",
                 pos,                         // 0 = end
                 spliceNode(5,"AssignBitwiseXOR",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 whitespace,                  // 4
                 keyword("|="),               // 3
                 whitespace,                  // 2
@@ -1206,10 +1207,10 @@ grm.define("AssignmentExpression",
 // Expression
 
 grm.define("Expression",
-    items([
+    sequence([
         pos,                             // 6 = start
         ref("AssignmentExpression"),     // 5 = left
-        repeat(items([
+        repeat(sequence([
             whitespace,                  // 4
             keyword(","),                // 3
             whitespace,                  // 2
@@ -1277,17 +1278,17 @@ grm.define("BlockStatement",
 // Block
 
 grm.define("Block",
-    items([
+    sequence([
         pos,              // 5
         keyword("{"),     // 4
         whitespace,       // 3
         choice([          // 2 = statements
-            items([
+            sequence([
                 ref("StatementList"),
                 whitespace,
                 spliceReplace(1,1),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -1302,7 +1303,7 @@ grm.define("Block",
 grm.define("StatementList",
     list(
         ref("StatementListItem"),
-        items([
+        sequence([
             whitespace,
             ref("StatementListItem"),
             spliceReplace(1,0),
@@ -1323,7 +1324,7 @@ grm.define("StatementListItem",
 
 grm.define("LexicalDeclaration",
     choice([
-        items([
+        sequence([
             pos,                // 6 = start
             keyword("let"),     // 5
             whitespace,         // 4
@@ -1333,7 +1334,7 @@ grm.define("LexicalDeclaration",
             pos,                // 0 = end
             spliceNode(6,"Let",6,0,[3]),
         ]),
-        items([
+        sequence([
             pos,                // 6 = start
             keyword("const"),   // 5
             whitespace,         // 4
@@ -1350,7 +1351,7 @@ grm.define("LexicalDeclaration",
 grm.define("BindingList",
     list(
         ref("LexicalBinding"),
-        items([
+        sequence([
             whitespace,
             keyword(","),
             whitespace,
@@ -1362,10 +1363,10 @@ grm.define("BindingList",
 // LexicalBinding_identifier
 
 grm.define("LexicalBinding_identifier",
-    items([
+    sequence([
         pos,                      // 3 = start
         ref("BindingIdentifier"), // 2 = identifier
-        opt(items([               // 1 = initializer
+        opt(sequence([               // 1 = initializer
             whitespace,
             ref("Initializer"),
             spliceReplace(1,0),
@@ -1377,7 +1378,7 @@ grm.define("LexicalBinding_identifier",
 // LexicalBinding_pattern
 
 grm.define("LexicalBinding_pattern",
-    items([
+    sequence([
         pos,                   // 4 = start
         ref("BindingPattern"), // 3 = pattern
         whitespace,            // 2
@@ -1399,7 +1400,7 @@ grm.define("LexicalBinding",
 // VariableStatement
 
 grm.define("VariableStatement",
-    items([
+    sequence([
         pos,                            // 6 = start
         keyword("var"),                 // 5
         whitespace,                     // 4
@@ -1413,10 +1414,10 @@ grm.define("VariableStatement",
 // VariableDeclarationList
 
 grm.define("VariableDeclarationList",
-    items([
+    sequence([
         list(
             ref("VariableDeclaration"),
-            items([
+            sequence([
                 whitespace,
                 keyword(","),
                 whitespace,
@@ -1429,17 +1430,17 @@ grm.define("VariableDeclarationList",
 // VariableDeclaration_identifier
 
 grm.define("VariableDeclaration_identifier",
-    items([
+    sequence([
         pos,
         ref("BindingIdentifier"),
         choice([
-            items([
+            sequence([
                 whitespace,
                 ref("Initializer"),
                 pos,
                 spliceNode(4,"VarIdentifier",4,0,[3,1]),
             ]),
-            items([
+            sequence([
                 value(null),
                 pos,
                 spliceNode(3,"VarIdentifier",3,0,[2,1]),
@@ -1450,7 +1451,7 @@ grm.define("VariableDeclaration_identifier",
 // VariableDeclaration_pattern
 
 grm.define("VariableDeclaration_pattern",
-    items([
+    sequence([
         pos,                   // 4 = start
         ref("BindingPattern"), // 3 = pattern
         whitespace,            // 2
@@ -1480,23 +1481,23 @@ grm.define("BindingPattern",
 // ObjectBindingPattern
 
 grm.define("ObjectBindingPattern",
-    items([
+    sequence([
         pos,               // 6 = start
         keyword("{"),      // 5
         whitespace,        // 4
         pos,               // 3
         choice([           // 2 = properties
-            items([
+            sequence([
                 ref("BindingPropertyList"),
                 whitespace,
-                opt(items([
+                opt(sequence([
                     keyword(","),
                     whitespace,
                     spliceNull(1),
                 ])),
                 spliceReplace(2,2),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -1509,13 +1510,13 @@ grm.define("ObjectBindingPattern",
 // ArrayBindingPattern
 
 grm.define("ArrayBindingPattern",
-    items([
+    sequence([
         pos,                       // 7 = start
         keyword("["),              // 6
         whitespace,                // 5
         ref("BindingElementList"), // 4 = elements
         whitespace,                // 3
-        opt(items([                // 2 = rest
+        opt(sequence([                // 2 = rest
             ref("BindingRestElement"),
             whitespace,
             spliceReplace(1,1),
@@ -1528,10 +1529,10 @@ grm.define("ArrayBindingPattern",
 // BindingPropertyList
 
 grm.define("BindingPropertyList",
-    items([
+    sequence([
         list(
             ref("BindingProperty"),
-            items([
+            sequence([
                 whitespace,
                 keyword(","),
                 whitespace,
@@ -1544,26 +1545,26 @@ grm.define("BindingPropertyList",
 // BindingElementList
 
 grm.define("BindingElementList",
-    items([
+    sequence([
         list(
-            opt(items([
+            opt(sequence([
                 pos,
                 keyword(","),
                 pos,
                 spliceNode(2,"Elision",2,0,[]),
             ])),
             choice([
-                items([
+                sequence([
                     whitespace,   // 3
                     pos,          // 2 = before
                     keyword(","), // 1
                     pos,          // 0 = after
                     spliceNode(3,"Elision",2,0,[]),
                 ]),
-                items([
+                sequence([
                     whitespace,
                     ref("BindingElement"),
-                    opt(items([
+                    opt(sequence([
                         whitespace,
                         keyword(","),
                         pop,
@@ -1577,9 +1578,9 @@ grm.define("BindingElementList",
 // BindingProperty
 
 grm.define("BindingProperty",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,                   // 6 = start
                 ref("PropertyName"),   // 5 = name
                 whitespace,            // 4
@@ -1600,11 +1601,11 @@ grm.define("BindingProperty",
 grm.define("BindingElement",
     choice([
         ref("SingleNameBinding"),
-        items([
+        sequence([
             pos,
             ref("BindingPattern"),
             choice([
-                items([
+                sequence([
                     whitespace,
                     ref("Initializer"),
                     pos,
@@ -1618,17 +1619,17 @@ grm.define("BindingElement",
 // SingleNameBinding
 
 grm.define("SingleNameBinding",
-    items([
+    sequence([
         pos,
         ref("BindingIdentifier"),
         choice([
-            items([
+            sequence([
                 whitespace,
                 ref("Initializer"),
                 pos,
                 spliceNode(2,"SingleNameBinding",4,0,[3,1]),
             ]),
-            items([
+            sequence([
                 value(null),
                 spliceReplace(0,1),
             ]),
@@ -1639,7 +1640,7 @@ grm.define("SingleNameBinding",
 // BindingRestElement
 
 grm.define("BindingRestElement",
-    items([
+    sequence([
         pos,                      // 4 = start
         keyword("..."),           // 3
         whitespace,               // 2
@@ -1653,7 +1654,7 @@ grm.define("BindingRestElement",
 // EmptyStatement
 
 grm.define("EmptyStatement",
-    items([
+    sequence([
         pos,
         keyword(";"),
         pos,
@@ -1665,11 +1666,11 @@ grm.define("EmptyStatement",
 // ExpressionStatement
 
 grm.define("ExpressionStatement",
-    items([
+    sequence([
         not(keyword("{")),
         not(keyword("function")),
         not(keyword("class")),
-        not(items([
+        not(sequence([
             keyword("let"),
             whitespace,
             keyword("["),
@@ -1687,7 +1688,7 @@ grm.define("ExpressionStatement",
 // IfStatement
 
 grm.define("IfStatement",
-    items([
+    sequence([
         pos,               // 11 = start
         keyword("if"),     // 10
         whitespace,        // 9
@@ -1698,7 +1699,7 @@ grm.define("IfStatement",
         keyword(")"),      // 4
         whitespace,        // 3
         ref("Statement"),  // 2 = trueBranch
-        opt(items([        // 1 = falseBranch
+        opt(sequence([        // 1 = falseBranch
             whitespace,
             keyword("else"),
             whitespace,
@@ -1714,7 +1715,7 @@ grm.define("IfStatement",
 // IterationStatement_do
 
 grm.define("IterationStatement_do",
-    items([
+    sequence([
         pos,               // 14
         keyword("do"),     // 13
         whitespace,        // 12
@@ -1736,7 +1737,7 @@ grm.define("IterationStatement_do",
 // IterationStatement_while
 
 grm.define("IterationStatement_while",
-    items([
+    sequence([
         pos,                // 10 = start
         keyword("while"),   // 9
         whitespace,         // 8
@@ -1758,14 +1759,14 @@ grm.define("IterationStatement_for_c",
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
-    items([
+    sequence([
         pos,                                    // 14 = start
         keyword("for"),                         // 13
         whitespace,                             // 12
         keyword("("),                           // 11
         whitespace,                             // 10
         choice([
-            items([
+            sequence([
                 not(keyword("let")), // FIXME: need tests for this
                 not(keyword("[")), // FIXME: need tests for this
                 ref("Expression"),              // 3 = expr
@@ -1774,7 +1775,7 @@ grm.define("IterationStatement_for_c",
                 whitespace,                     // 0
                 spliceReplace(3,3),
             ]),
-            items([
+            sequence([
                 pos,                            // 7 = start2
                 keyword("var"),                 // 6
                 whitespace,                     // 5
@@ -1785,13 +1786,13 @@ grm.define("IterationStatement_for_c",
                 whitespace,                     // 0
                 spliceNode(7,"Var",7,3,[4]),
             ]),
-            items([
+            sequence([
                 ref("LexicalDeclaration"),
                 whitespace,
                 spliceReplace(1,1),
             ]),
             // initializer part can be empty, but need to distinguish this from an error
-            items([
+            sequence([
                 keyword(";"),
                 spliceNull(0),
             ]),
@@ -1800,7 +1801,7 @@ grm.define("IterationStatement_for_c",
         whitespace,             // 7
         keyword(";"),           // 6
         whitespace,             // 5
-        opt(items([
+        opt(sequence([
             ref("Expression"),
             whitespace,
             spliceReplace(1,1),
@@ -1819,19 +1820,19 @@ grm.define("IterationStatement_for_in",
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
-    items([
+    sequence([
         pos,                       // 14 = start
         keyword("for"),            // 13
         whitespace,                // 12
         keyword("("),              // 11
         whitespace,                // 10
         choice([                   // 9 = binding
-            items([
+            sequence([
                 not(keyword("let")), // FIXME: need tests for this
                 not(keyword("[")), // FIXME: need tests for this
                 ref("LeftHandSideExpression"),
             ]),
-            items([
+            sequence([
                 pos,
                 keyword("var"),
                 whitespace,
@@ -1860,19 +1861,19 @@ grm.define("IterationStatement_for_of",
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
-    items([
+    sequence([
         pos,                       // 14 = start
         keyword("for"),            // 13
         whitespace,                // 12
         keyword("("),              // 11
         whitespace,                // 10
         choice([                   // 9
-            items([
+            sequence([
                 not(keyword("let")), // FIXME: need tests for this
                 not(keyword("[")), // FIXME: need tests for this
                 ref("LeftHandSideExpression"),
             ]),
-            items([
+            sequence([
                 pos,
                 keyword("var"),
                 whitespace,
@@ -1915,9 +1916,9 @@ grm.define("IterationStatement",
 // ForDeclaration
 
 grm.define("ForDeclaration",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,               // 4 = start
                 keyword("let"),    // 3
                 whitespace,        // 2
@@ -1925,7 +1926,7 @@ grm.define("ForDeclaration",
                 pos,               // 0 = end
                 spliceNode(4,"LetForDeclaration",4,0,[1]),
             ]),
-            items([
+            sequence([
                 pos,               // 4 = start
                 keyword("const"),  // 3
                 whitespace,        // 2
@@ -1949,9 +1950,9 @@ grm.define("ForBinding",
 // ContinueStatement
 
 grm.define("ContinueStatement",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,                    // 5 = start
                 keyword("continue"),    // 4
                 whitespace,             // 3
@@ -1960,7 +1961,7 @@ grm.define("ContinueStatement",
                 pos,                    // 0 = end
                 spliceNode(5,"ContinueStatement",5,0,[2]),
             ]),
-            items([
+            sequence([
                 pos,                    // 6 = start
                 keyword("continue"),    // 5
                 whitespaceNoNewline,    // 4
@@ -1978,9 +1979,9 @@ grm.define("ContinueStatement",
 // BreakStatement
 
 grm.define("BreakStatement",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,                    // 5 = start
                 keyword("break"),       // 4
                 whitespace,             // 3
@@ -1989,7 +1990,7 @@ grm.define("BreakStatement",
                 pos,                    // 0 = end
                 spliceNode(5,"BreakStatement",5,0,[2]),
             ]),
-            items([
+            sequence([
                 pos,                    // 6 = start
                 keyword("break"),       // 5
                 whitespaceNoNewline,    // 4
@@ -2007,9 +2008,9 @@ grm.define("BreakStatement",
 // ReturnStatement
 
 grm.define("ReturnStatement",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,                 // 5 = start
                 keyword("return"),   // 4
                 whitespace,          // 3
@@ -2018,7 +2019,7 @@ grm.define("ReturnStatement",
                 pos,                 // 0 = end
                 spliceNode(5,"ReturnStatement",5,0,[2]),
             ]),
-            items([
+            sequence([
                 pos,                 // 6 = start
                 keyword("return"),   // 5
                 whitespaceNoNewline, // 4
@@ -2036,7 +2037,7 @@ grm.define("ReturnStatement",
 // WithStatement
 
 grm.define("WithStatement",
-    items([
+    sequence([
         pos,               // 10 = start
         keyword("with"),   // 9
         whitespace,        // 8
@@ -2056,7 +2057,7 @@ grm.define("WithStatement",
 // SwitchStatement
 
 grm.define("SwitchStatement",
-    items([
+    sequence([
         pos,               // 10 = start
         keyword("switch"), // 9
         whitespace,        // 8
@@ -2074,14 +2075,14 @@ grm.define("SwitchStatement",
 // CaseBlock_1
 
 grm.define("CaseBlock_1",
-    items([
+    sequence([
         pos,          // 7
         keyword("{"), // 6
         whitespace,   // 5
         pos,          // 4 = midpos
         choice([      // 3 = clauses
             ref("CaseClauses"),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -2095,7 +2096,7 @@ grm.define("CaseBlock_1",
 // CaseBlock_2
 
 grm.define("CaseBlock_2",
-    items([
+    sequence([
         pos,                     // 10 = start
         keyword("{"),            // 9
         whitespace,              // 8
@@ -2123,7 +2124,7 @@ grm.define("CaseBlock",
 grm.define("CaseClauses",
     list(
         ref("CaseClause"),
-        items([
+        sequence([
             whitespace,
             ref("CaseClause"),
             spliceReplace(1,0),
@@ -2133,7 +2134,7 @@ grm.define("CaseClauses",
 // CaseClause
 
 grm.define("CaseClause",
-    items([
+    sequence([
         pos,                  // 8 = start
         keyword("case"),      // 7
         whitespace,           // 6
@@ -2149,7 +2150,7 @@ grm.define("CaseClause",
 // DefaultClause
 
 grm.define("DefaultClause",
-    items([
+    sequence([
         pos,                  // 7 = start
         keyword("default"),   // 6
         whitespace,           // 5
@@ -2166,7 +2167,7 @@ grm.define("DefaultClause",
 // LabelledStatement
 
 grm.define("LabelledStatement",
-    items([
+    sequence([
         pos,                    // 6 = start
         ref("LabelIdentifier"), // 5 = ident
         whitespace,             // 4
@@ -2190,7 +2191,7 @@ grm.define("LabelledItem",
 // ThrowStatement
 
 grm.define("ThrowStatement",
-    items([
+    sequence([
         pos,                 // 6 = start
         keyword("throw"),    // 5
         whitespaceNoNewline, // 4
@@ -2206,21 +2207,21 @@ grm.define("ThrowStatement",
 // TryStatement
 
 grm.define("TryStatement",
-    items([
+    sequence([
         pos,                         // 7 = start
         keyword("try"),              // 6
         whitespace,                  // 5
         ref("Block"),                // 4 = tryBlock
         choice([
-            items([
+            sequence([
                 whitespace,          // 3
                 value(null),         // 2 = catchBlock
                 ref("Finally"),      // 1 = finallyBlock
             ]),
-            items([
+            sequence([
                 whitespace,          // 3
                 ref("Catch"),        // 2 = catchBlock
-                opt(items([          // 1 = finallyBlock
+                opt(sequence([          // 1 = finallyBlock
                     whitespace,
                     ref("Finally"),
                     spliceReplace(1,0),
@@ -2234,7 +2235,7 @@ grm.define("TryStatement",
 // Catch
 
 grm.define("Catch",
-    items([
+    sequence([
         pos,                   // 10 = start
         keyword("catch"),      // 9
         whitespace,            // 8
@@ -2252,7 +2253,7 @@ grm.define("Catch",
 // Finally
 
 grm.define("Finally",
-    items([
+    sequence([
         pos,                // 4
         keyword("finally"), // 3
         whitespace,         // 2
@@ -2274,7 +2275,7 @@ grm.define("CatchParameter",
 // DebuggerStatement
 
 grm.define("DebuggerStatement",
-    items([
+    sequence([
         pos,                 // 4
         keyword("debugger"), // 3
         whitespace,          // 2
@@ -2288,7 +2289,7 @@ grm.define("DebuggerStatement",
 // FunctionDeclaration_named
 
 grm.define("FunctionDeclaration_named",
-    items([
+    sequence([
         pos,                      // 16 = start
         keyword("function"),      // 15
         whitespace,               // 14
@@ -2312,7 +2313,7 @@ grm.define("FunctionDeclaration_named",
 // FunctionDeclaration_unnamed
 
 grm.define("FunctionDeclaration_unnamed",
-    items([
+    sequence([
         pos,                     // 15 = start
         keyword("function"),     // 14
         whitespace,              // 13
@@ -2343,11 +2344,11 @@ grm.define("FunctionDeclaration",
 // FunctionExpression
 
 grm.define("FunctionExpression",
-    items([
+    sequence([
         pos,                     // 15 = start
         keyword("function"),     // 14
         whitespace,              // 13
-        opt(items([
+        opt(sequence([
             ref("BindingIdentifier"),
             whitespace,
             spliceReplace(1,1),
@@ -2377,7 +2378,7 @@ grm.define("StrictFormalParameters",
 grm.define("FormalParameters",
     choice([
         ref("FormalParameterList"),
-        items([
+        sequence([
             pos,
             spliceNode(0,"FormalParameters1",0,0,[]),
         ]),
@@ -2387,17 +2388,17 @@ grm.define("FormalParameters",
 
 grm.define("FormalParameterList",
     choice([
-        items([
+        sequence([
             pos,                          // 2 = start
             ref("FunctionRestParameter"), // 1 = rest
             pos,                          // 0 = end
             spliceNode(2,"FormalParameters2",2,0,[1]),
         ]),
-        items([
+        sequence([
             pos,                // 3 = start
             ref("FormalsList"), // 2 = formals
             choice([
-                items([
+                sequence([
                     whitespace,
                     keyword(","),
                     whitespace,
@@ -2405,7 +2406,7 @@ grm.define("FormalParameterList",
                     pos,
                     spliceNode(6,"FormalParameters4",6,0,[5,1]),
                 ]),
-                items([
+                sequence([
                     pos,
                     spliceNode(2,"FormalParameters3",2,0,[1]),
                 ]),
@@ -2418,7 +2419,7 @@ grm.define("FormalParameterList",
 grm.define("FormalsList",
     list(
         ref("FormalParameter"),
-        items([
+        sequence([
             whitespace,
             keyword(","),
             whitespace,
@@ -2447,7 +2448,7 @@ grm.define("FunctionBody",
 grm.define("FunctionStatementList",
     choice([
         ref("StatementList"),
-        items([
+        sequence([
             pos,
             spliceEmptyListNode(0,0,0),
         ]),
@@ -2458,7 +2459,7 @@ grm.define("FunctionStatementList",
 // ArrowFunction
 
 grm.define("ArrowFunction",
-    items([
+    sequence([
         pos,                    // 6 = start
         ref("ArrowParameters"), // 5 = params
         whitespaceNoNewline,    // 4
@@ -2480,7 +2481,7 @@ grm.define("ArrowParameters",
 // ConciseBody_1
 
 grm.define("ConciseBody_1",
-    items([
+    sequence([
         not(keyword("{")),
         ref("AssignmentExpression"),
     ]));
@@ -2488,7 +2489,7 @@ grm.define("ConciseBody_1",
 // ConciseBody_2
 
 grm.define("ConciseBody_2",
-    items([
+    sequence([
         keyword("{"),        // 4
         whitespace,          // 3
         ref("FunctionBody"), // 2
@@ -2508,7 +2509,7 @@ grm.define("ConciseBody",
 // ArrowFormalParameters
 
 grm.define("ArrowFormalParameters",
-    items([
+    sequence([
         keyword("("),                  // 4
         whitespace,                    // 3
         ref("StrictFormalParameters"), // 2
@@ -2522,7 +2523,7 @@ grm.define("ArrowFormalParameters",
 // MethodDefinition_1
 
 grm.define("MethodDefinition_1",
-    items([
+    sequence([
         pos,                           // 14 = start
         ref("PropertyName"),           // 13 = name
         whitespace,                    // 12
@@ -2549,7 +2550,7 @@ grm.define("MethodDefinition_2",
 // MethodDefinition_3
 
 grm.define("MethodDefinition_3",
-    items([
+    sequence([
         pos,                 // 14 = start
         identifier("get"),   // 13 "get" is not a reserved word, so we can't use keyword here
         whitespace,          // 12
@@ -2571,7 +2572,7 @@ grm.define("MethodDefinition_3",
 // MethodDefinition_4
 
 grm.define("MethodDefinition_4",
-    items([
+    sequence([
         pos,                             // 16 = start
         identifier("set"),               // 15
         whitespace,                      // 14
@@ -2612,7 +2613,7 @@ grm.define("PropertySetParameterList",
 // GeneratorMethod
 
 grm.define("GeneratorMethod",
-    items([
+    sequence([
         pos,                           // 16 = start
         keyword("*"),                  // 15
         whitespace,                    // 14
@@ -2636,7 +2637,7 @@ grm.define("GeneratorMethod",
 // GeneratorDeclaration_1
 
 grm.define("GeneratorDeclaration_1",
-    items([
+    sequence([
         pos,                      // 18 = start
         keyword("function"),      // 17
         whitespace,               // 16
@@ -2662,7 +2663,7 @@ grm.define("GeneratorDeclaration_1",
 // GeneratorDeclaration_2
 
 grm.define("GeneratorDeclaration_2",
-    items([
+    sequence([
         pos,                     // 16 = start
         keyword("function"),     // 15
         whitespace,              // 14
@@ -2694,13 +2695,13 @@ grm.define("GeneratorDeclaration",
 // GeneratorExpression
 
 grm.define("GeneratorExpression",
-    items([
+    sequence([
         pos,                     // 17 = start
         keyword("function"),     // 16
         whitespace,              // 15
         keyword("*"),            // 14
         whitespace,              // 13
-        opt(items([
+        opt(sequence([
             ref("BindingIdentifier"),
             whitespace,
             spliceReplace(1,1),
@@ -2728,7 +2729,7 @@ grm.define("GeneratorBody",
 // YieldExpression_1
 
 grm.define("YieldExpression_1",
-    items([
+    sequence([
         pos,                         // 6
         keyword("yield"),            // 5
         whitespaceNoNewline,         // 4
@@ -2742,7 +2743,7 @@ grm.define("YieldExpression_1",
 // YieldExpression_2
 
 grm.define("YieldExpression_2",
-    items([
+    sequence([
         pos,                         // 4
         keyword("yield"),            // 3
         whitespaceNoNewline,         // 2
@@ -2754,7 +2755,7 @@ grm.define("YieldExpression_2",
 // YieldExpression_3
 
 grm.define("YieldExpression_3",
-    items([
+    sequence([
         pos,
         keyword("yield"),
         pos,
@@ -2775,7 +2776,7 @@ grm.define("YieldExpression",
 // ClassDeclaration_1
 
 grm.define("ClassDeclaration_1",
-    items([
+    sequence([
         pos,                      // 6 = start
         keyword("class"),         // 5
         whitespace,               // 4
@@ -2789,7 +2790,7 @@ grm.define("ClassDeclaration_1",
 // ClassDeclaration_2
 
 grm.define("ClassDeclaration_2",
-    items([
+    sequence([
         pos,              // 5
         keyword("class"), // 4
         whitespace,       // 3
@@ -2810,11 +2811,11 @@ grm.define("ClassDeclaration",
 // ClassExpression
 
 grm.define("ClassExpression",
-    items([
+    sequence([
         pos,                  // 5
         keyword("class"),     // 4
         whitespace,           // 3
-        opt(items([
+        opt(sequence([
             ref("BindingIdentifier"),
             whitespace,
             spliceReplace(1,1),
@@ -2827,9 +2828,9 @@ grm.define("ClassExpression",
 // ClassTail
 
 grm.define("ClassTail",
-    items([
+    sequence([
         pos,                // 6 = start
-        opt(items([         // 5 = heritage
+        opt(sequence([         // 5 = heritage
             ref("ClassHeritage"),
             whitespace,
             spliceReplace(1,1),
@@ -2837,12 +2838,12 @@ grm.define("ClassTail",
         keyword("{"),       // 4
         whitespace,         // 3
         choice([            // 2 = body
-            items([
+            sequence([
                 ref("ClassBody"),
                 whitespace,
                 spliceReplace(1,1),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -2855,7 +2856,7 @@ grm.define("ClassTail",
 // ClassHeritage
 
 grm.define("ClassHeritage",
-    items([
+    sequence([
         pos,                           // 4 = start
         keyword("extends"),            // 3
         whitespace,                    // 2
@@ -2874,7 +2875,7 @@ grm.define("ClassBody",
 grm.define("ClassElementList",
     list(
         ref("ClassElement"),
-        items([
+        sequence([
             whitespace,
             ref("ClassElement"),
             spliceReplace(1,0),
@@ -2889,7 +2890,7 @@ grm.define("ClassElement_1",
 // ClassElement_2
 
 grm.define("ClassElement_2",
-    items([
+    sequence([
         pos,
         keyword("static"),
         whitespace,
@@ -2901,7 +2902,7 @@ grm.define("ClassElement_2",
 // ClassElement_3
 
 grm.define("ClassElement_3",
-    items([
+    sequence([
         pos,
         keyword(";"),
         pos,
@@ -2922,11 +2923,11 @@ grm.define("ClassElement",
 // Script
 
 grm.define("Script",
-    items([
+    sequence([
         pos,
         choice([
             ref("ScriptBody"),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -2945,11 +2946,11 @@ grm.define("ScriptBody",
 // Module
 
 grm.define("Module",
-    items([
+    sequence([
         pos,
         choice([
             ref("ModuleBody"),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -2968,7 +2969,7 @@ grm.define("ModuleBody",
 grm.define("ModuleItemList",
     list(
         ref("ModuleItem"),
-        items([
+        sequence([
             whitespace,
             ref("ModuleItem"),
             spliceReplace(1,0),
@@ -2989,7 +2990,7 @@ grm.define("ModuleItem",
 // ImportDeclaration_from
 
 grm.define("ImportDeclaration_from",
-    items([
+    sequence([
         pos,                 // 8 = start
         keyword("import"),   // 7
         whitespace,          // 6
@@ -3005,7 +3006,7 @@ grm.define("ImportDeclaration_from",
 // ImportDeclaration_module
 
 grm.define("ImportDeclaration_module",
-    items([
+    sequence([
         pos,                    // 6 = start
         keyword("import"),      // 5
         whitespace,             // 4
@@ -3027,15 +3028,15 @@ grm.define("ImportDeclaration",
 // ImportClause
 
 grm.define("ImportClause",
-    items([
+    sequence([
         choice([
             ref("NameSpaceImport"),
             ref("NamedImports"),
-            items([
+            sequence([
                 pos,                            // 6 = start
                 ref("ImportedDefaultBinding"),  // 5 = defbinding
                 choice([
-                    items([
+                    sequence([
                         whitespace,             // 4
                         keyword(","),           // 3
                         whitespace,             // 2
@@ -3043,7 +3044,7 @@ grm.define("ImportClause",
                         pos,                    // 0 = end
                         spliceNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
                     ]),
-                    items([
+                    sequence([
                         whitespace,             // 4
                         keyword(","),           // 3
                         whitespace,             // 2
@@ -3051,7 +3052,7 @@ grm.define("ImportClause",
                         pos,                    // 0 = end
                         spliceNode(6,"DefaultAndNamedImports",6,0,[5,1]),
                     ]),
-                    items([
+                    sequence([
                         pos,
                         spliceNode(2,"DefaultImport",2,0,[1]),
                     ]),
@@ -3068,7 +3069,7 @@ grm.define("ImportedDefaultBinding",
 // NameSpaceImport
 
 grm.define("NameSpaceImport",
-    items([
+    sequence([
         pos,                    // 6 = start
         keyword("*"),           // 5
         whitespace,             // 4
@@ -3082,22 +3083,22 @@ grm.define("NameSpaceImport",
 // NamedImports
 
 grm.define("NamedImports",
-    items([
+    sequence([
         pos,               // 5 = start
         keyword("{"),      // 4
         whitespace,        // 3
         choice([           // 2 = imports
-            items([
+            sequence([
                 ref("ImportsList"),
                 whitespace,
-                opt(items([
+                opt(sequence([
                     keyword(","),
                     whitespace,
                     pop,
                 ])),
                 spliceReplace(2,2),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -3110,7 +3111,7 @@ grm.define("NamedImports",
 // FromClause
 
 grm.define("FromClause",
-    items([
+    sequence([
         keyword("from"),
         whitespace,
         ref("ModuleSpecifier"),
@@ -3122,7 +3123,7 @@ grm.define("FromClause",
 grm.define("ImportsList",
     list(
         ref("ImportSpecifier"),
-        items([
+        sequence([
             whitespace,
             keyword(","),
             whitespace,
@@ -3134,9 +3135,9 @@ grm.define("ImportsList",
 // ImportSpecifier
 
 grm.define("ImportSpecifier",
-    items([
+    sequence([
         choice([
-            items([
+            sequence([
                 pos,                     // 6 = start
                 ref("IdentifierName"),   // 5 = name
                 whitespace,              // 4
@@ -3146,7 +3147,7 @@ grm.define("ImportSpecifier",
                 pos,                     // 0 = end
                 spliceNode(6,"ImportAsSpecifier",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 pos,                     // 2 = start
                 ref("ImportedBinding"),  // 1 = binding
                 pos,                     // 0 = end
@@ -3170,26 +3171,26 @@ grm.define("ImportedBinding",
 // ExportDeclaration
 
 grm.define("ExportDeclaration",
-    items([
+    sequence([
         pos,
         keyword("export"),
         whitespace,
         choice([
-            items([
+            sequence([
                 keyword("default"),          // 3
                 whitespace,                  // 2
                 ref("HoistableDeclaration"), // 1
                 pos,                         // 0
                 spliceNode(6,"ExportDefault",6,0,[1]),
             ]),
-            items([
+            sequence([
                 keyword("default"),          // 3
                 whitespace,                  // 2
                 ref("ClassDeclaration"),     // 1
                 pos,                         // 0
                 spliceNode(6,"ExportDefault",6,0,[1]),
             ]),
-            items([
+            sequence([
                 keyword("default"),          // 5
                 whitespace,                  // 4
                 not(keyword("function")),    // FIXME: need tests for this
@@ -3200,7 +3201,7 @@ grm.define("ExportDeclaration",
                 pos,                         // 0
                 spliceNode(8,"ExportDefault",8,0,[3]),
             ]),
-            items([
+            sequence([
                 keyword("*"),                // 5
                 whitespace,                  // 4
                 ref("FromClause"),           // 3
@@ -3209,7 +3210,7 @@ grm.define("ExportDeclaration",
                 pos,                         // 0
                 spliceNode(8,"ExportStar",8,0,[3]),
             ]),
-            items([
+            sequence([
                 ref("ExportClause"),         // 5
                 whitespace,                  // 4
                 ref("FromClause"),           // 3
@@ -3218,19 +3219,19 @@ grm.define("ExportDeclaration",
                 pos,                         // 0
                 spliceNode(8,"ExportFrom",8,0,[5,3]),
             ]),
-            items([
+            sequence([
                 ref("ExportClause"),         // 3
                 whitespace,                  // 2
                 keyword(";"),                // 1
                 pos,                         // 0
                 spliceNode(6,"ExportPlain",6,0,[3]),
             ]),
-            items([
+            sequence([
                 ref("VariableStatement"),    // 1
                 pos,                         // 0
                 spliceNode(4,"ExportVariable",4,0,[1]),
             ]),
-            items([
+            sequence([
                 ref("Declaration"),          // 1
                 pos,                         // 0
                 spliceNode(4,"ExportDeclaration",4,0,[1]),
@@ -3241,22 +3242,22 @@ grm.define("ExportDeclaration",
 // ExportClause
 
 grm.define("ExportClause",
-    items([
+    sequence([
         pos,             // 5
         keyword("{"),    // 4
         whitespace,      // 3
         choice([         // 2
-            items([
+            sequence([
                 ref("ExportsList"),
                 whitespace,
-                opt(items([
+                opt(sequence([
                     keyword(","),
                     whitespace,
                     pop,
                 ])),
                 spliceReplace(2,2),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceEmptyListNode(0,0,0),
             ]),
@@ -3271,7 +3272,7 @@ grm.define("ExportClause",
 grm.define("ExportsList",
     list(
         ref("ExportSpecifier"),
-        items([
+        sequence([
             whitespace,
             keyword(","),
             whitespace,
@@ -3283,11 +3284,11 @@ grm.define("ExportsList",
 // ExportSpecifier
 
 grm.define("ExportSpecifier",
-    items([
+    sequence([
         pos,
         ref("IdentifierName"),
         choice([
-            items([
+            sequence([
                 whitespace,            // 4
                 keyword("as"),         // 3
                 whitespace,            // 2
@@ -3295,7 +3296,7 @@ grm.define("ExportSpecifier",
                 pos,                   // 0
                 spliceNode(4,"ExportAsSpecifier",6,0,[5,1]),
             ]),
-            items([
+            sequence([
                 pos,
                 spliceNode(0,"ExportNormalSpecifier",2,0,[1]),
             ]),
