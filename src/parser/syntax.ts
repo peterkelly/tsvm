@@ -54,9 +54,7 @@ import {
     pos,
     value,
     keyword,
-    punctuator,
     notKeyword,
-    notPunctuator,
     identifier,
     whitespace,
     whitespaceNoNewline,
@@ -188,11 +186,11 @@ function ParenthesizedExpression(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            punctuator("("), // 4
+            keyword("("), // 4
             whitespace,      // 3
             Expression,      // 2 = expr
             whitespace,      // 1
-            punctuator(")"), // 0
+            keyword(")"), // 0
             popAboveAndReplace(4,2),
             assertLengthIs(oldLength+1),
         ]);
@@ -344,7 +342,7 @@ function ArrayLiteral(b: Builder): void {
         const start = b.parser.pos;
         b.items([
             pos,
-            punctuator("["),
+            keyword("["),
             whitespace,
         ]);
 
@@ -356,7 +354,7 @@ function ArrayLiteral(b: Builder): void {
             assertLengthIs(oldLength+3),
             opt(items([
                 pos,             // 3 = before
-                punctuator(","), // 2
+                keyword(","), // 2
                 pos,             // 1 = after
                 whitespace,      // 0
                 assertLengthIs(oldLength+7),
@@ -373,8 +371,8 @@ function ArrayLiteral(b: Builder): void {
 
         while (true) {
             b.item(assertLengthIs(oldLength+4));
-            if (b.parser.lookaheadPunctuator("]")) {
-                b.parser.expectPunctuator("]");
+            if (b.parser.lookaheadKeyword("]")) {
+                b.parser.expectKeyword("]");
                 break;
             }
 
@@ -383,7 +381,7 @@ function ArrayLiteral(b: Builder): void {
                     choice([
                         items([
                             pos,             // 3 = before
-                            punctuator(","), // 2
+                            keyword(","), // 2
                             pos,             // 1 = after
                             whitespace,      // 0
                             assertLengthIs(oldLength+8),
@@ -394,7 +392,7 @@ function ArrayLiteral(b: Builder): void {
                             AssignmentExpression,
                             whitespace,
                             opt(items([
-                                punctuator(","),
+                                keyword(","),
                                 whitespace,
                                 pop,
                             ])),
@@ -406,7 +404,7 @@ function ArrayLiteral(b: Builder): void {
                             SpreadElement,
                             whitespace,
                             opt(items([
-                                punctuator(","),
+                                keyword(","),
                                 whitespace,
                                 pop,
                             ])),
@@ -445,7 +443,7 @@ function SpreadElement(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,
-            punctuator("..."),
+            keyword("..."),
             whitespace,
             AssignmentExpression,
             pos,
@@ -465,14 +463,14 @@ function ObjectLiteral(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                 // 5
-            punctuator("{"),     // 4
+            keyword("{"),     // 4
             whitespace,          // 3
             choice([             // 2 = properties
                 items([
                     PropertyDefinitionList,
                     whitespace,
                     opt(items([
-                        punctuator(","),
+                        keyword(","),
                         whitespace,
                         popAboveAndSet(1,0),
                     ])),
@@ -483,7 +481,7 @@ function ObjectLiteral(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ]),
             ]),
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"ObjectLiteral",5,0,[2]),
@@ -502,7 +500,7 @@ function PropertyDefinitionList(b: Builder): void {
             PropertyDefinition,
             items([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 PropertyDefinition,
                 popAboveAndReplace(3,0),
@@ -522,7 +520,7 @@ function PropertyDefinition_colon(b: Builder): void {
             pos,                  // 6 = start
             PropertyName,         // 5 = name
             whitespace,           // 4
-            punctuator(":"),      // 3
+            keyword(":"),      // 3
             whitespace,           // 2
             AssignmentExpression, // 1 = init
             pos,                  // 0 = end
@@ -586,11 +584,11 @@ function ComputedPropertyName(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                  // 6 = start
-            punctuator("["),      // 5
+            keyword("["),      // 5
             whitespace,           // 4
             AssignmentExpression, // 3 = expr
             whitespace,           // 2
-            punctuator("]"),      // 1
+            keyword("]"),      // 1
             pos,                  // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ComputedPropertyName",6,0,[3]),
@@ -625,7 +623,7 @@ function Initializer(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            punctuator("="),
+            keyword("="),
             whitespace,
             AssignmentExpression,
             assertLengthIs(oldLength+3),
@@ -700,18 +698,18 @@ function MemberExpression(b: Builder): void {
             repeatChoice([
                 items([
                     whitespace,      // 6
-                    punctuator("["), // 5
+                    keyword("["), // 5
                     whitespace,      // 4
                     Expression,      // 3 = expr
                     whitespace,      // 2
-                    punctuator("]"), // 1
+                    keyword("]"), // 1
                     pos,             // 0 = end
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(7,"MemberAccessExpr",8,0,[7,3]),
                 ]),
                 items([
                     whitespace,      // 5
-                    punctuator("."), // 4
+                    keyword("."), // 4
                     whitespace,      // 3
                     IdentifierName,  // 2 = ident
                     pos,             // 1 = end
@@ -739,11 +737,11 @@ function SuperProperty(b: Builder): void {
                     pos,              // 8 = start
                     keyword("super"), // 7
                     whitespace,       // 6
-                    punctuator("["),  // 5
+                    keyword("["),  // 5
                     whitespace,       // 4
                     Expression,       // 3 = expr
                     whitespace,       // 2
-                    punctuator("]"),  // 1
+                    keyword("]"),  // 1
                     pos,              // 0 = end
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(8,"SuperPropertyExpr",8,0,[3]),
@@ -753,7 +751,7 @@ function SuperProperty(b: Builder): void {
                     pos,              // 6 = start
                     keyword("super"), // 5
                     whitespace,       // 4
-                    punctuator("."),  // 3
+                    keyword("."),  // 3
                     whitespace,       // 2
                     Identifier,       // 1 = ident
                     pos,              // 0 = end
@@ -783,7 +781,7 @@ function NewTarget(b: Builder): void {
             pos,                  // 6
             keyword("new"),       // 5
             whitespace,           // 4
-            punctuator("."),      // 3
+            keyword("."),      // 3
             whitespace,           // 2
             identifier("target"), // 1 ("target" is not a reserved word, so we can't use keyword here)
             pos,                  // 0
@@ -860,18 +858,18 @@ function CallExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,      // 6
-                    punctuator("["), // 5
+                    keyword("["), // 5
                     whitespace,      // 4
                     Expression,      // 3 = expr
                     whitespace,      // 2
-                    punctuator("]"), // 1
+                    keyword("]"), // 1
                     pos,             // 0 = end
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(7,"MemberAccessExpr",8,0,[7,3]),
                 ]),
                 items([
                     whitespace,      // 4
-                    punctuator("."), // 3
+                    keyword("."), // 3
                     whitespace,      // 2
                     IdentifierName,  // 1 = idname
                     pos,             // 0 = end
@@ -917,10 +915,10 @@ function Arguments(b: Builder): void {
         b.item(choice([
             items([
                 pos,             // 6 = start
-                punctuator("("), // 5
+                keyword("("), // 5
                 whitespace,      // 4
                 pos,             // 3 = listpos
-                punctuator(")"), // 2
+                keyword(")"), // 2
                 pos,             // 1 = end
                 value(null),     // 0 = will become list
                 assertLengthIs(oldLength+7),
@@ -929,11 +927,11 @@ function Arguments(b: Builder): void {
             ]),
             items([
                 pos,             // 6 = start
-                punctuator("("), // 5
+                keyword("("), // 5
                 whitespace,      // 4
                 ArgumentList,    // 3 = args
                 whitespace,      // 2
-                punctuator(")"), // 1
+                keyword(")"), // 1
                 pos,             // 0 = end
                 assertLengthIs(oldLength+7),
                 popAboveAndMakeNode(6,"Arguments",6,0,[3]),
@@ -953,7 +951,7 @@ function ArgumentList_item(b: Builder): void {
             choice([
                 items([
                     pos,                  // 4 = start
-                    punctuator("..."),    // 3
+                    keyword("..."),    // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = expr
                     pos,                  // 0 = end
@@ -977,7 +975,7 @@ function ArgumentList(b: Builder): void {
             ArgumentList_item,
             items([
                 whitespace,
-                punctuator(","),
+                keyword(","),
                 whitespace,
                 ArgumentList_item,
                 popAboveAndReplace(3,0),
@@ -1017,14 +1015,14 @@ function PostfixExpression(b: Builder): void {
             choice([
                 items([
                     whitespaceNoNewline,
-                    punctuator("++"),
+                    keyword("++"),
                     pos,
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"PostIncrement",4,0,[3]),
                 ]),
                 items([
                     whitespaceNoNewline,
-                    punctuator("--"),
+                    keyword("--"),
                     pos,
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"PostDecrement",4,0,[3]),
@@ -1075,7 +1073,7 @@ function UnaryExpression(b: Builder): void {
                 ]),
                 items([
                     pos,              // 4 = start
-                    punctuator("++"), // 3
+                    keyword("++"), // 3
                     whitespace,       // 2
                     UnaryExpression,  // 1 = expr
                     pos,              // 0 = end
@@ -1084,7 +1082,7 @@ function UnaryExpression(b: Builder): void {
                 ]),
                 items([
                     pos,              // 4 = start
-                    punctuator("--"), // 3
+                    keyword("--"), // 3
                     whitespace,       // 2
                     UnaryExpression,  // 1 = expr
                     pos,              // 0 = end
@@ -1093,7 +1091,7 @@ function UnaryExpression(b: Builder): void {
                 ]),
                 items([
                     pos,             // 4 = start
-                    punctuator("+"), // 3
+                    keyword("+"), // 3
                     whitespace,      // 2
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
@@ -1102,7 +1100,7 @@ function UnaryExpression(b: Builder): void {
                 ]),
                 items([
                     pos,             // 4 = start
-                    punctuator("-"), // 3
+                    keyword("-"), // 3
                     whitespace,      // 2
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
@@ -1111,7 +1109,7 @@ function UnaryExpression(b: Builder): void {
                 ]),
                 items([
                     pos,             // 4 = start
-                    punctuator("~"), // 3
+                    keyword("~"), // 3
                     whitespace,      // 2
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
@@ -1120,7 +1118,7 @@ function UnaryExpression(b: Builder): void {
                 ]),
                 items([
                     pos,             // 4 = start
-                    punctuator("!"), // 3
+                    keyword("!"), // 3
                     whitespace,      // 2
                     UnaryExpression, // 1 = expr
                     pos,             // 0 = end
@@ -1148,7 +1146,7 @@ function MultiplicativeExpression(b: Builder): void {
             repeatChoice([
                 items([
                     whitespace,       // 4
-                    punctuator("*"),  // 3
+                    keyword("*"),  // 3
                     whitespace,       // 2
                     UnaryExpression,  // 1 = right
                     pos,              // 0 = end
@@ -1156,7 +1154,7 @@ function MultiplicativeExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,       // 4
-                    punctuator("/"),  // 3
+                    keyword("/"),  // 3
                     whitespace,       // 2
                     UnaryExpression,  // 1 = right
                     pos,              // 0 = end
@@ -1164,7 +1162,7 @@ function MultiplicativeExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,       // 4
-                    punctuator("%"),  // 3
+                    keyword("%"),  // 3
                     whitespace,       // 2
                     UnaryExpression,  // 1 = right
                     pos,              // 0 = end
@@ -1192,7 +1190,7 @@ function AdditiveExpression(b: Builder): void {
             repeatChoice([
                 items([
                     whitespace,               // 4
-                    punctuator("+"),          // 3
+                    keyword("+"),          // 3
                     whitespace,               // 2
                     MultiplicativeExpression, // 1 = right
                     pos,                      // 0 = end
@@ -1200,7 +1198,7 @@ function AdditiveExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,               // 4
-                    punctuator("-"),          // 3
+                    keyword("-"),          // 3
                     whitespace,               // 2
                     MultiplicativeExpression, // 1 = right
                     pos,                      // 0 = end
@@ -1228,7 +1226,7 @@ function ShiftExpression(b: Builder): void {
             repeatChoice([
                 items([
                     whitespace,         // 4
-                    punctuator("<<"),   // 3
+                    keyword("<<"),   // 3
                     whitespace,         // 2
                     AdditiveExpression, // 1 = right
                     pos,                // 0 = end
@@ -1236,7 +1234,7 @@ function ShiftExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,         // 4
-                    punctuator(">>>"),  // 3
+                    keyword(">>>"),  // 3
                     whitespace,         // 2
                     AdditiveExpression, // 1 = right
                     pos,                // 0 = end
@@ -1244,7 +1242,7 @@ function ShiftExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,         // 4
-                    punctuator(">>"),   // 3
+                    keyword(">>"),   // 3
                     whitespace,         // 2
                     AdditiveExpression, // 1 = right
                     pos,                // 0 = end
@@ -1272,7 +1270,7 @@ function RelationalExpression(b: Builder): void {
             repeatChoice([
                 items([
                     whitespace,       // 4
-                    punctuator("<="), // 3
+                    keyword("<="), // 3
                     whitespace,       // 2
                     ShiftExpression,  // 1 = right
                     pos,              // 0 = end
@@ -1282,7 +1280,7 @@ function RelationalExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,       // 4
-                    punctuator(">="), // 3
+                    keyword(">="), // 3
                     whitespace,       // 2
                     ShiftExpression,  // 1 = right
                     pos,              // 0 = end
@@ -1292,7 +1290,7 @@ function RelationalExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,      // 4
-                    punctuator("<"), // 3
+                    keyword("<"), // 3
                     whitespace,      // 2
                     ShiftExpression, // 1 = right
                     pos,             // 0 = end
@@ -1302,7 +1300,7 @@ function RelationalExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,      // 4
-                    punctuator(">"), // 3
+                    keyword(">"), // 3
                     whitespace,      // 2
                     ShiftExpression, // 1 = right
                     pos,             // 0 = end
@@ -1352,7 +1350,7 @@ function EqualityExpression(b: Builder): void {
             repeatChoice([
                 items([
                     whitespace,           // 4
-                    punctuator("==="),    // 3
+                    keyword("==="),    // 3
                     whitespace,           // 2
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1362,7 +1360,7 @@ function EqualityExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("!=="),    // 3
+                    keyword("!=="),    // 3
                     whitespace,           // 2
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1372,7 +1370,7 @@ function EqualityExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("=="),     // 3
+                    keyword("=="),     // 3
                     whitespace,           // 2
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1382,7 +1380,7 @@ function EqualityExpression(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("!="),     // 3
+                    keyword("!="),     // 3
                     whitespace,           // 2
                     RelationalExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1411,7 +1409,7 @@ function BitwiseANDExpression(b: Builder): void {
             EqualityExpression,         // 5 = left
             repeat(items([
                 whitespace,         // 4
-                punctuator("&"),    // 3
+                keyword("&"),    // 3
                 whitespace,         // 2
                 EqualityExpression, // 1 = right
                 pos,                // 0 = end
@@ -1435,7 +1433,7 @@ function BitwiseXORExpression(b: Builder): void {
             BitwiseANDExpression,         // 5 = left
             repeat(items([
                 whitespace,           // 4
-                punctuator("^"),      // 3
+                keyword("^"),      // 3
                 whitespace,           // 2
                 BitwiseANDExpression, // 1 = right
                 pos,                  // 0 = end
@@ -1459,7 +1457,7 @@ function BitwiseORExpression(b: Builder): void {
             BitwiseXORExpression,     // 5 = left
             repeat(items([
                 whitespace,           // 4
-                punctuator("|"),      // 3
+                keyword("|"),      // 3
                 whitespace,           // 2
                 BitwiseXORExpression, // 1 = right
                 pos,                  // 0 = end
@@ -1485,7 +1483,7 @@ function LogicalANDExpression(b: Builder): void {
             BitwiseORExpression,     // 5 = left
             repeat(items([
                 whitespace,          // 4
-                punctuator("&&"),    // 3
+                keyword("&&"),    // 3
                 whitespace,          // 2
                 BitwiseORExpression, // 1 = right
                 pos,                 // 0 = end
@@ -1509,7 +1507,7 @@ function LogicalORExpression(b: Builder): void {
             LogicalANDExpression,     // 5 = left
             repeat(items([
                 whitespace,           // 4
-                punctuator("||"),     // 3
+                keyword("||"),     // 3
                 whitespace,           // 2
                 LogicalANDExpression, // 1 = right
                 pos,                  // 0 = end
@@ -1536,11 +1534,11 @@ function ConditionalExpression(b: Builder): void {
             choice([
                 items([
                     whitespace,           // 8
-                    punctuator("?"),      // 7
+                    keyword("?"),      // 7
                     whitespace,           // 6
                     AssignmentExpression, // 5 = trueExpr
                     whitespace,           // 4
-                    punctuator(":"),      // 3
+                    keyword(":"),      // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = falseExpr
                     pos,                  // 0 = end
@@ -1569,7 +1567,7 @@ function AssignmentExpression_plain(b: Builder): void {
             choice([
                 items([
                     whitespace,           // 4
-                    punctuator("="),      // 3
+                    keyword("="),      // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1577,7 +1575,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("*="),     // 3
+                    keyword("*="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1585,7 +1583,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("/="),     // 3
+                    keyword("/="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1593,7 +1591,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("%="),     // 3
+                    keyword("%="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1601,7 +1599,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("+="),     // 3
+                    keyword("+="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1609,7 +1607,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("-="),     // 3
+                    keyword("-="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1617,7 +1615,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("<<="),    // 3
+                    keyword("<<="),    // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1625,7 +1623,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator(">>="),    // 3
+                    keyword(">>="),    // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1633,7 +1631,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator(">>>="),   // 3
+                    keyword(">>>="),   // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1641,7 +1639,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("&="),     // 3
+                    keyword("&="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1649,7 +1647,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("^="),     // 3
+                    keyword("^="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1657,7 +1655,7 @@ function AssignmentExpression_plain(b: Builder): void {
                 ]),
                 items([
                     whitespace,           // 4
-                    punctuator("|="),     // 3
+                    keyword("|="),     // 3
                     whitespace,           // 2
                     AssignmentExpression, // 1 = right
                     pos,                  // 0 = end
@@ -1701,7 +1699,7 @@ function Expression(b: Builder): void {
             AssignmentExpression, // 5 = left
             repeat(items([
                 whitespace,           // 4
-                punctuator(","),      // 3
+                keyword(","),      // 3
                 whitespace,           // 2
                 AssignmentExpression, // 1 = right
                 pos,                  // 0 = end
@@ -1796,7 +1794,7 @@ function Block(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                 // 5
-            punctuator("{"),     // 4
+            keyword("{"),     // 4
             whitespace,          // 3
             choice([             // 2 = statements
                 items([
@@ -1809,7 +1807,7 @@ function Block(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ]),
             ]),
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0
             popAboveAndMakeNode(5,"Block",5,0,[2]),
             assertLengthIs(oldLength+1),
@@ -1867,7 +1865,7 @@ function LexicalDeclaration(b: Builder): void {
                     whitespace,       // 4
                     BindingList,      // 3 = bindings
                     whitespace,       // 2
-                    punctuator(";"),  // 1
+                    keyword(";"),  // 1
                     pos,              // 0 = end
                     popAboveAndMakeNode(6,"Let",6,0,[3]),
                 ]),
@@ -1877,7 +1875,7 @@ function LexicalDeclaration(b: Builder): void {
                     whitespace,       // 4
                     BindingList,      // 3 = bindings
                     whitespace,       // 2
-                    punctuator(";"),  // 1
+                    keyword(";"),  // 1
                     pos,              // 0 = end
                     popAboveAndMakeNode(6,"Const",6,0,[3]),
                 ]),
@@ -1898,7 +1896,7 @@ function BindingList(b: Builder): void {
                 LexicalBinding,
                 items([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     LexicalBinding,
                     popAboveAndReplace(3,0),
@@ -1978,7 +1976,7 @@ function VariableStatement(b: Builder): void {
             whitespace,              // 4
             VariableDeclarationList, // 3 = declarations
             whitespace,              // 2
-            punctuator(";"),         // 1
+            keyword(";"),         // 1
             pos,                     // 0 = end
             popAboveAndMakeNode(6,"Var",6,0,[3]),
             assertLengthIs(oldLength+1),
@@ -1997,7 +1995,7 @@ function VariableDeclarationList(b: Builder): void {
                 VariableDeclaration,
                 items([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     VariableDeclaration,
                     popAboveAndReplace(3,0),
@@ -2094,7 +2092,7 @@ function ObjectBindingPattern(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                  // 6 = start
-            punctuator("{"),      // 5
+            keyword("{"),      // 5
             whitespace,           // 4
             pos,                  // 3
             choice([              // 2 = properties
@@ -2102,7 +2100,7 @@ function ObjectBindingPattern(b: Builder): void {
                     BindingPropertyList,
                     whitespace,
                     opt(items([
-                        punctuator(","),
+                        keyword(","),
                         whitespace,
                         popAboveAndSet(1,null),
                     ])),
@@ -2113,7 +2111,7 @@ function ObjectBindingPattern(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ])
             ]),
-            punctuator("}"),      // 1
+            keyword("}"),      // 1
             pos,                  // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ObjectBindingPattern",6,0,[2]),
@@ -2130,7 +2128,7 @@ function ArrayBindingPattern(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                 // 7 = start
-            punctuator("["),     // 6
+            keyword("["),     // 6
             whitespace,          // 5
             BindingElementList,  // 4 = elements
             whitespace,          // 3
@@ -2139,7 +2137,7 @@ function ArrayBindingPattern(b: Builder): void {
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            punctuator("]"),     // 1
+            keyword("]"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+8),
             popAboveAndMakeNode(7,"ArrayBindingPattern",7,0,[4,2]),
@@ -2159,7 +2157,7 @@ function BindingPropertyList(b: Builder): void {
                 BindingProperty,
                 items([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     BindingProperty,
                     popAboveAndReplace(3,0),
@@ -2180,7 +2178,7 @@ function BindingElementList(b: Builder): void {
             list(
                 opt(items([
                     pos,
-                    punctuator(","),
+                    keyword(","),
                     pos,
                     popAboveAndMakeNode(2,"Elision",2,0,[]),
                 ])),
@@ -2188,7 +2186,7 @@ function BindingElementList(b: Builder): void {
                     items([
                         whitespace,      // 3
                         pos,             // 2 = before
-                        punctuator(","), // 1
+                        keyword(","), // 1
                         pos,             // 0 = after
                         popAboveAndMakeNode(3,"Elision",2,0,[]),
                     ]),
@@ -2197,7 +2195,7 @@ function BindingElementList(b: Builder): void {
                         BindingElement,
                         opt(items([
                             whitespace,
-                            punctuator(","),
+                            keyword(","),
                             pop,
                         ])),
                         popAboveAndReplace(2,1),
@@ -2221,7 +2219,7 @@ function BindingProperty(b: Builder): void {
                     pos,             // 6 = start
                     PropertyName,    // 5 = name
                     whitespace,      // 4
-                    punctuator(":"), // 3
+                    keyword(":"), // 3
                     whitespace,      // 2
                     BindingElement,  // 1 = element
                     pos,             // 0 = end
@@ -2302,7 +2300,7 @@ function BindingRestElement(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,               // 4 = start
-            punctuator("..."), // 3
+            keyword("..."), // 3
             whitespace,        // 2
             BindingIdentifier, // 1 = ident
             pos,               // 0 = end
@@ -2323,7 +2321,7 @@ function EmptyStatement(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,
-            punctuator(";"),
+            keyword(";"),
             pos,
             assertLengthIs(oldLength+3),
             popAboveAndMakeNode(2,"EmptyStatement",2,0,[]),
@@ -2343,12 +2341,12 @@ function ExpressionStatement(b: Builder): void {
 
     // Lookahead not in one of the four sequences <{> <function> <class> <let [>
 
-    if (p.lookaheadPunctuator("{") || p.lookaheadKeyword("function") || p.lookaheadKeyword("class"))
+    if (p.lookaheadKeyword("{") || p.lookaheadKeyword("function") || p.lookaheadKeyword("class"))
         throw new ParseIgnore();
 
     if (p.matchKeyword("let")) {
         p.skipWhitespace();
-        if (p.matchPunctuator("[")) {
+        if (p.matchKeyword("[")) {
             p.pos = start2;
             throw new ParseIgnore();
         }
@@ -2361,7 +2359,7 @@ function ExpressionStatement(b: Builder): void {
             pos,             // 4 = start
             Expression,      // 3 = expr
             whitespace,      // 2
-            punctuator(";"), // 1
+            keyword(";"), // 1
             pos,             // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"ExpressionStatement",4,0,[3]),
@@ -2382,11 +2380,11 @@ function IfStatement(b: Builder): void {
             pos,               // 11 = start
             keyword("if"),     // 10
             whitespace,        // 9
-            punctuator("("),   // 8
+            keyword("("),   // 8
             whitespace,        // 7
             Expression,        // 6 = condition
             whitespace,        // 5
-            punctuator(")"),   // 4
+            keyword(")"),   // 4
             whitespace,        // 3
             Statement,         // 2 = trueBranch
             opt(items([        // 1 = falseBranch
@@ -2420,13 +2418,13 @@ function IterationStatement_do(b: Builder): void {
             whitespace,       // 10
             keyword("while"), // 9
             whitespace,       // 8
-            punctuator("("),  // 7
+            keyword("("),  // 7
             whitespace,       // 6
             Expression,       // 5 = condition
             whitespace,       // 4
-            punctuator(")"),  // 3
+            keyword(")"),  // 3
             whitespace,       // 2
-            punctuator(";"),  // 1 = end
+            keyword(";"),  // 1 = end
             pos,              // 0 = start
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"DoStatement",14,0,[11,5]),
@@ -2445,11 +2443,11 @@ function IterationStatement_while(b: Builder): void {
             pos,                // 10 = start
             keyword("while"),   // 9
             whitespace,         // 8
-            punctuator("("),    // 7
+            keyword("("),    // 7
             whitespace,         // 6
             Expression,         // 5 = condition
             whitespace,         // 4
-            punctuator(")"),    // 3
+            keyword(")"),    // 3
             whitespace,         // 2
             Statement,          // 1 = body
             pos,                // 0 = end
@@ -2474,16 +2472,16 @@ function IterationStatement_for_c(b: Builder): void {
             pos,                                                            // 14 = start
             keyword("for"),                                                 // 13
             whitespace,                                                     // 12
-            punctuator("("),                                                // 11
+            keyword("("),                                                // 11
             whitespace,                                                     // 10
             assertLengthIs(oldLength+5),
             choice([
                 items([
                     notKeyword("let"), // FIXME: need tests for this
-                    notPunctuator("["), // FIXME: need tests for this
+                    notKeyword("["), // FIXME: need tests for this
                     Expression,
                     whitespace,
-                    punctuator(";"),
+                    keyword(";"),
                     whitespace,
                     popAboveAndReplace(5,3),
                 ]),
@@ -2494,7 +2492,7 @@ function IterationStatement_for_c(b: Builder): void {
                     VariableDeclarationList, // 4 = declarations
                     pos,                     // 3 = end
                     whitespace,              // 2
-                    punctuator(";"),         // 1
+                    keyword(";"),         // 1
                     whitespace,              // 0
                     popAboveAndMakeNode(7,"Var",7,3,[4]),
                 ]),
@@ -2505,21 +2503,21 @@ function IterationStatement_for_c(b: Builder): void {
                 ]),
                 // initializer part can be empty, but need to distinguish this from an error
                 items([
-                    punctuator(";"),
+                    keyword(";"),
                     popAboveAndSet(0,null),
                 ]),
             ]),
             assertLengthIs(oldLength+6),
             opt(Expression), // 8 = condition
             whitespace,      // 7
-            punctuator(";"), // 6
+            keyword(";"), // 6
             whitespace,      // 5
             opt(items([
                 Expression,
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            punctuator(")"), // 3
+            keyword(")"), // 3
             whitespace,      // 2
             Statement,       // 1 = body
             pos,             // 0 = end
@@ -2544,13 +2542,13 @@ function IterationStatement_for_in(b: Builder): void {
             pos,                                           // 14 = start
             keyword("for"),                                // 13
             whitespace,                                    // 12
-            punctuator("("),                               // 11
+            keyword("("),                               // 11
             whitespace,                                    // 10
             assertLengthIs(oldLength+5),
             choice([ // 9 = binding
                 items([
                     notKeyword("let"), // FIXME: need tests for this
-                    notPunctuator("["), // FIXME: need tests for this
+                    notKeyword("["), // FIXME: need tests for this
                     LeftHandSideExpression,
                     popAboveAndReplace(2,0),
                 ]),
@@ -2570,7 +2568,7 @@ function IterationStatement_for_in(b: Builder): void {
             whitespace,                                    // 6
             Expression,                                    // 5 = expr
             whitespace,                                    // 4
-            punctuator(")"),                               // 3
+            keyword(")"),                               // 3
             whitespace,                                    // 2
             Statement,                                     // 1 = body
             pos,                                           // 0 = end
@@ -2595,13 +2593,13 @@ function IterationStatement_for_of(b: Builder): void {
             pos,                                           // 14 = start
             keyword("for"),                                // 13
             whitespace,                                    // 12
-            punctuator("("),                               // 11
+            keyword("("),                               // 11
             whitespace,                                    // 10
             assertLengthIs(oldLength+5),
             choice([
                 items([
                     notKeyword("let"), // FIXME: need tests for this
-                    notPunctuator("["), // FIXME: need tests for this
+                    notKeyword("["), // FIXME: need tests for this
                     LeftHandSideExpression,
                     popAboveAndReplace(2,0),
                 ]),
@@ -2621,7 +2619,7 @@ function IterationStatement_for_of(b: Builder): void {
             whitespace,                                    // 6
             Expression,                                    // 5 = expr
             whitespace,                                    // 4
-            punctuator(")"),                               // 3
+            keyword(")"),                               // 3
             whitespace,                                    // 2
             Statement,                                     // 1 = body
             pos,                                           // 0 = end
@@ -2723,7 +2721,7 @@ function ContinueStatement(b: Builder): void {
                     keyword("continue"), // 4
                     whitespace,          // 3
                     value(null),         // 2 = null
-                    punctuator(";"),     // 1
+                    keyword(";"),     // 1
                     pos,                 // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"ContinueStatement",5,0,[2]),
@@ -2734,7 +2732,7 @@ function ContinueStatement(b: Builder): void {
                     whitespaceNoNewline, // 4
                     LabelIdentifier,     // 3 = ident
                     whitespace,          // 2
-                    punctuator(";"),     // 1
+                    keyword(";"),     // 1
                     pos,                 // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ContinueStatement",6,0,[3]),
@@ -2760,7 +2758,7 @@ function BreakStatement(b: Builder): void {
                     keyword("break"), // 4
                     whitespace,       // 3
                     value(null),      // 2 = null
-                    punctuator(";"),  // 1
+                    keyword(";"),  // 1
                     pos,              // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"BreakStatement",5,0,[2]),
@@ -2771,7 +2769,7 @@ function BreakStatement(b: Builder): void {
                     whitespaceNoNewline, // 4
                     LabelIdentifier,     // 3 = ident
                     whitespace,          // 2
-                    punctuator(";"),     // 1
+                    keyword(";"),     // 1
                     pos,                 // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"BreakStatement",6,0,[3]),
@@ -2797,7 +2795,7 @@ function ReturnStatement(b: Builder): void {
                     keyword("return"), // 4
                     whitespace,        // 3
                     value(null),       // 2 = null
-                    punctuator(";"),   // 1
+                    keyword(";"),   // 1
                     pos,               // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"ReturnStatement",5,0,[2]),
@@ -2808,7 +2806,7 @@ function ReturnStatement(b: Builder): void {
                     whitespaceNoNewline, // 4
                     Expression,          // 3 = expr
                     whitespace,          // 2
-                    punctuator(";"),     // 1
+                    keyword(";"),     // 1
                     pos,                 // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ReturnStatement",6,0,[3]),
@@ -2831,11 +2829,11 @@ function WithStatement(b: Builder): void {
             pos,             // 10 = start
             keyword("with"), // 9
             whitespace,      // 8
-            punctuator("("), // 7
+            keyword("("), // 7
             whitespace,      // 6
             Expression,      // 5 = expr
             whitespace,      // 4
-            punctuator(")"), // 3
+            keyword(")"), // 3
             whitespace,      // 2
             Statement,       // 1 = body
             pos,             // 0 = end
@@ -2858,11 +2856,11 @@ function SwitchStatement(b: Builder): void {
             pos,               // 10 = start
             keyword("switch"), // 9
             whitespace,        // 8
-            punctuator("("),   // 7
+            keyword("("),   // 7
             whitespace,        // 6
             Expression,        // 5 = expr
             whitespace,        // 4
-            punctuator(")"),   // 3
+            keyword(")"),   // 3
             whitespace,        // 2
             CaseBlock,         // 1 = cases
             pos,               // 0 = end
@@ -2881,7 +2879,7 @@ function CaseBlock_1(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,             // 7
-            punctuator("{"), // 6
+            keyword("{"), // 6
             whitespace,      // 5
             pos,             // 4 = midpos
             choice([           // 3 = clauses
@@ -2892,7 +2890,7 @@ function CaseBlock_1(b: Builder): void {
                 ]),
             ]),
             whitespace,      // 2
-            punctuator("}"), // 1
+            keyword("}"), // 1
             pos,             // 0
             assertLengthIs(oldLength+8),
             popAboveAndMakeNode(7,"CaseBlock1",7,0,[3]),
@@ -2909,7 +2907,7 @@ function CaseBlock_2(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,              // 10 = start
-            punctuator("{"),  // 9
+            keyword("{"),  // 9
             whitespace,       // 8
             opt(CaseClauses), // 7 = clauses1
             whitespace,       // 6
@@ -2917,7 +2915,7 @@ function CaseBlock_2(b: Builder): void {
             whitespace,       // 4
             opt(CaseClauses), // 3 = clauses2
             whitespace,       // 2
-            punctuator("}"),  // 1
+            keyword("}"),  // 1
             pos,              // 0 = end
             assertLengthIs(oldLength+11),
             popAboveAndMakeNode(10,"CaseBlock2",10,0,[7,5,3]),
@@ -2972,7 +2970,7 @@ function CaseClause(b: Builder): void {
             whitespace,      // 6
             Expression,      // 5 = expr
             whitespace,      // 4
-            punctuator(":"), // 3
+            keyword(":"), // 3
             whitespace,      // 2
             StatementList,   // 1 = statements
             pos,             // 0 = end
@@ -2993,7 +2991,7 @@ function DefaultClause(b: Builder): void {
             pos,                // 7 = start
             keyword("default"), // 6
             whitespace,         // 5
-            punctuator(":"),    // 4
+            keyword(":"),    // 4
             whitespace,         // 3
             StatementList,      // 2 = statements
             pos,                // 1 = end
@@ -3017,7 +3015,7 @@ function LabelledStatement(b: Builder): void {
             pos,             // 6 = start
             LabelIdentifier, // 5 = ident
             whitespace,      // 4
-            punctuator(":"), // 3
+            keyword(":"), // 3
             whitespace,      // 2
             LabelledItem,    // 1 = item
             pos,             // 0 = end
@@ -3056,7 +3054,7 @@ function ThrowStatement(b: Builder): void {
             whitespaceNoNewline, // 4
             Expression,          // 3 = expr
             whitespace,          // 2
-            punctuator(";"),     // 1
+            keyword(";"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ThrowStatement",6,0,[3]),
@@ -3112,11 +3110,11 @@ function Catch(b: Builder): void {
             pos,              // 10 = start
             keyword("catch"), // 9
             whitespace,       // 8
-            punctuator("("),  // 7
+            keyword("("),  // 7
             whitespace,       // 6
             CatchParameter,   // 5 = param
             whitespace,       // 4
-            punctuator(")"),  // 3
+            keyword(")"),  // 3
             whitespace,       // 2
             Block,            // 1 = block
             pos,              // 0 = end
@@ -3172,7 +3170,7 @@ function DebuggerStatement(b: Builder): void {
             pos,                 // 4
             keyword("debugger"), // 3
             whitespace,          // 2
-            punctuator(";"),     // 1
+            keyword(";"),     // 1
             pos,                 // 0
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"DebuggerStatement",4,0,[]),
@@ -3195,17 +3193,17 @@ function FunctionDeclaration_named(b: Builder): void {
             whitespace,          // 14
             BindingIdentifier,   // 13 = ident
             whitespace,          // 12
-            punctuator("("),     // 11
+            keyword("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
             whitespace,          // 8
-            punctuator(")"),     // 7
+            keyword(")"),     // 7
             whitespace,          // 6
-            punctuator("{"),     // 5
+            keyword("{"),     // 5
             whitespace,          // 4
             FunctionBody,        // 3 = body
             whitespace,          // 2
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"FunctionDeclaration",16,0,[13,9,3]),
@@ -3224,18 +3222,18 @@ function FunctionDeclaration_unnamed(b: Builder): void {
             pos,                 // 15 = start
             keyword("function"), // 14
             whitespace,          // 13
-            punctuator("("),     // 12
+            keyword("("),     // 12
             whitespace,          // 11
             value(null),         // 10 = null
             FormalParameters,    // 9 = params
             whitespace,          // 8
-            punctuator(")"),     // 7
+            keyword(")"),     // 7
             whitespace,          // 6
-            punctuator("{"),     // 5
+            keyword("{"),     // 5
             whitespace,          // 4
             FunctionBody,        // 3 = body
             whitespace,          // 2
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+16),
             popAboveAndMakeNode(15,"FunctionDeclaration",15,0,[10,9,3]),
@@ -3268,17 +3266,17 @@ function FunctionExpression(b: Builder): void {
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            punctuator("("),     // 11
+            keyword("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
             whitespace,          // 8
-            punctuator(")"),     // 7
+            keyword(")"),     // 7
             whitespace,          // 6
-            punctuator("{"),     // 5
+            keyword("{"),     // 5
             whitespace,          // 4
             FunctionBody,        // 3 = body
             whitespace,          // 2
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+16),
             popAboveAndMakeNode(15,"FunctionExpression",15,0,[12,9,3]),
@@ -3333,7 +3331,7 @@ function FormalParameterList(b: Builder): void {
                     choice([
                         items([
                             whitespace,
-                            punctuator(","),
+                            keyword(","),
                             whitespace,
                             FunctionRestParameter,
                             pos,
@@ -3363,7 +3361,7 @@ function FormalsList(b: Builder): void {
                 FormalParameter,
                 items([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     FormalParameter,
                     popAboveAndReplace(3,0),
@@ -3421,7 +3419,7 @@ function ArrowFunction(b: Builder): void {
             pos,                 // 6 = start
             ArrowParameters,     // 5 = params
             whitespaceNoNewline, // 4
-            punctuator("=>"),    // 3
+            keyword("=>"),    // 3
             whitespace,          // 2
             ConciseBody,         // 1 = body
             pos,                 // 0 = end
@@ -3450,7 +3448,7 @@ function ArrowParameters(b: Builder): void {
 // ConciseBody_1
 
 function ConciseBody_1(b: Builder): void {
-    if (b.parser.lookaheadPunctuator("{"))
+    if (b.parser.lookaheadKeyword("{"))
         throw new ParseIgnore();
     b.item(AssignmentExpression);
 }
@@ -3461,11 +3459,11 @@ function ConciseBody_2(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            punctuator("{"), // 4
+            keyword("{"), // 4
             whitespace,      // 3
             FunctionBody,    // 2
             whitespace,      // 1
-            punctuator("}"), // 0
+            keyword("}"), // 0
             assertLengthIs(oldLength+5),
             popAboveAndReplace(4,2),
             assertLengthIs(oldLength+1),
@@ -3494,11 +3492,11 @@ function ArrowFormalParameters(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            punctuator("("),        // 4
+            keyword("("),        // 4
             whitespace,             // 3
             StrictFormalParameters, // 2
             whitespace,             // 1
-            punctuator(")"),        // 0
+            keyword(")"),        // 0
             assertLengthIs(oldLength+5),
             popAboveAndReplace(4,2),
             assertLengthIs(oldLength+1),
@@ -3518,17 +3516,17 @@ function MethodDefinition_1(b: Builder): void {
             pos,                    // 14 = start
             PropertyName,           // 13 = name
             whitespace,             // 12
-            punctuator("("),        // 11
+            keyword("("),        // 11
             whitespace,             // 10
             StrictFormalParameters, // 9 = params
             whitespace,             // 8
-            punctuator(")"),        // 7
+            keyword(")"),        // 7
             whitespace,             // 6
-            punctuator("{"),        // 5
+            keyword("{"),        // 5
             whitespace,             // 4
             FunctionBody,           // 3 = body
             whitespace,             // 2
-            punctuator("}"),        // 1
+            keyword("}"),        // 1
             pos,                    // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"Method",14,0,[13,9,3]),
@@ -3555,15 +3553,15 @@ function MethodDefinition_3(b: Builder): void {
             whitespace,        // 12
             PropertyName,      // 11 = name
             whitespace,        // 10
-            punctuator("("),   // 9
+            keyword("("),   // 9
             whitespace,        // 8
-            punctuator(")"),   // 7
+            keyword(")"),   // 7
             whitespace,        // 6
-            punctuator("{"),   // 5
+            keyword("{"),   // 5
             whitespace,        // 4
             FunctionBody,      // 3 = body
             whitespace,        // 2
-            punctuator("}"),   // 1
+            keyword("}"),   // 1
             pos,               // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"Getter",14,0,[11,3]),
@@ -3584,17 +3582,17 @@ function MethodDefinition_4(b: Builder): void {
             whitespace,               // 14
             PropertyName,             // 13 = name
             whitespace,               // 12
-            punctuator("("),          // 11
+            keyword("("),          // 11
             whitespace,               // 10
             PropertySetParameterList, // 9 = param
             whitespace,               // 8
-            punctuator(")"),          // 7
+            keyword(")"),          // 7
             whitespace,               // 6
-            punctuator("{"),          // 5
+            keyword("{"),          // 5
             whitespace,               // 4
             FunctionBody,             // 3 = body
             whitespace,               // 2
-            punctuator("}"),          // 1
+            keyword("}"),          // 1
             pos,                      // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"Setter",16,0,[13,9,3]),
@@ -3630,21 +3628,21 @@ function GeneratorMethod(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                    // 16 = start
-            punctuator("*"),        // 15
+            keyword("*"),        // 15
             whitespace,             // 14
             PropertyName,           // 13 = name
             whitespace,             // 12
-            punctuator("("),        // 11
+            keyword("("),        // 11
             whitespace,             // 10
             StrictFormalParameters, // 9 = params
             whitespace,             // 8
-            punctuator(")"),        // 7
+            keyword(")"),        // 7
             whitespace,             // 6
-            punctuator("{"),        // 5
+            keyword("{"),        // 5
             whitespace,             // 4
             GeneratorBody,          // 3 = body
             whitespace,             // 2
-            punctuator("}"),        // 1
+            keyword("}"),        // 1
             pos,                    // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"GeneratorMethod",16,0,[13,9,3]),
@@ -3663,21 +3661,21 @@ function GeneratorDeclaration_1(b: Builder): void {
             pos,                 // 18 = start
             keyword("function"), // 17
             whitespace,          // 16
-            punctuator("*"),     // 15
+            keyword("*"),     // 15
             whitespace,          // 14
             BindingIdentifier,   // 13 = ident
             whitespace,          // 12
-            punctuator("("),     // 11
+            keyword("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
             whitespace,          // 8
-            punctuator(")"),     // 7
+            keyword(")"),     // 7
             whitespace,          // 6
-            punctuator("{"),     // 5
+            keyword("{"),     // 5
             whitespace,          // 4
             GeneratorBody,       // 3 = body
             whitespace,          // 2
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+19),
             popAboveAndMakeNode(18,"GeneratorDeclaration",18,0,[13,9,3]),
@@ -3696,19 +3694,19 @@ function GeneratorDeclaration_2(b: Builder): void {
             pos,                 // 16 = start
             keyword("function"), // 15
             whitespace,          // 14
-            punctuator("*"),     // 13
+            keyword("*"),     // 13
             whitespace,          // 12
-            punctuator("("),     // 11
+            keyword("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
             whitespace,          // 8
-            punctuator(")"),     // 7
+            keyword(")"),     // 7
             whitespace,          // 6
-            punctuator("{"),     // 5
+            keyword("{"),     // 5
             whitespace,          // 4
             GeneratorBody,       // 3 = body
             whitespace,          // 2
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"DefaultGeneratorDeclaration",16,0,[9,3]),
@@ -3736,24 +3734,24 @@ function GeneratorExpression(b: Builder): void {
             pos,                 // 17 = start
             keyword("function"), // 16
             whitespace,          // 15
-            punctuator("*"),     // 14
+            keyword("*"),     // 14
             whitespace,          // 13
             opt(items([
                 BindingIdentifier,
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            punctuator("("),     // 11
+            keyword("("),     // 11
             whitespace,          // 10
             FormalParameters,    // 9 = params
             whitespace,          // 8
-            punctuator(")"),     // 7
+            keyword(")"),     // 7
             whitespace,          // 6
-            punctuator("{"),     // 5
+            keyword("{"),     // 5
             whitespace,          // 4
             GeneratorBody,       // 3 = body
             whitespace,          // 2
-            punctuator("}"),     // 1
+            keyword("}"),     // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+18),
             popAboveAndMakeNode(17,"GeneratorExpression",17,0,[12,9,3]),
@@ -3778,7 +3776,7 @@ function YieldExpression_1(b: Builder): void {
             pos,                  // 6
             keyword("yield"),     // 5
             whitespaceNoNewline,  // 4
-            punctuator("*"),      // 3
+            keyword("*"),      // 3
             whitespace,           // 2
             AssignmentExpression, // 1
             pos,                  // 0
@@ -3929,7 +3927,7 @@ function ClassTail(b: Builder): void {
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            punctuator("{"),       // 4
+            keyword("{"),       // 4
             whitespace,            // 3
             choice([               // 2 = body
                 items([
@@ -3942,7 +3940,7 @@ function ClassTail(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ]),
             ]),
-            punctuator("}"),       // 1
+            keyword("}"),       // 1
             pos,                   // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ClassTail",6,0,[5,2]),
@@ -4029,7 +4027,7 @@ function ClassElement_3(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,
-            punctuator(";"),
+            keyword(";"),
             pos,
             assertLengthIs(oldLength+3),
             popAboveAndMakeNode(2,"EmptyClassElement",2,0,[]),
@@ -4164,7 +4162,7 @@ function ImportDeclaration_from(b: Builder): void {
             whitespace,        // 4
             FromClause,        // 3 = fromClause
             whitespace,        // 2
-            punctuator(";"),   // 1
+            keyword(";"),   // 1
             pos,               // 0 = end
             assertLengthIs(oldLength+9),
             popAboveAndMakeNode(8,"ImportFrom",8,0,[5,3]),
@@ -4185,7 +4183,7 @@ function ImportDeclaration_module(b: Builder): void {
             whitespace,        // 4
             ModuleSpecifier,   // 3 = specifier
             whitespace,        // 2
-            punctuator(";"),   // 1
+            keyword(";"),   // 1
             pos,               // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ImportModule",6,0,[3]),
@@ -4224,7 +4222,7 @@ function ImportClause(b: Builder): void {
                     choice([
                         items([
                             whitespace,         // 4
-                            punctuator(","),    // 3
+                            keyword(","),    // 3
                             whitespace,         // 2
                             NameSpaceImport,    // 1 = nsimport
                             pos,                // 0 = end
@@ -4233,7 +4231,7 @@ function ImportClause(b: Builder): void {
                         ]),
                         items([
                             whitespace,         // 4
-                            punctuator(","),    // 3
+                            keyword(","),    // 3
                             whitespace,         // 2
                             NamedImports,       // 1 = nsimports
                             pos,                // 0 = end
@@ -4266,7 +4264,7 @@ function NameSpaceImport(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,             // 6 = start
-            punctuator("*"), // 5
+            keyword("*"), // 5
             whitespace,      // 4
             keyword("as"),   // 3
             whitespace,      // 2
@@ -4287,14 +4285,14 @@ function NamedImports(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                // 5 = start
-            punctuator("{"),    // 4
+            keyword("{"),    // 4
             whitespace,         // 3
             choice([            // 2 = imports
                 items([
                     ImportsList,
                     whitespace,
                     opt(items([
-                        punctuator(","),
+                        keyword(","),
                         whitespace,
                         pop,
                     ])),
@@ -4306,7 +4304,7 @@ function NamedImports(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ])
             ]),
-            punctuator("}"),    // 1
+            keyword("}"),    // 1
             pos,                // 0 = end
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"NamedImports",5,0,[2]),
@@ -4343,7 +4341,7 @@ function ImportsList(b: Builder): void {
                 ImportSpecifier,
                 items([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     ImportSpecifier,
                     popAboveAndReplace(3,0),
@@ -4434,17 +4432,17 @@ function ExportDeclaration(b: Builder): void {
                     notKeyword("class"),    // 4 FIXME: need tests for this
                     AssignmentExpression,   // 3
                     whitespace,             // 2
-                    punctuator(";"),        // 1
+                    keyword(";"),        // 1
                     pos,                    // 0
                     assertLengthIs(oldLength+11),
                     popAboveAndMakeNode(10,"ExportDefault",10,0,[3]),
                 ]),
                 items([
-                    punctuator("*"), // 5
+                    keyword("*"), // 5
                     whitespace,      // 4
                     FromClause,      // 3
                     whitespace,      // 2
-                    punctuator(";"), // 1
+                    keyword(";"), // 1
                     pos,             // 0
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(8,"ExportStar",8,0,[3]),
@@ -4454,7 +4452,7 @@ function ExportDeclaration(b: Builder): void {
                     whitespace,      // 4
                     FromClause,      // 3
                     whitespace,      // 2
-                    punctuator(";"), // 1
+                    keyword(";"), // 1
                     pos,             // 0
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(8,"ExportFrom",8,0,[5,3]),
@@ -4462,7 +4460,7 @@ function ExportDeclaration(b: Builder): void {
                 items([
                     ExportClause,    // 3
                     whitespace,      // 2
-                    punctuator(";"), // 1
+                    keyword(";"), // 1
                     pos,             // 0
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ExportPlain",6,0,[3]),
@@ -4493,14 +4491,14 @@ function ExportClause(b: Builder): void {
         const oldLength = b.length;
         b.items([
             pos,                       // 5
-            punctuator("{"),           // 4
+            keyword("{"),           // 4
             whitespace,                // 3
             choice([                   // 2
                 items([
                     ExportsList,
                     whitespace,
                     opt(items([
-                        punctuator(","),
+                        keyword(","),
                         whitespace,
                         pop,
                     ])),
@@ -4513,7 +4511,7 @@ function ExportClause(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ]),
             ]),
-            punctuator("}"),           // 1
+            keyword("}"),           // 1
             pos,                       // 0
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"ExportClause",5,0,[2]),
@@ -4533,7 +4531,7 @@ function ExportsList(b: Builder): void {
                 ExportSpecifier,
                 items([
                     whitespace,
-                    punctuator(","),
+                    keyword(","),
                     whitespace,
                     ExportSpecifier,
                     popAboveAndReplace(3,0),

@@ -190,25 +190,10 @@ export class Parser {
         return longest;
     }
 
-    public lookaheadPunctuator(str: string): boolean {
-        const upcoming = this.upcomingPunctuator();
-        return (upcoming == str);
-    }
-
-    public matchPunctuator(str: string): boolean {
-        if (this.lookaheadPunctuator(str)) {
-            this.pos += str.length;
-            return true;
-        }
-        return false;
-    }
-
-    public expectPunctuator(str: string): void {
-        if (!this.matchPunctuator(str))
-            throw new ParseError(this,this.pos,"Expected "+str);
-    }
-
     public lookaheadKeyword(keyword: string): boolean {
+        const upcoming = this.upcomingPunctuator();
+        if (upcoming == keyword)
+            return true;
         // if (!isKeyword(keyword))
         //     throw new ParseError(this,this.pos,keyword+" is not a keyword");
         if ((this.pos < this.len) && (this.text.substring(this.pos,this.pos + keyword.length) == keyword)) {
