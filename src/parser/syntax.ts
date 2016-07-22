@@ -210,40 +210,36 @@ grm.define("ArrayLiteral",
         keyword("["),    // 4
         whitespace,      // 3
         list(            // 2 = list
-            (b: Builder): void => {
-                b.push(null);
-            },
-            (b: Builder): void => {
-                b.choice([
-                    sequence([
-                        pos,          // 3 = before
-                        keyword(","), // 2
-                        pos,          // 1 = after
-                        whitespace,   // 0
-                        spliceNode(3,"Elision",3,1,[]),
-                    ]),
-                    sequence([
-                        ref("AssignmentExpression"),
+            push(null),
+            choice([
+                sequence([
+                    pos,          // 3 = before
+                    keyword(","), // 2
+                    pos,          // 1 = after
+                    whitespace,   // 0
+                    spliceNode(3,"Elision",3,1,[]),
+                ]),
+                sequence([
+                    ref("AssignmentExpression"),
+                    whitespace,
+                    opt(sequence([
+                        keyword(","),
                         whitespace,
-                        opt(sequence([
-                            keyword(","),
-                            whitespace,
-                            pop,
-                        ])),
-                        spliceReplace(2,2),
-                    ]),
-                    sequence([
-                        ref("SpreadElement"),
+                        pop,
+                    ])),
+                    spliceReplace(2,2),
+                ]),
+                sequence([
+                    ref("SpreadElement"),
+                    whitespace,
+                    opt(sequence([
+                        keyword(","),
                         whitespace,
-                        opt(sequence([
-                            keyword(","),
-                            whitespace,
-                            pop,
-                        ])),
-                        spliceReplace(2,2),
-                    ]),
-                ]);
-            }
+                        pop,
+                    ])),
+                    spliceReplace(2,2),
+                ]),
+            ])
         ),
         keyword("]"),    // 1
         pos,             // 0 = end
