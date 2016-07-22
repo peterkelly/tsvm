@@ -21,9 +21,9 @@ import {
     ParseError,
     ParseIgnore,
 } from "./parser";
-import {
-    Identifier
-} from "./syntax";
+// import {
+//     Identifier
+// } from "./syntax";
 import {
     CastError,
     Range,
@@ -35,10 +35,32 @@ import {
     IdentifierNode,
 } from "./ast";
 
+export class Grammar {
+    public productions: { [name: string]: (b: Builder) => void } = {};
+
+    public define(name: string, fun: (b: Builder) => void) {
+        if (this.productions[name] != null)
+            throw new Error("Production "+name+" is already defined");
+        this.productions[name] = (b: Builder) => {
+            b.attempt((): void => {
+                const oldLength = b.length;
+                fun(b);
+                b.assertLengthIs(oldLength+1);
+                checkNode(b.get(0));
+            });
+        }
+    }
+    public lookup(name: string): (b: Builder) => void {
+        return this.productions[name];
+    }
+}
+
 export class Builder {
+    public grammar: Grammar;
     public parser: Parser;
     public stack: any[] = [];
-    public constructor(parser: Parser) {
+    public constructor(grammar: Grammar, parser: Parser) {
+        this.grammar = grammar;
         this.parser = parser;
     }
     public get length(): number {
@@ -183,6 +205,15 @@ export class Builder {
     }
 }
 
+export function ref(name: string): (b: Builder) => void {
+    return (b: Builder) => {
+        const production = b.grammar.lookup(name);
+        if (production == null)
+            throw new Error("Production "+name+" not defined");
+        production(b);
+    }
+}
+
 export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (b: Builder) => void {
     return (b: Builder) => b.list(first,rest);
 }
@@ -267,7 +298,7 @@ export function identifier(str: string): (b: Builder) => void {
         b.attempt((): void => {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
-            Identifier(b);
+            ref("Identifier")(b);
             b.item(assertLengthIs(oldLength+1));
             const ident = checkNode(b.get(0));
             if (!(ident instanceof IdentifierNode) || (ident.value != str))
