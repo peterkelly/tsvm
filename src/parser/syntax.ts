@@ -25,15 +25,11 @@ import {
     CastError,
     Range,
     ASTNode,
-    IdentifierReferenceNode,
-    BindingIdentifierNode,
-    LabelIdentifierNode,
-    IdentifierNode,
-    NumericLiteralNode,
-    StringLiteralNode,
     ListNode,
     ErrorNode,
     GenericNode,
+    GenericStringNode,
+    GenericNumberNode,
 } from "./ast";
 import {
     Builder,
@@ -78,8 +74,8 @@ grm.define("IdentifierReference",(b: Builder): void => {
     b.item(ref("Identifier"));
     b.item(assertLengthIs(oldLength+1));
     const ident = checkNode(b.get(0));
-    if (ident instanceof IdentifierNode)
-        b.item(popAboveAndSet(0,new IdentifierReferenceNode(ident.range,ident.value)));
+    if (ident instanceof GenericStringNode)
+        b.item(popAboveAndSet(0,new GenericStringNode(ident.range,"IdentifierReference",ident.value)));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 });
@@ -91,8 +87,8 @@ grm.define("BindingIdentifier",(b: Builder): void => {
     b.item(ref("Identifier"));
     b.item(assertLengthIs(oldLength+1));
     const ident = checkNode(b.get(0));
-    if (ident instanceof IdentifierNode)
-        b.item(popAboveAndSet(0,new BindingIdentifierNode(ident.range,ident.value)));
+    if (ident instanceof GenericStringNode)
+        b.item(popAboveAndSet(0,new GenericStringNode(ident.range,"BindingIdentifier",ident.value)));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 });
@@ -104,8 +100,8 @@ grm.define("LabelIdentifier",(b: Builder): void => {
     b.item(ref("Identifier"));
     b.item(assertLengthIs(oldLength+1));
     const ident = checkNode(b.get(0));
-    if (ident instanceof IdentifierNode)
-        b.item(popAboveAndSet(0,new LabelIdentifierNode(ident.range,ident.value)));
+    if (ident instanceof GenericStringNode)
+        b.item(popAboveAndSet(0,new GenericStringNode(ident.range,"LabelIdentifier",ident.value)));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
 });
@@ -131,7 +127,7 @@ grm.define("Identifier",(b: Builder): void => {
             const value = p.text.substring(range.start,range.end);
             if (isKeyword(value))
                 throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-            b.item(push(new IdentifierNode(range,value)));
+            b.item(push(new GenericStringNode(range,"Identifier",value)));
             b.item(assertLengthIs(oldLength+1));
             checkNode(b.get(0));
         }
@@ -242,7 +238,7 @@ grm.define("NumericLiteral",(b: Builder): void => {
             throw new ParseError(p,p.pos,"Invalid number");
     }
     const value = parseFloat(p.text.substring(start,p.pos));
-    b.item(push(new NumericLiteralNode(new Range(start,p.pos),value)));
+    b.item(push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value)));
 });
 
 // StringLiteral
@@ -280,7 +276,7 @@ grm.define("StringLiteral",(b: Builder): void => {
                 throw new ParseError(p,p.pos,"Unterminated string");
             }
         }
-        b.item(push(new StringLiteralNode(new Range(start,p.pos),value)));
+        b.item(push(new GenericStringNode(new Range(start,p.pos),"StringLiteral",value,true)));
         checkNode(b.get(0));
         return;
     }

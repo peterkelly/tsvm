@@ -28,8 +28,8 @@ import {
     ListNode,
     ErrorNode,
     GenericNode,
-    ExpressionNode,
-    IdentifierNode,
+    GenericStringNode,
+    GenericNumberNode,
 } from "./ast";
 
 export class Grammar {
@@ -317,7 +317,7 @@ export function identifier(str: string): (b: Builder) => void {
             ref("Identifier")(b);
             b.item(assertLengthIs(oldLength+1));
             const ident = checkNode(b.get(0));
-            if (!(ident instanceof IdentifierNode) || (ident.value != str))
+            if (!(ident instanceof GenericStringNode) || (ident.value != str))
                 throw new ParseError(b.parser,start,"Expected "+str);
             // Identifier_b will already have pushed onto the stack
         })

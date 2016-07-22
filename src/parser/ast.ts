@@ -2359,12 +2359,10 @@ export class ErrorNode extends ASTNode {
 
 export class GenericNode extends ASTNode {
     _nominal_type_GenericNode: any ;
-    public readonly kind: string;
     public readonly _children: ASTNode[];
     public readonly value: any;
     public constructor(range: Range, kind: string, children: any[], value?: any) {
-        super(range,"GenericNode");
-        this.kind = kind;
+        super(range,kind);
         this._children = [];
         for (const child of children) {
             if ((child !== null) && !(child instanceof ASTNode))
@@ -2378,5 +2376,40 @@ export class GenericNode extends ASTNode {
     }
     public get label(): string {
         return this.kind;
+    }
+}
+
+export class GenericStringNode extends ASTNode {
+    _nominal_type_GenericStringNode: any;
+    public readonly value: string;
+    public readonly raw: boolean;
+    public constructor(range: Range, kind: string, value: string, raw: boolean = false) {
+        super(range,kind);
+        this.value = value;
+        this.raw = raw;
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+    public get label(): string {
+        if (this.raw)
+            return JSON.stringify(this.value);
+        else
+            return this.kind+"("+JSON.stringify(this.value)+")";
+    }
+}
+
+export class GenericNumberNode extends ASTNode {
+    _nominal_type_GenericNumberNode: any;
+    public readonly value: number;
+    public constructor(range: Range, kind: string, value: number) {
+        super(range,kind);
+        this.value = value;
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+    public get label(): string {
+        return ""+this.value;
     }
 }
