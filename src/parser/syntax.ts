@@ -37,6 +37,8 @@ import {
 } from "./ast";
 import {
     Builder,
+    Grammar,
+    ref,
     list,
     items,
     popAboveAndSet,
@@ -65,56 +67,58 @@ import {
     makeEmptyListNode,
 } from "./grammar";
 
+const grm = new Grammar();
+
 // Section 12.1
 
 // IdentifierReference
 
-function IdentifierReference(b: Builder): void {
+grm.define("IdentifierReference",(b: Builder): void => {
     const oldLength = b.length;
-    b.item(Identifier);
+    b.item(ref("Identifier"));
     b.item(assertLengthIs(oldLength+1));
     const ident = checkNode(b.get(0));
     if (ident instanceof IdentifierNode)
         b.item(popAboveAndSet(0,new IdentifierReferenceNode(ident.range,ident.value)));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
-}
+});
 
 // BindingIdentifier
 
-function BindingIdentifier(b: Builder): void {
+grm.define("BindingIdentifier",(b: Builder): void => {
     const oldLength = b.length;
-    b.item(Identifier);
+    b.item(ref("Identifier"));
     b.item(assertLengthIs(oldLength+1));
     const ident = checkNode(b.get(0));
     if (ident instanceof IdentifierNode)
         b.item(popAboveAndSet(0,new BindingIdentifierNode(ident.range,ident.value)));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
-}
+});
 
 // LabelIdentifier
 
-function LabelIdentifier(b: Builder): void {
+grm.define("LabelIdentifier",(b: Builder): void => {
     const oldLength = b.length;
-    b.item(Identifier);
+    b.item(ref("Identifier"));
     b.item(assertLengthIs(oldLength+1));
     const ident = checkNode(b.get(0));
     if (ident instanceof IdentifierNode)
         b.item(popAboveAndSet(0,new LabelIdentifierNode(ident.range,ident.value)));
     b.item(assertLengthIs(oldLength+1));
     checkNode(b.get(0));
-}
+});
 
 // IdentifierName
 
-function IdentifierName(b: Builder): void {
-    b.item(Identifier);
-}
+grm.define("IdentifierName",(b: Builder): void => {
+    b.item(ref("Identifier"));
+});
 
 // Identifier
 
-export function Identifier(b: Builder): void {
+grm.define("Identifier",(b: Builder): void => {
     b.attempt((): void => {
         const p = b.parser;
         const start = p.pos;
@@ -135,13 +139,13 @@ export function Identifier(b: Builder): void {
             throw new ParseError(p,p.pos,"Expected Identifier");
         }
     });
-}
+});
 
 // Section 12.2
 
 // This
 
-function This(b: Builder): void {
+grm.define("This",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -154,71 +158,71 @@ function This(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // PrimaryExpression
 
-function PrimaryExpression(b: Builder): void {
+grm.define("PrimaryExpression",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            This,
+            ref("This"),
             // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
-            Literal,
-            IdentifierReference,
-            ArrayLiteral,
-            ObjectLiteral,
-            FunctionExpression,
-            ClassExpression,
-            GeneratorExpression,
+            ref("Literal"),
+            ref("IdentifierReference"),
+            ref("ArrayLiteral"),
+            ref("ObjectLiteral"),
+            ref("FunctionExpression"),
+            ref("ClassExpression"),
+            ref("GeneratorExpression"),
             // RegularExpressionLiteral_b, // TODO
             // TemplateLiteral_b, // TODO
-            ParenthesizedExpression,
+            ref("ParenthesizedExpression"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ParenthesizedExpression
 
-function ParenthesizedExpression(b: Builder): void {
+grm.define("ParenthesizedExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            keyword("("), // 4
-            whitespace,      // 3
-            Expression,      // 2 = expr
-            whitespace,      // 1
-            keyword(")"), // 0
+            keyword("("),      // 4
+            whitespace,        // 3
+            ref("Expression"), // 2 = expr
+            whitespace,        // 1
+            keyword(")"),      // 0
             popAboveAndReplace(4,2),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.2.4
 
 // Literal
 
-function Literal(b: Builder): void {
+grm.define("Literal",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            NullLiteral,
-            BooleanLiteral,
-            NumericLiteral,
-            StringLiteral,
+            ref("NullLiteral"),
+            ref("BooleanLiteral"),
+            ref("NumericLiteral"),
+            ref("StringLiteral"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // NullLiteral
 
-function NullLiteral(b: Builder): void {
+grm.define("NullLiteral",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -231,11 +235,11 @@ function NullLiteral(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BooleanLiteral
 
-function BooleanLiteral(b: Builder): void {
+grm.define("BooleanLiteral",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
@@ -257,11 +261,11 @@ function BooleanLiteral(b: Builder): void {
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // NumericLiteral
 
-function NumericLiteral(b: Builder): void {
+grm.define("NumericLiteral",(b: Builder): void => {
     // TODO: Complete numeric literal syntax according to spec
     b.attempt((): void => {
         const oldLength = b.length;
@@ -284,11 +288,11 @@ function NumericLiteral(b: Builder): void {
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // StringLiteral
 
-function StringLiteral(b: Builder): void {
+grm.define("StringLiteral",(b: Builder): void => {
     // TODO: Complete string literal syntax according to spec
     b.attempt((): void => {
         const oldLength = b.length;
@@ -330,13 +334,13 @@ function StringLiteral(b: Builder): void {
         }
         throw new ParseError(p,p.pos,"Invalid string");
     });
-}
+});
 
 // Section 12.2.5
 
 // ArrayLiteral
 
-function ArrayLiteral(b: Builder): void {
+grm.define("ArrayLiteral",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         const start = b.parser.pos;
@@ -353,10 +357,10 @@ function ArrayLiteral(b: Builder): void {
         b.items([
             assertLengthIs(oldLength+3),
             opt(items([
-                pos,             // 3 = before
+                pos,          // 3 = before
                 keyword(","), // 2
-                pos,             // 1 = after
-                whitespace,      // 0
+                pos,          // 1 = after
+                whitespace,   // 0
                 assertLengthIs(oldLength+7),
                 popAboveAndMakeNode(3,"Elision",3,1,[]),
             ])),
@@ -380,16 +384,16 @@ function ArrayLiteral(b: Builder): void {
                 b.items([
                     choice([
                         items([
-                            pos,             // 3 = before
+                            pos,          // 3 = before
                             keyword(","), // 2
-                            pos,             // 1 = after
-                            whitespace,      // 0
+                            pos,          // 1 = after
+                            whitespace,   // 0
                             assertLengthIs(oldLength+8),
                             popAboveAndMakeNode(3,"Elision",3,1,[]),
                             assertLengthIs(oldLength+5),
                         ]),
                         items([
-                            AssignmentExpression,
+                            ref("AssignmentExpression"),
                             whitespace,
                             opt(items([
                                 keyword(","),
@@ -401,7 +405,7 @@ function ArrayLiteral(b: Builder): void {
                             assertLengthIs(oldLength+5),
                         ]),
                         items([
-                            SpreadElement,
+                            ref("SpreadElement"),
                             whitespace,
                             opt(items([
                                 keyword(","),
@@ -434,40 +438,40 @@ function ArrayLiteral(b: Builder): void {
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // SpreadElement
 
-function SpreadElement(b: Builder): void {
+grm.define("SpreadElement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
             keyword("..."),
             whitespace,
-            AssignmentExpression,
+            ref("AssignmentExpression"),
             pos,
             popAboveAndMakeNode(4,"SpreadElement",4,0,[1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.2.6
 
 // ObjectLiteral
 
-function ObjectLiteral(b: Builder): void {
+grm.define("ObjectLiteral",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 5
+            pos,              // 5
             keyword("{"),     // 4
-            whitespace,          // 3
-            choice([             // 2 = properties
+            whitespace,       // 3
+            choice([          // 2 = properties
                 items([
-                    PropertyDefinitionList,
+                    ref("PropertyDefinitionList"),
                     whitespace,
                     opt(items([
                         keyword(","),
@@ -482,238 +486,230 @@ function ObjectLiteral(b: Builder): void {
                 ]),
             ]),
             keyword("}"),     // 1
-            pos,                 // 0 = end
+            pos,              // 0 = end
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"ObjectLiteral",5,0,[2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(b: Builder): void {
+grm.define("PropertyDefinitionList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
-            PropertyDefinition,
+            ref("PropertyDefinition"),
             items([
                 whitespace,
                 keyword(","),
                 whitespace,
-                PropertyDefinition,
+                ref("PropertyDefinition"),
                 popAboveAndReplace(3,0),
             ]),
         );
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // PropertyDefinition_colon
 
-function PropertyDefinition_colon(b: Builder): void {
+grm.define("PropertyDefinition_colon",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                  // 6 = start
-            PropertyName,         // 5 = name
-            whitespace,           // 4
-            keyword(":"),      // 3
-            whitespace,           // 2
-            AssignmentExpression, // 1 = init
-            pos,                  // 0 = end
+            pos,                         // 6 = start
+            ref("PropertyName"),         // 5 = name
+            whitespace,                  // 4
+            keyword(":"),                // 3
+            whitespace,                  // 2
+            ref("AssignmentExpression"), // 1 = init
+            pos,                         // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ColonPropertyDefinition",6,0,[5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // PropertyDefinition
 
-function PropertyDefinition(b: Builder): void {
+grm.define("PropertyDefinition",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            PropertyDefinition_colon,
-            CoverInitializedName,
-            MethodDefinition,
-            IdentifierReference,
+            ref("PropertyDefinition_colon"),
+            ref("CoverInitializedName"),
+            ref("MethodDefinition"),
+            ref("IdentifierReference"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // PropertyName
 
-function PropertyName(b: Builder): void {
+grm.define("PropertyName",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            LiteralPropertyName,
-            ComputedPropertyName,
+            ref("LiteralPropertyName"),
+            ref("ComputedPropertyName"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // LiteralPropertyName
 
-function LiteralPropertyName(b: Builder): void {
+grm.define("LiteralPropertyName",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            IdentifierName,
-            StringLiteral,
-            NumericLiteral,
+            ref("IdentifierName"),
+            ref("StringLiteral"),
+            ref("NumericLiteral"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ComputedPropertyName
 
-function ComputedPropertyName(b: Builder): void {
+grm.define("ComputedPropertyName",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                  // 6 = start
-            keyword("["),      // 5
-            whitespace,           // 4
-            AssignmentExpression, // 3 = expr
-            whitespace,           // 2
-            keyword("]"),      // 1
-            pos,                  // 0 = end
+            pos,                         // 6 = start
+            keyword("["),                // 5
+            whitespace,                  // 4
+            ref("AssignmentExpression"), // 3 = expr
+            whitespace,                  // 2
+            keyword("]"),                // 1
+            pos,                         // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ComputedPropertyName",6,0,[3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CoverInitializedName
 
-function CoverInitializedName(b: Builder): void {
+grm.define("CoverInitializedName",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 4 = start
-            IdentifierReference, // 3 = ident
-            whitespace,          // 2
-            Initializer,         // 1 = init
-            pos,                 // 0 = end
+            pos,                        // 4 = start
+            ref("IdentifierReference"), // 3 = ident
+            whitespace,                 // 2
+            ref("Initializer"),         // 1 = init
+            pos,                        // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"CoverInitializedName",4,0,[3,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Initializer
 
-function Initializer(b: Builder): void {
+grm.define("Initializer",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             keyword("="),
             whitespace,
-            AssignmentExpression,
+            ref("AssignmentExpression"),
             assertLengthIs(oldLength+3),
             popAboveAndReplace(2,0),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.2.9
 
-// TemplateLiteral
-
 function TemplateLiteral(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
-
-// TemplateSpans
-
 function TemplateSpans(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
-
-// TemplateMiddleList
-
 function TemplateMiddleList(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // Section 12.3
 
 // MemberExpression_new
 
-function MemberExpression_new(b: Builder): void {
+grm.define("MemberExpression_new",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,              // 6 = start
-            keyword("new"),   // 5
-            whitespace,       // 4
-            MemberExpression, // 3 = expr
-            whitespace,       // 2
-            Arguments,        // 1 = args
-            pos,              // 0 = end
+            pos,                     // 6 = start
+            keyword("new"),          // 5
+            whitespace,              // 4
+            ref("MemberExpression"), // 3 = expr
+            whitespace,              // 2
+            ref("Arguments"),        // 1 = args
+            pos,                     // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"NewExpression",6,0,[3,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // MemberExpression_start
 
-function MemberExpression_start(b: Builder): void {
+grm.define("MemberExpression_start",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            PrimaryExpression,
-            SuperProperty,
-            MetaProperty,
-            MemberExpression_new,
+            ref("PrimaryExpression"),
+            ref("SuperProperty"),
+            ref("MetaProperty"),
+            ref("MemberExpression_new"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // MemberExpression
 
-function MemberExpression(b: Builder): void {
+grm.define("MemberExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
-            MemberExpression_start,
+            ref("MemberExpression_start"),
             repeatChoice([
                 items([
-                    whitespace,      // 6
-                    keyword("["), // 5
-                    whitespace,      // 4
-                    Expression,      // 3 = expr
-                    whitespace,      // 2
-                    keyword("]"), // 1
-                    pos,             // 0 = end
+                    whitespace,            // 6
+                    keyword("["),          // 5
+                    whitespace,            // 4
+                    ref("Expression"),     // 3 = expr
+                    whitespace,            // 2
+                    keyword("]"),          // 1
+                    pos,                   // 0 = end
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(7,"MemberAccessExpr",8,0,[7,3]),
                 ]),
                 items([
-                    whitespace,      // 5
-                    keyword("."), // 4
-                    whitespace,      // 3
-                    IdentifierName,  // 2 = ident
-                    pos,             // 1 = end
-                    whitespace,      // 0
+                    whitespace,            // 5
+                    keyword("."),          // 4
+                    whitespace,            // 3
+                    ref("IdentifierName"), // 2 = ident
+                    pos,                   // 1 = end
+                    whitespace,            // 0
                     assertLengthIs(oldLength+8),
                     popAboveAndMakeNode(6,"MemberAccessIdent",7,1,[6,2]),
                 ]),
@@ -724,37 +720,37 @@ function MemberExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // SuperProperty
 
-function SuperProperty(b: Builder): void {
+grm.define("SuperProperty",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,              // 8 = start
-                    keyword("super"), // 7
-                    whitespace,       // 6
-                    keyword("["),  // 5
-                    whitespace,       // 4
-                    Expression,       // 3 = expr
-                    whitespace,       // 2
-                    keyword("]"),  // 1
-                    pos,              // 0 = end
+                    pos,               // 8 = start
+                    keyword("super"),  // 7
+                    whitespace,        // 6
+                    keyword("["),      // 5
+                    whitespace,        // 4
+                    ref("Expression"), // 3 = expr
+                    whitespace,        // 2
+                    keyword("]"),      // 1
+                    pos,               // 0 = end
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(8,"SuperPropertyExpr",8,0,[3]),
                     assertLengthIs(oldLength+1),
                 ]),
                 items([
-                    pos,              // 6 = start
-                    keyword("super"), // 5
-                    whitespace,       // 4
-                    keyword("."),  // 3
-                    whitespace,       // 2
-                    Identifier,       // 1 = ident
-                    pos,              // 0 = end
+                    pos,               // 6 = start
+                    keyword("super"),  // 5
+                    whitespace,        // 4
+                    keyword("."),      // 3
+                    whitespace,        // 2
+                    ref("Identifier"), // 1 = ident
+                    pos,               // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"SuperPropertyIdent",6,0,[1]),
                     assertLengthIs(oldLength+1),
@@ -764,24 +760,24 @@ function SuperProperty(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // MetaProperty
 
-function MetaProperty(b: Builder): void {
-    b.item(NewTarget);
-}
+grm.define("MetaProperty",(b: Builder): void => {
+    b.item(ref("NewTarget"));
+});
 
 // NewTarget
 
-function NewTarget(b: Builder): void {
+grm.define("NewTarget",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                  // 6
             keyword("new"),       // 5
             whitespace,           // 4
-            keyword("."),      // 3
+            keyword("."),         // 3
             whitespace,           // 2
             identifier("target"), // 1 ("target" is not a reserved word, so we can't use keyword here)
             pos,                  // 0
@@ -791,23 +787,23 @@ function NewTarget(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // NewExpression
 
-function NewExpression(b: Builder): void {
+grm.define("NewExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
-                MemberExpression,
+                ref("MemberExpression"),
                 items([
-                    pos,            // 5 = start
-                    keyword("new"), // 4
-                    whitespace,     // 3
-                    NewExpression,  // 2 = expr
-                    value(null),    // 1 = args
-                    pos,            // 0 = end
+                    pos,                  // 5 = start
+                    keyword("new"),       // 4
+                    whitespace,           // 3
+                    ref("NewExpression"), // 2 = expr
+                    value(null),          // 1 = args
+                    pos,                  // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"NewExpression",5,0,[2,1]),
                 ]),
@@ -816,21 +812,21 @@ function NewExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CallExpression_start
 
-function CallExpression_start(b: Builder): void {
+grm.define("CallExpression_start",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(choice([
-            SuperCall,
+            ref("SuperCall"),
             items([
-                pos,              // 4 = start
-                MemberExpression, // 3 = fun
-                whitespace,       // 2
-                Arguments,        // 1 = args
-                pos,              // 0 = end
+                pos,                     // 4 = start
+                ref("MemberExpression"), // 3 = fun
+                whitespace,              // 2
+                ref("Arguments"),        // 1 = args
+                pos,                     // 0 = end
                 assertLengthIs(oldLength+5),
                 popAboveAndMakeNode(4,"Call",4,0,[3,1]),
             ]),
@@ -838,41 +834,41 @@ function CallExpression_start(b: Builder): void {
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // CallExpression
 
-function CallExpression(b: Builder): void {
+grm.define("CallExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
-            CallExpression_start,
+            ref("CallExpression_start"),
             repeatChoice([
                 items([
-                    whitespace,      // 2
-                    Arguments,       // 1
-                    pos,             // 0
+                    whitespace,            // 2
+                    ref("Arguments"),      // 1
+                    pos,                   // 0
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(3,"Call",4,0,[3,1]),
                 ]),
                 items([
-                    whitespace,      // 6
-                    keyword("["), // 5
-                    whitespace,      // 4
-                    Expression,      // 3 = expr
-                    whitespace,      // 2
-                    keyword("]"), // 1
-                    pos,             // 0 = end
+                    whitespace,            // 6
+                    keyword("["),          // 5
+                    whitespace,            // 4
+                    ref("Expression"),     // 3 = expr
+                    whitespace,            // 2
+                    keyword("]"),          // 1
+                    pos,                   // 0 = end
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(7,"MemberAccessExpr",8,0,[7,3]),
                 ]),
                 items([
-                    whitespace,      // 4
-                    keyword("."), // 3
-                    whitespace,      // 2
-                    IdentifierName,  // 1 = idname
-                    pos,             // 0 = end
+                    whitespace,            // 4
+                    keyword("."),          // 3
+                    whitespace,            // 2
+                    ref("IdentifierName"), // 1 = idname
+                    pos,                   // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"MemberAccessIdent",6,0,[5,1]),
                 ]),
@@ -886,18 +882,18 @@ function CallExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // SuperCall
 
-function SuperCall(b: Builder): void {
+grm.define("SuperCall",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,              // 4 = start
             keyword("super"), // 3
             whitespace,       // 2
-            Arguments,        // 1 = args
+            ref("Arguments"), // 1 = args
             pos,              // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"SuperCall",4,0,[1]),
@@ -905,34 +901,34 @@ function SuperCall(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Arguments
 
-function Arguments(b: Builder): void {
+grm.define("Arguments",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.item(choice([
             items([
-                pos,             // 6 = start
-                keyword("("), // 5
-                whitespace,      // 4
-                pos,             // 3 = listpos
-                keyword(")"), // 2
-                pos,             // 1 = end
-                value(null),     // 0 = will become list
+                pos,                 // 6 = start
+                keyword("("),        // 5
+                whitespace,          // 4
+                pos,                 // 3 = listpos
+                keyword(")"),        // 2
+                pos,                 // 1 = end
+                value(null),         // 0 = will become list
                 assertLengthIs(oldLength+7),
                 popAboveAndMakeEmptyList(0,3,3),
                 popAboveAndMakeNode(6,"Arguments",6,1,[0]),
             ]),
             items([
-                pos,             // 6 = start
-                keyword("("), // 5
-                whitespace,      // 4
-                ArgumentList,    // 3 = args
-                whitespace,      // 2
-                keyword(")"), // 1
-                pos,             // 0 = end
+                pos,                 // 6 = start
+                keyword("("),        // 5
+                whitespace,          // 4
+                ref("ArgumentList"), // 3 = args
+                whitespace,          // 2
+                keyword(")"),        // 1
+                pos,                 // 0 = end
                 assertLengthIs(oldLength+7),
                 popAboveAndMakeNode(6,"Arguments",6,0,[3]),
             ]),
@@ -940,78 +936,78 @@ function Arguments(b: Builder): void {
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // ArgumentList_item
 
-function ArgumentList_item(b: Builder): void {
+grm.define("ArgumentList_item",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,                  // 4 = start
-                    keyword("..."),    // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = expr
-                    pos,                  // 0 = end
+                    pos,                         // 4 = start
+                    keyword("..."),              // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = expr
+                    pos,                         // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"SpreadElement",4,0,[1]),
                 ]),
-                AssignmentExpression,
+                ref("AssignmentExpression"),
             ]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ArgumentList
 
-function ArgumentList(b: Builder): void {
+grm.define("ArgumentList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.list(
-            ArgumentList_item,
+            ref("ArgumentList_item"),
             items([
                 whitespace,
                 keyword(","),
                 whitespace,
-                ArgumentList_item,
+                ref("ArgumentList_item"),
                 popAboveAndReplace(3,0),
             ]),
         );
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // LeftHandSideExpression
 
-function LeftHandSideExpression(b: Builder): void {
+grm.define("LeftHandSideExpression",(b: Builder): void => {
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
     const oldLength = b.length;
     b.items([
         choice([
-            CallExpression,
-            NewExpression,
+            ref("CallExpression"),
+            ref("NewExpression"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 12.4
 
 // PostfixExpression
 
-function PostfixExpression(b: Builder): void {
+grm.define("PostfixExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
-            LeftHandSideExpression,
+            ref("LeftHandSideExpression"),
             choice([
                 items([
                     whitespaceNoNewline,
@@ -1033,139 +1029,139 @@ function PostfixExpression(b: Builder): void {
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.5
 
 // UnaryExpression
 
-function UnaryExpression(b: Builder): void {
+grm.define("UnaryExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,               // 4 = start
-                    keyword("delete"), // 3
-                    whitespace,        // 2
-                    UnaryExpression,   // 1 = expr
-                    pos,               // 0 = end
+                    pos,                    // 4 = start
+                    keyword("delete"),      // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"Delete",4,0,[1]),
                 ]),
                 items([
-                    pos,             // 4 = start
-                    keyword("void"), // 3
-                    whitespace,      // 2
-                    UnaryExpression, // 1 = expr
-                    pos,             // 0 = end
+                    pos,                    // 4 = start
+                    keyword("void"),        // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"Void",4,0,[1]),
                 ]),
                 items([
-                    pos,               // 4 = start
-                    keyword("typeof"), // 3
-                    whitespace,        // 2
-                    UnaryExpression,   // 1 = expr
-                    pos,               // 0 = end
+                    pos,                    // 4 = start
+                    keyword("typeof"),      // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"TypeOf",4,0,[1]),
                 ]),
                 items([
-                    pos,              // 4 = start
-                    keyword("++"), // 3
-                    whitespace,       // 2
-                    UnaryExpression,  // 1 = expr
-                    pos,              // 0 = end
+                    pos,                    // 4 = start
+                    keyword("++"),          // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"PreIncrement",4,0,[1]),
                 ]),
                 items([
-                    pos,              // 4 = start
-                    keyword("--"), // 3
-                    whitespace,       // 2
-                    UnaryExpression,  // 1 = expr
-                    pos,              // 0 = end
+                    pos,                    // 4 = start
+                    keyword("--"),          // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"PreDecrement",4,0,[1]),
                 ]),
                 items([
-                    pos,             // 4 = start
-                    keyword("+"), // 3
-                    whitespace,      // 2
-                    UnaryExpression, // 1 = expr
-                    pos,             // 0 = end
+                    pos,                    // 4 = start
+                    keyword("+"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"UnaryPlus",4,0,[1]),
                 ]),
                 items([
-                    pos,             // 4 = start
-                    keyword("-"), // 3
-                    whitespace,      // 2
-                    UnaryExpression, // 1 = expr
-                    pos,             // 0 = end
+                    pos,                    // 4 = start
+                    keyword("-"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"UnaryMinus",4,0,[1]),
                 ]),
                 items([
-                    pos,             // 4 = start
-                    keyword("~"), // 3
-                    whitespace,      // 2
-                    UnaryExpression, // 1 = expr
-                    pos,             // 0 = end
+                    pos,                    // 4 = start
+                    keyword("~"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"UnaryBitwiseNot",4,0,[1]),
                 ]),
                 items([
-                    pos,             // 4 = start
-                    keyword("!"), // 3
-                    whitespace,      // 2
-                    UnaryExpression, // 1 = expr
-                    pos,             // 0 = end
+                    pos,                    // 4 = start
+                    keyword("!"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = expr
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"UnaryLogicalNot",4,0,[1]),
                 ]),
-                PostfixExpression,
+                ref("PostfixExpression"),
             ]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.6
 
 // MultiplicativeExpression
 
-function MultiplicativeExpression(b: Builder): void {
+grm.define("MultiplicativeExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                      // 6 = start
-            UnaryExpression,          // 5 = left
+            pos,                            // 6 = start
+            ref("UnaryExpression"),         // 5 = left
             repeatChoice([
                 items([
-                    whitespace,       // 4
-                    keyword("*"),  // 3
-                    whitespace,       // 2
-                    UnaryExpression,  // 1 = right
-                    pos,              // 0 = end
+                    whitespace,             // 4
+                    keyword("*"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = right
+                    pos,                    // 0 = end
                     popAboveAndMakeNode(5,"Multiply",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,       // 4
-                    keyword("/"),  // 3
-                    whitespace,       // 2
-                    UnaryExpression,  // 1 = right
-                    pos,              // 0 = end
+                    whitespace,             // 4
+                    keyword("/"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = right
+                    pos,                    // 0 = end
                     popAboveAndMakeNode(5,"Divide",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,       // 4
-                    keyword("%"),  // 3
-                    whitespace,       // 2
-                    UnaryExpression,  // 1 = right
-                    pos,              // 0 = end
+                    whitespace,             // 4
+                    keyword("%"),           // 3
+                    whitespace,             // 2
+                    ref("UnaryExpression"), // 1 = right
+                    pos,                    // 0 = end
                     popAboveAndMakeNode(5,"Modulo",6,0,[5,1]),
                 ]),
             ]),
@@ -1175,33 +1171,33 @@ function MultiplicativeExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.7
 
 // AdditiveExpression
 
-function AdditiveExpression(b: Builder): void {
+grm.define("AdditiveExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                              // 6 = start
-            MultiplicativeExpression,         // 5 = left
+            pos,                                     // 6 = start
+            ref("MultiplicativeExpression"),         // 5 = left
             repeatChoice([
                 items([
-                    whitespace,               // 4
-                    keyword("+"),          // 3
-                    whitespace,               // 2
-                    MultiplicativeExpression, // 1 = right
-                    pos,                      // 0 = end
+                    whitespace,                      // 4
+                    keyword("+"),                    // 3
+                    whitespace,                      // 2
+                    ref("MultiplicativeExpression"), // 1 = right
+                    pos,                             // 0 = end
                     popAboveAndMakeNode(5,"Add",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,               // 4
-                    keyword("-"),          // 3
-                    whitespace,               // 2
-                    MultiplicativeExpression, // 1 = right
-                    pos,                      // 0 = end
+                    whitespace,                      // 4
+                    keyword("-"),                    // 3
+                    whitespace,                      // 2
+                    ref("MultiplicativeExpression"), // 1 = right
+                    pos,                             // 0 = end
                     popAboveAndMakeNode(5,"Subtract",6,0,[5,1]),
                 ]),
             ]),
@@ -1211,41 +1207,41 @@ function AdditiveExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.8
 
 // ShiftExpression
 
-function ShiftExpression(b: Builder): void {
+grm.define("ShiftExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                        // 6 = start
-            AdditiveExpression,         // 5 = left
+            pos,                               // 6 = start
+            ref("AdditiveExpression"),         // 5 = left
             repeatChoice([
                 items([
-                    whitespace,         // 4
-                    keyword("<<"),   // 3
-                    whitespace,         // 2
-                    AdditiveExpression, // 1 = right
-                    pos,                // 0 = end
+                    whitespace,                // 4
+                    keyword("<<"),             // 3
+                    whitespace,                // 2
+                    ref("AdditiveExpression"), // 1 = right
+                    pos,                       // 0 = end
                     popAboveAndMakeNode(5,"LeftShift",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,         // 4
-                    keyword(">>>"),  // 3
-                    whitespace,         // 2
-                    AdditiveExpression, // 1 = right
-                    pos,                // 0 = end
+                    whitespace,                // 4
+                    keyword(">>>"),            // 3
+                    whitespace,                // 2
+                    ref("AdditiveExpression"), // 1 = right
+                    pos,                       // 0 = end
                     popAboveAndMakeNode(5,"UnsignedRightShift",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,         // 4
-                    keyword(">>"),   // 3
-                    whitespace,         // 2
-                    AdditiveExpression, // 1 = right
-                    pos,                // 0 = end
+                    whitespace,                // 4
+                    keyword(">>"),             // 3
+                    whitespace,                // 2
+                    ref("AdditiveExpression"), // 1 = right
+                    pos,                       // 0 = end
                     popAboveAndMakeNode(5,"SignedRightShift",6,0,[5,1]),
                 ]),
             ]),
@@ -1255,75 +1251,75 @@ function ShiftExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.9
 
 // RelationalExpression
 
-function RelationalExpression(b: Builder): void {
+grm.define("RelationalExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 6 = start
-            ShiftExpression,     // 5 = left
+            pos,                            // 6 = start
+            ref("ShiftExpression"),         // 5 = left
             repeatChoice([
                 items([
-                    whitespace,       // 4
-                    keyword("<="), // 3
-                    whitespace,       // 2
-                    ShiftExpression,  // 1 = right
-                    pos,              // 0 = end
+                    whitespace,             // 4
+                    keyword("<="),          // 3
+                    whitespace,             // 2
+                    ref("ShiftExpression"), // 1 = right
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"LessEqual",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,       // 4
-                    keyword(">="), // 3
-                    whitespace,       // 2
-                    ShiftExpression,  // 1 = right
-                    pos,              // 0 = end
+                    whitespace,             // 4
+                    keyword(">="),          // 3
+                    whitespace,             // 2
+                    ref("ShiftExpression"), // 1 = right
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"GreaterEqual",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,      // 4
-                    keyword("<"), // 3
-                    whitespace,      // 2
-                    ShiftExpression, // 1 = right
-                    pos,             // 0 = end
+                    whitespace,             // 4
+                    keyword("<"),           // 3
+                    whitespace,             // 2
+                    ref("ShiftExpression"), // 1 = right
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"LessThan",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,      // 4
-                    keyword(">"), // 3
-                    whitespace,      // 2
-                    ShiftExpression, // 1 = right
-                    pos,             // 0 = end
+                    whitespace,             // 4
+                    keyword(">"),           // 3
+                    whitespace,             // 2
+                    ref("ShiftExpression"), // 1 = right
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"GreaterThan",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,            // 4
-                    keyword("instanceof"), // 3
-                    whitespace,            // 2
-                    ShiftExpression,       // 1 = right
-                    pos,                   // 0 = end
+                    whitespace,             // 4
+                    keyword("instanceof"),  // 3
+                    whitespace,             // 2
+                    ref("ShiftExpression"), // 1 = right
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"InstanceOf",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,      // 4
-                    keyword("in"),   // 3
-                    whitespace,      // 2
-                    ShiftExpression, // 1 = right
-                    pos,             // 0 = end
+                    whitespace,             // 4
+                    keyword("in"),          // 3
+                    whitespace,             // 2
+                    ref("ShiftExpression"), // 1 = right
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"In",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
@@ -1335,55 +1331,55 @@ function RelationalExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.10
 
 // EqualityExpression
 
-function EqualityExpression(b: Builder): void {
+grm.define("EqualityExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                          // 6 = start
-            RelationalExpression,         // 5 = left
+            pos,                                 // 6 = start
+            ref("RelationalExpression"),         // 5 = left
             repeatChoice([
                 items([
-                    whitespace,           // 4
-                    keyword("==="),    // 3
-                    whitespace,           // 2
-                    RelationalExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("==="),              // 3
+                    whitespace,                  // 2
+                    ref("RelationalExpression"), // 1 = right
+                    pos,                         // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"StrictEquals",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("!=="),    // 3
-                    whitespace,           // 2
-                    RelationalExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("!=="),              // 3
+                    whitespace,                  // 2
+                    ref("RelationalExpression"), // 1 = right
+                    pos,                         // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"StrictNotEquals",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("=="),     // 3
-                    whitespace,           // 2
-                    RelationalExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("=="),               // 3
+                    whitespace,                  // 2
+                    ref("RelationalExpression"), // 1 = right
+                    pos,                         // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"AbstractEquals",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("!="),     // 3
-                    whitespace,           // 2
-                    RelationalExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("!="),               // 3
+                    whitespace,                  // 2
+                    ref("RelationalExpression"), // 1 = right
+                    pos,                         // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(5,"AbstractNotEquals",6,0,[5,1]),
                     assertLengthIs(oldLength+2),
@@ -1395,24 +1391,24 @@ function EqualityExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.11
 
 // BitwiseANDExpression
 
-function BitwiseANDExpression(b: Builder): void {
+grm.define("BitwiseANDExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                        // 6 = start
-            EqualityExpression,         // 5 = left
+            pos,                           // 6 = start
+            ref("EqualityExpression"),     // 5 = left
             repeat(items([
-                whitespace,         // 4
-                keyword("&"),    // 3
-                whitespace,         // 2
-                EqualityExpression, // 1 = right
-                pos,                // 0 = end
+                whitespace,                // 4
+                keyword("&"),              // 3
+                whitespace,                // 2
+                ref("EqualityExpression"), // 1 = right
+                pos,                       // 0 = end
                 popAboveAndMakeNode(5,"BitwiseAND",6,0,[5,1]),
             ])),
             assertLengthIs(oldLength+2),
@@ -1421,22 +1417,22 @@ function BitwiseANDExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BitwiseXORExpression
 
-function BitwiseXORExpression(b: Builder): void {
+grm.define("BitwiseXORExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                          // 6 = start
-            BitwiseANDExpression,         // 5 = left
+            pos,                             // 6 = start
+            ref("BitwiseANDExpression"),     // 5 = left
             repeat(items([
-                whitespace,           // 4
-                keyword("^"),      // 3
-                whitespace,           // 2
-                BitwiseANDExpression, // 1 = right
-                pos,                  // 0 = end
+                whitespace,                  // 4
+                keyword("^"),                // 3
+                whitespace,                  // 2
+                ref("BitwiseANDExpression"), // 1 = right
+                pos,                         // 0 = end
                 popAboveAndMakeNode(5,"BitwiseXOR",6,0,[5,1]),
             ])),
             assertLengthIs(oldLength+2),
@@ -1445,22 +1441,22 @@ function BitwiseXORExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BitwiseORExpression
 
-function BitwiseORExpression(b: Builder): void {
+grm.define("BitwiseORExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                      // 6 = start
-            BitwiseXORExpression,     // 5 = left
+            pos,                             // 6 = start
+            ref("BitwiseXORExpression"),     // 5 = left
             repeat(items([
-                whitespace,           // 4
-                keyword("|"),      // 3
-                whitespace,           // 2
-                BitwiseXORExpression, // 1 = right
-                pos,                  // 0 = end
+                whitespace,                  // 4
+                keyword("|"),                // 3
+                whitespace,                  // 2
+                ref("BitwiseXORExpression"), // 1 = right
+                pos,                         // 0 = end
                 popAboveAndMakeNode(5,"BitwiseOR",6,0,[5,1]),
             ])),
             assertLengthIs(oldLength+2),
@@ -1469,24 +1465,24 @@ function BitwiseORExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.12
 
 // LogicalANDExpression
 
-function LogicalANDExpression(b: Builder): void {
+grm.define("LogicalANDExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                     // 6 = start
-            BitwiseORExpression,     // 5 = left
+            pos,                            // 6 = start
+            ref("BitwiseORExpression"),     // 5 = left
             repeat(items([
-                whitespace,          // 4
-                keyword("&&"),    // 3
-                whitespace,          // 2
-                BitwiseORExpression, // 1 = right
-                pos,                 // 0 = end
+                whitespace,                 // 4
+                keyword("&&"),              // 3
+                whitespace,                 // 2
+                ref("BitwiseORExpression"), // 1 = right
+                pos,                        // 0 = end
                 popAboveAndMakeNode(5,"LogicalAND",6,0,[5,1]),
             ])),
             assertLengthIs(oldLength+2),
@@ -1495,22 +1491,22 @@ function LogicalANDExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // LogicalORExpression
 
-function LogicalORExpression(b: Builder): void {
+grm.define("LogicalORExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                      // 6 = start
-            LogicalANDExpression,     // 5 = left
+            pos,                             // 6 = start
+            ref("LogicalANDExpression"),     // 5 = left
             repeat(items([
-                whitespace,           // 4
-                keyword("||"),     // 3
-                whitespace,           // 2
-                LogicalANDExpression, // 1 = right
-                pos,                  // 0 = end
+                whitespace,                  // 4
+                keyword("||"),               // 3
+                whitespace,                  // 2
+                ref("LogicalANDExpression"), // 1 = right
+                pos,                         // 0 = end
                 popAboveAndMakeNode(5,"LogicalOR",6,0,[5,1]),
             ])),
             assertLengthIs(oldLength+2),
@@ -1519,29 +1515,29 @@ function LogicalORExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.13
 
 // ConditionalExpression
 
-function ConditionalExpression(b: Builder): void {
+grm.define("ConditionalExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                          // 10 = start
-            LogicalORExpression,          // 9 = condition
+            pos,                                 // 10 = start
+            ref("LogicalORExpression"),          // 9 = condition
             choice([
                 items([
-                    whitespace,           // 8
-                    keyword("?"),      // 7
-                    whitespace,           // 6
-                    AssignmentExpression, // 5 = trueExpr
-                    whitespace,           // 4
-                    keyword(":"),      // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = falseExpr
-                    pos,                  // 0 = end
+                    whitespace,                  // 8
+                    keyword("?"),                // 7
+                    whitespace,                  // 6
+                    ref("AssignmentExpression"), // 5 = trueExpr
+                    whitespace,                  // 4
+                    keyword(":"),                // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = falseExpr
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(9,"Conditional",10,0,[9,5,1]),
                 ]),
                 items([]),
@@ -1552,113 +1548,113 @@ function ConditionalExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 12.14
 
 // AssignmentExpression_plain
 
-function AssignmentExpression_plain(b: Builder): void {
+grm.define("AssignmentExpression_plain",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                          // 6 = start
-            LeftHandSideExpression,       // 5 = left
+            pos,                                 // 6 = start
+            ref("LeftHandSideExpression"),       // 5 = left
             choice([
                 items([
-                    whitespace,           // 4
-                    keyword("="),      // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("="),                // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"Assign",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("*="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("*="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignMultiply",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("/="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("/="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignDivide",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("%="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("%="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignModulo",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("+="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("+="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignAdd",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("-="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("-="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignSubtract",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("<<="),    // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("<<="),              // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignLeftShift",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword(">>="),    // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword(">>="),              // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignSignedRightShift",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword(">>>="),   // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword(">>>="),             // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignUnsignedRightShift",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("&="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("&="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignBitwiseAND",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("^="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("^="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignBitwiseXOR",6,0,[5,1]),
                 ]),
                 items([
-                    whitespace,           // 4
-                    keyword("|="),     // 3
-                    whitespace,           // 2
-                    AssignmentExpression, // 1 = right
-                    pos,                  // 0 = end
+                    whitespace,                  // 4
+                    keyword("|="),               // 3
+                    whitespace,                  // 2
+                    ref("AssignmentExpression"), // 1 = right
+                    pos,                         // 0 = end
                     popAboveAndMakeNode(5,"AssignBitwiseOR",6,0,[5,1]),
                 ]),
             ]),
@@ -1668,41 +1664,41 @@ function AssignmentExpression_plain(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // AssignmentExpression
 
-function AssignmentExpression(b: Builder): void {
+grm.define("AssignmentExpression",(b: Builder): void => {
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
     const oldLength = b.length;
     b.items([
         choice([
-            ArrowFunction,
-            AssignmentExpression_plain,
-            ConditionalExpression,
-            YieldExpression,
+            ref("ArrowFunction"),
+            ref("AssignmentExpression_plain"),
+            ref("ConditionalExpression"),
+            ref("YieldExpression"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 12.15
 
 // Expression
 
-function Expression(b: Builder): void {
+grm.define("Expression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                  // 6 = start
-            AssignmentExpression, // 5 = left
+            pos,                             // 6 = start
+            ref("AssignmentExpression"),     // 5 = left
             repeat(items([
-                whitespace,           // 4
-                keyword(","),      // 3
-                whitespace,           // 2
-                AssignmentExpression, // 1 = right
-                pos,                  // 0 = end
+                whitespace,                  // 4
+                keyword(","),                // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
                 popAboveAndMakeNode(5,"Comma",6,0,[5,1]),
             ])),
             assertLengthIs(oldLength+2),
@@ -1711,94 +1707,94 @@ function Expression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13
 
 // Statement
 
-function Statement(b: Builder): void {
+grm.define("Statement",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            BlockStatement,
-            VariableStatement,
-            EmptyStatement,
-            ExpressionStatement,
-            IfStatement,
-            BreakableStatement,
-            ContinueStatement,
-            BreakStatement,
-            ReturnStatement,
-            WithStatement,
-            LabelledStatement,
-            ThrowStatement,
-            TryStatement,
-            DebuggerStatement,
+            ref("BlockStatement"),
+            ref("VariableStatement"),
+            ref("EmptyStatement"),
+            ref("ExpressionStatement"),
+            ref("IfStatement"),
+            ref("BreakableStatement"),
+            ref("ContinueStatement"),
+            ref("BreakStatement"),
+            ref("ReturnStatement"),
+            ref("WithStatement"),
+            ref("LabelledStatement"),
+            ref("ThrowStatement"),
+            ref("TryStatement"),
+            ref("DebuggerStatement"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Declaration
 
-function Declaration(b: Builder): void {
+grm.define("Declaration",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            HoistableDeclaration,
-            ClassDeclaration,
-            LexicalDeclaration,
+            ref("HoistableDeclaration"),
+            ref("ClassDeclaration"),
+            ref("LexicalDeclaration"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // HoistableDeclaration
 
-function HoistableDeclaration(b: Builder): void {
+grm.define("HoistableDeclaration",(b: Builder): void => {
     b.item(choice([
-        FunctionDeclaration,
-        GeneratorDeclaration,
+        ref("FunctionDeclaration"),
+        ref("GeneratorDeclaration"),
     ]));
-}
+});
 
 // BreakableStatement
 
-function BreakableStatement(b: Builder): void {
+grm.define("BreakableStatement",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            IterationStatement,
-            SwitchStatement,
+            ref("IterationStatement"),
+            ref("SwitchStatement"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.2
 
 // BlockStatement
 
-function BlockStatement(b: Builder): void {
-    b.item(Block);
-}
+grm.define("BlockStatement",(b: Builder): void => {
+    b.item(ref("Block"));
+});
 
 // Block
 
-function Block(b: Builder): void {
+grm.define("Block",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 5
+            pos,              // 5
             keyword("{"),     // 4
-            whitespace,          // 3
-            choice([             // 2 = statements
+            whitespace,       // 3
+            choice([          // 2 = statements
                 items([
-                    StatementList,
+                    ref("StatementList"),
                     whitespace,
                     popAboveAndReplace(1,1),
                 ]),
@@ -1808,25 +1804,25 @@ function Block(b: Builder): void {
                 ]),
             ]),
             keyword("}"),     // 1
-            pos,                 // 0
+            pos,              // 0
             popAboveAndMakeNode(5,"Block",5,0,[2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // StatementList
 
-function StatementList(b: Builder): void {
+grm.define("StatementList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                StatementListItem,
+                ref("StatementListItem"),
                 items([
                     whitespace,
-                    StatementListItem,
+                    ref("StatementListItem"),
                     popAboveAndReplace(1,0),
                 ]),
             ),
@@ -1834,49 +1830,49 @@ function StatementList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // StatementListItem
 
-function StatementListItem(b: Builder): void {
+grm.define("StatementListItem",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            Statement,
-            Declaration,
+            ref("Statement"),
+            ref("Declaration"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.3.1
 
 // LexicalDeclaration
 
-function LexicalDeclaration(b: Builder): void {
+grm.define("LexicalDeclaration",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,              // 6 = start
-                    keyword("let"),   // 5
-                    whitespace,       // 4
-                    BindingList,      // 3 = bindings
-                    whitespace,       // 2
-                    keyword(";"),  // 1
-                    pos,              // 0 = end
+                    pos,                // 6 = start
+                    keyword("let"),     // 5
+                    whitespace,         // 4
+                    ref("BindingList"), // 3 = bindings
+                    whitespace,         // 2
+                    keyword(";"),       // 1
+                    pos,                // 0 = end
                     popAboveAndMakeNode(6,"Let",6,0,[3]),
                 ]),
                 items([
-                    pos,              // 6 = start
-                    keyword("const"), // 5
-                    whitespace,       // 4
-                    BindingList,      // 3 = bindings
-                    whitespace,       // 2
-                    keyword(";"),  // 1
-                    pos,              // 0 = end
+                    pos,                // 6 = start
+                    keyword("const"),   // 5
+                    whitespace,         // 4
+                    ref("BindingList"), // 3 = bindings
+                    whitespace,         // 2
+                    keyword(";"),       // 1
+                    pos,                // 0 = end
                     popAboveAndMakeNode(6,"Const",6,0,[3]),
                 ]),
             ]),
@@ -1884,21 +1880,21 @@ function LexicalDeclaration(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BindingList
 
-function BindingList(b: Builder): void {
+grm.define("BindingList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                LexicalBinding,
+                ref("LexicalBinding"),
                 items([
                     whitespace,
                     keyword(","),
                     whitespace,
-                    LexicalBinding,
+                    ref("LexicalBinding"),
                     popAboveAndReplace(3,0),
                 ]),
             ),
@@ -1906,98 +1902,98 @@ function BindingList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // LexicalBinding_identifier
 
-function LexicalBinding_identifier(b: Builder): void {
+grm.define("LexicalBinding_identifier",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,               // 3 = start
-            BindingIdentifier, // 2 = identifier
-            opt(items([        // 1 = initializer
+            pos,                      // 3 = start
+            ref("BindingIdentifier"), // 2 = identifier
+            opt(items([               // 1 = initializer
                 whitespace,
-                Initializer,
+                ref("Initializer"),
                 popAboveAndReplace(1,0),
             ])),
-            pos,               // 0 = end
+            pos,                      // 0 = end
             assertLengthIs(oldLength+4),
             popAboveAndMakeNode(3,"LexicalIdentifierBinding",3,0,[2,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // LexicalBinding_pattern
 
-function LexicalBinding_pattern(b: Builder): void {
+grm.define("LexicalBinding_pattern",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,            // 4 = start
-            BindingPattern, // 3 = pattern
-            whitespace,     // 2
-            Initializer,    // 1 = initializer
-            pos,            // 0 = end
+            pos,                   // 4 = start
+            ref("BindingPattern"), // 3 = pattern
+            whitespace,            // 2
+            ref("Initializer"),    // 1 = initializer
+            pos,                   // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"LexicalPatternBinding",4,0,[3,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // LexicalBinding
 
-function LexicalBinding(b: Builder): void {
+grm.define("LexicalBinding",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            LexicalBinding_identifier,
-            LexicalBinding_pattern,
+            ref("LexicalBinding_identifier"),
+            ref("LexicalBinding_pattern"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.3.2
 
 // VariableStatement
 
-function VariableStatement(b: Builder): void {
+grm.define("VariableStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                     // 6 = start
-            keyword("var"),          // 5
-            whitespace,              // 4
-            VariableDeclarationList, // 3 = declarations
-            whitespace,              // 2
-            keyword(";"),         // 1
-            pos,                     // 0 = end
+            pos,                            // 6 = start
+            keyword("var"),                 // 5
+            whitespace,                     // 4
+            ref("VariableDeclarationList"), // 3 = declarations
+            whitespace,                     // 2
+            keyword(";"),                   // 1
+            pos,                            // 0 = end
             popAboveAndMakeNode(6,"Var",6,0,[3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // VariableDeclarationList
 
-function VariableDeclarationList(b: Builder): void {
+grm.define("VariableDeclarationList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                VariableDeclaration,
+                ref("VariableDeclaration"),
                 items([
                     whitespace,
                     keyword(","),
                     whitespace,
-                    VariableDeclaration,
+                    ref("VariableDeclaration"),
                     popAboveAndReplace(3,0),
                 ]),
             ),
@@ -2005,20 +2001,20 @@ function VariableDeclarationList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // VariableDeclaration_identifier
 
-function VariableDeclaration_identifier(b: Builder): void {
+grm.define("VariableDeclaration_identifier",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
-            BindingIdentifier,
+            ref("BindingIdentifier"),
             choice([
                 items([
                     whitespace,
-                    Initializer,
+                    ref("Initializer"),
                     pos,
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"VarIdentifier",4,0,[3,1]),
@@ -2034,70 +2030,70 @@ function VariableDeclaration_identifier(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // VariableDeclaration_pattern
 
-function VariableDeclaration_pattern(b: Builder): void {
+grm.define("VariableDeclaration_pattern",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,            // 4 = start
-            BindingPattern, // 3 = pattern
-            whitespace,     // 2
-            Initializer,    // 1 = initializer
-            pos,            // 0 = end
+            pos,                   // 4 = start
+            ref("BindingPattern"), // 3 = pattern
+            whitespace,            // 2
+            ref("Initializer"),    // 1 = initializer
+            pos,                   // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"VarPattern",4,0,[3,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // VariableDeclaration
 
-function VariableDeclaration(b: Builder): void {
+grm.define("VariableDeclaration",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            VariableDeclaration_identifier,
-            VariableDeclaration_pattern,
+            ref("VariableDeclaration_identifier"),
+            ref("VariableDeclaration_pattern"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.3.3
 
 // BindingPattern
 
-function BindingPattern(b: Builder): void {
+grm.define("BindingPattern",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            ObjectBindingPattern,
-            ArrayBindingPattern,
+            ref("ObjectBindingPattern"),
+            ref("ArrayBindingPattern"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ObjectBindingPattern
 
-function ObjectBindingPattern(b: Builder): void {
+grm.define("ObjectBindingPattern",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                  // 6 = start
+            pos,               // 6 = start
             keyword("{"),      // 5
-            whitespace,           // 4
-            pos,                  // 3
-            choice([              // 2 = properties
+            whitespace,        // 4
+            pos,               // 3
+            choice([           // 2 = properties
                 items([
-                    BindingPropertyList,
+                    ref("BindingPropertyList"),
                     whitespace,
                     opt(items([
                         keyword(","),
@@ -2112,54 +2108,54 @@ function ObjectBindingPattern(b: Builder): void {
                 ])
             ]),
             keyword("}"),      // 1
-            pos,                  // 0 = end
+            pos,               // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ObjectBindingPattern",6,0,[2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ArrayBindingPattern
 
-function ArrayBindingPattern(b: Builder): void {
+grm.define("ArrayBindingPattern",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 7 = start
-            keyword("["),     // 6
-            whitespace,          // 5
-            BindingElementList,  // 4 = elements
-            whitespace,          // 3
-            opt(items([          // 2 = rest
-                BindingRestElement,
+            pos,                       // 7 = start
+            keyword("["),              // 6
+            whitespace,                // 5
+            ref("BindingElementList"), // 4 = elements
+            whitespace,                // 3
+            opt(items([                // 2 = rest
+                ref("BindingRestElement"),
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            keyword("]"),     // 1
-            pos,                 // 0 = end
+            keyword("]"),              // 1
+            pos,                       // 0 = end
             assertLengthIs(oldLength+8),
             popAboveAndMakeNode(7,"ArrayBindingPattern",7,0,[4,2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BindingPropertyList
 
-function BindingPropertyList(b: Builder): void {
+grm.define("BindingPropertyList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                BindingProperty,
+                ref("BindingProperty"),
                 items([
                     whitespace,
                     keyword(","),
                     whitespace,
-                    BindingProperty,
+                    ref("BindingProperty"),
                     popAboveAndReplace(3,0),
                 ])
             ),
@@ -2167,11 +2163,11 @@ function BindingPropertyList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BindingElementList
 
-function BindingElementList(b: Builder): void {
+grm.define("BindingElementList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -2184,15 +2180,15 @@ function BindingElementList(b: Builder): void {
                 ])),
                 choice([
                     items([
-                        whitespace,      // 3
-                        pos,             // 2 = before
+                        whitespace,   // 3
+                        pos,          // 2 = before
                         keyword(","), // 1
-                        pos,             // 0 = after
+                        pos,          // 0 = after
                         popAboveAndMakeNode(3,"Elision",2,0,[]),
                     ]),
                     items([
                         whitespace,
-                        BindingElement,
+                        ref("BindingElement"),
                         opt(items([
                             whitespace,
                             keyword(","),
@@ -2206,51 +2202,51 @@ function BindingElementList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BindingProperty
 
-function BindingProperty(b: Builder): void {
+grm.define("BindingProperty",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,             // 6 = start
-                    PropertyName,    // 5 = name
-                    whitespace,      // 4
-                    keyword(":"), // 3
-                    whitespace,      // 2
-                    BindingElement,  // 1 = element
-                    pos,             // 0 = end
+                    pos,                   // 6 = start
+                    ref("PropertyName"),   // 5 = name
+                    whitespace,            // 4
+                    keyword(":"),          // 3
+                    whitespace,            // 2
+                    ref("BindingElement"), // 1 = element
+                    pos,                   // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"BindingProperty",6,0,[5,1]),
                 ]),
                 // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
                 // and PropertyName will match an identifier at the start of a colon binding
-                SingleNameBinding,
+                ref("SingleNameBinding"),
             ]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BindingElement
 
-function BindingElement(b: Builder): void {
+grm.define("BindingElement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
-                SingleNameBinding,
+                ref("SingleNameBinding"),
                 items([
                     pos,
-                    BindingPattern,
+                    ref("BindingPattern"),
                     choice([
                         items([
                             whitespace,
-                            Initializer,
+                            ref("Initializer"),
                             pos,
                             assertLengthIs(oldLength+5),
                             popAboveAndMakeNode(4,"BindingPatternInit",4,0,[3,1]),
@@ -2263,20 +2259,20 @@ function BindingElement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // SingleNameBinding
 
-function SingleNameBinding(b: Builder): void {
+grm.define("SingleNameBinding",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
-            BindingIdentifier,
+            ref("BindingIdentifier"),
             choice([
                 items([
                     whitespace,
-                    Initializer,
+                    ref("Initializer"),
                     pos,
                     popAboveAndMakeNode(2,"SingleNameBinding",4,0,[3,1]),
                 ]),
@@ -2291,32 +2287,32 @@ function SingleNameBinding(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // BindingRestElement
 
-function BindingRestElement(b: Builder): void {
+grm.define("BindingRestElement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,               // 4 = start
-            keyword("..."), // 3
-            whitespace,        // 2
-            BindingIdentifier, // 1 = ident
-            pos,               // 0 = end
+            pos,                      // 4 = start
+            keyword("..."),           // 3
+            whitespace,               // 2
+            ref("BindingIdentifier"), // 1 = ident
+            pos,                      // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"BindingRestElement",4,0,[1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.4
 
 // EmptyStatement
 
-function EmptyStatement(b: Builder): void {
+grm.define("EmptyStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -2329,13 +2325,13 @@ function EmptyStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.5
 
 // ExpressionStatement
 
-function ExpressionStatement(b: Builder): void {
+grm.define("ExpressionStatement",(b: Builder): void => {
     const p = b.parser;
     const start2 = p.pos;
 
@@ -2356,42 +2352,42 @@ function ExpressionStatement(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,             // 4 = start
-            Expression,      // 3 = expr
-            whitespace,      // 2
-            keyword(";"), // 1
-            pos,             // 0 = end
+            pos,               // 4 = start
+            ref("Expression"), // 3 = expr
+            whitespace,        // 2
+            keyword(";"),      // 1
+            pos,               // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"ExpressionStatement",4,0,[3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.6
 
 // IfStatement
 
-function IfStatement(b: Builder): void {
+grm.define("IfStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 11 = start
             keyword("if"),     // 10
             whitespace,        // 9
-            keyword("("),   // 8
+            keyword("("),      // 8
             whitespace,        // 7
-            Expression,        // 6 = condition
+            ref("Expression"), // 6 = condition
             whitespace,        // 5
-            keyword(")"),   // 4
+            keyword(")"),      // 4
             whitespace,        // 3
-            Statement,         // 2 = trueBranch
+            ref("Statement"),  // 2 = trueBranch
             opt(items([        // 1 = falseBranch
                 whitespace,
                 keyword("else"),
                 whitespace,
-                Statement,
+                ref("Statement"),
                 popAboveAndReplace(3,0),
             ])),
             pos,               // 0 = end
@@ -2401,55 +2397,55 @@ function IfStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.7
 
 // IterationStatement_do
 
-function IterationStatement_do(b: Builder): void {
+grm.define("IterationStatement_do",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,              // 14
-            keyword("do"),    // 13
-            whitespace,       // 12
-            Statement,        // 11 = body
-            whitespace,       // 10
-            keyword("while"), // 9
-            whitespace,       // 8
-            keyword("("),  // 7
-            whitespace,       // 6
-            Expression,       // 5 = condition
-            whitespace,       // 4
-            keyword(")"),  // 3
-            whitespace,       // 2
-            keyword(";"),  // 1 = end
-            pos,              // 0 = start
+            pos,               // 14
+            keyword("do"),     // 13
+            whitespace,        // 12
+            ref("Statement"),  // 11 = body
+            whitespace,        // 10
+            keyword("while"),  // 9
+            whitespace,        // 8
+            keyword("("),      // 7
+            whitespace,        // 6
+            ref("Expression"), // 5 = condition
+            whitespace,        // 4
+            keyword(")"),      // 3
+            whitespace,        // 2
+            keyword(";"),      // 1 = end
+            pos,               // 0 = start
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"DoStatement",14,0,[11,5]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // IterationStatement_while
 
-function IterationStatement_while(b: Builder): void {
+grm.define("IterationStatement_while",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                // 10 = start
             keyword("while"),   // 9
             whitespace,         // 8
-            keyword("("),    // 7
+            keyword("("),       // 7
             whitespace,         // 6
-            Expression,         // 5 = condition
+            ref("Expression"),  // 5 = condition
             whitespace,         // 4
-            keyword(")"),    // 3
+            keyword(")"),       // 3
             whitespace,         // 2
-            Statement,          // 1 = body
+            ref("Statement"),   // 1 = body
             pos,                // 0 = end
             assertLengthIs(oldLength+11),
             popAboveAndMakeNode(10,"WhileStatement",10,0,[5,1]),
@@ -2457,11 +2453,11 @@ function IterationStatement_while(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // IterationStatement_for_c
 
-function IterationStatement_for_c(b: Builder): void {
+grm.define("IterationStatement_for_c",(b: Builder): void => {
     // for ( [lookahead ∉ {let [}] Expression-opt ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
@@ -2469,35 +2465,35 @@ function IterationStatement_for_c(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                                                            // 14 = start
-            keyword("for"),                                                 // 13
-            whitespace,                                                     // 12
-            keyword("("),                                                // 11
-            whitespace,                                                     // 10
+            pos,                                    // 14 = start
+            keyword("for"),                         // 13
+            whitespace,                             // 12
+            keyword("("),                           // 11
+            whitespace,                             // 10
             assertLengthIs(oldLength+5),
             choice([
                 items([
                     notKeyword("let"), // FIXME: need tests for this
                     notKeyword("["), // FIXME: need tests for this
-                    Expression,
+                    ref("Expression"),
                     whitespace,
                     keyword(";"),
                     whitespace,
                     popAboveAndReplace(5,3),
                 ]),
                 items([
-                    pos,                     // 7 = start2
-                    keyword("var"),          // 6
-                    whitespace,              // 5
-                    VariableDeclarationList, // 4 = declarations
-                    pos,                     // 3 = end
-                    whitespace,              // 2
-                    keyword(";"),         // 1
-                    whitespace,              // 0
+                    pos,                            // 7 = start2
+                    keyword("var"),                 // 6
+                    whitespace,                     // 5
+                    ref("VariableDeclarationList"), // 4 = declarations
+                    pos,                            // 3 = end
+                    whitespace,                     // 2
+                    keyword(";"),                   // 1
+                    whitespace,                     // 0
                     popAboveAndMakeNode(7,"Var",7,3,[4]),
                 ]),
                 items([
-                    LexicalDeclaration,
+                    ref("LexicalDeclaration"),
                     whitespace,
                     popAboveAndReplace(1,1),
                 ]),
@@ -2508,30 +2504,30 @@ function IterationStatement_for_c(b: Builder): void {
                 ]),
             ]),
             assertLengthIs(oldLength+6),
-            opt(Expression), // 8 = condition
-            whitespace,      // 7
-            keyword(";"), // 6
-            whitespace,      // 5
+            opt(ref("Expression")), // 8 = condition
+            whitespace,             // 7
+            keyword(";"),           // 6
+            whitespace,             // 5
             opt(items([
-                Expression,
+                ref("Expression"),
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            keyword(")"), // 3
-            whitespace,      // 2
-            Statement,       // 1 = body
-            pos,             // 0 = end
+            keyword(")"),           // 3
+            whitespace,             // 2
+            ref("Statement"),       // 1 = body
+            pos,                    // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"ForC",14,0,[9,8,4,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // IterationStatement_for_in
 
-function IterationStatement_for_in(b: Builder): void {
+grm.define("IterationStatement_for_in",(b: Builder): void => {
     // for ( [lookahead ∉ {let [}] LeftHandSideExpression in Expression )             Statement[?Yield, ?Return]
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
@@ -2539,50 +2535,50 @@ function IterationStatement_for_in(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                                           // 14 = start
-            keyword("for"),                                // 13
-            whitespace,                                    // 12
-            keyword("("),                               // 11
-            whitespace,                                    // 10
+            pos,                       // 14 = start
+            keyword("for"),            // 13
+            whitespace,                // 12
+            keyword("("),              // 11
+            whitespace,                // 10
             assertLengthIs(oldLength+5),
-            choice([ // 9 = binding
+            choice([                   // 9 = binding
                 items([
                     notKeyword("let"), // FIXME: need tests for this
                     notKeyword("["), // FIXME: need tests for this
-                    LeftHandSideExpression,
+                    ref("LeftHandSideExpression"),
                     popAboveAndReplace(2,0),
                 ]),
                 items([
                     pos,
                     keyword("var"),
                     whitespace,
-                    ForBinding,
+                    ref("ForBinding"),
                     pos,
                     popAboveAndMakeNode(4,"VarForDeclaration",4,0,[1]),
                 ]),
-                ForDeclaration,
+                ref("ForDeclaration"),
             ]),
             assertLengthIs(oldLength+6),
-            whitespace,                                    // 8
-            keyword("in"),                                 // 7
-            whitespace,                                    // 6
-            Expression,                                    // 5 = expr
-            whitespace,                                    // 4
-            keyword(")"),                               // 3
-            whitespace,                                    // 2
-            Statement,                                     // 1 = body
-            pos,                                           // 0 = end
+            whitespace,                // 8
+            keyword("in"),             // 7
+            whitespace,                // 6
+            ref("Expression"),         // 5 = expr
+            whitespace,                // 4
+            keyword(")"),              // 3
+            whitespace,                // 2
+            ref("Statement"),          // 1 = body
+            pos,                       // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"ForIn",14,0,[9,5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // IterationStatement_for_of
 
-function IterationStatement_for_of(b: Builder): void {
+grm.define("IterationStatement_for_of",(b: Builder): void => {
     // for ( [lookahead ≠ let ] LeftHandSideExpression    of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
@@ -2590,99 +2586,99 @@ function IterationStatement_for_of(b: Builder): void {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                                           // 14 = start
-            keyword("for"),                                // 13
-            whitespace,                                    // 12
-            keyword("("),                               // 11
-            whitespace,                                    // 10
+            pos,                       // 14 = start
+            keyword("for"),            // 13
+            whitespace,                // 12
+            keyword("("),              // 11
+            whitespace,                // 10
             assertLengthIs(oldLength+5),
-            choice([
+            choice([                   // 9
                 items([
                     notKeyword("let"), // FIXME: need tests for this
                     notKeyword("["), // FIXME: need tests for this
-                    LeftHandSideExpression,
+                    ref("LeftHandSideExpression"),
                     popAboveAndReplace(2,0),
                 ]),
                 items([
                     pos,
                     keyword("var"),
                     whitespace,
-                    ForBinding,
+                    ref("ForBinding"),
                     pos,
                     popAboveAndMakeNode(4,"VarForDeclaration",4,0,[1]),
                 ]),
-                ForDeclaration,
+                ref("ForDeclaration"),
             ]),
             assertLengthIs(oldLength+6),
-            whitespace,                                    // 8
-            keyword("of"),                                 // 7
-            whitespace,                                    // 6
-            Expression,                                    // 5 = expr
-            whitespace,                                    // 4
-            keyword(")"),                               // 3
-            whitespace,                                    // 2
-            Statement,                                     // 1 = body
-            pos,                                           // 0 = end
+            whitespace,                // 8
+            keyword("of"),             // 7
+            whitespace,                // 6
+            ref("Expression"),         // 5 = expr
+            whitespace,                // 4
+            keyword(")"),              // 3
+            whitespace,                // 2
+            ref("Statement"),          // 1 = body
+            pos,                       // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"ForOf",14,0,[9,5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // IterationStatement_for
 
-function IterationStatement_for(b: Builder): void {
+grm.define("IterationStatement_for",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            IterationStatement_for_c,
-            IterationStatement_for_in,
-            IterationStatement_for_of,
+            ref("IterationStatement_for_c"),
+            ref("IterationStatement_for_in"),
+            ref("IterationStatement_for_of"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // IterationStatement
 
-function IterationStatement(b: Builder): void {
+grm.define("IterationStatement",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            IterationStatement_do,
-            IterationStatement_while,
-            IterationStatement_for,
+            ref("IterationStatement_do"),
+            ref("IterationStatement_while"),
+            ref("IterationStatement_for"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ForDeclaration
 
-function ForDeclaration(b: Builder): void {
+grm.define("ForDeclaration",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,              // 4 = start
-                    keyword("let"),   // 3
-                    whitespace,       // 2
-                    ForBinding,       // 1 = binding
-                    pos,              // 0 = end
+                    pos,               // 4 = start
+                    keyword("let"),    // 3
+                    whitespace,        // 2
+                    ref("ForBinding"), // 1 = binding
+                    pos,               // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"LetForDeclaration",4,0,[1]),
                 ]),
                 items([
-                    pos,              // 4 = start
-                    keyword("const"), // 3
-                    whitespace,       // 2
-                    ForBinding,       // 1 = binding
-                    pos,              // 0 = end
+                    pos,               // 4 = start
+                    keyword("const"),  // 3
+                    whitespace,        // 2
+                    ref("ForBinding"), // 1 = binding
+                    pos,               // 0 = end
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"ConstForDeclaration",4,0,[1]),
                 ]),
@@ -2691,49 +2687,49 @@ function ForDeclaration(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ForBinding
 
-function ForBinding(b: Builder): void {
+grm.define("ForBinding",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            BindingIdentifier,
-            BindingPattern, // FIXME: Need test cases for this
+            ref("BindingIdentifier"),
+            ref("BindingPattern"), // FIXME: Need test cases for this
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.8
 
 // ContinueStatement
 
-function ContinueStatement(b: Builder): void {
+grm.define("ContinueStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,                 // 5 = start
-                    keyword("continue"), // 4
-                    whitespace,          // 3
-                    value(null),         // 2 = null
-                    keyword(";"),     // 1
-                    pos,                 // 0 = end
+                    pos,                    // 5 = start
+                    keyword("continue"),    // 4
+                    whitespace,             // 3
+                    value(null),            // 2 = null
+                    keyword(";"),           // 1
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"ContinueStatement",5,0,[2]),
                 ]),
                 items([
-                    pos,                 // 6 = start
-                    keyword("continue"), // 5
-                    whitespaceNoNewline, // 4
-                    LabelIdentifier,     // 3 = ident
-                    whitespace,          // 2
-                    keyword(";"),     // 1
-                    pos,                 // 0 = end
+                    pos,                    // 6 = start
+                    keyword("continue"),    // 5
+                    whitespaceNoNewline,    // 4
+                    ref("LabelIdentifier"), // 3 = ident
+                    whitespace,             // 2
+                    keyword(";"),           // 1
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ContinueStatement",6,0,[3]),
                 ]),
@@ -2742,35 +2738,35 @@ function ContinueStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.9
 
 // BreakStatement
 
-function BreakStatement(b: Builder): void {
+grm.define("BreakStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,              // 5 = start
-                    keyword("break"), // 4
-                    whitespace,       // 3
-                    value(null),      // 2 = null
-                    keyword(";"),  // 1
-                    pos,              // 0 = end
+                    pos,                    // 5 = start
+                    keyword("break"),       // 4
+                    whitespace,             // 3
+                    value(null),            // 2 = null
+                    keyword(";"),           // 1
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"BreakStatement",5,0,[2]),
                 ]),
                 items([
-                    pos,                 // 6 = start
-                    keyword("break"),    // 5
-                    whitespaceNoNewline, // 4
-                    LabelIdentifier,     // 3 = ident
-                    whitespace,          // 2
-                    keyword(";"),     // 1
-                    pos,                 // 0 = end
+                    pos,                    // 6 = start
+                    keyword("break"),       // 5
+                    whitespaceNoNewline,    // 4
+                    ref("LabelIdentifier"), // 3 = ident
+                    whitespace,             // 2
+                    keyword(";"),           // 1
+                    pos,                    // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"BreakStatement",6,0,[3]),
                 ]),
@@ -2779,24 +2775,24 @@ function BreakStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.10
 
 // ReturnStatement
 
-function ReturnStatement(b: Builder): void {
+grm.define("ReturnStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,               // 5 = start
-                    keyword("return"), // 4
-                    whitespace,        // 3
-                    value(null),       // 2 = null
-                    keyword(";"),   // 1
-                    pos,               // 0 = end
+                    pos,                 // 5 = start
+                    keyword("return"),   // 4
+                    whitespace,          // 3
+                    value(null),         // 2 = null
+                    keyword(";"),        // 1
+                    pos,                 // 0 = end
                     assertLengthIs(oldLength+6),
                     popAboveAndMakeNode(5,"ReturnStatement",5,0,[2]),
                 ]),
@@ -2804,9 +2800,9 @@ function ReturnStatement(b: Builder): void {
                     pos,                 // 6 = start
                     keyword("return"),   // 5
                     whitespaceNoNewline, // 4
-                    Expression,          // 3 = expr
+                    ref("Expression"),   // 3 = expr
                     whitespace,          // 2
-                    keyword(";"),     // 1
+                    keyword(";"),        // 1
                     pos,                 // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ReturnStatement",6,0,[3]),
@@ -2816,53 +2812,53 @@ function ReturnStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.11
 
 // WithStatement
 
-function WithStatement(b: Builder): void {
+grm.define("WithStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,             // 10 = start
-            keyword("with"), // 9
-            whitespace,      // 8
-            keyword("("), // 7
-            whitespace,      // 6
-            Expression,      // 5 = expr
-            whitespace,      // 4
-            keyword(")"), // 3
-            whitespace,      // 2
-            Statement,       // 1 = body
-            pos,             // 0 = end
+            pos,               // 10 = start
+            keyword("with"),   // 9
+            whitespace,        // 8
+            keyword("("),      // 7
+            whitespace,        // 6
+            ref("Expression"), // 5 = expr
+            whitespace,        // 4
+            keyword(")"),      // 3
+            whitespace,        // 2
+            ref("Statement"),  // 1 = body
+            pos,               // 0 = end
             assertLengthIs(oldLength+11),
             popAboveAndMakeNode(10,"WithStatement",10,0,[5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.12
 
 // SwitchStatement
 
-function SwitchStatement(b: Builder): void {
+grm.define("SwitchStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,               // 10 = start
             keyword("switch"), // 9
             whitespace,        // 8
-            keyword("("),   // 7
+            keyword("("),      // 7
             whitespace,        // 6
-            Expression,        // 5 = expr
+            ref("Expression"), // 5 = expr
             whitespace,        // 4
-            keyword(")"),   // 3
+            keyword(")"),      // 3
             whitespace,        // 2
-            CaseBlock,         // 1 = cases
+            ref("CaseBlock"),  // 1 = cases
             pos,               // 0 = end
             assertLengthIs(oldLength+11),
             popAboveAndMakeNode(10,"SwitchStatement",10,0,[5,1]),
@@ -2870,86 +2866,86 @@ function SwitchStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CaseBlock_1
 
-function CaseBlock_1(b: Builder): void {
+grm.define("CaseBlock_1",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,             // 7
+            pos,          // 7
             keyword("{"), // 6
-            whitespace,      // 5
-            pos,             // 4 = midpos
-            choice([           // 3 = clauses
-                CaseClauses,
+            whitespace,   // 5
+            pos,          // 4 = midpos
+            choice([      // 3 = clauses
+                ref("CaseClauses"),
                 items([
                     pos,
                     popAboveAndMakeEmptyList(0,0,0),
                 ]),
             ]),
-            whitespace,      // 2
+            whitespace,   // 2
             keyword("}"), // 1
-            pos,             // 0
+            pos,          // 0
             assertLengthIs(oldLength+8),
             popAboveAndMakeNode(7,"CaseBlock1",7,0,[3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CaseBlock_2
 
-function CaseBlock_2(b: Builder): void {
+grm.define("CaseBlock_2",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,              // 10 = start
-            keyword("{"),  // 9
-            whitespace,       // 8
-            opt(CaseClauses), // 7 = clauses1
-            whitespace,       // 6
-            DefaultClause,    // 5 = defaultClause
-            whitespace,       // 4
-            opt(CaseClauses), // 3 = clauses2
-            whitespace,       // 2
-            keyword("}"),  // 1
-            pos,              // 0 = end
+            pos,                     // 10 = start
+            keyword("{"),            // 9
+            whitespace,              // 8
+            opt(ref("CaseClauses")), // 7 = clauses1
+            whitespace,              // 6
+            ref("DefaultClause"),    // 5 = defaultClause
+            whitespace,              // 4
+            opt(ref("CaseClauses")), // 3 = clauses2
+            whitespace,              // 2
+            keyword("}"),            // 1
+            pos,                     // 0 = end
             assertLengthIs(oldLength+11),
             popAboveAndMakeNode(10,"CaseBlock2",10,0,[7,5,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CaseBlock
 
-function CaseBlock(b: Builder): void {
+grm.define("CaseBlock",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            CaseBlock_1,
-            CaseBlock_2,
+            ref("CaseBlock_1"),
+            ref("CaseBlock_2"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // CaseClauses
 
-function CaseClauses(b: Builder): void {
+grm.define("CaseClauses",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                CaseClause,
+                ref("CaseClause"),
                 items([
                     whitespace,
-                    CaseClause,
+                    ref("CaseClause"),
                     popAboveAndReplace(1,0),
                 ]),
             ),
@@ -2957,104 +2953,104 @@ function CaseClauses(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CaseClause
 
-function CaseClause(b: Builder): void {
+grm.define("CaseClause",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,             // 8 = start
-            keyword("case"), // 7
-            whitespace,      // 6
-            Expression,      // 5 = expr
-            whitespace,      // 4
-            keyword(":"), // 3
-            whitespace,      // 2
-            StatementList,   // 1 = statements
-            pos,             // 0 = end
+            pos,                  // 8 = start
+            keyword("case"),      // 7
+            whitespace,           // 6
+            ref("Expression"),    // 5 = expr
+            whitespace,           // 4
+            keyword(":"),         // 3
+            whitespace,           // 2
+            ref("StatementList"), // 1 = statements
+            pos,                  // 0 = end
             assertLengthIs(oldLength+9),
             popAboveAndMakeNode(8,"CaseClause",8,0,[5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // DefaultClause
 
-function DefaultClause(b: Builder): void {
+grm.define("DefaultClause",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                // 7 = start
-            keyword("default"), // 6
-            whitespace,         // 5
-            keyword(":"),    // 4
-            whitespace,         // 3
-            StatementList,      // 2 = statements
-            pos,                // 1 = end
-            whitespace,         // 0
+            pos,                  // 7 = start
+            keyword("default"),   // 6
+            whitespace,           // 5
+            keyword(":"),         // 4
+            whitespace,           // 3
+            ref("StatementList"), // 2 = statements
+            pos,                  // 1 = end
+            whitespace,           // 0
             assertLengthIs(oldLength+8),
             popAboveAndMakeNode(7,"DefaultClause",7,1,[2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.13
 
 // LabelledStatement
 
-function LabelledStatement(b: Builder): void {
+grm.define("LabelledStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,             // 6 = start
-            LabelIdentifier, // 5 = ident
-            whitespace,      // 4
-            keyword(":"), // 3
-            whitespace,      // 2
-            LabelledItem,    // 1 = item
-            pos,             // 0 = end
+            pos,                    // 6 = start
+            ref("LabelIdentifier"), // 5 = ident
+            whitespace,             // 4
+            keyword(":"),           // 3
+            whitespace,             // 2
+            ref("LabelledItem"),    // 1 = item
+            pos,                    // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"LabelledStatement",6,0,[5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // LabelledItem
 
-function LabelledItem(b: Builder): void {
+grm.define("LabelledItem",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            Statement,
-            FunctionDeclaration,
+            ref("Statement"),
+            ref("FunctionDeclaration"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.14
 
 // ThrowStatement
 
-function ThrowStatement(b: Builder): void {
+grm.define("ThrowStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 6 = start
             keyword("throw"),    // 5
             whitespaceNoNewline, // 4
-            Expression,          // 3 = expr
+            ref("Expression"),   // 3 = expr
             whitespace,          // 2
-            keyword(";"),     // 1
+            keyword(";"),        // 1
             pos,                 // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ThrowStatement",6,0,[3]),
@@ -3062,32 +3058,32 @@ function ThrowStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 13.15
 
 // TryStatement
 
-function TryStatement(b: Builder): void {
+grm.define("TryStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                         // 7 = start
             keyword("try"),              // 6
             whitespace,                  // 5
-            Block,                       // 4 = tryBlock
+            ref("Block"),                // 4 = tryBlock
             choice([
                 items([
                     whitespace,          // 3
                     value(null),         // 2 = catchBlock
-                    Finally,             // 1 = finallyBlock
+                    ref("Finally"),      // 1 = finallyBlock
                 ]),
                 items([
                     whitespace,          // 3
-                    Catch,               // 2 = catchBlock
+                    ref("Catch"),        // 2 = catchBlock
                     opt(items([          // 1 = finallyBlock
                         whitespace,
-                        Finally,
+                        ref("Finally"),
                         popAboveAndReplace(1,0),
                     ])),
                 ]),
@@ -3099,43 +3095,43 @@ function TryStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Catch
 
-function Catch(b: Builder): void {
+grm.define("Catch",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,              // 10 = start
-            keyword("catch"), // 9
-            whitespace,       // 8
-            keyword("("),  // 7
-            whitespace,       // 6
-            CatchParameter,   // 5 = param
-            whitespace,       // 4
-            keyword(")"),  // 3
-            whitespace,       // 2
-            Block,            // 1 = block
-            pos,              // 0 = end
+            pos,                   // 10 = start
+            keyword("catch"),      // 9
+            whitespace,            // 8
+            keyword("("),          // 7
+            whitespace,            // 6
+            ref("CatchParameter"), // 5 = param
+            whitespace,            // 4
+            keyword(")"),          // 3
+            whitespace,            // 2
+            ref("Block"),          // 1 = block
+            pos,                   // 0 = end
             assertLengthIs(oldLength+11),
             popAboveAndMakeNode(10,"Catch",10,0,[5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Finally
 
-function Finally(b: Builder): void {
+grm.define("Finally",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                // 4
             keyword("finally"), // 3
             whitespace,         // 2
-            Block,              // 1
+            ref("Block"),       // 1
             pos,                // 0
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"Finally",4,0,[1]),
@@ -3143,34 +3139,34 @@ function Finally(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // CatchParameter
 
-function CatchParameter(b: Builder): void {
+grm.define("CatchParameter",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            BindingIdentifier,
-            BindingPattern,
+            ref("BindingIdentifier"),
+            ref("BindingPattern"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 13.16
 
 // DebuggerStatement
 
-function DebuggerStatement(b: Builder): void {
+grm.define("DebuggerStatement",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,                 // 4
             keyword("debugger"), // 3
             whitespace,          // 2
-            keyword(";"),     // 1
+            keyword(";"),        // 1
             pos,                 // 0
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"DebuggerStatement",4,0,[]),
@@ -3178,128 +3174,128 @@ function DebuggerStatement(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 14.1
 
 // FunctionDeclaration_named
 
-function FunctionDeclaration_named(b: Builder): void {
+grm.define("FunctionDeclaration_named",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 16 = start
-            keyword("function"), // 15
-            whitespace,          // 14
-            BindingIdentifier,   // 13 = ident
-            whitespace,          // 12
-            keyword("("),     // 11
-            whitespace,          // 10
-            FormalParameters,    // 9 = params
-            whitespace,          // 8
-            keyword(")"),     // 7
-            whitespace,          // 6
-            keyword("{"),     // 5
-            whitespace,          // 4
-            FunctionBody,        // 3 = body
-            whitespace,          // 2
-            keyword("}"),     // 1
-            pos,                 // 0 = end
+            pos,                      // 16 = start
+            keyword("function"),      // 15
+            whitespace,               // 14
+            ref("BindingIdentifier"), // 13 = ident
+            whitespace,               // 12
+            keyword("("),             // 11
+            whitespace,               // 10
+            ref("FormalParameters"),  // 9 = params
+            whitespace,               // 8
+            keyword(")"),             // 7
+            whitespace,               // 6
+            keyword("{"),             // 5
+            whitespace,               // 4
+            ref("FunctionBody"),      // 3 = body
+            whitespace,               // 2
+            keyword("}"),             // 1
+            pos,                      // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"FunctionDeclaration",16,0,[13,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // FunctionDeclaration_unnamed
 
-function FunctionDeclaration_unnamed(b: Builder): void {
+grm.define("FunctionDeclaration_unnamed",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 15 = start
-            keyword("function"), // 14
-            whitespace,          // 13
-            keyword("("),     // 12
-            whitespace,          // 11
-            value(null),         // 10 = null
-            FormalParameters,    // 9 = params
-            whitespace,          // 8
-            keyword(")"),     // 7
-            whitespace,          // 6
-            keyword("{"),     // 5
-            whitespace,          // 4
-            FunctionBody,        // 3 = body
-            whitespace,          // 2
-            keyword("}"),     // 1
-            pos,                 // 0 = end
+            pos,                     // 15 = start
+            keyword("function"),     // 14
+            whitespace,              // 13
+            keyword("("),            // 12
+            whitespace,              // 11
+            value(null),             // 10 = null
+            ref("FormalParameters"), // 9 = params
+            whitespace,              // 8
+            keyword(")"),            // 7
+            whitespace,              // 6
+            keyword("{"),            // 5
+            whitespace,              // 4
+            ref("FunctionBody"),     // 3 = body
+            whitespace,              // 2
+            keyword("}"),            // 1
+            pos,                     // 0 = end
             assertLengthIs(oldLength+16),
             popAboveAndMakeNode(15,"FunctionDeclaration",15,0,[10,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // FunctionDeclaration
 
-function FunctionDeclaration(b: Builder): void {
+grm.define("FunctionDeclaration",(b: Builder): void => {
     b.item(choice([
-        FunctionDeclaration_named,
-        FunctionDeclaration_unnamed,
+        ref("FunctionDeclaration_named"),
+        ref("FunctionDeclaration_unnamed"),
     ]));
-}
+});
 
 // FunctionExpression
 
-function FunctionExpression(b: Builder): void {
+grm.define("FunctionExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 15 = start
-            keyword("function"), // 14
-            whitespace,          // 13
+            pos,                     // 15 = start
+            keyword("function"),     // 14
+            whitespace,              // 13
             opt(items([
-                BindingIdentifier,
+                ref("BindingIdentifier"),
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            keyword("("),     // 11
-            whitespace,          // 10
-            FormalParameters,    // 9 = params
-            whitespace,          // 8
-            keyword(")"),     // 7
-            whitespace,          // 6
-            keyword("{"),     // 5
-            whitespace,          // 4
-            FunctionBody,        // 3 = body
-            whitespace,          // 2
-            keyword("}"),     // 1
-            pos,                 // 0 = end
+            keyword("("),            // 11
+            whitespace,              // 10
+            ref("FormalParameters"), // 9 = params
+            whitespace,              // 8
+            keyword(")"),            // 7
+            whitespace,              // 6
+            keyword("{"),            // 5
+            whitespace,              // 4
+            ref("FunctionBody"),     // 3 = body
+            whitespace,              // 2
+            keyword("}"),            // 1
+            pos,                     // 0 = end
             assertLengthIs(oldLength+16),
             popAboveAndMakeNode(15,"FunctionExpression",15,0,[12,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // StrictFormalParameters
 
-function StrictFormalParameters(b: Builder): void {
-    b.item(FormalParameters);
-}
+grm.define("StrictFormalParameters",(b: Builder): void => {
+    b.item(ref("FormalParameters"));
+});
 
 // FormalParameters
 
-function FormalParameters(b: Builder): void {
+grm.define("FormalParameters",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
-                FormalParameterList,
+                ref("FormalParameterList"),
                 items([
                     pos,
                     popAboveAndMakeNode(0,"FormalParameters1",0,0,[]),
@@ -3309,31 +3305,31 @@ function FormalParameters(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // FormalParameterList
 
-function FormalParameterList(b: Builder): void {
+grm.define("FormalParameterList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,                   // 2 = start
-                    FunctionRestParameter, // 1 = rest
-                    pos,                   // 0 = end
+                    pos,                          // 2 = start
+                    ref("FunctionRestParameter"), // 1 = rest
+                    pos,                          // 0 = end
                     assertLengthIs(oldLength+3),
                     popAboveAndMakeNode(2,"FormalParameters2",2,0,[1]),
                 ]),
                 items([
-                    pos,               // 3 = start
-                    FormalsList,       // 2 = formals
+                    pos,                // 3 = start
+                    ref("FormalsList"), // 2 = formals
                     choice([
                         items([
                             whitespace,
                             keyword(","),
                             whitespace,
-                            FunctionRestParameter,
+                            ref("FunctionRestParameter"),
                             pos,
                             assertLengthIs(oldLength+7),
                             popAboveAndMakeNode(6,"FormalParameters4",6,0,[5,1]),
@@ -3349,21 +3345,21 @@ function FormalParameterList(b: Builder): void {
             assertLengthIs(oldLength+1),
         ]);
     });
-}
+});
 
 // FormalsList
 
-function FormalsList(b: Builder): void {
+grm.define("FormalsList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                FormalParameter,
+                ref("FormalParameter"),
                 items([
                     whitespace,
                     keyword(","),
                     whitespace,
-                    FormalParameter,
+                    ref("FormalParameter"),
                     popAboveAndReplace(3,0),
                 ]),
             ),
@@ -3371,33 +3367,33 @@ function FormalsList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // FunctionRestParameter
 
-function FunctionRestParameter(b: Builder): void {
-    b.item(BindingRestElement);
-}
+grm.define("FunctionRestParameter",(b: Builder): void => {
+    b.item(ref("BindingRestElement"));
+});
 
 // FormalParameter
 
-function FormalParameter(b: Builder): void {
-    b.item(BindingElement);
-}
+grm.define("FormalParameter",(b: Builder): void => {
+    b.item(ref("BindingElement"));
+});
 
 // FunctionBody
 
-function FunctionBody(b: Builder): void {
-    b.item(FunctionStatementList);
-}
+grm.define("FunctionBody",(b: Builder): void => {
+    b.item(ref("FunctionStatementList"));
+});
 
 // FunctionStatementList
 
-function FunctionStatementList(b: Builder): void {
+grm.define("FunctionStatementList",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            StatementList,
+            ref("StatementList"),
             items([
                 pos,
                 popAboveAndMakeEmptyList(0,0,0),
@@ -3406,410 +3402,410 @@ function FunctionStatementList(b: Builder): void {
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 14.2
 
 // ArrowFunction
 
-function ArrowFunction(b: Builder): void {
+grm.define("ArrowFunction",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 6 = start
-            ArrowParameters,     // 5 = params
-            whitespaceNoNewline, // 4
-            keyword("=>"),    // 3
-            whitespace,          // 2
-            ConciseBody,         // 1 = body
-            pos,                 // 0 = end
+            pos,                    // 6 = start
+            ref("ArrowParameters"), // 5 = params
+            whitespaceNoNewline,    // 4
+            keyword("=>"),          // 3
+            whitespace,             // 2
+            ref("ConciseBody"),     // 1 = body
+            pos,                    // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ArrowFunction",6,0,[5,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ArrowParameters
 
-function ArrowParameters(b: Builder): void {
+grm.define("ArrowParameters",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            BindingIdentifier,
-            ArrowFormalParameters,
+            ref("BindingIdentifier"),
+            ref("ArrowFormalParameters"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ConciseBody_1
 
-function ConciseBody_1(b: Builder): void {
+grm.define("ConciseBody_1",(b: Builder): void => {
     if (b.parser.lookaheadKeyword("{"))
         throw new ParseIgnore();
-    b.item(AssignmentExpression);
-}
+    b.item(ref("AssignmentExpression"));
+});
 
 // ConciseBody_2
 
-function ConciseBody_2(b: Builder): void {
+grm.define("ConciseBody_2",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            keyword("{"), // 4
-            whitespace,      // 3
-            FunctionBody,    // 2
-            whitespace,      // 1
-            keyword("}"), // 0
+            keyword("{"),        // 4
+            whitespace,          // 3
+            ref("FunctionBody"), // 2
+            whitespace,          // 1
+            keyword("}"),        // 0
             assertLengthIs(oldLength+5),
             popAboveAndReplace(4,2),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ConciseBody
 
-function ConciseBody(b: Builder): void {
+grm.define("ConciseBody",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            ConciseBody_1,
-            ConciseBody_2,
+            ref("ConciseBody_1"),
+            ref("ConciseBody_2"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(b: Builder): void {
+grm.define("ArrowFormalParameters",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            keyword("("),        // 4
-            whitespace,             // 3
-            StrictFormalParameters, // 2
-            whitespace,             // 1
-            keyword(")"),        // 0
+            keyword("("),                  // 4
+            whitespace,                    // 3
+            ref("StrictFormalParameters"), // 2
+            whitespace,                    // 1
+            keyword(")"),                  // 0
             assertLengthIs(oldLength+5),
             popAboveAndReplace(4,2),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // Section 14.3
 
 // MethodDefinition_1
 
-function MethodDefinition_1(b: Builder): void {
+grm.define("MethodDefinition_1",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                    // 14 = start
-            PropertyName,           // 13 = name
-            whitespace,             // 12
-            keyword("("),        // 11
-            whitespace,             // 10
-            StrictFormalParameters, // 9 = params
-            whitespace,             // 8
-            keyword(")"),        // 7
-            whitespace,             // 6
-            keyword("{"),        // 5
-            whitespace,             // 4
-            FunctionBody,           // 3 = body
-            whitespace,             // 2
-            keyword("}"),        // 1
-            pos,                    // 0 = end
+            pos,                           // 14 = start
+            ref("PropertyName"),           // 13 = name
+            whitespace,                    // 12
+            keyword("("),                  // 11
+            whitespace,                    // 10
+            ref("StrictFormalParameters"), // 9 = params
+            whitespace,                    // 8
+            keyword(")"),                  // 7
+            whitespace,                    // 6
+            keyword("{"),                  // 5
+            whitespace,                    // 4
+            ref("FunctionBody"),           // 3 = body
+            whitespace,                    // 2
+            keyword("}"),                  // 1
+            pos,                           // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"Method",14,0,[13,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // MethodDefinition_2
 
-function MethodDefinition_2(b: Builder): void {
-    b.item(GeneratorMethod);
-}
+grm.define("MethodDefinition_2",(b: Builder): void => {
+    b.item(ref("GeneratorMethod"));
+});
 
 // MethodDefinition_3
 
-function MethodDefinition_3(b: Builder): void {
+grm.define("MethodDefinition_3",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,               // 14 = start
-            identifier("get"), // 13 "get" is not a reserved word, so we can't use keyword here
-            whitespace,        // 12
-            PropertyName,      // 11 = name
-            whitespace,        // 10
-            keyword("("),   // 9
-            whitespace,        // 8
-            keyword(")"),   // 7
-            whitespace,        // 6
-            keyword("{"),   // 5
-            whitespace,        // 4
-            FunctionBody,      // 3 = body
-            whitespace,        // 2
-            keyword("}"),   // 1
-            pos,               // 0 = end
+            pos,                 // 14 = start
+            identifier("get"),   // 13 "get" is not a reserved word, so we can't use keyword here
+            whitespace,          // 12
+            ref("PropertyName"), // 11 = name
+            whitespace,          // 10
+            keyword("("),        // 9
+            whitespace,          // 8
+            keyword(")"),        // 7
+            whitespace,          // 6
+            keyword("{"),        // 5
+            whitespace,          // 4
+            ref("FunctionBody"), // 3 = body
+            whitespace,          // 2
+            keyword("}"),        // 1
+            pos,                 // 0 = end
             assertLengthIs(oldLength+15),
             popAboveAndMakeNode(14,"Getter",14,0,[11,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // MethodDefinition_4
 
-function MethodDefinition_4(b: Builder): void {
+grm.define("MethodDefinition_4",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                      // 16 = start
-            identifier("set"),        // 15
-            whitespace,               // 14
-            PropertyName,             // 13 = name
-            whitespace,               // 12
-            keyword("("),          // 11
-            whitespace,               // 10
-            PropertySetParameterList, // 9 = param
-            whitespace,               // 8
-            keyword(")"),          // 7
-            whitespace,               // 6
-            keyword("{"),          // 5
-            whitespace,               // 4
-            FunctionBody,             // 3 = body
-            whitespace,               // 2
-            keyword("}"),          // 1
-            pos,                      // 0 = end
+            pos,                             // 16 = start
+            identifier("set"),               // 15
+            whitespace,                      // 14
+            ref("PropertyName"),             // 13 = name
+            whitespace,                      // 12
+            keyword("("),                    // 11
+            whitespace,                      // 10
+            ref("PropertySetParameterList"), // 9 = param
+            whitespace,                      // 8
+            keyword(")"),                    // 7
+            whitespace,                      // 6
+            keyword("{"),                    // 5
+            whitespace,                      // 4
+            ref("FunctionBody"),             // 3 = body
+            whitespace,                      // 2
+            keyword("}"),                    // 1
+            pos,                             // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"Setter",16,0,[13,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // MethodDefinition
 
-function MethodDefinition(b: Builder): void {
+grm.define("MethodDefinition",(b: Builder): void => {
     b.item(choice([
-        MethodDefinition_1,
-        MethodDefinition_2,
-        MethodDefinition_3,
-        MethodDefinition_4,
+        ref("MethodDefinition_1"),
+        ref("MethodDefinition_2"),
+        ref("MethodDefinition_3"),
+        ref("MethodDefinition_4"),
     ]));
-}
+});
 
 // PropertySetParameterList
 
-function PropertySetParameterList(b: Builder): void {
-    b.item(FormalParameter);
-}
+grm.define("PropertySetParameterList",(b: Builder): void => {
+    b.item(ref("FormalParameter"));
+});
 
 // Section 14.4
 
 // GeneratorMethod
 
-function GeneratorMethod(b: Builder): void {
+grm.define("GeneratorMethod",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                    // 16 = start
-            keyword("*"),        // 15
-            whitespace,             // 14
-            PropertyName,           // 13 = name
-            whitespace,             // 12
-            keyword("("),        // 11
-            whitespace,             // 10
-            StrictFormalParameters, // 9 = params
-            whitespace,             // 8
-            keyword(")"),        // 7
-            whitespace,             // 6
-            keyword("{"),        // 5
-            whitespace,             // 4
-            GeneratorBody,          // 3 = body
-            whitespace,             // 2
-            keyword("}"),        // 1
-            pos,                    // 0 = end
+            pos,                           // 16 = start
+            keyword("*"),                  // 15
+            whitespace,                    // 14
+            ref("PropertyName"),           // 13 = name
+            whitespace,                    // 12
+            keyword("("),                  // 11
+            whitespace,                    // 10
+            ref("StrictFormalParameters"), // 9 = params
+            whitespace,                    // 8
+            keyword(")"),                  // 7
+            whitespace,                    // 6
+            keyword("{"),                  // 5
+            whitespace,                    // 4
+            ref("GeneratorBody"),          // 3 = body
+            whitespace,                    // 2
+            keyword("}"),                  // 1
+            pos,                           // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"GeneratorMethod",16,0,[13,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // GeneratorDeclaration_1
 
-function GeneratorDeclaration_1(b: Builder): void {
+grm.define("GeneratorDeclaration_1",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 18 = start
-            keyword("function"), // 17
-            whitespace,          // 16
-            keyword("*"),     // 15
-            whitespace,          // 14
-            BindingIdentifier,   // 13 = ident
-            whitespace,          // 12
-            keyword("("),     // 11
-            whitespace,          // 10
-            FormalParameters,    // 9 = params
-            whitespace,          // 8
-            keyword(")"),     // 7
-            whitespace,          // 6
-            keyword("{"),     // 5
-            whitespace,          // 4
-            GeneratorBody,       // 3 = body
-            whitespace,          // 2
-            keyword("}"),     // 1
-            pos,                 // 0 = end
+            pos,                      // 18 = start
+            keyword("function"),      // 17
+            whitespace,               // 16
+            keyword("*"),             // 15
+            whitespace,               // 14
+            ref("BindingIdentifier"), // 13 = ident
+            whitespace,               // 12
+            keyword("("),             // 11
+            whitespace,               // 10
+            ref("FormalParameters"),  // 9 = params
+            whitespace,               // 8
+            keyword(")"),             // 7
+            whitespace,               // 6
+            keyword("{"),             // 5
+            whitespace,               // 4
+            ref("GeneratorBody"),     // 3 = body
+            whitespace,               // 2
+            keyword("}"),             // 1
+            pos,                      // 0 = end
             assertLengthIs(oldLength+19),
             popAboveAndMakeNode(18,"GeneratorDeclaration",18,0,[13,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // GeneratorDeclaration_2
 
-function GeneratorDeclaration_2(b: Builder): void {
+grm.define("GeneratorDeclaration_2",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 16 = start
-            keyword("function"), // 15
-            whitespace,          // 14
-            keyword("*"),     // 13
-            whitespace,          // 12
-            keyword("("),     // 11
-            whitespace,          // 10
-            FormalParameters,    // 9 = params
-            whitespace,          // 8
-            keyword(")"),     // 7
-            whitespace,          // 6
-            keyword("{"),     // 5
-            whitespace,          // 4
-            GeneratorBody,       // 3 = body
-            whitespace,          // 2
-            keyword("}"),     // 1
-            pos,                 // 0 = end
+            pos,                     // 16 = start
+            keyword("function"),     // 15
+            whitespace,              // 14
+            keyword("*"),            // 13
+            whitespace,              // 12
+            keyword("("),            // 11
+            whitespace,              // 10
+            ref("FormalParameters"), // 9 = params
+            whitespace,              // 8
+            keyword(")"),            // 7
+            whitespace,              // 6
+            keyword("{"),            // 5
+            whitespace,              // 4
+            ref("GeneratorBody"),    // 3 = body
+            whitespace,              // 2
+            keyword("}"),            // 1
+            pos,                     // 0 = end
             assertLengthIs(oldLength+17),
             popAboveAndMakeNode(16,"DefaultGeneratorDeclaration",16,0,[9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(b: Builder): void {
+grm.define("GeneratorDeclaration",(b: Builder): void => {
     b.item(choice([
-        GeneratorDeclaration_1,
-        GeneratorDeclaration_2,
+        ref("GeneratorDeclaration_1"),
+        ref("GeneratorDeclaration_2"),
     ]));
-}
+});
 
 // GeneratorExpression
 
-function GeneratorExpression(b: Builder): void {
+grm.define("GeneratorExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                 // 17 = start
-            keyword("function"), // 16
-            whitespace,          // 15
-            keyword("*"),     // 14
-            whitespace,          // 13
+            pos,                     // 17 = start
+            keyword("function"),     // 16
+            whitespace,              // 15
+            keyword("*"),            // 14
+            whitespace,              // 13
             opt(items([
-                BindingIdentifier,
+                ref("BindingIdentifier"),
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            keyword("("),     // 11
-            whitespace,          // 10
-            FormalParameters,    // 9 = params
-            whitespace,          // 8
-            keyword(")"),     // 7
-            whitespace,          // 6
-            keyword("{"),     // 5
-            whitespace,          // 4
-            GeneratorBody,       // 3 = body
-            whitespace,          // 2
-            keyword("}"),     // 1
-            pos,                 // 0 = end
+            keyword("("),            // 11
+            whitespace,              // 10
+            ref("FormalParameters"), // 9 = params
+            whitespace,              // 8
+            keyword(")"),            // 7
+            whitespace,              // 6
+            keyword("{"),            // 5
+            whitespace,              // 4
+            ref("GeneratorBody"),    // 3 = body
+            whitespace,              // 2
+            keyword("}"),            // 1
+            pos,                     // 0 = end
             assertLengthIs(oldLength+18),
             popAboveAndMakeNode(17,"GeneratorExpression",17,0,[12,9,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // GeneratorBody
 
-function GeneratorBody(b: Builder): void {
-    b.item(FunctionBody);
-}
+grm.define("GeneratorBody",(b: Builder): void => {
+    b.item(ref("FunctionBody"));
+});
 
 // YieldExpression_1
 
-function YieldExpression_1(b: Builder): void {
+grm.define("YieldExpression_1",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                  // 6
-            keyword("yield"),     // 5
-            whitespaceNoNewline,  // 4
-            keyword("*"),      // 3
-            whitespace,           // 2
-            AssignmentExpression, // 1
-            pos,                  // 0
+            pos,                         // 6
+            keyword("yield"),            // 5
+            whitespaceNoNewline,         // 4
+            keyword("*"),                // 3
+            whitespace,                  // 2
+            ref("AssignmentExpression"), // 1
+            pos,                         // 0
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"YieldStar",6,0,[1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // YieldExpression_2
 
-function YieldExpression_2(b: Builder): void {
+grm.define("YieldExpression_2",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                  // 4
-            keyword("yield"),     // 3
-            whitespaceNoNewline,  // 2
-            AssignmentExpression, // 1
-            pos,                  // 0
+            pos,                         // 4
+            keyword("yield"),            // 3
+            whitespaceNoNewline,         // 2
+            ref("AssignmentExpression"), // 1
+            pos,                         // 0
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"YieldExpr",4,0,[1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // YieldExpression_3
 
-function YieldExpression_3(b: Builder): void {
+grm.define("YieldExpression_3",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3822,49 +3818,49 @@ function YieldExpression_3(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // YieldExpression
 
-function YieldExpression(b: Builder): void {
+grm.define("YieldExpression",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            YieldExpression_1,
-            YieldExpression_2,
-            YieldExpression_3,
+            ref("YieldExpression_1"),
+            ref("YieldExpression_2"),
+            ref("YieldExpression_3"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 14.5
 
 // ClassDeclaration_1
 
-function ClassDeclaration_1(b: Builder): void {
+grm.define("ClassDeclaration_1",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,               // 6 = start
-            keyword("class"),  // 5
-            whitespace,        // 4
-            BindingIdentifier, // 3 = ident
-            whitespace,        // 2
-            ClassTail,         // 1 = tail
-            pos,               // 0 = end
+            pos,                      // 6 = start
+            keyword("class"),         // 5
+            whitespace,               // 4
+            ref("BindingIdentifier"), // 3 = ident
+            whitespace,               // 2
+            ref("ClassTail"),         // 1 = tail
+            pos,                      // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ClassDeclaration",6,0,[3,1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassDeclaration_2
 
-function ClassDeclaration_2(b: Builder): void {
+grm.define("ClassDeclaration_2",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3872,7 +3868,7 @@ function ClassDeclaration_2(b: Builder): void {
             keyword("class"), // 4
             whitespace,       // 3
             value(null),      // 2
-            ClassTail,        // 1
+            ref("ClassTail"), // 1
             pos,              // 0
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"ClassDeclaration",5,0,[2,1]),
@@ -3880,20 +3876,20 @@ function ClassDeclaration_2(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassDeclaration
 
-function ClassDeclaration(b: Builder): void {
+grm.define("ClassDeclaration",(b: Builder): void => {
     b.item(choice([
-        ClassDeclaration_1,
-        ClassDeclaration_2,
+        ref("ClassDeclaration_1"),
+        ref("ClassDeclaration_2"),
     ]));
-}
+});
 
 // ClassExpression
 
-function ClassExpression(b: Builder): void {
+grm.define("ClassExpression",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -3901,11 +3897,11 @@ function ClassExpression(b: Builder): void {
             keyword("class"),     // 4
             whitespace,           // 3
             opt(items([
-                BindingIdentifier,
+                ref("BindingIdentifier"),
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
-            ClassTail,            // 1
+            ref("ClassTail"),     // 1
             pos,                  // 0
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"ClassExpression",5,0,[2,1]),
@@ -3913,25 +3909,25 @@ function ClassExpression(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassTail
 
-function ClassTail(b: Builder): void {
+grm.define("ClassTail",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                   // 6 = start
-            opt(items([            // 5 = heritage
-                ClassHeritage,
+            pos,                // 6 = start
+            opt(items([         // 5 = heritage
+                ref("ClassHeritage"),
                 whitespace,
                 popAboveAndReplace(1,1),
             ])),
             keyword("{"),       // 4
-            whitespace,            // 3
-            choice([               // 2 = body
+            whitespace,         // 3
+            choice([            // 2 = body
                 items([
-                    ClassBody,
+                    ref("ClassBody"),
                     whitespace,
                     popAboveAndReplace(1,1),
                 ]),
@@ -3941,51 +3937,51 @@ function ClassTail(b: Builder): void {
                 ]),
             ]),
             keyword("}"),       // 1
-            pos,                   // 0 = end
+            pos,                // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ClassTail",6,0,[5,2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassHeritage
 
-function ClassHeritage(b: Builder): void {
+grm.define("ClassHeritage",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                    // 4 = start
-            keyword("extends"),     // 3
-            whitespace,             // 2
-            LeftHandSideExpression, // 1 = expr
-            pos,                    // 0 = end
+            pos,                           // 4 = start
+            keyword("extends"),            // 3
+            whitespace,                    // 2
+            ref("LeftHandSideExpression"), // 1 = expr
+            pos,                           // 0 = end
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"Extends",4,0,[1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassBody
 
-function ClassBody(b: Builder): void {
-    b.item(ClassElementList);
-}
+grm.define("ClassBody",(b: Builder): void => {
+    b.item(ref("ClassElementList"));
+});
 
 // ClassElementList
 
-function ClassElementList(b: Builder): void {
+grm.define("ClassElementList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                ClassElement,
+                ref("ClassElement"),
                 items([
                     whitespace,
-                    ClassElement,
+                    ref("ClassElement"),
                     popAboveAndReplace(1,0),
                 ]),
             ),
@@ -3993,24 +3989,24 @@ function ClassElementList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassElement_1
 
-function ClassElement_1(b: Builder): void {
-    b.item(MethodDefinition);
-}
+grm.define("ClassElement_1",(b: Builder): void => {
+    b.item(ref("MethodDefinition"));
+});
 
 // ClassElement_2
 
-function ClassElement_2(b: Builder): void {
+grm.define("ClassElement_2",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
             keyword("static"),
             whitespace,
-            MethodDefinition,
+            ref("MethodDefinition"),
             pos,
             assertLengthIs(oldLength+5),
             popAboveAndMakeNode(4,"StaticMethodDefinition",4,0,[1]),
@@ -4018,11 +4014,11 @@ function ClassElement_2(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassElement_3
 
-function ClassElement_3(b: Builder): void {
+grm.define("ClassElement_3",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4035,33 +4031,33 @@ function ClassElement_3(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ClassElement
 
-function ClassElement(b: Builder): void {
+grm.define("ClassElement",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            ClassElement_1,
-            ClassElement_2,
-            ClassElement_3,
+            ref("ClassElement_1"),
+            ref("ClassElement_2"),
+            ref("ClassElement_3"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 15.1
 
 // Script
 
-function Script(b: Builder): void {
+grm.define("Script",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         pos,
         choice([
-            ScriptBody,
+            ref("ScriptBody"),
             items([
                 pos,
                 popAboveAndMakeEmptyList(0,0,0),
@@ -4074,24 +4070,24 @@ function Script(b: Builder): void {
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ScriptBody
 
-function ScriptBody(b: Builder): void {
-    b.item(StatementList);
-}
+grm.define("ScriptBody",(b: Builder): void => {
+    b.item(ref("StatementList"));
+});
 
 // Section 15.2
 
 // Module
 
-function Module(b: Builder): void {
+grm.define("Module",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         pos,
         choice([
-            ModuleBody,
+            ref("ModuleBody"),
             items([
                 pos,
                 popAboveAndMakeEmptyList(0,0,0),
@@ -4104,25 +4100,25 @@ function Module(b: Builder): void {
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ModuleBody
 
-function ModuleBody(b: Builder): void {
-    b.item(ModuleItemList);
-}
+grm.define("ModuleBody",(b: Builder): void => {
+    b.item(ref("ModuleItemList"));
+});
 
 // ModuleItemList
 
-function ModuleItemList(b: Builder): void {
+grm.define("ModuleItemList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                ModuleItem,
+                ref("ModuleItem"),
                 items([
                     whitespace,
-                    ModuleItem,
+                    ref("ModuleItem"),
                     popAboveAndReplace(1,0),
                 ]),
             ),
@@ -4130,111 +4126,111 @@ function ModuleItemList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ModuleItem
 
-function ModuleItem(b: Builder): void {
+grm.define("ModuleItem",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            ImportDeclaration,
-            ExportDeclaration,
-            StatementListItem,
+            ref("ImportDeclaration"),
+            ref("ExportDeclaration"),
+            ref("StatementListItem"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // Section 15.2.2
 
 // ImportDeclaration_from
 
-function ImportDeclaration_from(b: Builder): void {
+grm.define("ImportDeclaration_from",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,               // 8 = start
-            keyword("import"), // 7
-            whitespace,        // 6
-            ImportClause,      // 5 = importClause
-            whitespace,        // 4
-            FromClause,        // 3 = fromClause
-            whitespace,        // 2
-            keyword(";"),   // 1
-            pos,               // 0 = end
+            pos,                 // 8 = start
+            keyword("import"),   // 7
+            whitespace,          // 6
+            ref("ImportClause"), // 5 = importClause
+            whitespace,          // 4
+            ref("FromClause"),   // 3 = fromClause
+            whitespace,          // 2
+            keyword(";"),        // 1
+            pos,                 // 0 = end
             assertLengthIs(oldLength+9),
             popAboveAndMakeNode(8,"ImportFrom",8,0,[5,3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ImportDeclaration_module
 
-function ImportDeclaration_module(b: Builder): void {
+grm.define("ImportDeclaration_module",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,               // 6 = start
-            keyword("import"), // 5
-            whitespace,        // 4
-            ModuleSpecifier,   // 3 = specifier
-            whitespace,        // 2
-            keyword(";"),   // 1
-            pos,               // 0 = end
+            pos,                    // 6 = start
+            keyword("import"),      // 5
+            whitespace,             // 4
+            ref("ModuleSpecifier"), // 3 = specifier
+            whitespace,             // 2
+            keyword(";"),           // 1
+            pos,                    // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"ImportModule",6,0,[3]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ImportDeclaration
 
-function ImportDeclaration(b: Builder): void {
+grm.define("ImportDeclaration",(b: Builder): void => {
     const oldLength = b.length;
     b.items([
         choice([
-            ImportDeclaration_from,
-            ImportDeclaration_module,
+            ref("ImportDeclaration_from"),
+            ref("ImportDeclaration_module"),
         ]),
         assertLengthIs(oldLength+1),
     ]);
     checkNode(b.get(0));
-}
+});
 
 // ImportClause
 
-function ImportClause(b: Builder): void {
+grm.define("ImportClause",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
-                NameSpaceImport,
-                NamedImports,
+                ref("NameSpaceImport"),
+                ref("NamedImports"),
                 items([
                     pos,                            // 6 = start
-                    ImportedDefaultBinding,         // 5 = defbinding
+                    ref("ImportedDefaultBinding"),  // 5 = defbinding
                     choice([
                         items([
-                            whitespace,         // 4
-                            keyword(","),    // 3
-                            whitespace,         // 2
-                            NameSpaceImport,    // 1 = nsimport
-                            pos,                // 0 = end
+                            whitespace,             // 4
+                            keyword(","),           // 3
+                            whitespace,             // 2
+                            ref("NameSpaceImport"), // 1 = nsimport
+                            pos,                    // 0 = end
                             assertLengthIs(oldLength+7),
                             popAboveAndMakeNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
                         ]),
                         items([
-                            whitespace,         // 4
-                            keyword(","),    // 3
-                            whitespace,         // 2
-                            NamedImports,       // 1 = nsimports
-                            pos,                // 0 = end
+                            whitespace,             // 4
+                            keyword(","),           // 3
+                            whitespace,             // 2
+                            ref("NamedImports"),    // 1 = nsimports
+                            pos,                    // 0 = end
                             assertLengthIs(oldLength+7),
                             popAboveAndMakeNode(6,"DefaultAndNamedImports",6,0,[5,1]),
                         ]),
@@ -4249,47 +4245,47 @@ function ImportClause(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ImportedDefaultBinding
 
-function ImportedDefaultBinding(b: Builder): void {
-    b.item(ImportedBinding);
-}
+grm.define("ImportedDefaultBinding",(b: Builder): void => {
+    b.item(ref("ImportedBinding"));
+});
 
 // NameSpaceImport
 
-function NameSpaceImport(b: Builder): void {
+grm.define("NameSpaceImport",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,             // 6 = start
-            keyword("*"), // 5
-            whitespace,      // 4
-            keyword("as"),   // 3
-            whitespace,      // 2
-            ImportedBinding, // 1 = binding
-            pos,             // 0 = end
+            pos,                    // 6 = start
+            keyword("*"),           // 5
+            whitespace,             // 4
+            keyword("as"),          // 3
+            whitespace,             // 2
+            ref("ImportedBinding"), // 1 = binding
+            pos,                    // 0 = end
             assertLengthIs(oldLength+7),
             popAboveAndMakeNode(6,"NameSpaceImport",6,0,[1]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // NamedImports
 
-function NamedImports(b: Builder): void {
+grm.define("NamedImports",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                // 5 = start
-            keyword("{"),    // 4
-            whitespace,         // 3
-            choice([            // 2 = imports
+            pos,               // 5 = start
+            keyword("{"),      // 4
+            whitespace,        // 3
+            choice([           // 2 = imports
                 items([
-                    ImportsList,
+                    ref("ImportsList"),
                     whitespace,
                     opt(items([
                         keyword(","),
@@ -4304,46 +4300,46 @@ function NamedImports(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ])
             ]),
-            keyword("}"),    // 1
-            pos,                // 0 = end
+            keyword("}"),      // 1
+            pos,               // 0 = end
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"NamedImports",5,0,[2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // FromClause
 
-function FromClause(b: Builder): void {
+grm.define("FromClause",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             keyword("from"),
             whitespace,
-            ModuleSpecifier,
+            ref("ModuleSpecifier"),
             assertLengthIs(oldLength+3),
             popAboveAndReplace(2,0),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ImportsList
 
-function ImportsList(b: Builder): void {
+grm.define("ImportsList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                ImportSpecifier,
+                ref("ImportSpecifier"),
                 items([
                     whitespace,
                     keyword(","),
                     whitespace,
-                    ImportSpecifier,
+                    ref("ImportSpecifier"),
                     popAboveAndReplace(3,0),
                 ]),
             ),
@@ -4351,30 +4347,30 @@ function ImportsList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ImportSpecifier
 
-function ImportSpecifier(b: Builder): void {
+grm.define("ImportSpecifier",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             choice([
                 items([
-                    pos,             // 6 = start
-                    IdentifierName,  // 5 = name
-                    whitespace,      // 4
-                    keyword("as"),   // 3
-                    whitespace,      // 2
-                    ImportedBinding, // 1 = binding
-                    pos,             // 0 = end
+                    pos,                     // 6 = start
+                    ref("IdentifierName"),   // 5 = name
+                    whitespace,              // 4
+                    keyword("as"),           // 3
+                    whitespace,              // 2
+                    ref("ImportedBinding"),  // 1 = binding
+                    pos,                     // 0 = end
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ImportAsSpecifier",6,0,[5,1]),
                 ]),
                 items([
-                    pos,             // 2 = start
-                    ImportedBinding, // 1 = binding
-                    pos,             // 0 = end
+                    pos,                     // 2 = start
+                    ref("ImportedBinding"),  // 1 = binding
+                    pos,                     // 0 = end
                     assertLengthIs(oldLength+3),
                     popAboveAndMakeNode(2,"ImportSpecifier",2,0,[1]),
                 ]),
@@ -4383,25 +4379,25 @@ function ImportSpecifier(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ModuleSpecifier
 
-function ModuleSpecifier(b: Builder): void {
-    b.item(StringLiteral);
-}
+grm.define("ModuleSpecifier",(b: Builder): void => {
+    b.item(ref("StringLiteral"));
+});
 
 // ImportedBinding
 
-function ImportedBinding(b: Builder): void {
-    b.item(BindingIdentifier);
-}
+grm.define("ImportedBinding",(b: Builder): void => {
+    b.item(ref("BindingIdentifier"));
+});
 
 // Section 15.2.3
 
 // ExportDeclaration
 
-function ExportDeclaration(b: Builder): void {
+grm.define("ExportDeclaration",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
@@ -4411,69 +4407,69 @@ function ExportDeclaration(b: Builder): void {
             assertLengthIs(oldLength+3),
             choice([
                 items([
-                    keyword("default"),                              // 3
-                    whitespace,                                      // 2
-                    HoistableDeclaration, // 1
-                    pos,                                             // 0
+                    keyword("default"),          // 3
+                    whitespace,                  // 2
+                    ref("HoistableDeclaration"), // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ExportDefault",6,0,[1]),
                 ]),
                 items([
-                    keyword("default"), // 3
-                    whitespace,         // 2
-                    ClassDeclaration,   // 1
-                    pos,                // 0
+                    keyword("default"),          // 3
+                    whitespace,                  // 2
+                    ref("ClassDeclaration"),     // 1
+                    pos,                         // 0
                     popAboveAndMakeNode(6,"ExportDefault",6,0,[1]),
                 ]),
                 items([
-                    keyword("default"),     // 7
-                    whitespace,             // 6
-                    notKeyword("function"), // 5 FIXME: need tests for this
-                    notKeyword("class"),    // 4 FIXME: need tests for this
-                    AssignmentExpression,   // 3
-                    whitespace,             // 2
-                    keyword(";"),        // 1
-                    pos,                    // 0
+                    keyword("default"),          // 7
+                    whitespace,                  // 6
+                    notKeyword("function"),      // 5 FIXME: need tests for this
+                    notKeyword("class"),         // 4 FIXME: need tests for this
+                    ref("AssignmentExpression"), // 3
+                    whitespace,                  // 2
+                    keyword(";"),                // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+11),
                     popAboveAndMakeNode(10,"ExportDefault",10,0,[3]),
                 ]),
                 items([
-                    keyword("*"), // 5
-                    whitespace,      // 4
-                    FromClause,      // 3
-                    whitespace,      // 2
-                    keyword(";"), // 1
-                    pos,             // 0
+                    keyword("*"),                // 5
+                    whitespace,                  // 4
+                    ref("FromClause"),           // 3
+                    whitespace,                  // 2
+                    keyword(";"),                // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(8,"ExportStar",8,0,[3]),
                 ]),
                 items([
-                    ExportClause,    // 5
-                    whitespace,      // 4
-                    FromClause,      // 3
-                    whitespace,      // 2
-                    keyword(";"), // 1
-                    pos,             // 0
+                    ref("ExportClause"),         // 5
+                    whitespace,                  // 4
+                    ref("FromClause"),           // 3
+                    whitespace,                  // 2
+                    keyword(";"),                // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+9),
                     popAboveAndMakeNode(8,"ExportFrom",8,0,[5,3]),
                 ]),
                 items([
-                    ExportClause,    // 3
-                    whitespace,      // 2
-                    keyword(";"), // 1
-                    pos,             // 0
+                    ref("ExportClause"),         // 3
+                    whitespace,                  // 2
+                    keyword(";"),                // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(6,"ExportPlain",6,0,[3]),
                 ]),
                 items([
-                    VariableStatement, // 1
-                    pos,               // 0
+                    ref("VariableStatement"),    // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"ExportVariable",4,0,[1]),
                 ]),
                 items([
-                    Declaration, // 1
-                    pos,         // 0
+                    ref("Declaration"),          // 1
+                    pos,                         // 0
                     assertLengthIs(oldLength+5),
                     popAboveAndMakeNode(4,"ExportDeclaration",4,0,[1]),
                 ]),
@@ -4482,20 +4478,20 @@ function ExportDeclaration(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ExportClause
 
-function ExportClause(b: Builder): void {
+grm.define("ExportClause",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
-            pos,                       // 5
-            keyword("{"),           // 4
-            whitespace,                // 3
-            choice([                   // 2
+            pos,             // 5
+            keyword("{"),    // 4
+            whitespace,      // 3
+            choice([         // 2
                 items([
-                    ExportsList,
+                    ref("ExportsList"),
                     whitespace,
                     opt(items([
                         keyword(","),
@@ -4511,29 +4507,29 @@ function ExportClause(b: Builder): void {
                     popAboveAndMakeEmptyList(0,0,0),
                 ]),
             ]),
-            keyword("}"),           // 1
-            pos,                       // 0
+            keyword("}"),    // 1
+            pos,             // 0
             assertLengthIs(oldLength+6),
             popAboveAndMakeNode(5,"ExportClause",5,0,[2]),
             assertLengthIs(oldLength+1),
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ExportsList
 
-function ExportsList(b: Builder): void {
+grm.define("ExportsList",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             list(
-                ExportSpecifier,
+                ref("ExportSpecifier"),
                 items([
                     whitespace,
                     keyword(","),
                     whitespace,
-                    ExportSpecifier,
+                    ref("ExportSpecifier"),
                     popAboveAndReplace(3,0),
                 ])
             ),
@@ -4541,23 +4537,23 @@ function ExportsList(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 // ExportSpecifier
 
-function ExportSpecifier(b: Builder): void {
+grm.define("ExportSpecifier",(b: Builder): void => {
     b.attempt((): void => {
         const oldLength = b.length;
         b.items([
             pos,
-            IdentifierName,
+            ref("IdentifierName"),
             choice([
                 items([
-                    whitespace,        // 4
-                    keyword("as"),     // 3
-                    whitespace,        // 2
-                    IdentifierName,    // 1
-                    pos,               // 0
+                    whitespace,            // 4
+                    keyword("as"),         // 3
+                    whitespace,            // 2
+                    ref("IdentifierName"), // 1
+                    pos,                   // 0
                     assertLengthIs(oldLength+7),
                     popAboveAndMakeNode(4,"ExportAsSpecifier",6,0,[5,1]),
                     assertLengthIs(oldLength+3),
@@ -4574,12 +4570,12 @@ function ExportSpecifier(b: Builder): void {
         ]);
         checkNode(b.get(0));
     });
-}
+});
 
 export function parseScript(p: Parser): ASTNode {
     return p.attempt(() => {
-        const b = new Builder(p);
-        Script(b);
+        const b = new Builder(grm,p);
+        ref("Script")(b);
         b.item(assertLengthIs(1));
         return checkNode(b.get(0));
     });
@@ -4587,8 +4583,8 @@ export function parseScript(p: Parser): ASTNode {
 
 export function parseModule(p: Parser): ASTNode {
     return p.attempt(() => {
-        const b = new Builder(p);
-        Module(b);
+        const b = new Builder(grm,p);
+        ref("Module")(b);
         b.item(assertLengthIs(1));
         return checkNode(b.get(0));
     });
