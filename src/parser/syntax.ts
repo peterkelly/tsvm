@@ -296,25 +296,16 @@ grm.define("ArrayLiteral",(b: Builder): void => {
         const oldLength = b.length;
         const start = b.parser.pos;
         b.items([
-            pos,
-            keyword("["),
-            whitespace,
-        ]);
-
-        const elements: ASTNode[] = [];
-        const listStart = b.parser.pos;
-        let listEnd = b.parser.pos;
-
-        while (true) {
-            b.item(assertLengthIs(oldLength+3));
-            if (b.parser.lookaheadKeyword("]")) {
-                b.parser.expectKeyword("]");
-                break;
-            }
-
-            try {
-                b.items([
-                    choice([
+            pos,             // 5 = start
+            keyword("["),    // 4
+            whitespace,      // 3
+            list(            // 2 = list
+                (b: Builder): void => {
+                    b.push(null);
+                },
+                (b: Builder): void => {
+                    b.item(assertLengthIs(oldLength+3));
+                    b.choice([
                         items([
                             pos,          // 3 = before
                             keyword(","), // 2
@@ -348,26 +339,15 @@ grm.define("ArrayLiteral",(b: Builder): void => {
                             spliceReplace(2,2),
                             assertLengthIs(oldLength+4),
                         ]),
-                    ]),
-                    assertLengthIs(oldLength+4),
-                ]);
-                const curItem = checkNode(b.get(0));
-                b.item(pop);
-
-                elements.push(curItem);
-                listEnd = curItem.range.end;
-            }
-            catch (e) {
-                if (!(e instanceof ParseFailure))
-                    throw e;
-                break;
-            }
-        }
-
-        b.item(assertLengthIs(oldLength+3));
-        const list = new ListNode(new Range(listStart,listEnd),elements);
-        b.item(popAboveAndSet(2,new GenericNode(new Range(start,b.parser.pos),"ArrayLiteral",[list])));
-        b.item(assertLengthIs(oldLength+1));
+                    ]);
+                    b.item(assertLengthIs(oldLength+4));
+                }
+            ),
+            keyword("]"),    // 1
+            pos,             // 0 = end
+            assertLengthIs(oldLength+6),
+            spliceNode(5,"ArrayLiteral",5,0,[2]),
+        ]);
         checkNode(b.get(0));
     });
 });
