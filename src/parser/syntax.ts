@@ -29,8 +29,6 @@ import {
     BindingIdentifierNode,
     LabelIdentifierNode,
     IdentifierNode,
-    TrueNode,
-    FalseNode,
     NumericLiteralNode,
     StringLiteralNode,
     ListNode,
@@ -243,28 +241,20 @@ function BooleanLiteral(b: Builder): void {
     const oldLength = b.length;
     b.items([
         choice([
-            () => {
-                b.items([
-                    pos,
-                    keyword("true"),
-                    pos,
-                    assertLengthIs(oldLength+3),
-                ]);
-                const start = checkNumber(b.get(2));
-                const end = checkNumber(b.get(0));
-                b.item(popAboveAndSet(2,new TrueNode(new Range(start,end))));
-            },
-            () => {
-                b.items([
-                    pos,
-                    keyword("false"),
-                    pos,
-                    assertLengthIs(oldLength+3),
-                ]);
-                const start = checkNumber(b.get(2));
-                const end = checkNumber(b.get(0));
-                b.item(popAboveAndSet(2,new FalseNode(new Range(start,end))));
-            },
+            items([
+                pos,
+                keyword("true"),
+                pos,
+                assertLengthIs(oldLength+3),
+                popAboveAndMakeNode(2,"True",2,0,[]),
+            ]),
+            items([
+                pos,
+                keyword("false"),
+                pos,
+                assertLengthIs(oldLength+3),
+                popAboveAndMakeNode(2,"False",2,0,[]),
+            ]),
         ]),
         assertLengthIs(oldLength+1),
     ]);
