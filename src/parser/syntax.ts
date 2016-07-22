@@ -29,7 +29,8 @@ import {
     BindingIdentifierNode,
     LabelIdentifierNode,
     IdentifierNode,
-    BooleanLiteralNode,
+    TrueNode,
+    FalseNode,
     NumericLiteralNode,
     StringLiteralNode,
     ListNode,
@@ -251,7 +252,7 @@ function BooleanLiteral(b: Builder): void {
                 ]);
                 const start = checkNumber(b.get(2));
                 const end = checkNumber(b.get(0));
-                b.item(popAboveAndSet(2,new BooleanLiteralNode(new Range(start,end),true)));
+                b.item(popAboveAndSet(2,new TrueNode(new Range(start,end))));
             },
             () => {
                 b.items([
@@ -262,7 +263,7 @@ function BooleanLiteral(b: Builder): void {
                 ]);
                 const start = checkNumber(b.get(2));
                 const end = checkNumber(b.get(0));
-                b.item(popAboveAndSet(2,new BooleanLiteralNode(new Range(start,end),false)));
+                b.item(popAboveAndSet(2,new FalseNode(new Range(start,end))));
             },
         ]),
         assertLengthIs(oldLength+1),

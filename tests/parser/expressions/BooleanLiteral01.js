@@ -6,5 +6,5 @@ ast-module
 Module 0-6 "true ;"
   [] 0-6 "true ;"
     ExpressionStatement 0-6 "true ;"
-      true 0-4 "true"
+      True 0-4 "true"
 *******************************************************************************/

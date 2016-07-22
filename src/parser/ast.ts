@@ -208,18 +208,23 @@ export class NullLiteralNode extends ExpressionNode {
     }
 }
 
-export class BooleanLiteralNode extends ExpressionNode {
-    _nominal_type_BooleanLiteralNode: any;
-    public readonly value: boolean;
-    public constructor(range: Range, value: boolean) {
-        super(range,"BooleanLiteral");
-        this.value = value;
+export class TrueNode extends ExpressionNode {
+    _nominal_type_TrueNode: any;
+    public constructor(range: Range) {
+        super(range,"True");
     }
     public get children(): ASTNode[] {
         return [];
     }
-    public get label(): string {
-        return this.value ? "true" : "false";
+}
+
+export class FalseNode extends ExpressionNode {
+    _nominal_type_FalseNode: any;
+    public constructor(range: Range) {
+        super(range,"False");
+    }
+    public get children(): ASTNode[] {
+        return [];
     }
 }
 
