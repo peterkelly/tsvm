@@ -305,27 +305,8 @@ grm.define("ArrayLiteral",(b: Builder): void => {
         const listStart = b.parser.pos;
         let listEnd = b.parser.pos;
 
-        b.items([
-            assertLengthIs(oldLength+3),
-            opt(items([
-                pos,          // 3 = before
-                keyword(","), // 2
-                pos,          // 1 = after
-                whitespace,   // 0
-                assertLengthIs(oldLength+7),
-                spliceNode(3,"Elision",3,1,[]),
-            ])),
-            assertLengthIs(oldLength+4),
-        ]);
-
-        const initialElision = checkNode(b.get(0));
-        if (initialElision != null) {
-            elements.push(initialElision);
-            listEnd = initialElision.range.end;
-        }
-
         while (true) {
-            b.item(assertLengthIs(oldLength+4));
+            b.item(assertLengthIs(oldLength+3));
             if (b.parser.lookaheadKeyword("]")) {
                 b.parser.expectKeyword("]");
                 break;
@@ -339,9 +320,9 @@ grm.define("ArrayLiteral",(b: Builder): void => {
                             keyword(","), // 2
                             pos,          // 1 = after
                             whitespace,   // 0
-                            assertLengthIs(oldLength+8),
+                            assertLengthIs(oldLength+7),
                             spliceNode(3,"Elision",3,1,[]),
-                            assertLengthIs(oldLength+5),
+                            assertLengthIs(oldLength+4),
                         ]),
                         items([
                             ref("AssignmentExpression"),
@@ -351,9 +332,9 @@ grm.define("ArrayLiteral",(b: Builder): void => {
                                 whitespace,
                                 pop,
                             ])),
-                            assertLengthIs(oldLength+7),
+                            assertLengthIs(oldLength+6),
                             spliceReplace(2,2),
-                            assertLengthIs(oldLength+5),
+                            assertLengthIs(oldLength+4),
                         ]),
                         items([
                             ref("SpreadElement"),
@@ -363,12 +344,12 @@ grm.define("ArrayLiteral",(b: Builder): void => {
                                 whitespace,
                                 pop,
                             ])),
-                            assertLengthIs(oldLength+7),
+                            assertLengthIs(oldLength+6),
                             spliceReplace(2,2),
-                            assertLengthIs(oldLength+5),
+                            assertLengthIs(oldLength+4),
                         ]),
                     ]),
-                    assertLengthIs(oldLength+5),
+                    assertLengthIs(oldLength+4),
                 ]);
                 const curItem = checkNode(b.get(0));
                 b.item(pop);
@@ -383,9 +364,9 @@ grm.define("ArrayLiteral",(b: Builder): void => {
             }
         }
 
-        b.item(assertLengthIs(oldLength+4));
+        b.item(assertLengthIs(oldLength+3));
         const list = new ListNode(new Range(listStart,listEnd),elements);
-        b.item(popAboveAndSet(3,new GenericNode(new Range(start,b.parser.pos),"ArrayLiteral",[list])));
+        b.item(popAboveAndSet(2,new GenericNode(new Range(start,b.parser.pos),"ArrayLiteral",[list])));
         b.item(assertLengthIs(oldLength+1));
         checkNode(b.get(0));
     });
