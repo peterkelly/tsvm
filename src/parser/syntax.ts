@@ -49,7 +49,6 @@ import {
     opt,
     choice,
     repeat,
-    repeatChoice,
     pos,
     value,
     keyword,
@@ -424,7 +423,7 @@ grm.define("MemberExpression",
     sequence([
         pos,
         ref("MemberExpression_start"),
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,            // 6
                 keyword("["),          // 5
@@ -444,7 +443,7 @@ grm.define("MemberExpression",
                 whitespace,            // 0
                 spliceNode(6,"MemberAccessIdent",7,1,[6,2]),
             ]),
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
@@ -534,7 +533,7 @@ grm.define("CallExpression",
     sequence([
         pos,
         ref("CallExpression_start"),
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,            // 2
                 ref("Arguments"),      // 1
@@ -563,7 +562,7 @@ grm.define("CallExpression",
             //     // TODO
             //     left = TemplateLiteral(p);
             // },
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
@@ -759,7 +758,7 @@ grm.define("MultiplicativeExpression",
     sequence([
         pos,                            // 6 = start
         ref("UnaryExpression"),         // 5 = left
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,             // 4
                 keyword("*"),           // 3
@@ -784,7 +783,7 @@ grm.define("MultiplicativeExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"Modulo",6,0,[5,1]),
             ]),
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
@@ -796,7 +795,7 @@ grm.define("AdditiveExpression",
     sequence([
         pos,                                     // 6 = start
         ref("MultiplicativeExpression"),         // 5 = left
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,                      // 4
                 keyword("+"),                    // 3
@@ -813,7 +812,7 @@ grm.define("AdditiveExpression",
                 pos,                             // 0 = end
                 spliceNode(5,"Subtract",6,0,[5,1]),
             ]),
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
@@ -825,7 +824,7 @@ grm.define("ShiftExpression",
     sequence([
         pos,                               // 6 = start
         ref("AdditiveExpression"),         // 5 = left
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,                // 4
                 keyword("<<"),             // 3
@@ -850,7 +849,7 @@ grm.define("ShiftExpression",
                 pos,                       // 0 = end
                 spliceNode(5,"SignedRightShift",6,0,[5,1]),
             ]),
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
@@ -862,7 +861,7 @@ grm.define("RelationalExpression",
     sequence([
         pos,                            // 6 = start
         ref("ShiftExpression"),         // 5 = left
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,             // 4
                 keyword("<="),          // 3
@@ -911,7 +910,7 @@ grm.define("RelationalExpression",
                 pos,                    // 0 = end
                 spliceNode(5,"In",6,0,[5,1]),
             ]),
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
@@ -923,7 +922,7 @@ grm.define("EqualityExpression",
     sequence([
         pos,                                 // 6 = start
         ref("RelationalExpression"),         // 5 = left
-        repeatChoice([
+        repeat(choice([
             sequence([
                 whitespace,                  // 4
                 keyword("==="),              // 3
@@ -956,7 +955,7 @@ grm.define("EqualityExpression",
                 pos,                         // 0 = end
                 spliceNode(5,"AbstractNotEquals",6,0,[5,1]),
             ]),
-        ]),
+        ])),
         spliceReplace(1,0),
     ]));
 
