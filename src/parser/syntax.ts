@@ -38,6 +38,7 @@ import {
 import {
     Builder,
     Grammar,
+    not,
     ref,
     list,
     items,
@@ -56,7 +57,6 @@ import {
     pos,
     value,
     keyword,
-    notKeyword,
     identifier,
     whitespace,
     whitespaceNoNewline,
@@ -1313,10 +1313,10 @@ grm.define("Expression",
 
 grm.define("Statement",
     choice([
+        ref("ExpressionStatement"),
         ref("BlockStatement"),
         ref("VariableStatement"),
         ref("EmptyStatement"),
-        ref("ExpressionStatement"),
         ref("IfStatement"),
         ref("BreakableStatement"),
         ref("ContinueStatement"),
@@ -1752,22 +1752,16 @@ grm.define("EmptyStatement",
 // ExpressionStatement
 
 grm.define("ExpressionStatement",(b: Builder): void => {
-    const p = b.parser;
-    const start2 = p.pos;
-
-    // Lookahead not in one of the four sequences <{> <function> <class> <let [>
-
-    if (p.lookaheadKeyword("{") || p.lookaheadKeyword("function") || p.lookaheadKeyword("class"))
-        throw new ParseIgnore();
-
-    if (p.matchKeyword("let")) {
-        p.skipWhitespace();
-        if (p.matchKeyword("[")) {
-            p.pos = start2;
-            throw new ParseIgnore();
-        }
-    }
-    p.pos = start2;
+    b.items([
+        not(keyword("{")),
+        not(keyword("function")),
+        not(keyword("class")),
+        not(items([
+            keyword("let"),
+            whitespace,
+            keyword("["),
+        ])),
+    ]);
 
     b.attempt((): void => {
         const oldLength = b.length;
@@ -1869,13 +1863,13 @@ grm.define("IterationStatement_for_c",
         whitespace,                             // 10
         choice([
             items([
-                notKeyword("let"), // FIXME: need tests for this
-                notKeyword("["), // FIXME: need tests for this
-                ref("Expression"),
-                whitespace,
-                keyword(";"),
-                whitespace,
-                spliceReplace(5,3),
+                not(keyword("let")), // FIXME: need tests for this
+                not(keyword("[")), // FIXME: need tests for this
+                ref("Expression"),              // 3 = expr
+                whitespace,                     // 2
+                keyword(";"),                   // 1
+                whitespace,                     // 0
+                spliceReplace(3,3),
             ]),
             items([
                 pos,                            // 7 = start2
@@ -1930,10 +1924,9 @@ grm.define("IterationStatement_for_in",
         whitespace,                // 10
         choice([                   // 9 = binding
             items([
-                notKeyword("let"), // FIXME: need tests for this
-                notKeyword("["), // FIXME: need tests for this
+                not(keyword("let")), // FIXME: need tests for this
+                not(keyword("[")), // FIXME: need tests for this
                 ref("LeftHandSideExpression"),
-                spliceReplace(2,0),
             ]),
             items([
                 pos,
@@ -1972,10 +1965,9 @@ grm.define("IterationStatement_for_of",
         whitespace,                // 10
         choice([                   // 9
             items([
-                notKeyword("let"), // FIXME: need tests for this
-                notKeyword("["), // FIXME: need tests for this
+                not(keyword("let")), // FIXME: need tests for this
+                not(keyword("[")), // FIXME: need tests for this
                 ref("LeftHandSideExpression"),
-                spliceReplace(2,0),
             ]),
             items([
                 pos,
@@ -2586,8 +2578,7 @@ grm.define("ArrowParameters",
 
 grm.define("ConciseBody_1",
     items([
-        notKeyword("{"),
-        pop,
+        not(keyword("{")),
         ref("AssignmentExpression"),
     ]));
 
@@ -3296,15 +3287,15 @@ grm.define("ExportDeclaration",
                 spliceNode(6,"ExportDefault",6,0,[1]),
             ]),
             items([
-                keyword("default"),          // 7
-                whitespace,                  // 6
-                notKeyword("function"),      // 5 FIXME: need tests for this
-                notKeyword("class"),         // 4 FIXME: need tests for this
+                keyword("default"),          // 5
+                whitespace,                  // 4
+                not(keyword("function")),    // FIXME: need tests for this
+                not(keyword("class")),       // FIXME: need tests for this
                 ref("AssignmentExpression"), // 3
                 whitespace,                  // 2
                 keyword(";"),                // 1
                 pos,                         // 0
-                spliceNode(10,"ExportDefault",10,0,[3]),
+                spliceNode(8,"ExportDefault",8,0,[3]),
             ]),
             items([
                 keyword("*"),                // 5
