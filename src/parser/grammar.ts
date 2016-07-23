@@ -46,6 +46,7 @@ export class Grammar {
     public lookup(name: string): Action {
         return this.productions[name];
     }
+
     public dump(output: (str: string) => void): void {
         for (const name of this.names)
             this.productions[name].dump("","",output);
@@ -56,28 +57,20 @@ export class Builder {
     public grammar: Grammar;
     public parser: Parser;
     public stack: any[] = [];
+
     public constructor(grammar: Grammar, parser: Parser) {
         this.grammar = grammar;
         this.parser = parser;
     }
+
     public get length(): number {
         return this.stack.length;
     }
-    public item(f: (b: Builder) => void): void {
-        f(this);
-    }
-    public sequence(funs: ((b: Builder) => void)[]): void {
-        for (const f of funs)
-            f(this);
-    }
+
     public push(value: any): void {
         this.stack.push(value);
     }
-    public pop(n: number = 1): void {
-        if (n > this.stack.length)
-            throw new Error("Attempt to pop past end of stack");
-        this.stack.length -= n;
-    }
+
     public get(index: number): any {
         const pos = this.stack.length-1-index;
         if (pos >= 0)
@@ -86,7 +79,7 @@ export class Builder {
             throw new Error("Attempt to access position "+(this.stack.length-1-index)+" on stack");
     }
 
-    public popAboveAndSet(index: number, value: any): any {
+    public splice(index: number, value: any): any {
         const pos = this.stack.length-index-1;
         if (pos >= 0) {
             this.stack[pos] = value;
@@ -97,11 +90,11 @@ export class Builder {
         }
     }
 
-    public attempt(f: () => void): void {
+    public attempt(f: (b: Builder) => void): void {
         const start = this.parser.pos;
         const length = this.stack.length;
         try {
-            f();
+            f(this);
         }
         catch (e) {
             this.parser.pos = start;
@@ -110,108 +103,17 @@ export class Builder {
         }
     }
 
-    public not(f: (b: Builder) => void): void {
-        const start = this.parser.pos;
-        const length = this.stack.length;
-
-        let hadException = false;
-        try {
-            f(this);
-        }
-        catch (e) {
-            this.parser.pos = start;
-            this.stack.length = length;
-            if (!(e instanceof ParseFailure))
-                throw e;
-            hadException = true;
-        }
-
-        this.parser.pos = start;
-        this.stack.length = length;
-
-        if (!hadException)
-            throw new ParseError(this.parser,this.parser.pos,"NOT predicate failed");
-    }
-
-    // F must either throw an exception or result in exactly one extra item on the stack
-    public opt(f: (b: Builder) => void): void {
-        try {
-            this.attempt(() => {
-                const oldLength = this.stack.length;
-                f(this);
-                this.assertLengthIs(oldLength+1);
-            });
-        }
-        catch (e) {
-            if (!(e instanceof ParseFailure))
-                throw e;
-            this.push(null);
-        }
-    }
-
-    public choice(list: ((b: Builder) => void)[]): void {
-        const start = this.parser.pos;
-        const length = this.stack.length;
-        for (const item of list) {
-            try {
-                return item(this);
-            }
-            catch (e) {
-                if (!(e instanceof ParseFailure))
-                    throw e;
-                this.parser.pos = start;
-                this.stack.length = length;
-            }
-        }
-        throw new ParseError(this.parser,this.parser.pos,"No valid alternative found");
-    }
-
     public repeat(f: (b: Builder) => void): void {
         while (true) {
-            const start = this.parser.pos;
-            const length = this.stack.length;
             try {
-                f(this);
+                this.attempt(f);
             }
             catch (e) {
                 if (!(e instanceof ParseFailure))
                     throw e;
-
-                this.parser.pos = start;
-                this.stack.length = length;
                 return;
             }
         }
-    }
-
-    public list(first: (b: Builder) => void, rest: (b: Builder) => void): void {
-        this.attempt(() => {
-            const start = this.parser.pos;
-            const elements: ASTNode[] = [];
-            const initialLength = this.stack.length;
-
-            first(this);
-            this.assertLengthIs(initialLength+1);
-            const firstNode = checkNode(this.get(0));
-            if (firstNode != null)
-                elements.push(firstNode);
-            this.stack.pop();
-
-            this.assertLengthIs(initialLength);
-            this.repeat(() => {
-                rest(this);
-                this.assertLengthIs(initialLength+1);
-                const node = this.get(0);
-                if (node != null)
-                    elements.push(node);
-                this.stack.pop();
-                this.assertLengthIs(initialLength);
-            });
-
-            this.assertLengthIs(initialLength);
-            const end = (elements.length > 0) ? elements[elements.length-1].range.end : start;
-            this.push(new ListNode(new Range(start,end),elements));
-        });
     }
 
     public assertLengthIs(length: number): void {
@@ -321,9 +223,26 @@ class NotAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.not((b: Builder) => {
+        const start = b.parser.pos;
+        const length = b.stack.length;
+
+        let hadException = false;
+        try {
             this.child.execute(b);
-        });
+        }
+        catch (e) {
+            b.parser.pos = start;
+            b.stack.length = length;
+            if (!(e instanceof ParseFailure))
+                throw e;
+            hadException = true;
+        }
+
+        b.parser.pos = start;
+        b.stack.length = length;
+
+        if (!hadException)
+            throw new ParseError(b.parser,b.parser.pos,"NOT predicate failed");
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -382,11 +301,33 @@ class ListAction extends Action {
                 this.rest.equals(other.rest));
     }
 
-    public execute(bx: Builder): void {
-        bx.list(
-            (b: Builder): void => this.first.execute(b),
-            (b: Builder): void => this.rest.execute(b)
-        );
+    public execute(b: Builder): void {
+        b.attempt(() => {
+            const start = b.parser.pos;
+            const elements: ASTNode[] = [];
+            const initialLength = b.stack.length;
+
+            this.first.execute(b);
+            b.assertLengthIs(initialLength+1);
+            const firstNode = checkNode(b.get(0));
+            if (firstNode != null)
+                elements.push(firstNode);
+            b.stack.pop();
+
+            b.assertLengthIs(initialLength);
+            b.repeat(() => {
+                this.rest.execute(b);
+                b.assertLengthIs(initialLength+1);
+                const node = b.get(0);
+                if (node != null)
+                    elements.push(node);
+                b.stack.pop();
+                b.assertLengthIs(initialLength);
+            });
+            b.assertLengthIs(initialLength);
+            const end = (elements.length > 0) ? elements[elements.length-1].range.end : start;
+            b.push(new ListNode(new Range(start,end),elements));
+        });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -415,9 +356,9 @@ class SequenceAction extends Action {
                 actionArrayEquals(this.actions,other.actions));
     }
 
-    public execute(bx: Builder): void {
-        const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
-        bx.sequence(funs);
+    public execute(b: Builder): void {
+        for (const act of this.actions)
+            act.execute(b);
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -448,7 +389,7 @@ class SpliceNullAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.popAboveAndSet(this.index,null);
+        b.splice(this.index,null);
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -477,7 +418,7 @@ class SpliceReplaceAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.popAboveAndSet(this.index,b.get(this.srcIndex));
+        b.splice(this.index,b.get(this.srcIndex));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -515,7 +456,7 @@ class SpliceNodeAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.popAboveAndSet(this.index,makeNode(b,this.startIndex,this.endIndex,this.name,this.childIndices));
+        b.splice(this.index,makeNode(b,this.startIndex,this.endIndex,this.name,this.childIndices));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -565,7 +506,7 @@ class SpliceStringNodeAction extends Action {
         const end = checkNumber(b.get(this.endIndex));
         const range = new Range(start,end);
         const valueNode = checkStringNode(b.get(this.valueIndex));
-        b.popAboveAndSet(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
+        b.splice(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -612,7 +553,7 @@ class SpliceNumberNodeAction extends Action {
         const end = checkNumber(b.get(this.endIndex));
         const range = new Range(start,end);
         const valueNode = checkNumberNode(b.get(this.valueIndex));
-        b.popAboveAndSet(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
+        b.splice(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -649,7 +590,7 @@ class SpliceEmptyListNodeAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.popAboveAndSet(this.index,makeEmptyListNode(b,this.startIndex,this.endIndex));
+        b.splice(this.index,makeEmptyListNode(b,this.startIndex,this.endIndex));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -671,7 +612,9 @@ class PopAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.pop();
+        if (b.stack.length == 0)
+            throw new Error("Attempt to pop past end of stack");
+        b.stack.length--;
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -695,9 +638,19 @@ class OptAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.opt((b: Builder) => {
-            this.child.execute(b);
-        });
+        // child must either throw an exception or result in exactly one extra item on the stack
+        try {
+            b.attempt(() => {
+                const oldLength = b.stack.length;
+                this.child.execute(b);
+                b.assertLengthIs(oldLength+1);
+            });
+        }
+        catch (e) {
+            if (!(e instanceof ParseFailure))
+                throw e;
+            b.push(null);
+        }
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -724,9 +677,22 @@ class ChoiceAction extends Action {
                 actionArrayEquals(this.actions,other.actions));
     }
 
-    public execute(bx: Builder): void {
-        const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
-        bx.choice(funs);
+    public execute(b: Builder): void {
+        const start = b.parser.pos;
+        const length = b.stack.length;
+        for (const act of this.actions) {
+            try {
+                act.execute(b);
+                return;
+            }
+            catch (e) {
+                if (!(e instanceof ParseFailure))
+                    throw e;
+                b.parser.pos = start;
+                b.stack.length = length;
+            }
+        }
+        throw new ParseError(b.parser,b.parser.pos,"No valid alternative found");
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
