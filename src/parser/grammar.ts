@@ -241,11 +241,31 @@ function numberArrayEquals(first: number[], second: number[]): boolean {
     return true;
 }
 
+function actionsTotalOffset(actions: Action[]): number {
+    let total = 0;
+    for (const action of actions)
+        total += action.offset;
+    return total;
+}
+
+function actionsSameOffset(actions: Action[]): number {
+    if (actions.length == 0)
+        return 0;
+    let result = actions[0].offset;
+    for (let i = 1; i < actions.length; i++) {
+        if (actions[i].offset != result)
+            throw new Error("Choice has children with different offset values");
+    }
+    return result;
+}
+
 export abstract class Action {
     public readonly kind: string;
+    public readonly offset: number;
 
-    public constructor(kind: string) {
+    public constructor(kind: string, offset: number) {
         this.kind = kind;
+        this.offset = offset;
     }
 
     public abstract equals(other: Action): boolean;
@@ -260,7 +280,7 @@ class ProductionAction extends Action {
     private name: string;
 
     public constructor(name: string, child: Action) {
-        super("["+name+"]");
+        super("["+name+"]",1);
         this.name = name;
         this.child = child;
     }
@@ -291,7 +311,7 @@ class NotAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
-        super("not");
+        super("not",0);
         this.child = child;
     }
 
@@ -321,7 +341,7 @@ class RefAction extends Action {
     private name: string;
 
     public constructor(productionName: string) {
-        super("ref");
+        super("ref",1);
         this.name = productionName;
     }
 
@@ -351,7 +371,7 @@ class ListAction extends Action {
     private rest: Action;
 
     public constructor(first: Action, rest: Action) {
-        super("list");
+        super("list",1);
         this.first = first;
         this.rest = rest;
     }
@@ -386,7 +406,7 @@ class SequenceAction extends Action {
     private actions: Action[];
 
     public constructor(actions: Action[]) {
-        super("sequence");
+        super("sequence",actionsTotalOffset(actions));
         this.actions = actions;
     }
 
@@ -418,7 +438,7 @@ class SpliceNullAction extends Action {
     private index: number;
 
     public constructor(index: number) {
-        super("spliceNull");
+        super("spliceNull",-index);
         this.index = index;
     }
 
@@ -445,7 +465,7 @@ class SpliceReplaceAction extends Action {
     private srcIndex: number;
 
     public constructor(index: number, srcIndex: number) {
-        super("spliceReplace");
+        super("spliceReplace",-index);
         this.index = index;
         this.srcIndex = srcIndex;
     }
@@ -477,7 +497,7 @@ class SpliceNodeAction extends Action {
     private childIndices: number[];
 
     public constructor(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]) {
-        super("spliceNode");
+        super("spliceNode",-index);
         this.index = index;
         this.name = name;
         this.startIndex = startIndex;
@@ -524,7 +544,7 @@ class SpliceStringNodeAction extends Action {
     private valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
-        super("spliceStringNode");
+        super("spliceStringNode",-index);
         this.index = index;
         this.nodeName = nodeName;
         this.startIndex = startIndex;
@@ -571,7 +591,7 @@ class SpliceNumberNodeAction extends Action {
     private valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
-        super("spliceNumberNode");
+        super("spliceNumberNode",-index);
         this.index = index;
         this.nodeName = nodeName;
         this.startIndex = startIndex;
@@ -616,7 +636,7 @@ class SpliceEmptyListNodeAction extends Action {
     private endIndex: number;
 
     public constructor(index: number, startIndex: number, endIndex: number) {
-        super("spliceEmptyListNode");
+        super("spliceEmptyListNode",-index);
         this.index = index;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -645,7 +665,7 @@ class PushAction extends Action {
     private value: any;
 
     public constructor(value: any) {
-        super("push");
+        super("push",1);
         this.value = value;
     }
 
@@ -669,7 +689,7 @@ export function push(value: any): Action {
 
 class PopAction extends Action {
     public constructor() {
-        super("pop");
+        super("pop",-1);
     }
 
     public equals(other: Action): boolean {
@@ -691,7 +711,7 @@ class OptAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
-        super("opt");
+        super("opt",1);
         this.child = child;
     }
 
@@ -721,7 +741,7 @@ class ChoiceAction extends Action {
     private actions: Action[];
 
     public constructor(actions: Action[]) {
-        super("choice");
+        super("choice",actionsSameOffset(actions));
         this.actions = actions;
     }
 
@@ -753,7 +773,7 @@ class RepeatAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
-        super("repeat");
+        super("repeat",0);
         this.child = child;
     }
 
@@ -781,7 +801,7 @@ export function repeat(f: Action): Action {
 
 class PosAction extends Action {
     public constructor() {
-        super("pos");
+        super("pos",1);
     }
 
     public equals(other: Action): boolean {
@@ -803,7 +823,7 @@ class ValueAction extends Action {
     private value: any;
 
     public constructor(value: any) {
-        super("value");
+        super("value",1);
         this.value = value;
     }
 
@@ -830,7 +850,7 @@ class KeywordAction extends Action {
     private str: string;
 
     public constructor(str: string) {
-        super("keyword");
+        super("keyword",1);
         this.str = str;
     }
 
@@ -857,7 +877,7 @@ class IdentifierAction extends Action {
     private str: string;
 
     public constructor(str: string) {
-        super("identifier");
+        super("identifier",1);
         this.str = str;
     }
 
@@ -890,7 +910,7 @@ export function identifier(str: string): Action {
 
 class WhitespaceAction extends Action {
     public constructor() {
-        super("whitespace");
+        super("whitespace",1);
     }
 
     public equals(other: Action): boolean {
@@ -911,7 +931,7 @@ export const whitespace = new WhitespaceAction();
 
 class WhitespaceNoNewlineAction extends Action {
     public constructor() {
-        super("whitespaceNoNewline");
+        super("whitespaceNoNewline",1);
     }
 
     public equals(other: Action): boolean {
@@ -982,7 +1002,7 @@ export function makeEmptyListNode(b: Builder, startIndex: number, endIndex: numb
 
 class IdentifierTokenAction extends Action {
     public constructor() {
-        super("identifier_token");
+        super("identifier_token",1);
     }
 
     public equals(other: Action): boolean {
@@ -1021,7 +1041,7 @@ export const identifier_token: Action = new IdentifierTokenAction();
 
 class NumericLiteralTokenAction extends Action {
     public constructor() {
-        super("numeric_literal_token");
+        super("numeric_literal_token",1);
     }
 
     public equals(other: Action): boolean {
@@ -1057,7 +1077,7 @@ export const numeric_literal_token: Action = new NumericLiteralTokenAction();
 
 class StringLiteralTokenAction extends Action {
     public constructor() {
-        super("string_literal_token");
+        super("string_literal_token",1);
     }
 
     public equals(other: Action): boolean {
