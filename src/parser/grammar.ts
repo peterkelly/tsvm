@@ -34,15 +34,21 @@ import {
 
 export class Grammar {
     public productions: { [name: string]: Action } = {};
+    public names: string[] = [];
 
     public define(name: string, fun: Action) {
         if (this.productions[name] != null)
             throw new Error("Production "+name+" is already defined");
         this.productions[name] = new ProductionAction(name,fun);
+        this.names.push(name);
     }
 
     public lookup(name: string): Action {
         return this.productions[name];
+    }
+    public dump(output: (str: string) => void): void {
+        for (const name of this.names)
+            this.productions[name].dump("","",output);
     }
 }
 
@@ -223,13 +229,17 @@ export abstract class Action {
     }
 
     public abstract execute(b: Builder): void;
+
+    public abstract dump(prefix: string, indent: string, output: (str: string) => void): void;
 }
 
 class ProductionAction extends Action {
     private child: Action;
+    private name: string;
 
     public constructor(name: string, child: Action) {
         super("["+name+"]");
+        this.name = name;
         this.child = child;
     }
 
@@ -241,18 +251,11 @@ class ProductionAction extends Action {
             checkNode(b.get(0));
         });
     }
-}
 
-class FunctionAction extends Action {
-    private f: (b: Builder) => void;
-
-    public constructor(f: (b: Builder) => void) {
-        super("function");
-        this.f = f;
-    }
-
-    public execute(b: Builder): void {
-        this.f(b);
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output("grm.define("+JSON.stringify(this.name)+",\n");
+        this.child.dump(indent+"    ",indent+"    ",output);
+        output(");\n\n");
     }
 }
 
@@ -268,6 +271,12 @@ class NotAction extends Action {
         b.not((b: Builder) => {
             this.child.execute(b);
         });
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(indent+"not(");
+        this.child.dump("",indent,output);
+        output(")");
     }
 }
 
@@ -288,6 +297,10 @@ class RefAction extends Action {
         if (production == null)
             throw new Error("Production "+this.name+" not defined");
         production.execute(b);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"ref("+JSON.stringify(this.name)+")");
     }
 }
 
@@ -311,6 +324,14 @@ class ListAction extends Action {
             (b: Builder): void => this.rest.execute(b)
         );
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"list(\n");
+        this.first.dump(indent+"    ",indent+"    ",output);
+        output(",\n");
+        this.rest.dump(indent+"    ",indent+"    ",output);
+        output("\n"+indent+")");
+    }
 }
 
 export function list(first: Action, rest: Action): Action {
@@ -329,6 +350,15 @@ class SequenceAction extends Action {
         const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
         bx.sequence(funs);
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"sequence([\n");
+        for (const act of this.actions) {
+            act.dump(indent+"    ",indent+"    ",output);
+            output(",\n");
+        }
+        output(indent+"])");
+    }
 }
 
 export function sequence(actions: Action[]): Action {
@@ -345,6 +375,10 @@ class SpliceNullAction extends Action {
 
     public execute(b: Builder): void {
         b.popAboveAndSet(this.index,null);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"spliceNull("+this.index+")");
     }
 }
 
@@ -364,6 +398,10 @@ class SpliceReplaceAction extends Action {
 
     public execute(b: Builder): void {
         b.popAboveAndSet(this.index,b.get(this.srcIndex));
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"spliceReplace("+this.index+","+this.srcIndex+")");
     }
 }
 
@@ -389,6 +427,19 @@ class SpliceNodeAction extends Action {
 
     public execute(b: Builder): void {
         b.popAboveAndSet(this.index,makeNode(b,this.startIndex,this.endIndex,this.name,this.childIndices));
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(
+            prefix+
+            "spliceNode("+
+            this.index+","+
+            JSON.stringify(this.name)+","+
+            this.startIndex+","+
+            this.endIndex+","+
+            "["+this.childIndices.map((n: number) => n.toString()).join(",")+"]"+
+            ")"
+        )
     }
 }
 
@@ -419,6 +470,16 @@ class SpliceStringNodeAction extends Action {
         const valueNode = checkStringNode(b.get(this.valueIndex));
         b.popAboveAndSet(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(
+            prefix+"spliceStringNode("+this.index+","+
+            JSON.stringify(this.nodeName)+","+
+            this.startIndex+","+
+            this.endIndex+","+
+            this.valueIndex+")"
+        );
+    }
 }
 
 export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): Action {
@@ -448,6 +509,16 @@ class SpliceNumberNodeAction extends Action {
         const valueNode = checkNumberNode(b.get(this.valueIndex));
         b.popAboveAndSet(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(
+            prefix+"spliceNumberNode("+this.index+","+
+            JSON.stringify(this.nodeName)+","+
+            this.startIndex+","+
+            this.endIndex+","+
+            this.valueIndex+")"
+        );
+    }
 }
 
 export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): Action {
@@ -469,6 +540,10 @@ class SpliceEmptyListNodeAction extends Action {
     public execute(b: Builder): void {
         b.popAboveAndSet(this.index,makeEmptyListNode(b,this.startIndex,this.endIndex));
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"spliceEmptyListNode("+this.index+","+this.startIndex+","+this.endIndex+")");
+    }
 }
 
 export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): Action {
@@ -486,6 +561,10 @@ class PushAction extends Action {
     public execute(b: Builder): void {
         b.push(this.value);
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"push("+JSON.stringify(this.value)+")");
+    }
 }
 
 export function push(value: any): Action {
@@ -499,6 +578,10 @@ class PopAction extends Action {
 
     public execute(b: Builder): void {
         b.pop();
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"pop");
     }
 }
 
@@ -517,6 +600,12 @@ class OptAction extends Action {
             this.child.execute(b);
         });
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(indent+"opt(");
+        this.child.dump("",indent,output);
+        output(")");
+    }
 }
 
 export function opt(f: Action): Action {
@@ -534,6 +623,15 @@ class ChoiceAction extends Action {
     public execute(bx: Builder): void {
         const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
         bx.choice(funs);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"choice([\n");
+        for (const act of this.actions) {
+            act.dump(indent+"    ",indent+"    ",output);
+            output(",\n");
+        }
+        output(indent+"])");
     }
 }
 
@@ -554,6 +652,12 @@ class RepeatAction extends Action {
             this.child.execute(b);
         });
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(indent+"repeat(");
+        this.child.dump("",indent,output);
+        output(")");
+    }
 }
 
 export function repeat(f: Action): Action {
@@ -567,6 +671,10 @@ class PosAction extends Action {
 
     public execute(b: Builder): void {
         b.push(b.parser.pos);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"pos");
     }
 }
 
@@ -582,6 +690,10 @@ class ValueAction extends Action {
 
     public execute(b: Builder): void {
         b.push(this.value);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"value("+JSON.stringify(this.value)+")");
     }
 }
 
@@ -601,6 +713,10 @@ class KeywordAction extends Action {
     public execute(b: Builder): void {
         b.parser.expectKeyword(this.str);
         b.push(null);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"keyword("+JSON.stringify(this.str)+")");
     }
 }
 
@@ -628,6 +744,10 @@ class IdentifierAction extends Action {
             // Identifier_b will already have pushed onto the stack
         });
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"identifier("+JSON.stringify(this.str)+")");
+    }
 }
 
 export function identifier(str: string): Action {
@@ -643,6 +763,10 @@ class WhitespaceAction extends Action {
         b.parser.skipWhitespace();
         b.push(null);
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"whitespace");
+    }
 }
 
 export const whitespace = new WhitespaceAction();
@@ -655,6 +779,10 @@ class WhitespaceNoNewlineAction extends Action {
     public execute(b: Builder): void {
         b.parser.skipWhitespaceNoNewline();
         b.push(null);
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"whitespaceNoNewline");
     }
 }
 
@@ -737,6 +865,10 @@ class IdentifierTokenAction extends Action {
             }
         });
     }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"identifier_token");
+    }
 }
 
 export const identifier_token: Action = new IdentifierTokenAction();
@@ -764,6 +896,10 @@ class NumericLiteralTokenAction extends Action {
         }
         const value = parseFloat(p.text.substring(start,p.pos));
         b.push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value));
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"numeric_literal_token");
     }
 }
 
@@ -812,6 +948,10 @@ class StringLiteralTokenAction extends Action {
             return;
         }
         throw new ParseError(p,p.pos,"Invalid string");
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(prefix+"string_literal_token");
     }
 }
 

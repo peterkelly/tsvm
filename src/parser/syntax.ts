@@ -61,7 +61,7 @@ import {
     string_literal_token,
 } from "./grammar";
 
-const grm = new Grammar();
+export const grm = new Grammar();
 
 // Section 12.1
 
