@@ -44,7 +44,6 @@ import {
     spliceStringNode,
     spliceNumberNode,
     spliceEmptyListNode,
-    push,
     pop,
     opt,
     choice,
@@ -208,7 +207,7 @@ grm.define("ArrayLiteral",
         keyword("["),    // 4
         whitespace,      // 3
         list(            // 2 = list
-            push(null),
+            value(null),
             choice([
                 sequence([
                     pos,          // 3 = before

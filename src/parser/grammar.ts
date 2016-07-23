@@ -661,32 +661,6 @@ export function spliceEmptyListNode(index: number, startIndex: number, endIndex:
     return new SpliceEmptyListNodeAction(index,startIndex,endIndex);
 }
 
-class PushAction extends Action {
-    private value: any;
-
-    public constructor(value: any) {
-        super("push",1);
-        this.value = value;
-    }
-
-    public equals(other: Action): boolean {
-        return ((other instanceof PushAction) &&
-                (this.value == other.value));
-    }
-
-    public execute(b: Builder): void {
-        b.push(this.value);
-    }
-
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"push("+JSON.stringify(this.value)+")");
-    }
-}
-
-export function push(value: any): Action {
-    return new PushAction(value);
-}
-
 class PopAction extends Action {
     public constructor() {
         super("pop",-1);
@@ -841,7 +815,6 @@ class ValueAction extends Action {
     }
 }
 
-// FIXME: Isn't this the same as push?
 export function value(value: any): Action {
     return new ValueAction(value);
 }
