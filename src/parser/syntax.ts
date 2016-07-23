@@ -54,7 +54,6 @@ import {
     identifier,
     whitespace,
     whitespaceNoNewline,
-    checkNode,
     identifier_token,
     numeric_literal_token,
     string_literal_token,
@@ -3302,7 +3301,7 @@ export function parseScript(p: Parser): ASTNode {
         const b = new Builder(grm,p);
         ref("Script").execute(b);
         b.assertLengthIs(1);
-        return checkNode(b.get(0));
+        return b.getNode(0);
     });
 }
 
@@ -3311,6 +3310,6 @@ export function parseModule(p: Parser): ASTNode {
         const b = new Builder(grm,p);
         ref("Module").execute(b);
         b.assertLengthIs(1);
-        return checkNode(b.get(0));
+        return b.getNode(0);
     });
 }

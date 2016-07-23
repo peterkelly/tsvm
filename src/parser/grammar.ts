@@ -79,6 +79,37 @@ export class Builder {
             throw new Error("Attempt to access position "+(this.stack.length-1-index)+" on stack");
     }
 
+    public getNumber(index: number): number {
+        const value = this.get(index);
+        if (typeof(value) === "number")
+            return value;
+        throw new CastError(value,"number");
+    }
+
+    public getNode(index: number): any {
+        const value = this.get(index);
+        if ((value === null) || (value instanceof ASTNode))
+            return value;
+        else
+            throw new CastError(value,"ASTNode | null");
+    }
+
+    public getStringNode(index: number): GenericStringNode | null {
+        const value = this.get(index);
+        if ((value === null) || (value instanceof GenericStringNode))
+            return value;
+        else
+            throw new CastError(value,"GenericStringNode | null");
+    }
+
+    public getNumberNode(index: number): GenericNumberNode | null {
+        const value = this.get(index);
+        if ((value === null) || (value instanceof GenericNumberNode))
+            return value;
+        else
+            throw new CastError(value,"GenericNumberNode | null");
+    }
+
     public splice(index: number, value: any): any {
         const pos = this.stack.length-index-1;
         if (pos >= 0) {
@@ -198,7 +229,7 @@ class ProductionAction extends Action {
             const oldLength = b.length;
             this.child.execute(b);
             b.assertLengthIs(oldLength+1);
-            checkNode(b.get(0));
+            b.getNode(0); // Check that the top of the stack is either a node null
         });
     }
 
@@ -309,7 +340,7 @@ class ListAction extends Action {
 
             this.first.execute(b);
             b.assertLengthIs(initialLength+1);
-            const firstNode = checkNode(b.get(0));
+            const firstNode = b.getNode(0);
             if (firstNode != null)
                 elements.push(firstNode);
             b.stack.pop();
@@ -456,7 +487,13 @@ class SpliceNodeAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.splice(this.index,makeNode(b,this.startIndex,this.endIndex,this.name,this.childIndices));
+        const start = b.getNumber(this.startIndex);
+        const end = b.getNumber(this.endIndex);
+        const children: (ASTNode | null)[] = [];
+        for (const childIndex of this.childIndices) {
+            children.push(b.getNode(childIndex));
+        }
+        b.splice(this.index,new GenericNode(new Range(start,end),this.name,children));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -502,10 +539,10 @@ class SpliceStringNodeAction extends Action {
     }
 
     public execute(b: Builder): void {
-        const start = checkNumber(b.get(this.startIndex));
-        const end = checkNumber(b.get(this.endIndex));
+        const start = b.getNumber(this.startIndex);
+        const end = b.getNumber(this.endIndex);
         const range = new Range(start,end);
-        const valueNode = checkStringNode(b.get(this.valueIndex));
+        const valueNode = b.getStringNode(this.valueIndex);
         b.splice(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
     }
 
@@ -549,10 +586,10 @@ class SpliceNumberNodeAction extends Action {
     }
 
     public execute(b: Builder): void {
-        const start = checkNumber(b.get(this.startIndex));
-        const end = checkNumber(b.get(this.endIndex));
+        const start = b.getNumber(this.startIndex);
+        const end = b.getNumber(this.endIndex);
         const range = new Range(start,end);
-        const valueNode = checkNumberNode(b.get(this.valueIndex));
+        const valueNode = b.getNumberNode(this.valueIndex);
         b.splice(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
     }
 
@@ -590,7 +627,9 @@ class SpliceEmptyListNodeAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.splice(this.index,makeEmptyListNode(b,this.startIndex,this.endIndex));
+        const start = b.getNumber(this.startIndex);
+        const end = b.getNumber(this.endIndex);
+        b.splice(this.index,new ListNode(new Range(start,end),[]));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -831,7 +870,7 @@ class IdentifierAction extends Action {
             const start = b.parser.pos;
             ref("Identifier").execute(b);
             b.assertLengthIs(oldLength+1);
-            const ident = checkNode(b.get(0));
+            const ident = b.getNode(0);
             if (!(ident instanceof GenericStringNode) || (ident.value != this.str))
                 throw new ParseError(b.parser,start,"Expected "+this.str);
             // Identifier_b will already have pushed onto the stack
@@ -889,56 +928,6 @@ class WhitespaceNoNewlineAction extends Action {
 
 export const whitespaceNoNewline = new WhitespaceNoNewlineAction();
 
-export function checkNode(value: any): ASTNode | null {
-    if ((value === null) || (value instanceof ASTNode))
-        return value;
-    else
-        throw new CastError(value,"ASTNode | null");
-}
-
-export function checkStringNode(value: any): GenericStringNode | null {
-    if ((value === null) || (value instanceof GenericStringNode))
-        return value;
-    else
-        throw new CastError(value,"GenericStringNode | null");
-}
-
-export function checkNumberNode(value: any): GenericNumberNode | null {
-    if ((value === null) || (value instanceof GenericNumberNode))
-        return value;
-    else
-        throw new CastError(value,"GenericNumberNode | null");
-}
-
-export function checkListNode(value: any): ListNode | ErrorNode | null {
-    if ((value == null) || (value instanceof ListNode) || (value instanceof ErrorNode))
-        return value;
-    else
-        throw new CastError(value,"ListNode | ErrorNode | null");
-}
-
-export function checkNumber(value: any): number {
-    if (typeof(value) === "number")
-        return value;
-    throw new CastError(value,"number");
-}
-
-export function makeNode(b: Builder, startIndex: number, endIndex: number, name: string, childIndices: number[]): GenericNode {
-    const start = checkNumber(b.get(startIndex));
-    const end = checkNumber(b.get(endIndex));
-    const children: (ASTNode | null)[] = [];
-    for (const childIndex of childIndices) {
-        children.push(checkNode(b.get(childIndex)));
-    }
-    return new GenericNode(new Range(start,end),name,children);
-}
-
-export function makeEmptyListNode(b: Builder, startIndex: number, endIndex: number): ListNode {
-    const start = checkNumber(b.get(startIndex));
-    const end = checkNumber(b.get(endIndex));
-    return new ListNode(new Range(start,end),[]);
-}
-
 class IdentifierTokenAction extends Action {
     public constructor() {
         super("identifier_token",1);
@@ -963,7 +952,7 @@ class IdentifierTokenAction extends Action {
                     throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
                 b.push(new GenericStringNode(range,"Identifier",value));
                 b.assertLengthIs(oldLength+1);
-                checkNode(b.get(0));
+                b.getNode(0); // Check that the top of the stack is either a node null
             }
             else {
                 throw new ParseError(p,p.pos,"Expected Identifier");
@@ -1057,7 +1046,7 @@ class StringLiteralTokenAction extends Action {
                 }
             }
             b.push(new GenericStringNode(new Range(start,p.pos),"StringLiteral",value,true));
-            checkNode(b.get(0));
+            b.getNode(0); // Check that the top of the stack is either a node null
             return;
         }
         throw new ParseError(p,p.pos,"Invalid string");
