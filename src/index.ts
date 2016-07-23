@@ -14,7 +14,7 @@
 
 import fs = require("fs");
 import path = require("path");
-import { parseModule } from "./parser/syntax";
+import { grm, parseModule } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
 import { compileModule } from "./compiler";
@@ -299,6 +299,12 @@ function compile(relFilename: string) {
     }
 }
 
+function printGrammar(): void {
+    const components: string[] = [];
+    grm.dump((str: string) => components.push(str));
+    console.log(components.join(""));
+}
+
 function main(): void {
     let i = 2;
     const argv = process.argv;
@@ -306,6 +312,9 @@ function main(): void {
 
     if ((process.argv.length == 4) && (process.argv[2] == "runtests")) {
         runtests(process.argv[3]);
+    }
+    else if ((i < argc) && (argv[i] == "grammar")) {
+        printGrammar();
     }
     else if ((i < argc) && (argv[i] == "compile")) {
         compile(argv[i]);
