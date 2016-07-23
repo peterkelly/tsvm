@@ -3301,7 +3301,7 @@ grm.define("ExportSpecifier",
 export function parseScript(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(grm,p);
-        ref("Script")(b);
+        ref("Script").execute(b);
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });
@@ -3310,7 +3310,7 @@ export function parseScript(p: Parser): ASTNode {
 export function parseModule(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(grm,p);
-        ref("Module")(b);
+        ref("Module").execute(b);
         b.assertLengthIs(1);
         return checkNode(b.get(0));
     });

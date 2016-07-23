@@ -33,21 +33,15 @@ import {
 } from "./ast";
 
 export class Grammar {
-    public productions: { [name: string]: (b: Builder) => void } = {};
+    public productions: { [name: string]: Action } = {};
 
-    public define(name: string, fun: (b: Builder) => void) {
+    public define(name: string, fun: Action) {
         if (this.productions[name] != null)
             throw new Error("Production "+name+" is already defined");
-        this.productions[name] = (b: Builder) => {
-            b.attempt((): void => {
-                const oldLength = b.length;
-                fun(b);
-                b.assertLengthIs(oldLength+1);
-                checkNode(b.get(0));
-            });
-        }
+        this.productions[name] = new ProductionAction(name,fun);
     }
-    public lookup(name: string): (b: Builder) => void {
+
+    public lookup(name: string): Action {
         return this.productions[name];
     }
 }
@@ -277,10 +271,8 @@ class NotAction extends Action {
     }
 }
 
-export function not(f: (b: Builder) => void): (b: Builder) => void {
-    const fact = new FunctionAction(f);
-    const act = new NotAction(fact);
-    return (b: Builder) => act.execute(b);
+export function not(f: Action): Action {
+    return new NotAction(f);
 }
 
 class RefAction extends Action {
@@ -295,13 +287,12 @@ class RefAction extends Action {
         const production = b.grammar.lookup(this.name);
         if (production == null)
             throw new Error("Production "+this.name+" not defined");
-        production(b);
+        production.execute(b);
     }
 }
 
-export function ref(name: string): (b: Builder) => void {
-    const act = new RefAction(name);
-    return (b: Builder) => act.execute(b);
+export function ref(name: string): Action {
+    return new RefAction(name);
 }
 
 class ListAction extends Action {
@@ -322,11 +313,8 @@ class ListAction extends Action {
     }
 }
 
-export function list(first: (b: Builder) => void, rest: (b: Builder) => void): (b: Builder) => void {
-    const firstAct = new FunctionAction(first);
-    const restAct = new FunctionAction(rest);
-    const act = new ListAction(firstAct,restAct);
-    return (b: Builder) => act.execute(b);
+export function list(first: Action, rest: Action): Action {
+    return new ListAction(first,rest);
 }
 
 class SequenceAction extends Action {
@@ -343,10 +331,8 @@ class SequenceAction extends Action {
     }
 }
 
-export function sequence(funs: ((b: Builder) => void)[]): (b: Builder) => void {
-    const actions = funs.map((f) => new FunctionAction(f));
-    const act = new SequenceAction(actions);
-    return (b: Builder) => act.execute(b);
+export function sequence(actions: Action[]): Action {
+    return new SequenceAction(actions);
 }
 
 class SpliceNullAction extends Action {
@@ -362,9 +348,8 @@ class SpliceNullAction extends Action {
     }
 }
 
-export function spliceNull(index: number): (b: Builder) => void {
-    const act = new SpliceNullAction(index);
-    return (b: Builder) => act.execute(b);
+export function spliceNull(index: number): Action {
+    return new SpliceNullAction(index);
 }
 
 class SpliceReplaceAction extends Action {
@@ -382,9 +367,8 @@ class SpliceReplaceAction extends Action {
     }
 }
 
-export function spliceReplace(index: number, srcIndex: number): (b: Builder) => void {
-    const act = new SpliceReplaceAction(index,srcIndex);
-    return (b: Builder) => act.execute(b);
+export function spliceReplace(index: number, srcIndex: number): Action {
+    return new SpliceReplaceAction(index,srcIndex);
 }
 
 class SpliceNodeAction extends Action {
@@ -408,9 +392,8 @@ class SpliceNodeAction extends Action {
     }
 }
 
-export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): (b: Builder) => void {
-    const act = new SpliceNodeAction(index,name,startIndex,endIndex,childIndices);
-    return (b: Builder) => act.execute(b);
+export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): Action {
+    return new SpliceNodeAction(index,name,startIndex,endIndex,childIndices);
 }
 
 class SpliceStringNodeAction extends Action {
@@ -438,9 +421,8 @@ class SpliceStringNodeAction extends Action {
     }
 }
 
-export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
-    const act = new SpliceStringNodeAction(index,name,startIndex,endIndex,valueIndex);
-    return (b: Builder) => act.execute(b);
+export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): Action {
+    return new SpliceStringNodeAction(index,name,startIndex,endIndex,valueIndex);
 }
 
 class SpliceNumberNodeAction extends Action {
@@ -468,9 +450,8 @@ class SpliceNumberNodeAction extends Action {
     }
 }
 
-export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): (b: Builder) => void {
-    const act = new SpliceNumberNodeAction(index,name,startIndex,endIndex,valueIndex);
-    return (b: Builder) => act.execute(b);
+export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): Action {
+    return new SpliceNumberNodeAction(index,name,startIndex,endIndex,valueIndex);
 }
 
 class SpliceEmptyListNodeAction extends Action {
@@ -490,9 +471,8 @@ class SpliceEmptyListNodeAction extends Action {
     }
 }
 
-export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): (b: Builder) => void {
-    const act = new SpliceEmptyListNodeAction(index,startIndex,endIndex);
-    return (b: Builder) => act.execute(b);
+export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): Action {
+    return new SpliceEmptyListNodeAction(index,startIndex,endIndex);
 }
 
 class PushAction extends Action {
@@ -508,9 +488,8 @@ class PushAction extends Action {
     }
 }
 
-export function push(value: any): (b: Builder) => void {
-    const act = new PushAction(value);
-    return (b: Builder) => act.execute(b);
+export function push(value: any): Action {
+    return new PushAction(value);
 }
 
 class PopAction extends Action {
@@ -523,10 +502,7 @@ class PopAction extends Action {
     }
 }
 
-const popAct: Action = new PopAction();
-export function pop(b: Builder): void {
-    popAct.execute(b);
-}
+export const pop: Action = new PopAction();
 
 class OptAction extends Action {
     private child: Action;
@@ -543,9 +519,8 @@ class OptAction extends Action {
     }
 }
 
-export function opt(f: (b: Builder) => void): (b: Builder) => void {
-    const act = new OptAction(new FunctionAction(f));
-    return (b: Builder) => act.execute(b);
+export function opt(f: Action): Action {
+    return new OptAction(f);
 }
 
 class ChoiceAction extends Action {
@@ -562,10 +537,8 @@ class ChoiceAction extends Action {
     }
 }
 
-export function choice(list: ((b: Builder) => void)[]): (b: Builder) => void {
-    const actions = list.map((f) => new FunctionAction(f));
-    const act = new ChoiceAction(actions);
-    return (b: Builder) => act.execute(b);
+export function choice(actions: Action[]): Action {
+    return new ChoiceAction(actions);
 }
 
 class RepeatAction extends Action {
@@ -583,10 +556,8 @@ class RepeatAction extends Action {
     }
 }
 
-export function repeat(f: (b: Builder) => void): (b: Builder) => void {
-    const fact = new FunctionAction(f);
-    const act = new RepeatAction(fact);
-    return (b: Builder) => act.execute(b);
+export function repeat(f: Action): Action {
+    return new RepeatAction(f);
 }
 
 class PosAction extends Action {
@@ -599,10 +570,7 @@ class PosAction extends Action {
     }
 }
 
-const posAct: Action = new PosAction();
-export function pos(b: Builder) {
-    posAct.execute(b);
-}
+export const pos: Action = new PosAction();
 
 class ValueAction extends Action {
     private value: any;
@@ -618,9 +586,8 @@ class ValueAction extends Action {
 }
 
 // FIXME: Isn't this the same as push?
-export function value(value: any): (b: Builder) => void {
-    const act = new ValueAction(value);
-    return (b: Builder) => act.execute(b);
+export function value(value: any): Action {
+    return new ValueAction(value);
 }
 
 class KeywordAction extends Action {
@@ -637,9 +604,8 @@ class KeywordAction extends Action {
     }
 }
 
-export function keyword(str: string): ((b: Builder) => void) {
-    const act = new KeywordAction(str);
-    return (b: Builder) => act.execute(b);
+export function keyword(str: string): Action {
+    return new KeywordAction(str);
 }
 
 class IdentifierAction extends Action {
@@ -654,7 +620,7 @@ class IdentifierAction extends Action {
         b.attempt((): void => {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
-            ref("Identifier")(b);
+            ref("Identifier").execute(b);
             b.assertLengthIs(oldLength+1);
             const ident = checkNode(b.get(0));
             if (!(ident instanceof GenericStringNode) || (ident.value != this.str))
@@ -664,9 +630,8 @@ class IdentifierAction extends Action {
     }
 }
 
-export function identifier(str: string): (b: Builder) => void {
-    const act = new IdentifierAction(str);
-    return (b: Builder) => act.execute(b);
+export function identifier(str: string): Action {
+    return new IdentifierAction(str);
 }
 
 class WhitespaceAction extends Action {
@@ -680,10 +645,7 @@ class WhitespaceAction extends Action {
     }
 }
 
-const whitespaceAct = new WhitespaceAction();
-export function whitespace(b: Builder): void {
-    whitespaceAct.execute(b);
-}
+export const whitespace = new WhitespaceAction();
 
 class WhitespaceNoNewlineAction extends Action {
     public constructor() {
@@ -696,10 +658,7 @@ class WhitespaceNoNewlineAction extends Action {
     }
 }
 
-const whitespaceNoNewlineAct = new WhitespaceNoNewlineAction();
-export function whitespaceNoNewline(b: Builder): void {
-    whitespaceNoNewlineAct.execute(b);
-}
+export const whitespaceNoNewline = new WhitespaceNoNewlineAction();
 
 export function checkNode(value: any): ASTNode | null {
     if ((value === null) || (value instanceof ASTNode))
@@ -780,10 +739,7 @@ class IdentifierTokenAction extends Action {
     }
 }
 
-const identifierTokenAct: Action = new IdentifierTokenAction();
-export function identifier_token(b: Builder): void {
-    identifierTokenAct.execute(b);
-}
+export const identifier_token: Action = new IdentifierTokenAction();
 
 class NumericLiteralTokenAction extends Action {
     public constructor() {
@@ -811,10 +767,7 @@ class NumericLiteralTokenAction extends Action {
     }
 }
 
-const numericLiteralTokenAct: Action = new NumericLiteralTokenAction();
-export function numeric_literal_token(b: Builder): void {
-    numericLiteralTokenAct.execute(b);
-}
+export const numeric_literal_token: Action = new NumericLiteralTokenAction();
 
 class StringLiteralTokenAction extends Action {
     public constructor() {
@@ -862,7 +815,4 @@ class StringLiteralTokenAction extends Action {
     }
 }
 
-const stringLiteralTokenAct = new StringLiteralTokenAction();
-export function string_literal_token(b: Builder): void {
-    stringLiteralTokenAct.execute(b);
-}
+export const string_literal_token = new StringLiteralTokenAction();
