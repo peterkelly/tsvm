@@ -221,12 +221,34 @@ export class Builder {
     }
 }
 
+function actionArrayEquals(first: Action[], second: Action[]): boolean {
+    if (first.length != second.length)
+        return false;
+    for (let i = 0; i < first.length; i++) {
+        if (!first[i].equals(second[i]))
+            return false;
+    }
+    return true;
+}
+
+function numberArrayEquals(first: number[], second: number[]): boolean {
+    if (first.length != second.length)
+        return false;
+    for (let i = 0; i < first.length; i++) {
+        if (first[i] != second[i])
+            return false;
+    }
+    return true;
+}
+
 export abstract class Action {
     public readonly kind: string;
 
     public constructor(kind: string) {
         this.kind = kind;
     }
+
+    public abstract equals(other: Action): boolean;
 
     public abstract execute(b: Builder): void;
 
@@ -241,6 +263,12 @@ class ProductionAction extends Action {
         super("["+name+"]");
         this.name = name;
         this.child = child;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof ProductionAction) &&
+                this.child.equals(other.child) &&
+                (this.name == other.name));
     }
 
     public execute(b: Builder): void {
@@ -265,6 +293,11 @@ class NotAction extends Action {
     public constructor(child: Action) {
         super("not");
         this.child = child;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof NotAction) &&
+                this.child.equals(other.child));
     }
 
     public execute(b: Builder): void {
@@ -292,6 +325,11 @@ class RefAction extends Action {
         this.name = productionName;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof RefAction) &&
+                (this.name == other.name));
+    }
+
     public execute(b: Builder): void {
         const production = b.grammar.lookup(this.name);
         if (production == null)
@@ -316,6 +354,12 @@ class ListAction extends Action {
         super("list");
         this.first = first;
         this.rest = rest;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof ListAction) &&
+                this.first.equals(other.first) &&
+                this.rest.equals(other.rest));
     }
 
     public execute(bx: Builder): void {
@@ -346,6 +390,11 @@ class SequenceAction extends Action {
         this.actions = actions;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof SequenceAction) &&
+                actionArrayEquals(this.actions,other.actions));
+    }
+
     public execute(bx: Builder): void {
         const funs = this.actions.map((act) => (b: Builder): void => act.execute(b));
         bx.sequence(funs);
@@ -373,6 +422,11 @@ class SpliceNullAction extends Action {
         this.index = index;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof SpliceNullAction) &&
+                (this.index == other.index));
+    }
+
     public execute(b: Builder): void {
         b.popAboveAndSet(this.index,null);
     }
@@ -394,6 +448,12 @@ class SpliceReplaceAction extends Action {
         super("spliceReplace");
         this.index = index;
         this.srcIndex = srcIndex;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof SpliceReplaceAction) &&
+                (this.index == other.index) &&
+                (this.srcIndex == other.srcIndex));
     }
 
     public execute(b: Builder): void {
@@ -423,6 +483,15 @@ class SpliceNodeAction extends Action {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
         this.childIndices = childIndices;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof SpliceNodeAction) &&
+                (this.index == other.index) &&
+                (this.name == other.name) &&
+                (this.startIndex == other.startIndex) &&
+                (this.endIndex == other.endIndex) &&
+                numberArrayEquals(this.childIndices,other.childIndices));
     }
 
     public execute(b: Builder): void {
@@ -461,6 +530,14 @@ class SpliceStringNodeAction extends Action {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
         this.valueIndex = valueIndex;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof SpliceStringNodeAction) &&
+                (this.nodeName == other.nodeName) &&
+                (this.startIndex == other.startIndex) &&
+                (this.endIndex == other.endIndex) &&
+                (this.valueIndex == other.valueIndex));
     }
 
     public execute(b: Builder): void {
@@ -502,6 +579,14 @@ class SpliceNumberNodeAction extends Action {
         this.valueIndex = valueIndex;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof SpliceNumberNodeAction) &&
+                (this.nodeName == other.nodeName) &&
+                (this.startIndex == other.startIndex) &&
+                (this.endIndex == other.endIndex) &&
+                (this.valueIndex == other.valueIndex));
+    }
+
     public execute(b: Builder): void {
         const start = checkNumber(b.get(this.startIndex));
         const end = checkNumber(b.get(this.endIndex));
@@ -537,6 +622,12 @@ class SpliceEmptyListNodeAction extends Action {
         this.endIndex = endIndex;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof SpliceEmptyListNodeAction) &&
+                (this.startIndex == other.startIndex) &&
+                (this.endIndex == other.endIndex));
+    }
+
     public execute(b: Builder): void {
         b.popAboveAndSet(this.index,makeEmptyListNode(b,this.startIndex,this.endIndex));
     }
@@ -558,6 +649,11 @@ class PushAction extends Action {
         this.value = value;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof PushAction) &&
+                (this.value == other.value));
+    }
+
     public execute(b: Builder): void {
         b.push(this.value);
     }
@@ -574,6 +670,10 @@ export function push(value: any): Action {
 class PopAction extends Action {
     public constructor() {
         super("pop");
+    }
+
+    public equals(other: Action): boolean {
+        return (other instanceof PopAction);
     }
 
     public execute(b: Builder): void {
@@ -593,6 +693,11 @@ class OptAction extends Action {
     public constructor(child: Action) {
         super("opt");
         this.child = child;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof OptAction) &&
+                this.child.equals(other.child));
     }
 
     public execute(b: Builder): void {
@@ -618,6 +723,11 @@ class ChoiceAction extends Action {
     public constructor(actions: Action[]) {
         super("choice");
         this.actions = actions;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof ChoiceAction) &&
+                actionArrayEquals(this.actions,other.actions));
     }
 
     public execute(bx: Builder): void {
@@ -647,6 +757,11 @@ class RepeatAction extends Action {
         this.child = child;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof RepeatAction) &&
+                this.child.equals(other.child));
+    }
+
     public execute(b: Builder): void {
         b.repeat((b: Builder) => {
             this.child.execute(b);
@@ -669,6 +784,10 @@ class PosAction extends Action {
         super("pos");
     }
 
+    public equals(other: Action): boolean {
+        return (other instanceof PosAction);
+    }
+
     public execute(b: Builder): void {
         b.push(b.parser.pos);
     }
@@ -686,6 +805,11 @@ class ValueAction extends Action {
     public constructor(value: any) {
         super("value");
         this.value = value;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof ValueAction) &&
+                (this.value == other.value));
     }
 
     public execute(b: Builder): void {
@@ -710,6 +834,11 @@ class KeywordAction extends Action {
         this.str = str;
     }
 
+    public equals(other: Action): boolean {
+        return ((other instanceof KeywordAction) &&
+                (this.str == other.str));
+    }
+
     public execute(b: Builder): void {
         b.parser.expectKeyword(this.str);
         b.push(null);
@@ -730,6 +859,11 @@ class IdentifierAction extends Action {
     public constructor(str: string) {
         super("identifier");
         this.str = str;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof IdentifierAction) &&
+                (this.str == other.str));
     }
 
     public execute(b: Builder): void {
@@ -759,6 +893,10 @@ class WhitespaceAction extends Action {
         super("whitespace");
     }
 
+    public equals(other: Action): boolean {
+        return (other instanceof WhitespaceAction);
+    }
+
     public execute(b: Builder): void {
         b.parser.skipWhitespace();
         b.push(null);
@@ -774,6 +912,10 @@ export const whitespace = new WhitespaceAction();
 class WhitespaceNoNewlineAction extends Action {
     public constructor() {
         super("whitespaceNoNewline");
+    }
+
+    public equals(other: Action): boolean {
+        return (other instanceof WhitespaceNoNewlineAction);
     }
 
     public execute(b: Builder): void {
@@ -843,6 +985,10 @@ class IdentifierTokenAction extends Action {
         super("identifier_token");
     }
 
+    public equals(other: Action): boolean {
+        return (other instanceof IdentifierTokenAction);
+    }
+
     public execute(b: Builder): void {
         b.attempt((): void => {
             const p = b.parser;
@@ -878,6 +1024,10 @@ class NumericLiteralTokenAction extends Action {
         super("numeric_literal_token");
     }
 
+    public equals(other: Action): boolean {
+        return (other instanceof NumericLiteralTokenAction);
+    }
+
     public execute(b: Builder): void {
         // TODO: Complete numeric literal syntax according to spec
         const p = b.parser;
@@ -908,6 +1058,10 @@ export const numeric_literal_token: Action = new NumericLiteralTokenAction();
 class StringLiteralTokenAction extends Action {
     public constructor() {
         super("string_literal_token");
+    }
+
+    public equals(other: Action): boolean {
+        return (other instanceof StringLiteralTokenAction);
     }
 
     public execute(b: Builder): void {
