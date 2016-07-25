@@ -13,14 +13,14 @@
 // limitations under the License.
 
 import {
-    isIdStart,
-    isIdChar,
-    isKeyword,
     Parser,
     ParseFailure,
     ParseError,
     ParseIgnore,
 } from "./parser";
+import {
+    TokenKind,
+} from "./lexer";
 import {
     CastError,
     Range,
@@ -838,8 +838,13 @@ class KeywordAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.parser.expectKeyword(this.str);
-        b.push(null);
+        const p = b.parser;
+        p.attempt((start) => {
+            const token = p.nextToken();
+            if ((token == null) || (token.value != this.str))
+                throw new ParseError(b.parser,b.parser.pos,"Expected "+this.str);
+            b.push(null);
+        });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -938,25 +943,12 @@ class IdentifierTokenAction extends Action {
     }
 
     public execute(b: Builder): void {
-        b.attempt((): void => {
-            const p = b.parser;
-            const start = p.pos;
-            const oldLength = b.length;
-            if ((p.cur != null) && isIdStart(p.cur)) {
-                p.next();
-                while ((p.cur != null) && isIdChar(p.cur))
-                    p.next();
-                const range = new Range(start,p.pos);
-                const value = p.text.substring(range.start,range.end);
-                if (isKeyword(value))
-                    throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-                b.push(new GenericStringNode(range,"Identifier",value));
-                b.assertLengthIs(oldLength+1);
-                b.getNode(0); // Check that the top of the stack is either a node null
-            }
-            else {
-                throw new ParseError(p,p.pos,"Expected Identifier");
-            }
+        const p = b.parser;
+        p.attempt((start) => {
+            const token = p.nextToken();
+            if ((token == null) || (token.kind != TokenKind.IDENT))
+                throw new ParseError(b.parser,b.parser.pos,"Expected identifier");
+            b.push(new GenericStringNode(token.range,"Identifier",token.value));
         });
     }
 
@@ -977,23 +969,14 @@ class NumericLiteralTokenAction extends Action {
     }
 
     public execute(b: Builder): void {
-        // TODO: Complete numeric literal syntax according to spec
         const p = b.parser;
-        const start = p.pos;
-        while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-            p.next();
-        if (p.pos == start)
-            throw new ParseError(p,p.pos,"Expected number");
-        if (p.cur == ".") {
-            p.next();
-            const postDecimal = p.pos;
-            while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-                p.next();
-            if (p.pos == postDecimal)
-                throw new ParseError(p,p.pos,"Invalid number");
-        }
-        const value = parseFloat(p.text.substring(start,p.pos));
-        b.push(new GenericNumberNode(new Range(start,p.pos),"NumericLiteral",value));
+        p.attempt((start) => {
+            const token = p.nextToken();
+            if ((token == null) || (token.kind != TokenKind.NUMBER))
+                throw new ParseError(b.parser,b.parser.pos,"Expected number");
+            const numericValue = parseFloat(token.value);
+            b.push(new GenericNumberNode(token.range,"NumericLiteral",numericValue));
+        });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -1013,43 +996,13 @@ class StringLiteralTokenAction extends Action {
     }
 
     public execute(b: Builder): void {
-        // TODO: Complete string literal syntax according to spec
         const p = b.parser;
-        const start = p.pos;
-        if ((p.cur == "\"") || (p.cur == "'")) {
-            const quote = p.cur;
-            p.next();
-            let value = "";
-            while (true) {
-                if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "\"")) {
-                    value += "\"";
-                    p.pos += 2;
-                }
-                else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
-                    value += "'";
-                    p.pos += 2;
-                }
-                else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
-                    p.pos++;
-                    break;
-                }
-                else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
-                    p.pos++;
-                    break;
-                }
-                else if (p.pos < p.len) {
-                    value += p.text[p.pos];
-                    p.pos++;
-                }
-                else {
-                    throw new ParseError(p,p.pos,"Unterminated string");
-                }
-            }
-            b.push(new GenericStringNode(new Range(start,p.pos),"StringLiteral",value,true));
-            b.getNode(0); // Check that the top of the stack is either a node null
-            return;
-        }
-        throw new ParseError(p,p.pos,"Invalid string");
+        p.attempt((start) => {
+            const token = p.nextToken();
+            if ((token == null) || (token.kind != TokenKind.STRING))
+                throw new ParseError(b.parser,b.parser.pos,"Expected string");
+            b.push(new GenericStringNode(token.range,"StringLiteral",token.value,true));
+        });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
