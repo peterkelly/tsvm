@@ -13,9 +13,6 @@
 // limitations under the License.
 
 import {
-    isIdStart,
-    isIdChar,
-    isKeyword,
     Parser,
     ParseFailure,
     ParseError,
@@ -162,7 +159,7 @@ grm.define("Literal",
 grm.define("NullLiteral",
     sequence([
         pos,
-        keyword("null"),
+        identifier("null"),
         pos,
         spliceNode(2,"NullLiteral",2,0,[]),
     ]));
@@ -173,13 +170,13 @@ grm.define("BooleanLiteral",
     choice([
         sequence([
             pos,
-            keyword("true"),
+            identifier("true"),
             pos,
             spliceNode(2,"True",2,0,[]),
         ]),
         sequence([
             pos,
-            keyword("false"),
+            identifier("false"),
             pos,
             spliceNode(2,"False",2,0,[]),
         ]),
@@ -1876,7 +1873,7 @@ grm.define("IterationStatement_for_of",
             ref("ForDeclaration"),
         ]),
         whitespace,                // 8
-        keyword("of"),             // 7
+        identifier("of"),          // 7
         whitespace,                // 6
         ref("Expression"),         // 5 = expr
         whitespace,                // 4
@@ -3065,7 +3062,7 @@ grm.define("NameSpaceImport",
         pos,                    // 6 = start
         keyword("*"),           // 5
         whitespace,             // 4
-        keyword("as"),          // 3
+        identifier("as"),       // 3
         whitespace,             // 2
         ref("ImportedBinding"), // 1 = binding
         pos,                    // 0 = end
@@ -3104,7 +3101,7 @@ grm.define("NamedImports",
 
 grm.define("FromClause",
     sequence([
-        keyword("from"),
+        identifier("from"),
         whitespace,
         ref("ModuleSpecifier"),
         spliceReplace(2,0),
@@ -3133,7 +3130,7 @@ grm.define("ImportSpecifier",
                 pos,                     // 6 = start
                 ref("IdentifierName"),   // 5 = name
                 whitespace,              // 4
-                keyword("as"),           // 3
+                identifier("as"),        // 3
                 whitespace,              // 2
                 ref("ImportedBinding"),  // 1 = binding
                 pos,                     // 0 = end
@@ -3282,7 +3279,7 @@ grm.define("ExportSpecifier",
         choice([
             sequence([
                 whitespace,            // 4
-                keyword("as"),         // 3
+                identifier("as"),      // 3
                 whitespace,            // 2
                 ref("IdentifierName"), // 1
                 pos,                   // 0
