@@ -32,6 +32,18 @@ export type ForCInitType = ExpressionNode | VarNode | LetNode | ConstNode | null
 export type ForInBindingType = ExpressionNode | VarForDeclarationNode | LetForDeclarationNode | ConstForDeclarationNode;
 export type ForOfBindingType = ExpressionNode | VarForDeclarationNode | LetForDeclarationNode | ConstForDeclarationNode;
 
+export class CastError {
+    public value: any;
+    public typeName: string;
+    constructor(value: any, typeName: string) {
+        this.value = value;
+        this.typeName = typeName;
+    }
+    public toString(): string {
+        return this.value+" is not a "+this.typeName;
+    }
+}
+
 export class Range {
     public start: number;
     public end: number;
@@ -1343,8 +1355,8 @@ export class WithStatementNode extends StatementNode {
 export class SwitchStatementNode extends BreakableStatementNode {
     _nominal_type_SwitchStatementNode: any;
     public readonly expr: ExpressionNode | ErrorNode;
-    public readonly cases: CaseBlockNode | ErrorNode;
-    public constructor(range: Range, expr: ExpressionNode | ErrorNode, cases: CaseBlockNode | ErrorNode) {
+    public readonly cases: CaseClauseListNode | ErrorNode;
+    public constructor(range: Range, expr: ExpressionNode | ErrorNode, cases: CaseClauseListNode | ErrorNode) {
         super(range,"SwitchStatement");
         this.expr = expr;
         this.cases = cases;
@@ -1518,12 +1530,12 @@ export class DebuggerStatementNode extends StatementNode {
 export class FunctionDeclarationNode extends DeclarationNode {
     _nominal_type_FunctionDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode; // may be null
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParametersNode | ErrorNode,
+        params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"FunctionDeclaration");
@@ -1539,12 +1551,12 @@ export class FunctionDeclarationNode extends DeclarationNode {
 export class FunctionExpressionNode extends ExpressionNode {
     _nominal_type_FunctionExpressionNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode; // may be null
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParametersNode | ErrorNode,
+        params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"FunctionExpression");
@@ -1613,11 +1625,11 @@ export class FormalParameters4Node extends FormalParametersNode {
 
 export class ArrowFunctionNode extends ExpressionNode {
     _nominal_type_ArrowFunctionNode: any;
-    public readonly params: BindingIdentifierNode | FormalParametersNode | ErrorNode;
+    public readonly params: BindingIdentifierNode | FormalParameterListNode | ErrorNode;
     public readonly body: ExpressionNode | StatementListNode | ErrorNode;
     public constructor(
         range: Range,
-        params: BindingIdentifierNode | FormalParametersNode | ErrorNode,
+        params: BindingIdentifierNode | FormalParameterListNode | ErrorNode,
         body: ExpressionNode | StatementListNode | ErrorNode
     ) {
         super(range,"ArrowFunction");
@@ -1634,12 +1646,12 @@ export class ArrowFunctionNode extends ExpressionNode {
 export class MethodNode extends MethodDefinitionNode {
     _nominal_type_MethodNode: any;
     public readonly name: PropertyNameType | ErrorNode;
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         name: PropertyNameType | ErrorNode,
-        params: FormalParametersNode | ErrorNode,
+        params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"Method");
@@ -1692,12 +1704,12 @@ export class SetterNode extends MethodDefinitionNode {
 export class GeneratorMethodNode extends MethodDefinitionNode {
     _nominal_type_GeneratorMethodNode: any;
     public readonly name: PropertyNameType | ErrorNode;
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         name: PropertyNameType | ErrorNode,
-        params: FormalParametersNode | ErrorNode,
+        params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"GeneratorMethod");
@@ -1713,12 +1725,12 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
 export class GeneratorDeclarationNode extends DeclarationNode {
     _nominal_type_GeneratorDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode;
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParametersNode | ErrorNode,
+        params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"GeneratorDeclaration");
@@ -1733,9 +1745,9 @@ export class GeneratorDeclarationNode extends DeclarationNode {
 
 export class DefaultGeneratorDeclarationNode extends DeclarationNode {
     _nominal_type_DefaultGeneratorDeclarationNode: any;
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
-    public constructor(range: Range, params: FormalParametersNode | ErrorNode, body: StatementListNode | ErrorNode) {
+    public constructor(range: Range, params: FormalParameterListNode | ErrorNode, body: StatementListNode | ErrorNode) {
         super(range,"DefaultGeneratorDeclaration");
         this.params = params;
         this.body = body;
@@ -1748,12 +1760,12 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
 export class GeneratorExpressionNode extends ExpressionNode {
     _nominal_type_GeneratorExpressionNode: any;
     public readonly ident: BindingIdentifierNode | ErrorNode;
-    public readonly params: FormalParametersNode | ErrorNode;
+    public readonly params: FormalParameterListNode | ErrorNode;
     public readonly body: StatementListNode | ErrorNode;
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | ErrorNode,
-        params: FormalParametersNode | ErrorNode,
+        params: FormalParameterListNode | ErrorNode,
         body: StatementListNode | ErrorNode
     ) {
         super(range,"GeneratorExpression");
@@ -1882,8 +1894,8 @@ export class EmptyClassElementNode extends ASTNode {
 
 export class ScriptNode extends ASTNode {
     _nominal_type_ScriptNode: any;
-    public readonly body: StatementListNode | ErrorNode;
-    public constructor(range: Range, body: StatementListNode | ErrorNode) {
+    public readonly body: ASTNode;
+    public constructor(range: Range, body: ASTNode) {
         super(range,"Script");
         this.body = body;
     }
@@ -1896,8 +1908,8 @@ export class ScriptNode extends ASTNode {
 
 export class ModuleNode extends ASTNode {
     _nominal_type_ModuleNode: any;
-    public readonly body: ModuleItemListNode | ErrorNode;
-    public constructor(range: Range, body: ModuleItemListNode | ErrorNode) {
+    public readonly body: ASTNode;
+    public constructor(range: Range, body: ASTNode) {
         super(range,"Module");
         this.body = body;
     }
@@ -2150,6 +2162,18 @@ export class ExportAsSpecifierNode extends ASTNode {
     }
 }
 
+export class ListNode extends ASTNode {
+    _nominal_type_ListNode: any;
+    public readonly elements: ASTNode[];
+    public constructor(range: Range, elements: ASTNode[]) {
+        super(range,"[]");
+        this.elements = elements;
+    }
+    public get children(): ASTNode[] {
+        return this.elements;
+    }
+}
+
 export class StatementListNode extends ASTNode {
     _nominal_type_StatementListNode: any;
     public readonly elements: (StatementNode | DeclarationNode | ErrorNode)[];
@@ -2330,5 +2354,62 @@ export class ErrorNode extends ASTNode {
     }
     public get label(): string {
         return "ERROR: "+this.message;
+    }
+}
+
+export class GenericNode extends ASTNode {
+    _nominal_type_GenericNode: any ;
+    public readonly _children: ASTNode[];
+    public readonly value: any;
+    public constructor(range: Range, kind: string, children: any[], value?: any) {
+        super(range,kind);
+        this._children = [];
+        for (const child of children) {
+            if ((child !== null) && !(child instanceof ASTNode))
+                throw new Error(kind+": "+child+" is not an ASTNode");
+            this._children.push(child);
+        }
+        this.value = value;
+    }
+    public get children(): ASTNode[] {
+        return this._children;
+    }
+    public get label(): string {
+        return this.kind;
+    }
+}
+
+export class GenericStringNode extends ASTNode {
+    _nominal_type_GenericStringNode: any;
+    public readonly value: string;
+    public readonly raw: boolean;
+    public constructor(range: Range, kind: string, value: string, raw: boolean = false) {
+        super(range,kind);
+        this.value = value;
+        this.raw = raw;
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+    public get label(): string {
+        if (this.raw)
+            return JSON.stringify(this.value);
+        else
+            return this.kind+"("+JSON.stringify(this.value)+")";
+    }
+}
+
+export class GenericNumberNode extends ASTNode {
+    _nominal_type_GenericNumberNode: any;
+    public readonly value: number;
+    public constructor(range: Range, kind: string, value: number) {
+        super(range,kind);
+        this.value = value;
+    }
+    public get children(): ASTNode[] {
+        return [];
+    }
+    public get label(): string {
+        return ""+this.value;
     }
 }

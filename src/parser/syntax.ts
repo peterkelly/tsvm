@@ -17,3558 +17,3299 @@ import {
     isIdChar,
     isKeyword,
     Parser,
+    ParseFailure,
     ParseError,
     ParseIgnore,
 } from "./parser";
 import {
-    LiteralPropertyNameType,
-    PropertyNameType,
-    PropertyDefinitionType,
-    StatementListItemType,
-    SingleNameBindingType,
-    BindingPatternNode,
-    BindingElementType,
-    ArgumentType,
-    ForBindingType,
-    CatchParameterType,
-    BindingPropertyType,
-    ClassElementType,
-    ModuleItemType,
-    ArrayLiteralItemType,
-    ForCInitType,
-    ForInBindingType,
-    ForOfBindingType,
-
-    ImportClauseNode,
-    ExportNode,
-    ImportNode,
-    MethodDefinitionNode,
-    DeclarationNode,
-    LexicalBindingNode,
-
+    CastError,
     Range,
     ASTNode,
-    StatementNode,
-    BreakableStatementNode,
-    ExpressionNode,
-    IdentifierReferenceNode,
-    BindingIdentifierNode,
-    LabelIdentifierNode,
-    IdentifierNode,
-    ThisNode,
-    NullLiteralNode,
-    TrueNode,
-    FalseNode,
-    NumericLiteralNode,
-    StringLiteralNode,
-    ArrayLiteralNode,
-    ElisionNode,
-    SpreadElementNode,
-    ObjectLiteralNode,
-    ColonPropertyDefinitionNode,
-    ComputedPropertyNameNode,
-    CoverInitializedNameNode,
-    MemberAccessExprNode,
-    MemberAccessIdentNode,
-    SuperPropertyExprNode,
-    SuperPropertyIdentNode,
-    NewTargetNode,
-    NewExpressionNode,
-    CallNode,
-    SuperCallNode,
-    ArgumentsNode,
-    PostIncrementNode,
-    PostDecrementNode,
-    DeleteNode,
-    VoidNode,
-    TypeOfNode,
-    PreIncrementNode,
-    PreDecrementNode,
-    UnaryPlusNode,
-    UnaryMinusNode,
-    UnaryBitwiseNotNode,
-    UnaryLogicalNotNode,
-    MultiplyNode,
-    DivideNode,
-    ModuloNode,
-    AddNode,
-    SubtractNode,
-    LeftShiftNode,
-    SignedRightShiftNode,
-    UnsignedRightShiftNode,
-    LessThanNode,
-    GreaterThanNode,
-    LessEqualNode,
-    GreaterEqualNode,
-    InstanceOfNode,
-    InNode,
-    AbstractEqualsNode,
-    AbstractNotEqualsNode,
-    StrictEqualsNode,
-    StrictNotEqualsNode,
-    BitwiseANDNode,
-    BitwiseXORNode,
-    BitwiseORNode,
-    LogicalANDNode,
-    LogicalORNode,
-    ConditionalNode,
-    AssignNode,
-    AssignMultiplyNode,
-    AssignDivideNode,
-    AssignModuloNode,
-    AssignAddNode,
-    AssignSubtractNode,
-    AssignLeftShiftNode,
-    AssignSignedRightShiftNode,
-    AssignUnsignedRightShiftNode,
-    AssignBitwiseANDNode,
-    AssignBitwiseXORNode,
-    AssignBitwiseORNode,
-    CommaNode,
-    BlockNode,
-    LetNode,
-    ConstNode,
-    LexicalIdentifierBindingNode,
-    LexicalPatternBindingNode,
-    VarNode,
-    VarIdentifierNode,
-    VarPatternNode,
-    ObjectBindingPatternNode,
-    ArrayBindingPatternNode,
-    BindingPropertyNode,
-    BindingPatternInitNode,
-    SingleNameBindingNode,
-    BindingRestElementNode,
-    EmptyStatementNode,
-    ExpressionStatementNode,
-    IfStatementNode,
-    DoStatementNode,
-    WhileStatementNode,
-    ForCNode,
-    ForInNode,
-    ForOfNode,
-    VarForDeclarationNode,
-    LetForDeclarationNode,
-    ConstForDeclarationNode,
-    ContinueStatementNode,
-    BreakStatementNode,
-    ReturnStatementNode,
-    WithStatementNode,
-    SwitchStatementNode,
-    CaseBlockNode,
-    CaseBlock1Node,
-    CaseBlock2Node,
-    CaseClauseNode,
-    DefaultClauseNode,
-    LabelledStatementNode,
-    ThrowStatementNode,
-    TryStatementNode,
-    CatchNode,
-    FinallyNode,
-    DebuggerStatementNode,
-    FunctionDeclarationNode,
-    FunctionExpressionNode,
-    FormalParametersNode,
-    FormalParameters1Node,
-    FormalParameters2Node,
-    FormalParameters3Node,
-    FormalParameters4Node,
-    ArrowFunctionNode,
-    MethodNode,
-    GetterNode,
-    SetterNode,
-    GeneratorMethodNode,
-    GeneratorDeclarationNode,
-    DefaultGeneratorDeclarationNode,
-    GeneratorExpressionNode,
-    YieldExprNode,
-    YieldStarNode,
-    YieldNothingNode,
-    ClassDeclarationNode,
-    ClassExpressionNode,
-    ClassTailNode,
-    ExtendsNode,
-    StaticMethodDefinitionNode,
-    EmptyClassElementNode,
-    ScriptNode,
-    ModuleNode,
-    ImportFromNode,
-    ImportModuleNode,
-    DefaultAndNameSpaceImportsNode,
-    DefaultAndNamedImportsNode,
-    DefaultImportNode,
-    NameSpaceImportNode,
-    NamedImportsNode,
-    ImportSpecifierNode,
-    ImportAsSpecifierNode,
-    ExportDefaultNode,
-    ExportStarNode,
-    ExportPlainNode,
-    ExportVariableNode,
-    ExportDeclarationNode,
-    ExportFromNode,
-    ExportClauseNode,
-    ExportNormalSpecifierNode,
-    ExportAsSpecifierNode,
-    StatementListNode,
-    PropertyDefinitionListNode,
-    ArgumentListNode,
-    BindingListNode,
-    VariableDeclarationListNode,
-    CaseClauseListNode,
-    FormalParameterListNode,
-    ModuleItemListNode,
-    ImportsListNode,
-    ExportsListNode,
-    BindingPropertyListNode,
-    ElementListNode,
-    BindingElementListNode,
-    ClassElementListNode,
+    ListNode,
     ErrorNode,
+    GenericNode,
+    GenericStringNode,
+    GenericNumberNode,
 } from "./ast";
+import {
+    Builder,
+    Grammar,
+    not,
+    ref,
+    list,
+    sequence,
+    spliceNull,
+    spliceReplace,
+    spliceNode,
+    spliceStringNode,
+    spliceNumberNode,
+    spliceEmptyListNode,
+    pop,
+    opt,
+    choice,
+    repeat,
+    pos,
+    value,
+    keyword,
+    identifier,
+    whitespace,
+    whitespaceNoNewline,
+    identifier_token,
+    numeric_literal_token,
+    string_literal_token,
+} from "./grammar";
 
-function opt<T>(f: (p: Parser) => T): (p: Parser) => T {
-    return (p: Parser): T => p.opt(f);
-}
-
-function pos(p: Parser) {
-    return p.pos;
-}
-
-function keyword(str: string): ((p: Parser) => void) {
-    return (p: Parser): void => p.expectKeyword(str);
-}
-
-function notKeyword(str: string) {
-    return (p: Parser): void => {
-        if (p.lookaheadKeyword(str))
-            throw new ParseError(p,p.pos,"Unexpected "+str);
-    };
-}
-
-function identifier(str: string) {
-    return (p: Parser): void => {
-        const ident = Identifier(p);
-        if (ident instanceof ErrorNode)
-            throw new ParseError(p,p.pos,"Expected "+str);
-        if (ident.value != str)
-            throw new ParseError(p,p.pos,"Expected "+str);
-    };
-}
-
-function whitespace(p: Parser): void {
-    p.skipWhitespace();
-}
-
-function whitespaceNoNewline(p: Parser): void {
-    p.skipWhitespaceNoNewline();
-}
+export const grm = new Grammar();
 
 // Section 12.1
 
 // IdentifierReference
 
-function IdentifierReference(p: Parser): IdentifierReferenceNode | ErrorNode {
-    const ident = Identifier(p);
-    if (ident instanceof ErrorNode)
-        return ident;
-    else
-        return new IdentifierReferenceNode(ident.range,ident.value);
-}
+grm.define("IdentifierReference",
+    sequence([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"IdentifierReference",2,0,1),
+    ]));
 
 // BindingIdentifier
 
-function BindingIdentifier(p: Parser): BindingIdentifierNode | ErrorNode {
-    const ident = Identifier(p);
-    if (ident instanceof ErrorNode)
-        return ident;
-    else
-        return new BindingIdentifierNode(ident.range,ident.value);
-}
+grm.define("BindingIdentifier",
+    sequence([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"BindingIdentifier",2,0,1),
+    ]));
 
-// LabelIdentifier
+// BindingIdentifier
 
-function LabelIdentifier(p: Parser): LabelIdentifierNode | ErrorNode {
-    const ident = Identifier(p);
-    if (ident instanceof ErrorNode)
-        return ident;
-    else
-        return new LabelIdentifierNode(ident.range,ident.value);
-}
+grm.define("LabelIdentifier",
+    sequence([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"LabelIdentifier",2,0,1),
+    ]));
 
 // IdentifierName
 
-function IdentifierName(p: Parser): IdentifierNode | ErrorNode {
-    return Identifier(p);
-}
+grm.define("IdentifierName",
+    ref("Identifier"));
 
 // Identifier
 
-function Identifier(p: Parser): IdentifierNode | ErrorNode {
-    return p.attempt((start) => {
-        if ((p.cur != null) && isIdStart(p.cur)) {
-            p.next();
-            while ((p.cur != null) && isIdChar(p.cur))
-                p.next();
-            const range = new Range(start,p.pos);
-            const value = p.text.substring(range.start,range.end);
-            if (isKeyword(value))
-                throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-            return new IdentifierNode(range,value);
-        }
-        else {
-            throw new ParseError(p,p.pos,"Expected Identifier");
-        }
-    });
-}
+grm.define("Identifier",
+    identifier_token);
 
 // Section 12.2
 
+// This
+
+grm.define("This",
+    sequence([
+        pos,
+        keyword("this"),
+        pos,
+        spliceNode(2,"This",2,0,[]),
+    ]));
+
 // PrimaryExpression
 
-function PrimaryExpression(p: Parser): ExpressionNode | ErrorNode {
-
-    function This(p: Parser): ThisNode | ErrorNode {
-        return p.seq2([
-            pos,
-            keyword("this")],
-            ([start,]) => new ThisNode(new Range(start,p.pos)));
-    }
-
-    return p.choice<ExpressionNode | ErrorNode>([
-        This,
+grm.define("PrimaryExpression",
+    choice([
+        ref("This"),
         // Literal must come before IdentifierReference, since "true", "false", and "null" are not keywords
-        Literal,
-        IdentifierReference,
-        ArrayLiteral,
-        ObjectLiteral,
-        FunctionExpression,
-        ClassExpression,
-        GeneratorExpression,
-        // RegularExpressionLiteral, // TODO
-        // TemplateLiteral, // TODO
-        ParenthesizedExpression,
-    ]);
-}
+        ref("Literal"),
+        ref("IdentifierReference"),
+        ref("ArrayLiteral"),
+        ref("ObjectLiteral"),
+        ref("FunctionExpression"),
+        ref("ClassExpression"),
+        ref("GeneratorExpression"),
+        // RegularExpressionLiteral_b, // TODO
+        // TemplateLiteral_b, // TODO
+        ref("ParenthesizedExpression"),
+    ]));
 
 // ParenthesizedExpression
 
-function ParenthesizedExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.seq5([
-        keyword("("),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")")],
-        ([,,expr,,]) => expr);
-}
+grm.define("ParenthesizedExpression",
+    sequence([
+        keyword("("),      // 4
+        whitespace,        // 3
+        ref("Expression"), // 2 = expr
+        whitespace,        // 1
+        keyword(")"),      // 0
+        spliceReplace(4,2),
+    ]));
 
 // Section 12.2.4
 
 // Literal
 
-function Literal(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        NullLiteral,
-        BooleanLiteral,
-        NumericLiteral,
-        StringLiteral,
-    ]);
-}
+grm.define("Literal",
+    choice([
+        ref("NullLiteral"),
+        ref("BooleanLiteral"),
+        ref("NumericLiteral"),
+        ref("StringLiteral"),
+    ]));
 
 // NullLiteral
 
-function NullLiteral(p: Parser): NullLiteralNode | ErrorNode {
-    return p.seq2([
+grm.define("NullLiteral",
+    sequence([
         pos,
-        keyword("null")],
-        ([start,]) => new NullLiteralNode(new Range(start,p.pos))
-    );
-}
+        keyword("null"),
+        pos,
+        spliceNode(2,"NullLiteral",2,0,[]),
+    ]));
 
 // BooleanLiteral
 
-function BooleanLiteral(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    if (p.matchKeyword("true"))
-        return new TrueNode(new Range(start,p.pos));
-    if (p.matchKeyword("false"))
-        return new FalseNode(new Range(start,p.pos));
-    throw new ParseError(p,p.pos,"Expected BooleanLiteral");
-}
+grm.define("BooleanLiteral",
+    choice([
+        sequence([
+            pos,
+            keyword("true"),
+            pos,
+            spliceNode(2,"True",2,0,[]),
+        ]),
+        sequence([
+            pos,
+            keyword("false"),
+            pos,
+            spliceNode(2,"False",2,0,[]),
+        ]),
+    ]));
+
 
 // NumericLiteral
 
-function NumericLiteral(p: Parser): NumericLiteralNode | ErrorNode {
-    // TODO: Complete numeric literal syntax according to spec
-    return p.attempt((start) => {
-        while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-            p.next();
-        if (p.pos == start)
-            throw new ParseError(p,p.pos,"Expected number");
-        if (p.cur == ".") {
-            p.next();
-            const postDecimal = p.pos;
-            while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
-                p.next();
-            if (p.pos == postDecimal)
-                throw new ParseError(p,p.pos,"Invalid number");
-        }
-        const value = parseFloat(p.text.substring(start,p.pos));
-        return new NumericLiteralNode(new Range(start,p.pos),value);
-    });
-}
+grm.define("NumericLiteral",
+    numeric_literal_token);
 
 // StringLiteral
 
-function StringLiteral(p: Parser): StringLiteralNode | ErrorNode {
-    // TODO: Complete string literal syntax according to spec
-    return p.attempt((start) => {
-        if ((p.cur == "\"") || (p.cur == "'")) {
-            const quote = p.cur;
-            p.next();
-            let value = "";
-            while (true) {
-                if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "\"")) {
-                    value += "\"";
-                    p.pos += 2;
-                }
-                else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
-                    value += "'";
-                    p.pos += 2;
-                }
-                else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
-                    p.pos++;
-                    break;
-                }
-                else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
-                    p.pos++;
-                    break;
-                }
-                else if (p.pos < p.len) {
-                    value += p.text[p.pos];
-                    p.pos++;
-                }
-                else {
-                    throw new ParseError(p,p.pos,"Unterminated string");
-                }
-            }
-            return new StringLiteralNode(new Range(start,p.pos),value);
-        }
-        throw new ParseError(p,p.pos,"Invalid string");
-    });
-}
+grm.define("StringLiteral",
+    string_literal_token);
 
 // Section 12.2.5
 
 // ArrayLiteral
 
-function ArrayLiteral(p: Parser): ArrayLiteralNode | ErrorNode {
-    return p.attempt((start): ArrayLiteralNode | ErrorNode => {
-        p.sequence([
-            keyword("["),
-            whitespace,
-        ]);
-
-        const elements: (ArrayLiteralItemType | ErrorNode)[] = [];
-        const listStart = p.pos;
-        let listEnd = p.pos;
-
-        p.opt(() => {
-            const before = p.pos;
-            p.expectKeyword(",");
-            const after = p.pos;
-            listEnd = p.pos;
-            p.skipWhitespace();
-            elements.push(new ElisionNode(new Range(before,after)));
-        });
-
-        while (true) {
-            if (p.lookaheadKeyword("]")) {
-                p.expectKeyword("]");
-                break;
-            }
-
-            try {
-                const item = p.choice<ArrayLiteralItemType | ErrorNode>([
-                    () => p.seq4([
-                        pos,
+grm.define("ArrayLiteral",
+    sequence([
+        pos,             // 5 = start
+        keyword("["),    // 4
+        whitespace,      // 3
+        list(            // 2 = list
+            value(null),
+            choice([
+                sequence([
+                    pos,          // 3 = before
+                    keyword(","), // 2
+                    pos,          // 1 = after
+                    whitespace,   // 0
+                    spliceNode(3,"Elision",3,1,[]),
+                ]),
+                sequence([
+                    ref("AssignmentExpression"),
+                    whitespace,
+                    opt(sequence([
                         keyword(","),
-                        pos,
-                        whitespace],([before,,after,]) => new ElisionNode(new Range(before,after))),
-                    () => p.seq3([
-                        AssignmentExpression,
                         whitespace,
-                        opt(() => p.sequence([keyword(","),whitespace]))],
-                        ([assign,arg2,arg3]) => assign),
-                    () => p.seq3([
-                        SpreadElement,
+                        pop,
+                    ])),
+                    spliceReplace(2,2),
+                ]),
+                sequence([
+                    ref("SpreadElement"),
+                    whitespace,
+                    opt(sequence([
+                        keyword(","),
                         whitespace,
-                        opt(() => p.sequence([keyword(","),whitespace]))],
-                        ([spread,arg2,arg3]) => spread),
-                ]);
-
-                elements.push(item);
-                listEnd = item.range.end;
-            }
-            catch (e) {
-                break;
-            }
-        }
-
-        const list = new ElementListNode(new Range(listStart,listEnd),elements);
-        return new ArrayLiteralNode(new Range(start,p.pos),list);
-    });
-}
+                        pop,
+                    ])),
+                    spliceReplace(2,2),
+                ]),
+            ])
+        ),
+        keyword("]"),    // 1
+        pos,             // 0 = end
+        spliceNode(5,"ArrayLiteral",5,0,[2]),
+    ]));
 
 // SpreadElement
 
-function SpreadElement(p: Parser): SpreadElementNode | ErrorNode {
-    return p.seq4([
+grm.define("SpreadElement",
+    sequence([
         pos,
         keyword("..."),
         whitespace,
-        AssignmentExpression],
-        ([start,,,assign]) => new SpreadElementNode(new Range(start,p.pos),assign));
-}
+        ref("AssignmentExpression"),
+        pos,
+        spliceNode(4,"SpreadElement",4,0,[1]),
+    ]));
 
 // Section 12.2.6
 
 // ObjectLiteral
 
-function ObjectLiteral(p: Parser): ObjectLiteralNode | ErrorNode {
-    return p.seq5([
-        pos,
-        keyword("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq3([
-                PropertyDefinitionList,
+grm.define("ObjectLiteral",
+    sequence([
+        pos,              // 5
+        keyword("{"),     // 4
+        whitespace,       // 3
+        choice([          // 2 = properties
+            sequence([
+                ref("PropertyDefinitionList"),
                 whitespace,
-                opt(() => p.seq2([keyword(","),whitespace,],() => {}))],
-                ([inner,,]) => inner),
-            () => new PropertyDefinitionListNode(new Range(p.pos,p.pos),[]),
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    spliceNull(1),
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        keyword("}")],
-        ([start,,,properties,]) => new ObjectLiteralNode(new Range(start,p.pos),properties));
-}
+        keyword("}"),     // 1
+        pos,              // 0 = end
+        spliceNode(5,"ObjectLiteral",5,0,[2]),
+    ]));
 
 // PropertyDefinitionList
 
-function PropertyDefinitionList(p: Parser): PropertyDefinitionListNode | ErrorNode {
-    const start = p.pos;
-    const properties: (PropertyDefinitionType | ErrorNode)[] = [];
-    properties.push(PropertyDefinition(p));
-    while (true) {
-        try {
-            const defn = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                PropertyDefinition],
-                ([,,,propdef]) => propdef);
-            properties.push(defn);
-        }
-        catch (e) {
-            return new PropertyDefinitionListNode(new Range(start,p.pos),properties);
-        }
-    }
-}
+grm.define("PropertyDefinitionList",
+    list(
+        ref("PropertyDefinition"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("PropertyDefinition"),
+            spliceReplace(3,0),
+        ])
+    ));
 
 // PropertyDefinition_colon
 
-function PropertyDefinition_colon(p: Parser): ColonPropertyDefinitionNode | ErrorNode {
-    return p.seq6([
-        pos,
-        PropertyName,
-        whitespace,
-        keyword(":"),
-        whitespace,
-        AssignmentExpression],
-        ([start,name,,,,init]) => new ColonPropertyDefinitionNode(new Range(start,p.pos),name,init));
-}
+grm.define("PropertyDefinition_colon",
+    sequence([
+        pos,                         // 6 = start
+        ref("PropertyName"),         // 5 = name
+        whitespace,                  // 4
+        keyword(":"),                // 3
+        whitespace,                  // 2
+        ref("AssignmentExpression"), // 1 = init
+        pos,                         // 0 = end
+        spliceNode(6,"ColonPropertyDefinition",6,0,[5,1]),
+    ]));
 
 // PropertyDefinition
 
-function PropertyDefinition(p: Parser): PropertyDefinitionType | ErrorNode {
-    return p.choice<PropertyDefinitionType | ErrorNode>([
-        PropertyDefinition_colon,
-        CoverInitializedName,
-        MethodDefinition,
-        IdentifierReference,
-    ]);
-}
+grm.define("PropertyDefinition",
+    choice([
+        ref("PropertyDefinition_colon"),
+        ref("CoverInitializedName"),
+        ref("MethodDefinition"),
+        ref("IdentifierReference"),
+    ]));
 
 // PropertyName
 
-function PropertyName(p: Parser): PropertyNameType | ErrorNode {
-    return p.choice<PropertyNameType | ErrorNode>([
-        LiteralPropertyName,
-        ComputedPropertyName,
-    ]);
-}
+grm.define("PropertyName",
+    choice([
+        ref("LiteralPropertyName"),
+        ref("ComputedPropertyName"),
+    ]));
 
 // LiteralPropertyName
 
-function LiteralPropertyName(p: Parser): LiteralPropertyNameType | ErrorNode {
-    return p.choice<LiteralPropertyNameType | ErrorNode>([
-        IdentifierName,
-        StringLiteral,
-        NumericLiteral,
-    ]);
-}
+grm.define("LiteralPropertyName",
+    choice([
+        ref("IdentifierName"),
+        ref("StringLiteral"),
+        ref("NumericLiteral"),
+    ]));
 
 // ComputedPropertyName
 
-function ComputedPropertyName(p: Parser): ComputedPropertyNameNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("["),
-        whitespace,
-        AssignmentExpression,
-        whitespace,
-        keyword("]")],
-        ([start,,,expr,,]) => new ComputedPropertyNameNode(new Range(start,p.pos),expr));
-}
+grm.define("ComputedPropertyName",
+    sequence([
+        pos,                         // 6 = start
+        keyword("["),                // 5
+        whitespace,                  // 4
+        ref("AssignmentExpression"), // 3 = expr
+        whitespace,                  // 2
+        keyword("]"),                // 1
+        pos,                         // 0 = end
+        spliceNode(6,"ComputedPropertyName",6,0,[3]),
+    ]));
 
 // CoverInitializedName
 
-function CoverInitializedName(p: Parser): CoverInitializedNameNode | ErrorNode {
-    return p.seq4([
-        pos,
-        IdentifierReference,
-        whitespace,
-        Initializer],
-        ([start,ident,,init]) => new CoverInitializedNameNode(new Range(start,p.pos),ident,init)
-    );
-}
+grm.define("CoverInitializedName",
+    sequence([
+        pos,                        // 4 = start
+        ref("IdentifierReference"), // 3 = ident
+        whitespace,                 // 2
+        ref("Initializer"),         // 1 = init
+        pos,                        // 0 = end
+        spliceNode(4,"CoverInitializedName",4,0,[3,1]),
+    ]));
 
 // Initializer
 
-function Initializer(p: Parser): ExpressionNode | ErrorNode {
-    return p.seq3([
+grm.define("Initializer",
+    sequence([
         keyword("="),
         whitespace,
-        AssignmentExpression],
-        ([,,expr]) => expr);
-}
+        ref("AssignmentExpression"),
+        spliceReplace(2,0),
+    ]));
 
 // Section 12.2.9
 
 // TemplateLiteral
 
-function TemplateLiteral(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function TemplateLiteral(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // TemplateSpans
 
-function TemplateSpans(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function TemplateSpans(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // TemplateMiddleList
 
-function TemplateMiddleList(p: Parser): ASTNode { throw new ParseError(p,p.pos,"Not implemented"); } // FIXME
+function TemplateMiddleList(b: Builder): void { throw new ParseError(b.parser,b.parser.pos,"Not implemented"); } // FIXME
 
 // Section 12.3
 
 // MemberExpression_new
 
-function MemberExpression_new(p: Parser): NewExpressionNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("new"),
-        whitespace,
-        MemberExpression,
-        whitespace,
-        Arguments],
-        ([start,,,expr,,args]) => new NewExpressionNode(new Range(start,p.pos),expr,args)
-    );
-}
+grm.define("MemberExpression_new",
+    sequence([
+        pos,                     // 6 = start
+        keyword("new"),          // 5
+        whitespace,              // 4
+        ref("MemberExpression"), // 3 = expr
+        whitespace,              // 2
+        ref("Arguments"),        // 1 = args
+        pos,                     // 0 = end
+        spliceNode(6,"NewExpression",6,0,[3,1]),
+    ]));
 
 // MemberExpression_start
 
-function MemberExpression_start(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        PrimaryExpression,
-        SuperProperty,
-        MetaProperty,
-        MemberExpression_new,
-    ]);
-}
+grm.define("MemberExpression_start",
+    choice([
+        ref("PrimaryExpression"),
+        ref("SuperProperty"),
+        ref("MetaProperty"),
+        ref("MemberExpression_new"),
+    ]));
 
 // MemberExpression
 
-function MemberExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.attempt((start) => {
-        let left = MemberExpression_start(p);
-        while (true) {
-            try {
-                left = p.choice<ExpressionNode | ErrorNode>([
-                    () => p.seq6([
-                        whitespace,
-                        keyword("["),
-                        whitespace,
-                        Expression,
-                        whitespace,
-                        keyword("]")],
-                        ([,,,expr,,]) => new MemberAccessExprNode(new Range(start,p.pos),left,expr)),
-                    () => p.seq6([
-                        whitespace,
-                        keyword("."),
-                        whitespace,
-                        IdentifierName,
-                        pos,
-                        whitespace],
-                        ([,,,ident,end,]) => new MemberAccessIdentNode(new Range(start,end),left,ident)),
-                ]);
-            }
-            catch (e) {
-                return left;
-            }
-        }
-    });
-}
+grm.define("MemberExpression",
+    sequence([
+        pos,
+        ref("MemberExpression_start"),
+        repeat(choice([
+            sequence([
+                whitespace,            // 6
+                keyword("["),          // 5
+                whitespace,            // 4
+                ref("Expression"),     // 3 = expr
+                whitespace,            // 2
+                keyword("]"),          // 1
+                pos,                   // 0 = end
+                spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
+            ]),
+            sequence([
+                whitespace,            // 5
+                keyword("."),          // 4
+                whitespace,            // 3
+                ref("IdentifierName"), // 2 = ident
+                pos,                   // 1 = end
+                whitespace,            // 0
+                spliceNode(6,"MemberAccessIdent",7,1,[6,2]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // SuperProperty
 
-function SuperProperty(p: Parser): SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode {
-    return p.choice<SuperPropertyExprNode | SuperPropertyIdentNode | ErrorNode>([
-        () => p.seq8([
-            pos,
-            keyword("super"),
-            whitespace,
-            keyword("["),
-            whitespace,
-            Expression,
-            whitespace,
-            keyword("]")],
-            ([start,,,,,expr,,]) => new SuperPropertyExprNode(new Range(start,p.pos),expr)),
-        () => p.seq6([
-            pos,
-            keyword("super"),
-            whitespace,
-            keyword("."),
-            whitespace,
-            Identifier],
-            ([start,,,,,ident]) => new SuperPropertyIdentNode(new Range(start,p.pos),ident)),
-    ]);
-}
+grm.define("SuperProperty",
+    sequence([
+        choice([
+            sequence([
+                pos,               // 8 = start
+                keyword("super"),  // 7
+                whitespace,        // 6
+                keyword("["),      // 5
+                whitespace,        // 4
+                ref("Expression"), // 3 = expr
+                whitespace,        // 2
+                keyword("]"),      // 1
+                pos,               // 0 = end
+                spliceNode(8,"SuperPropertyExpr",8,0,[3]),
+            ]),
+            sequence([
+                pos,               // 6 = start
+                keyword("super"),  // 5
+                whitespace,        // 4
+                keyword("."),      // 3
+                whitespace,        // 2
+                ref("Identifier"), // 1 = ident
+                pos,               // 0 = end
+                spliceNode(6,"SuperPropertyIdent",6,0,[1]),
+            ]),
+        ]),
+    ]));
 
 // MetaProperty
 
-function MetaProperty(p: Parser): NewTargetNode | ErrorNode {
-    return NewTarget(p);
-}
+grm.define("MetaProperty",
+    ref("NewTarget"));
 
 // NewTarget
 
-function NewTarget(p: Parser): NewTargetNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("new"),
-        whitespace,
-        keyword("."),
-        whitespace,
-        identifier("target")], // "target" is not a reserved word, so we can't use keyword here
-        ([start,arg2,arg3,arg4,arg5,arg6]) => new NewTargetNode(new Range(start,p.pos))
-    );
-}
+grm.define("NewTarget",
+    sequence([
+        pos,                  // 6
+        keyword("new"),       // 5
+        whitespace,           // 4
+        keyword("."),         // 3
+        whitespace,           // 2
+        identifier("target"), // 1 ("target" is not a reserved word, so we can't use keyword here)
+        pos,                  // 0
+        spliceNode(6,"NewTarget",6,0,[]),
+    ]));
 
 // NewExpression
 
-function NewExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        MemberExpression,
-        () => p.seq4([
-            pos,
-            keyword("new"),
-            whitespace,
-            NewExpression],
-            ([start,,,expr]) => new NewExpressionNode(new Range(start,p.pos),expr,null)),
-    ]);
-}
+grm.define("NewExpression",
+    choice([
+        ref("MemberExpression"),
+        sequence([
+            pos,                  // 5 = start
+            keyword("new"),       // 4
+            whitespace,           // 3
+            ref("NewExpression"), // 2 = expr
+            value(null),          // 1 = args
+            pos,                  // 0 = end
+            spliceNode(5,"NewExpression",5,0,[2,1]),
+        ]),
+    ]));
 
 // CallExpression_start
 
-function CallExpression_start(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        SuperCall,
-        () => p.seq4([
-            pos,
-            MemberExpression,
-            whitespace,
-            Arguments],
-            ([start,fun,,args]) => new CallNode(new Range(start,p.pos),fun,args)),
-    ]);
-}
+grm.define("CallExpression_start",
+    choice([
+        ref("SuperCall"),
+        sequence([
+            pos,                     // 4 = start
+            ref("MemberExpression"), // 3 = fun
+            whitespace,              // 2
+            ref("Arguments"),        // 1 = args
+            pos,                     // 0 = end
+            spliceNode(4,"Call",4,0,[3,1]),
+        ]),
+    ]));
 
 // CallExpression
 
-function CallExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = CallExpression_start(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq2([
-                    whitespace,
-                    Arguments],
-                    ([,args]) => new CallNode(new Range(start,p.pos),left,args)),
-                () => p.seq6([
-                    whitespace,
-                    keyword("["),
-                    whitespace,
-                    Expression,
-                    whitespace,
-                    keyword("]")],
-                    ([,,,expr,,]) => new MemberAccessExprNode(new Range(start,p.pos),left,expr)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("."),
-                    whitespace,
-                    IdentifierName],
-                    ([,,,idname]) => new MemberAccessIdentNode(new Range(start,p.pos),left,idname)),
-                // () => {
-                //     // TODO
-                //     left = TemplateLiteral(p);
-                // },
-            ]);
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("CallExpression",
+    sequence([
+        pos,
+        ref("CallExpression_start"),
+        repeat(choice([
+            sequence([
+                whitespace,            // 2
+                ref("Arguments"),      // 1
+                pos,                   // 0
+                spliceNode(3,"Call",4,0,[3,1]),
+            ]),
+            sequence([
+                whitespace,            // 6
+                keyword("["),          // 5
+                whitespace,            // 4
+                ref("Expression"),     // 3 = expr
+                whitespace,            // 2
+                keyword("]"),          // 1
+                pos,                   // 0 = end
+                spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
+            ]),
+            sequence([
+                whitespace,            // 4
+                keyword("."),          // 3
+                whitespace,            // 2
+                ref("IdentifierName"), // 1 = idname
+                pos,                   // 0 = end
+                spliceNode(5,"MemberAccessIdent",6,0,[5,1]),
+            ]),
+            // () => {
+            //     // TODO
+            //     left = TemplateLiteral(p);
+            // },
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // SuperCall
 
-function SuperCall(p: Parser): SuperCallNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("super"),
-        whitespace,
-        Arguments],
-        ([start,,,args]) => new SuperCallNode(new Range(start,p.pos),args));
-}
+grm.define("SuperCall",
+    sequence([
+        pos,              // 4 = start
+        keyword("super"), // 3
+        whitespace,       // 2
+        ref("Arguments"), // 1 = args
+        pos,              // 0 = end
+        spliceNode(4,"SuperCall",4,0,[1]),
+    ]));
 
 // Arguments
 
-function Arguments(p: Parser): ArgumentsNode | ErrorNode {
-    return p.choice<ArgumentsNode | ErrorNode>([
-        () => p.seq5([
-            pos,
-            keyword("("),
-            whitespace,
-            pos,
-            keyword(")")],
-            ([start,,,listpos,]) => {
-                const args = new ArgumentListNode(new Range(listpos,listpos),[]);
-                return new ArgumentsNode(new Range(start,p.pos),args);
-            }),
-        () => p.seq6([
-            pos,
-            keyword("("),
-            whitespace,
-            ArgumentList,
-            whitespace,
-            keyword(")")],
-            ([start,,,args,,]) => new ArgumentsNode(new Range(start,p.pos),args)),
-    ]);
-}
+grm.define("Arguments",
+    choice([
+        sequence([
+            pos,                 // 6 = start
+            keyword("("),        // 5
+            whitespace,          // 4
+            pos,                 // 3 = listpos
+            keyword(")"),        // 2
+            pos,                 // 1 = end
+            value(null),         // 0 = will become list
+            spliceEmptyListNode(0,3,3),
+            spliceNode(6,"Arguments",6,1,[0]),
+        ]),
+        sequence([
+            pos,                 // 6 = start
+            keyword("("),        // 5
+            whitespace,          // 4
+            ref("ArgumentList"), // 3 = args
+            whitespace,          // 2
+            keyword(")"),        // 1
+            pos,                 // 0 = end
+            spliceNode(6,"Arguments",6,0,[3]),
+        ]),
+    ]));
 
 // ArgumentList_item
 
-function ArgumentList_item(p: Parser): ArgumentType | ErrorNode {
-    return p.choice<ArgumentType | ErrorNode>([
-        () => p.seq4([
-            pos,
-            keyword("..."),
-            whitespace,
-            AssignmentExpression],
-            ([start,,,expr]) => new SpreadElementNode(new Range(start,p.pos),expr)),
-        AssignmentExpression,
-    ]);
-}
+grm.define("ArgumentList_item",
+    choice([
+        sequence([
+            pos,                         // 4 = start
+            keyword("..."),              // 3
+            whitespace,                  // 2
+            ref("AssignmentExpression"), // 1 = expr
+            pos,                         // 0 = end
+            spliceNode(4,"SpreadElement",4,0,[1]),
+        ]),
+        ref("AssignmentExpression"),
+    ]));
 
 // ArgumentList
 
-function ArgumentList(p: Parser): ArgumentListNode | ErrorNode {
-    const start = p.pos;
-    const items: (ArgumentType | ErrorNode)[] = [];
-    items.push(ArgumentList_item(p));
-    while (true) {
-        try {
-            const arg = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                ArgumentList_item],
-                ([,,,item]) => item);
-            items.push(arg);
-        }
-        catch (e) {
-            return new ArgumentListNode(new Range(start,p.pos),items);
-        }
-    }
-}
+grm.define("ArgumentList",
+    list(
+        ref("ArgumentList_item"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("ArgumentList_item"),
+            spliceReplace(3,0),
+        ])
+    ));
 
 // LeftHandSideExpression
 
-function LeftHandSideExpression(p: Parser): ExpressionNode | ErrorNode {
+grm.define("LeftHandSideExpression",
     // CallExpression has to come before NewExpression, because the latter can be satisfied by
     // MemberExpression, which is a prefix of the former
-    return p.choice([
-        CallExpression,
-        NewExpression,
-    ]);
-}
+    choice([
+        ref("CallExpression"),
+        ref("NewExpression"),
+    ]));
 
 // Section 12.4
 
 // PostfixExpression
 
-function PostfixExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let expr: ExpressionNode | ErrorNode;
-    let result: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => expr = LeftHandSideExpression(p),
-        () => result = p.choice<ExpressionNode | ErrorNode>([
-            () => p.seq2([
+grm.define("PostfixExpression",
+    sequence([
+        pos,
+        ref("LeftHandSideExpression"),
+        choice([
+            sequence([
                 whitespaceNoNewline,
-                keyword("++")],
-                () => new PostIncrementNode(new Range(start,p.pos),expr)),
-            () => p.seq2([
+                keyword("++"),
+                pos,
+                spliceNode(4,"PostIncrement",4,0,[3]),
+            ]),
+            sequence([
                 whitespaceNoNewline,
-                keyword("--")],
-                () => new PostDecrementNode(new Range(start,p.pos),expr)),
-            () => expr,
+                keyword("--"),
+                pos,
+                spliceNode(4,"PostDecrement",4,0,[3]),
+            ]),
+            spliceReplace(1,0),
         ]),
-    ]);
-    return result;
-}
+    ]));
 
 // Section 12.5
 
 // UnaryExpression
 
-function UnaryExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice([
-        () => p.seq4([
-            pos,
-            keyword("delete"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new DeleteNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("void"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new VoidNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("typeof"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new TypeOfNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("++"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new PreIncrementNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("--"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new PreDecrementNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("+"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryPlusNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("-"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryMinusNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("~"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryBitwiseNotNode(new Range(start,p.pos),expr)),
-        () => p.seq4([
-            pos,
-            keyword("!"),
-            whitespace,
-            UnaryExpression],
-            ([start,,,expr]) => new UnaryLogicalNotNode(new Range(start,p.pos),expr)),
-        PostfixExpression,
-    ]);
-}
+grm.define("UnaryExpression",
+    choice([
+        sequence([
+            pos,                    // 4 = start
+            keyword("delete"),      // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"Delete",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("void"),        // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"Void",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("typeof"),      // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"TypeOf",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("++"),          // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"PreIncrement",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("--"),          // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"PreDecrement",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("+"),           // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"UnaryPlus",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("-"),           // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"UnaryMinus",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("~"),           // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"UnaryBitwiseNot",4,0,[1]),
+        ]),
+        sequence([
+            pos,                    // 4 = start
+            keyword("!"),           // 3
+            whitespace,             // 2
+            ref("UnaryExpression"), // 1 = expr
+            pos,                    // 0 = end
+            spliceNode(4,"UnaryLogicalNot",4,0,[1]),
+        ]),
+        ref("PostfixExpression"),
+    ]));
 
 // Section 12.6
 
 // MultiplicativeExpression
 
-function MultiplicativeExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = UnaryExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    keyword("*"),
-                    whitespace,
-                    UnaryExpression],
-                    ([,,,right]) => new MultiplyNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("/"),
-                    whitespace,
-                    UnaryExpression],
-                    ([,,,right]) => new DivideNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("%"),
-                    whitespace,
-                    UnaryExpression],
-                    ([,,,right]) => new ModuloNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("MultiplicativeExpression",
+    sequence([
+        pos,                            // 6 = start
+        ref("UnaryExpression"),         // 5 = left
+        repeat(choice([
+            sequence([
+                whitespace,             // 4
+                keyword("*"),           // 3
+                whitespace,             // 2
+                ref("UnaryExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"Multiply",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword("/"),           // 3
+                whitespace,             // 2
+                ref("UnaryExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"Divide",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword("%"),           // 3
+                whitespace,             // 2
+                ref("UnaryExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"Modulo",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.7
 
 // AdditiveExpression
 
-function AdditiveExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = MultiplicativeExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    keyword("+"),
-                    whitespace,
-                    MultiplicativeExpression],
-                    ([,,,right]) => new AddNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("-"),
-                    whitespace,
-                    MultiplicativeExpression],
-                    ([,,,right]) => new SubtractNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("AdditiveExpression",
+    sequence([
+        pos,                                     // 6 = start
+        ref("MultiplicativeExpression"),         // 5 = left
+        repeat(choice([
+            sequence([
+                whitespace,                      // 4
+                keyword("+"),                    // 3
+                whitespace,                      // 2
+                ref("MultiplicativeExpression"), // 1 = right
+                pos,                             // 0 = end
+                spliceNode(5,"Add",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                      // 4
+                keyword("-"),                    // 3
+                whitespace,                      // 2
+                ref("MultiplicativeExpression"), // 1 = right
+                pos,                             // 0 = end
+                spliceNode(5,"Subtract",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.8
 
 // ShiftExpression
 
-function ShiftExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = AdditiveExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    keyword("<<"),
-                    whitespace,
-                    AdditiveExpression],
-                    ([,,,right]) => new LeftShiftNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword(">>>"),
-                    whitespace,
-                    AdditiveExpression],
-                    ([,,,right]) => new UnsignedRightShiftNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword(">>"),
-                    whitespace,
-                    AdditiveExpression],
-                    ([,,,right]) => new SignedRightShiftNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("ShiftExpression",
+    sequence([
+        pos,                               // 6 = start
+        ref("AdditiveExpression"),         // 5 = left
+        repeat(choice([
+            sequence([
+                whitespace,                // 4
+                keyword("<<"),             // 3
+                whitespace,                // 2
+                ref("AdditiveExpression"), // 1 = right
+                pos,                       // 0 = end
+                spliceNode(5,"LeftShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                // 4
+                keyword(">>>"),            // 3
+                whitespace,                // 2
+                ref("AdditiveExpression"), // 1 = right
+                pos,                       // 0 = end
+                spliceNode(5,"UnsignedRightShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                // 4
+                keyword(">>"),             // 3
+                whitespace,                // 2
+                ref("AdditiveExpression"), // 1 = right
+                pos,                       // 0 = end
+                spliceNode(5,"SignedRightShift",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.9
 
 // RelationalExpression
 
-function RelationalExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = ShiftExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    keyword("<="),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new LessEqualNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword(">="),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new GreaterEqualNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("<"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new LessThanNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword(">"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new GreaterThanNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("instanceof"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new InstanceOfNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("in"),
-                    whitespace,
-                    ShiftExpression],
-                    ([,,,right]) => new InNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("RelationalExpression",
+    sequence([
+        pos,                            // 6 = start
+        ref("ShiftExpression"),         // 5 = left
+        repeat(choice([
+            sequence([
+                whitespace,             // 4
+                keyword("<="),          // 3
+                whitespace,             // 2
+                ref("ShiftExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"LessEqual",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword(">="),          // 3
+                whitespace,             // 2
+                ref("ShiftExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"GreaterEqual",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword("<"),           // 3
+                whitespace,             // 2
+                ref("ShiftExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"LessThan",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword(">"),           // 3
+                whitespace,             // 2
+                ref("ShiftExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"GreaterThan",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword("instanceof"),  // 3
+                whitespace,             // 2
+                ref("ShiftExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"InstanceOf",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,             // 4
+                keyword("in"),          // 3
+                whitespace,             // 2
+                ref("ShiftExpression"), // 1 = right
+                pos,                    // 0 = end
+                spliceNode(5,"In",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.10
 
 // EqualityExpression
 
-function EqualityExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = RelationalExpression(p);
-    while (true) {
-        try {
-            left = p.choice<ExpressionNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    keyword("==="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new StrictEqualsNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("!=="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new StrictNotEqualsNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("=="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new AbstractEqualsNode(new Range(start,p.pos),left,right)),
-                () => p.seq4([
-                    whitespace,
-                    keyword("!="),
-                    whitespace,
-                    RelationalExpression],
-                    ([,,,right]) => new AbstractNotEqualsNode(new Range(start,p.pos),left,right)),
-            ]);
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("EqualityExpression",
+    sequence([
+        pos,                                 // 6 = start
+        ref("RelationalExpression"),         // 5 = left
+        repeat(choice([
+            sequence([
+                whitespace,                  // 4
+                keyword("==="),              // 3
+                whitespace,                  // 2
+                ref("RelationalExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"StrictEquals",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("!=="),              // 3
+                whitespace,                  // 2
+                ref("RelationalExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"StrictNotEquals",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("=="),               // 3
+                whitespace,                  // 2
+                ref("RelationalExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AbstractEquals",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("!="),               // 3
+                whitespace,                  // 2
+                ref("RelationalExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AbstractNotEquals",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.11
 
 // BitwiseANDExpression
 
-function BitwiseANDExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = EqualityExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                keyword("&"),
-                whitespace,
-                EqualityExpression],
-                ([,,,right]) => new BitwiseANDNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("BitwiseANDExpression",
+    sequence([
+        pos,                           // 6 = start
+        ref("EqualityExpression"),     // 5 = left
+        repeat(sequence([
+            whitespace,                // 4
+            keyword("&"),              // 3
+            whitespace,                // 2
+            ref("EqualityExpression"), // 1 = right
+            pos,                       // 0 = end
+            spliceNode(5,"BitwiseAND",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // BitwiseXORExpression
 
-function BitwiseXORExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = BitwiseANDExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                keyword("^"),
-                whitespace,
-                BitwiseANDExpression],
-                ([,,,right]) => new BitwiseXORNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("BitwiseXORExpression",
+    sequence([
+        pos,                             // 6 = start
+        ref("BitwiseANDExpression"),     // 5 = left
+        repeat(sequence([
+            whitespace,                  // 4
+            keyword("^"),                // 3
+            whitespace,                  // 2
+            ref("BitwiseANDExpression"), // 1 = right
+            pos,                         // 0 = end
+            spliceNode(5,"BitwiseXOR",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // BitwiseORExpression
 
-function BitwiseORExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = BitwiseXORExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                keyword("|"),
-                whitespace,
-                BitwiseXORExpression],
-                ([,,,right]) => new BitwiseORNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("BitwiseORExpression",
+    sequence([
+        pos,                             // 6 = start
+        ref("BitwiseXORExpression"),     // 5 = left
+        repeat(sequence([
+            whitespace,                  // 4
+            keyword("|"),                // 3
+            whitespace,                  // 2
+            ref("BitwiseXORExpression"), // 1 = right
+            pos,                         // 0 = end
+            spliceNode(5,"BitwiseOR",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.12
 
 // LogicalANDExpression
 
-function LogicalANDExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = BitwiseORExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                keyword("&&"),
-                whitespace,
-                BitwiseORExpression],
-                ([,,,right]) => new LogicalANDNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("LogicalANDExpression",
+    sequence([
+        pos,                            // 6 = start
+        ref("BitwiseORExpression"),     // 5 = left
+        repeat(sequence([
+            whitespace,                 // 4
+            keyword("&&"),              // 3
+            whitespace,                 // 2
+            ref("BitwiseORExpression"), // 1 = right
+            pos,                        // 0 = end
+            spliceNode(5,"LogicalAND",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // LogicalORExpression
 
-function LogicalORExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = LogicalANDExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                keyword("||"),
-                whitespace,
-                LogicalANDExpression],
-                ([,,,right]) => new LogicalORNode(new Range(start,p.pos),left,right));
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("LogicalORExpression",
+    sequence([
+        pos,                             // 6 = start
+        ref("LogicalANDExpression"),     // 5 = left
+        repeat(sequence([
+            whitespace,                  // 4
+            keyword("||"),               // 3
+            whitespace,                  // 2
+            ref("LogicalANDExpression"), // 1 = right
+            pos,                         // 0 = end
+            spliceNode(5,"LogicalOR",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.13
 
 // ConditionalExpression
 
-function ConditionalExpression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let condition = LogicalORExpression(p);
-    return p.choice([
-        () => p.seq8([
-            whitespace,
-            keyword("?"),
-            whitespace,
-            AssignmentExpression,
-            whitespace,
-            keyword(":"),
-            whitespace,
-            AssignmentExpression],
-            ([,,,trueExpr,,,,falseExpr]) =>
-                new ConditionalNode(new Range(start,p.pos),condition,trueExpr,falseExpr)),
-        () => condition,
-    ]);
-}
+grm.define("ConditionalExpression",
+    sequence([
+        pos,                                 // 10 = start
+        ref("LogicalORExpression"),          // 9 = condition
+        choice([
+            sequence([
+                whitespace,                  // 8
+                keyword("?"),                // 7
+                whitespace,                  // 6
+                ref("AssignmentExpression"), // 5 = trueExpr
+                whitespace,                  // 4
+                keyword(":"),                // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = falseExpr
+                pos,                         // 0 = end
+                spliceNode(9,"Conditional",10,0,[9,5,1]),
+            ]),
+            sequence([
+            ]),
+        ]),
+        spliceReplace(1,0),
+    ]));
 
 // Section 12.14
 
 // AssignmentExpression_plain
 
-function AssignmentExpression_plain(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left: ExpressionNode | ErrorNode;
-    let result: ExpressionNode | ErrorNode;
-    p.sequence([
-        () => left = LeftHandSideExpression(p),
-        () => result = p.choice<ExpressionNode | ErrorNode>([
-            () => p.seq4([
-                whitespace,
-                keyword("="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("*="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignMultiplyNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("/="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignDivideNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("%="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignModuloNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("+="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignAddNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("-="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignSubtractNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("<<="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignLeftShiftNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword(">>="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignSignedRightShiftNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword(">>>="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignUnsignedRightShiftNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("&="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignBitwiseANDNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("^="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignBitwiseXORNode(new Range(start,p.pos),left,right)),
-            () => p.seq4([
-                whitespace,
-                keyword("|="),
-                whitespace,
-                AssignmentExpression],
-                ([,,,right]) => new AssignBitwiseORNode(new Range(start,p.pos),left,right)),
+grm.define("AssignmentExpression_plain",
+    sequence([
+        pos,                                 // 6 = start
+        ref("LeftHandSideExpression"),       // 5 = left
+        choice([
+            sequence([
+                whitespace,                  // 4
+                keyword("="),                // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"Assign",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("*="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignMultiply",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("/="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignDivide",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("%="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignModulo",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("+="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignAdd",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("-="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignSubtract",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("<<="),              // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignLeftShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword(">>="),              // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignSignedRightShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword(">>>="),             // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignUnsignedRightShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("&="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignBitwiseAND",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("^="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignBitwiseXOR",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,                  // 4
+                keyword("|="),               // 3
+                whitespace,                  // 2
+                ref("AssignmentExpression"), // 1 = right
+                pos,                         // 0 = end
+                spliceNode(5,"AssignBitwiseOR",6,0,[5,1]),
+            ]),
         ]),
-    ]);
-    return result;
-}
+        spliceReplace(1,0),
+    ]));
 
 // AssignmentExpression
 
-function AssignmentExpression(p: Parser): ExpressionNode | ErrorNode {
+grm.define("AssignmentExpression",
     // ArrowFunction comes first, to avoid the formal parameter list being matched as an expression
-    return p.choice([
-        ArrowFunction,
-        AssignmentExpression_plain,
-        ConditionalExpression,
-        YieldExpression,
-    ]);
-}
+    // const oldLength = b.length;
+    choice([
+        ref("ArrowFunction"),
+        ref("AssignmentExpression_plain"),
+        ref("ConditionalExpression"),
+        ref("YieldExpression"),
+    ]));
 
 // Section 12.15
 
 // Expression
 
-function Expression(p: Parser): ExpressionNode | ErrorNode {
-    const start = p.pos;
-    let left = AssignmentExpression(p);
-    while (true) {
-        try {
-            left = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                () => AssignmentExpression(p)],
-                ([,,,right]) => new CommaNode(new Range(start,p.pos),left,right)
-            );
-        }
-        catch (e) {
-            return left;
-        }
-    }
-}
+grm.define("Expression",
+    sequence([
+        pos,                             // 6 = start
+        ref("AssignmentExpression"),     // 5 = left
+        repeat(sequence([
+            whitespace,                  // 4
+            keyword(","),                // 3
+            whitespace,                  // 2
+            ref("AssignmentExpression"), // 1 = right
+            pos,                         // 0 = end
+            spliceNode(5,"Comma",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
 
 // Section 13
 
 // Statement
 
-function Statement(p: Parser): StatementNode | ErrorNode {
-    // return p.choice<StatementNode | ErrorNode>([
-    return p.choice<StatementNode | ErrorNode>([
-        BlockStatement,
-        VariableStatement,
-        EmptyStatement,
-        ExpressionStatement,
-        IfStatement,
-        BreakableStatement,
-        ContinueStatement,
-        BreakStatement,
-        ReturnStatement,
-        WithStatement,
-        LabelledStatement,
-        ThrowStatement,
-        TryStatement,
-        DebuggerStatement,
-    ]);
-}
+grm.define("Statement",
+    choice([
+        ref("ExpressionStatement"),
+        ref("BlockStatement"),
+        ref("VariableStatement"),
+        ref("EmptyStatement"),
+        ref("IfStatement"),
+        ref("BreakableStatement"),
+        ref("ContinueStatement"),
+        ref("BreakStatement"),
+        ref("ReturnStatement"),
+        ref("WithStatement"),
+        ref("LabelledStatement"),
+        ref("ThrowStatement"),
+        ref("TryStatement"),
+        ref("DebuggerStatement"),
+    ]));
 
 // Declaration
 
-function Declaration(p: Parser): DeclarationNode | ErrorNode {
-    return p.choice<DeclarationNode | ErrorNode>([
-        HoistableDeclaration,
-        ClassDeclaration,
-        LexicalDeclaration,
-    ]);
-}
+grm.define("Declaration",
+    choice([
+        ref("HoistableDeclaration"),
+        ref("ClassDeclaration"),
+        ref("LexicalDeclaration"),
+    ]));
 
 // HoistableDeclaration
 
-function HoistableDeclaration(p: Parser): DeclarationNode | ErrorNode {
-    return p.choice<DeclarationNode | ErrorNode>([
-        () => FunctionDeclaration(p),
-        () => GeneratorDeclaration(p),
-    ]);
-}
+grm.define("HoistableDeclaration",
+    choice([
+        ref("FunctionDeclaration"),
+        ref("GeneratorDeclaration"),
+    ]));
 
 // BreakableStatement
 
-function BreakableStatement(p: Parser): BreakableStatementNode | ErrorNode {
-    return p.choice<BreakableStatementNode | ErrorNode>([
-        IterationStatement,
-        SwitchStatement,
-    ]);
-}
+grm.define("BreakableStatement",
+    choice([
+        ref("IterationStatement"),
+        ref("SwitchStatement"),
+    ]));
 
 // Section 13.2
 
 // BlockStatement
 
-function BlockStatement(p: Parser): BlockNode | ErrorNode {
-    return Block(p);
-}
+grm.define("BlockStatement",
+    ref("Block"));
 
 // Block
 
-function Block(p: Parser): BlockNode | ErrorNode {
-    return p.seq5([
-        pos,
-        keyword("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq2([
-                StatementList,
-                whitespace],
-                ([inner,]) => inner),
-            () => new StatementListNode(new Range(p.pos,p.pos),[]),
+grm.define("Block",
+    sequence([
+        pos,              // 5
+        keyword("{"),     // 4
+        whitespace,       // 3
+        choice([          // 2 = statements
+            sequence([
+                ref("StatementList"),
+                whitespace,
+                spliceReplace(1,1),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        keyword("}")],
-        ([start,,,statements,]) => new BlockNode(new Range(start,p.pos),statements));
-}
+        keyword("}"),     // 1
+        pos,              // 0
+        spliceNode(5,"Block",5,0,[2]),
+    ]));
 
 // StatementList
 
-function StatementList(p: Parser): StatementListNode | ErrorNode {
-    const start = p.pos;
-    const statements: (StatementListItemType | ErrorNode)[] = [];
-    statements.push(StatementListItem(p));
-    while (true) {
-        try {
-            const stmt = p.seq2([
-                whitespace,
-                StatementListItem],
-                ([,next]) => next);
-            statements.push(stmt);
-        }
-        catch (e) {
-            const end = p.pos;
-            return p.seq1([
-                whitespace],
-                () => new StatementListNode(new Range(start,end),statements));
-        }
-    }
-}
+grm.define("StatementList",
+    list(
+        ref("StatementListItem"),
+        sequence([
+            whitespace,
+            ref("StatementListItem"),
+            spliceReplace(1,0),
+        ])
+    ));
 
 // StatementListItem
 
-function StatementListItem(p: Parser): StatementListItemType | ErrorNode {
-    return p.choice<StatementListItemType | ErrorNode>([
-        Statement,
-        Declaration,
-    ]);
-}
+grm.define("StatementListItem",
+    choice([
+        ref("Statement"),
+        ref("Declaration"),
+    ]));
 
 // Section 13.3.1
 
 // LexicalDeclaration
 
-function LexicalDeclaration(p: Parser): DeclarationNode | ErrorNode {
-    return p.choice<DeclarationNode | ErrorNode>([
-        () => p.seq6([
-            pos,
-            keyword("let"),
-            whitespace,
-            BindingList,
-            whitespace,
-            keyword(";")],
-            ([start,,,bindings,,]) => new LetNode(new Range(start,p.pos),bindings)),
-        () => p.seq6([
-            pos,
-            keyword("const"),
-            whitespace,
-            BindingList,
-            whitespace,
-            keyword(";")],
-            ([start,,,bindings,,]) => new ConstNode(new Range(start,p.pos),bindings)),
-    ]);
-}
+grm.define("LexicalDeclaration",
+    choice([
+        sequence([
+            pos,                // 6 = start
+            keyword("let"),     // 5
+            whitespace,         // 4
+            ref("BindingList"), // 3 = bindings
+            whitespace,         // 2
+            keyword(";"),       // 1
+            pos,                // 0 = end
+            spliceNode(6,"Let",6,0,[3]),
+        ]),
+        sequence([
+            pos,                // 6 = start
+            keyword("const"),   // 5
+            whitespace,         // 4
+            ref("BindingList"), // 3 = bindings
+            whitespace,         // 2
+            keyword(";"),       // 1
+            pos,                // 0 = end
+            spliceNode(6,"Const",6,0,[3]),
+        ]),
+    ]));
 
 // BindingList
 
-function BindingList(p: Parser): BindingListNode | ErrorNode {
-    const start = p.pos;
-    const bindings: (LexicalBindingNode | ErrorNode)[] = [];
-    bindings.push(LexicalBinding(p));
-    while (true) {
-        try {
-            const lexbnd = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                LexicalBinding],
-                ([,,,bnd]) => bnd);
-            bindings.push(lexbnd);
-        }
-        catch (e) {
-            return new BindingListNode(new Range(start,p.pos),bindings);
-        }
-    }
-}
+grm.define("BindingList",
+    list(
+        ref("LexicalBinding"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("LexicalBinding"),
+            spliceReplace(3,0),
+        ])
+    ));
 
 // LexicalBinding_identifier
 
-function LexicalBinding_identifier(p: Parser): LexicalIdentifierBindingNode | ErrorNode {
-    return p.seq3([
-        pos,
-        BindingIdentifier,
-        opt(() => p.seq2([
+grm.define("LexicalBinding_identifier",
+    sequence([
+        pos,                      // 3 = start
+        ref("BindingIdentifier"), // 2 = identifier
+        opt(sequence([               // 1 = initializer
             whitespace,
-            Initializer],
-            ([,inner]) => inner))],
-        ([start,identifier,initializer]) => {
-            return new LexicalIdentifierBindingNode(new Range(start,p.pos),identifier,initializer);
-        });
-}
+            ref("Initializer"),
+            spliceReplace(1,0),
+        ])),
+        pos,                      // 0 = end
+        spliceNode(3,"LexicalIdentifierBinding",3,0,[2,1]),
+    ]));
 
 // LexicalBinding_pattern
 
-function LexicalBinding_pattern(p: Parser): LexicalPatternBindingNode | ErrorNode {
-    return p.seq4([
-        pos,
-        BindingPattern,
-        whitespace,
-        Initializer],
-        ([start,pattern,,initializer]) =>
-            new LexicalPatternBindingNode(new Range(start,p.pos),pattern,initializer));
-}
+grm.define("LexicalBinding_pattern",
+    sequence([
+        pos,                   // 4 = start
+        ref("BindingPattern"), // 3 = pattern
+        whitespace,            // 2
+        ref("Initializer"),    // 1 = initializer
+        pos,                   // 0 = end
+        spliceNode(4,"LexicalPatternBinding",4,0,[3,1]),
+    ]));
 
 // LexicalBinding
 
-function LexicalBinding(p: Parser): LexicalBindingNode | ErrorNode {
-    return p.choice<LexicalBindingNode | ErrorNode>([
-        LexicalBinding_identifier,
-        LexicalBinding_pattern,
-    ]);
-}
+grm.define("LexicalBinding",
+    choice([
+        ref("LexicalBinding_identifier"),
+        ref("LexicalBinding_pattern"),
+    ]));
 
 // Section 13.3.2
 
 // VariableStatement
 
-function VariableStatement(p: Parser): VarNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("var"),
-        whitespace,
-        VariableDeclarationList,
-        whitespace,
-        keyword(";")],
-        ([start,,,declarations,,]) => new VarNode(new Range(start,p.pos),declarations));
-}
+grm.define("VariableStatement",
+    sequence([
+        pos,                            // 6 = start
+        keyword("var"),                 // 5
+        whitespace,                     // 4
+        ref("VariableDeclarationList"), // 3 = declarations
+        whitespace,                     // 2
+        keyword(";"),                   // 1
+        pos,                            // 0 = end
+        spliceNode(6,"Var",6,0,[3]),
+    ]));
 
 // VariableDeclarationList
 
-function VariableDeclarationList(p: Parser): VariableDeclarationListNode | ErrorNode {
-    const start = p.pos;
-    const declarations: (VarIdentifierNode | VarPatternNode | ErrorNode)[] = [];
-    declarations.push(VariableDeclaration(p));
-    while (true) {
-        try {
-            const decl = p.seq4([
+grm.define("VariableDeclarationList",
+    sequence([
+        list(
+            ref("VariableDeclaration"),
+            sequence([
                 whitespace,
                 keyword(","),
                 whitespace,
-                VariableDeclaration],
-                ([,,,d]) => d);
-            declarations.push(decl);
-        }
-        catch (e) {
-            return new VariableDeclarationListNode(new Range(start,p.pos),declarations);
-        }
-    }
-}
+                ref("VariableDeclaration"),
+                spliceReplace(3,0),
+            ])
+        ),
+    ]));
 
 // VariableDeclaration_identifier
 
-function VariableDeclaration_identifier(p: Parser): VarIdentifierNode | ErrorNode {
-    let identifier: BindingIdentifierNode | ErrorNode;
-    let result: VarIdentifierNode;
-    const start = p.pos;
-    p.sequence([
-        () => identifier = BindingIdentifier(p),
-        () => result = p.choice([
-            () => p.seq2([
+grm.define("VariableDeclaration_identifier",
+    sequence([
+        pos,
+        ref("BindingIdentifier"),
+        choice([
+            sequence([
                 whitespace,
-                Initializer],
-                ([,initializer]) =>
-                    new VarIdentifierNode(new Range(start,p.pos),identifier,initializer)),
-            () => new VarIdentifierNode(new Range(start,p.pos),identifier,null),
+                ref("Initializer"),
+                pos,
+                spliceNode(4,"VarIdentifier",4,0,[3,1]),
+            ]),
+            sequence([
+                value(null),
+                pos,
+                spliceNode(3,"VarIdentifier",3,0,[2,1]),
+            ]),
         ]),
-    ]);
-    return result;
-}
+    ]));
 
 // VariableDeclaration_pattern
 
-function VariableDeclaration_pattern(p: Parser): VarPatternNode | ErrorNode {
-    return p.seq4([
-        pos,
-        BindingPattern,
-        whitespace,
-        Initializer],
-        ([start,pattern,,initializer]) => new VarPatternNode(new Range(start,p.pos),pattern,initializer));
-}
+grm.define("VariableDeclaration_pattern",
+    sequence([
+        pos,                   // 4 = start
+        ref("BindingPattern"), // 3 = pattern
+        whitespace,            // 2
+        ref("Initializer"),    // 1 = initializer
+        pos,                   // 0 = end
+        spliceNode(4,"VarPattern",4,0,[3,1]),
+    ]));
 
 // VariableDeclaration
 
-function VariableDeclaration(p: Parser): VarIdentifierNode | VarPatternNode | ErrorNode {
-    return p.choice<VarIdentifierNode | VarPatternNode | ErrorNode>([
-        VariableDeclaration_identifier,
-        VariableDeclaration_pattern,
-    ]);
-}
+grm.define("VariableDeclaration",
+    choice([
+        ref("VariableDeclaration_identifier"),
+        ref("VariableDeclaration_pattern"),
+    ]));
 
 // Section 13.3.3
 
 // BindingPattern
 
-function BindingPattern(p: Parser): BindingPatternNode | ErrorNode {
-    return p.choice<BindingPatternNode | ErrorNode>([
-        ObjectBindingPattern,
-        ArrayBindingPattern,
-    ]);
-}
+grm.define("BindingPattern",
+    choice([
+        ref("ObjectBindingPattern"),
+        ref("ArrayBindingPattern"),
+    ]));
 
 // ObjectBindingPattern
 
-function ObjectBindingPattern(p: Parser): ObjectBindingPatternNode | ErrorNode {
-    return p.seq5([
-        pos,
-        keyword("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq3([
-                BindingPropertyList,
+grm.define("ObjectBindingPattern",
+    sequence([
+        pos,               // 6 = start
+        keyword("{"),      // 5
+        whitespace,        // 4
+        pos,               // 3
+        choice([           // 2 = properties
+            sequence([
+                ref("BindingPropertyList"),
                 whitespace,
-                opt(() => {
-                    p.sequence([
-                        keyword(","),
-                        whitespace,
-                    ]);
-                })],
-                ([inner,,]) => inner),
-            () => new BindingPropertyListNode(new Range(p.pos,p.pos),[]),
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    spliceNull(1),
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        keyword("}")],
-        ([start,,,properties,]) => new ObjectBindingPatternNode(new Range(start,p.pos),properties));
-}
+        keyword("}"),      // 1
+        pos,               // 0 = end
+        spliceNode(6,"ObjectBindingPattern",6,0,[2]),
+    ]));
 
 // ArrayBindingPattern
 
-function ArrayBindingPattern(p: Parser): ArrayBindingPatternNode | ErrorNode {
-    return p.seq8([
-        pos,
-        keyword("["),
-        whitespace,
-        pos,
-        BindingElementList,
-        whitespace,
-        () => p.opt(() => {
-            return p.seq2([
-                BindingRestElement,
-                whitespace],
-                ([inner,]) => inner);
-        }),
-        keyword("]")],
-        ([start,,,start2,elements,,rest,]) => {
-            return new ArrayBindingPatternNode(new Range(start,p.pos),elements,rest);
-        });
-}
+grm.define("ArrayBindingPattern",
+    sequence([
+        pos,                       // 7 = start
+        keyword("["),              // 6
+        whitespace,                // 5
+        ref("BindingElementList"), // 4 = elements
+        whitespace,                // 3
+        opt(sequence([                // 2 = rest
+            ref("BindingRestElement"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("]"),              // 1
+        pos,                       // 0 = end
+        spliceNode(7,"ArrayBindingPattern",7,0,[4,2]),
+    ]));
 
 // BindingPropertyList
 
-function BindingPropertyList(p: Parser): BindingPropertyListNode | ErrorNode {
-    const start = p.pos;
-    const properties: (BindingPropertyType | ErrorNode)[] = [];
-    properties.push(BindingProperty(p));
-    while (true) {
-        try {
-            const prop = p.seq4([
+grm.define("BindingPropertyList",
+    sequence([
+        list(
+            ref("BindingProperty"),
+            sequence([
                 whitespace,
                 keyword(","),
                 whitespace,
-                BindingProperty],
-                ([,,,p]) => p);
-            properties.push(prop);
-        }
-        catch (e) {
-            return new BindingPropertyListNode(new Range(start,p.pos),properties);
-        }
-    }
-}
+                ref("BindingProperty"),
+                spliceReplace(3,0),
+            ])
+        ),
+    ]));
 
 // BindingElementList
 
-function BindingElementList(p: Parser): BindingElementListNode | ErrorNode {
-    const start = p.pos;
-    const elements: (BindingElementType | ErrorNode)[] = [];
-    let listEnd = p.pos;
-
-    p.opt(() => {
-        const item = p.seq3([
-            pos,
-            keyword(","),
-            pos,
-        ],([before,,after]) => new ElisionNode(new Range(before,after)));
-        elements.push(item);
-        listEnd = item.range.end;
-    });
-
-    while (true) {
-        try {
-            p.attempt(() => {
-                const item = p.choice<BindingElementType | ErrorNode>([
-                    () => p.seq4([
+grm.define("BindingElementList",
+    sequence([
+        list(
+            opt(sequence([
+                pos,
+                keyword(","),
+                pos,
+                spliceNode(2,"Elision",2,0,[]),
+            ])),
+            choice([
+                sequence([
+                    whitespace,   // 3
+                    pos,          // 2 = before
+                    keyword(","), // 1
+                    pos,          // 0 = after
+                    spliceNode(3,"Elision",2,0,[]),
+                ]),
+                sequence([
+                    whitespace,
+                    ref("BindingElement"),
+                    opt(sequence([
                         whitespace,
-                        pos,
                         keyword(","),
-                        pos],
-                        ([,before,,after]) => new ElisionNode(new Range(before,after))),
-                    () => p.seq3([
-                        whitespace,
-                        BindingElement,
-                        opt(() => {
-                            p.skipWhitespace();
-                            p.expectKeyword(",");
-                        })],
-                        ([arg1,binding,arg3]) => binding),
-                ]);
-                elements.push(item);
-                listEnd = item.range.end;
-            });
-        }
-        catch (e) {
-            break;
-        }
-    }
-    return new BindingElementListNode(new Range(start,listEnd),elements);
-}
+                        pop,
+                    ])),
+                    spliceReplace(2,1),
+                ]),
+            ])
+        ),
+    ]));
 
 // BindingProperty
 
-function BindingProperty(p: Parser): BindingPropertyType | ErrorNode {
-    return p.choice<BindingPropertyType | ErrorNode>([
-        () => p.seq6([
-            pos,
-            PropertyName,
-            whitespace,
-            keyword(":"),
-            whitespace,
-            BindingElement],
-            ([start,name,,,,element]) =>
-                new BindingPropertyNode(new Range(start,p.pos),name,element)),
-        // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
-        // and PropertyName will match an identifier at the start of a colon binding
-        SingleNameBinding,
-    ]);
-}
+grm.define("BindingProperty",
+    sequence([
+        choice([
+            sequence([
+                pos,                   // 6 = start
+                ref("PropertyName"),   // 5 = name
+                whitespace,            // 4
+                keyword(":"),          // 3
+                whitespace,            // 2
+                ref("BindingElement"), // 1 = element
+                pos,                   // 0 = end
+                spliceNode(6,"BindingProperty",6,0,[5,1]),
+            ]),
+            // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
+            // and PropertyName will match an identifier at the start of a colon binding
+            ref("SingleNameBinding"),
+        ]),
+    ]));
 
 // BindingElement
 
-function BindingElement(p: Parser): BindingElementType | ErrorNode {
-    return p.choice<BindingElementType | ErrorNode>([
-        SingleNameBinding,
-        () => {
-            const start = p.pos;
-            const pattern = BindingPattern(p);
-            return p.choice<BindingElementType | ErrorNode>([
-                () => p.seq2([
+grm.define("BindingElement",
+    choice([
+        ref("SingleNameBinding"),
+        sequence([
+            pos,
+            ref("BindingPattern"),
+            choice([
+                sequence([
                     whitespace,
-                    Initializer],
-                    ([,init]) => new BindingPatternInitNode(new Range(start,p.pos),pattern,init)),
-                () => pattern,
-            ]);
-        },
-    ]);
-}
+                    ref("Initializer"),
+                    pos,
+                    spliceNode(4,"BindingPatternInit",4,0,[3,1]),
+                ]),
+                spliceReplace(1,0),
+            ]),
+        ]),
+    ]));
 
 // SingleNameBinding
 
-function SingleNameBinding(p: Parser): SingleNameBindingType | ErrorNode {
-    const start = p.pos;
-    let ident: BindingIdentifierNode | ErrorNode;
-    let result: SingleNameBindingType | ErrorNode;
-    p.sequence([
-        () => ident = BindingIdentifier(p),
-        () => result = p.choice<BindingIdentifierNode | SingleNameBindingNode | ErrorNode>([
-            () => p.seq2([
+grm.define("SingleNameBinding",
+    sequence([
+        pos,
+        ref("BindingIdentifier"),
+        choice([
+            sequence([
                 whitespace,
-                Initializer],
-                ([,init]) => new SingleNameBindingNode(new Range(start,p.pos),ident,init)),
-            () => ident,
+                ref("Initializer"),
+                pos,
+                spliceNode(2,"SingleNameBinding",4,0,[3,1]),
+            ]),
+            sequence([
+                value(null),
+                spliceReplace(0,1),
+            ]),
         ]),
-    ]);
-    return result;
-}
+        spliceReplace(2,0),
+    ]));
 
 // BindingRestElement
 
-function BindingRestElement(p: Parser): BindingRestElementNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("..."),
-        whitespace,
-        BindingIdentifier],
-        ([start,,,ident]) => new BindingRestElementNode(new Range(start,p.pos),ident));
-}
+grm.define("BindingRestElement",
+    sequence([
+        pos,                      // 4 = start
+        keyword("..."),           // 3
+        whitespace,               // 2
+        ref("BindingIdentifier"), // 1 = ident
+        pos,                      // 0 = end
+        spliceNode(4,"BindingRestElement",4,0,[1]),
+    ]));
 
 // Section 13.4
 
 // EmptyStatement
 
-function EmptyStatement(p: Parser): EmptyStatementNode | ErrorNode {
-    return p.seq2([
+grm.define("EmptyStatement",
+    sequence([
         pos,
-        keyword(";")],
-        ([start,]) => new EmptyStatementNode(new Range(start,p.pos)));
-}
+        keyword(";"),
+        pos,
+        spliceNode(2,"EmptyStatement",2,0,[]),
+    ]));
 
 // Section 13.5
 
 // ExpressionStatement
 
-function ExpressionStatement(p: Parser): ExpressionStatementNode | ErrorNode {
-    const start2 = p.pos;
-
-    // Lookahead not in one of the four sequences <{> <function> <class> <let [>
-
-    if (p.lookaheadKeyword("{") || p.lookaheadKeyword("function") || p.lookaheadKeyword("class"))
-        throw new ParseIgnore();
-
-    if (p.matchKeyword("let")) {
-        p.sequence([
+grm.define("ExpressionStatement",
+    sequence([
+        not(keyword("{")),
+        not(keyword("function")),
+        not(keyword("class")),
+        not(sequence([
+            keyword("let"),
             whitespace,
-        ]);
-        if (p.matchKeyword("[")) {
-            p.pos = start2;
-            throw new ParseIgnore();
-        }
-    }
-    p.pos = start2;
-
-    return p.seq4([
-        pos,
-        Expression,
-        whitespace,
-        keyword(";")],
-        ([start,expr,,,]) => new ExpressionStatementNode(new Range(start,p.pos),expr));
-}
+            keyword("["),
+        ])),
+        pos,               // 4 = start
+        ref("Expression"), // 3 = expr
+        whitespace,        // 2
+        keyword(";"),      // 1
+        pos,               // 0 = end
+        spliceNode(4,"ExpressionStatement",4,0,[3]),
+    ]));
 
 // Section 13.6
 
 // IfStatement
 
-function IfStatement(p: Parser): IfStatementNode | ErrorNode {
-    return p.seq11([
-        pos,
-        keyword("if"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        Statement,
-        opt(() => p.seq4([
+grm.define("IfStatement",
+    sequence([
+        pos,               // 11 = start
+        keyword("if"),     // 10
+        whitespace,        // 9
+        keyword("("),      // 8
+        whitespace,        // 7
+        ref("Expression"), // 6 = condition
+        whitespace,        // 5
+        keyword(")"),      // 4
+        whitespace,        // 3
+        ref("Statement"),  // 2 = trueBranch
+        opt(sequence([        // 1 = falseBranch
             whitespace,
             keyword("else"),
             whitespace,
-            Statement],
-            ([,,,fb]) => fb))],
-        ([start,arg2,arg3,arg4,arg5,condition,arg7,arg8,arg9,trueBranch,falseBranch]) =>
-            new IfStatementNode(new Range(start,p.pos),condition,trueBranch,falseBranch)
-    );
-}
+            ref("Statement"),
+            spliceReplace(3,0),
+        ])),
+        pos,               // 0 = end
+        spliceNode(11,"IfStatement",11,0,[6,2,1]),
+    ]));
 
 // Section 13.7
 
 // IterationStatement_do
 
-function IterationStatement_do(p: Parser): DoStatementNode | ErrorNode {
-    return p.seq14([
-        pos,
-        keyword("do"),
-        whitespace,
-        Statement,
-        whitespace,
-        keyword("while"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword(";")],
-        ([start,,,body,,,,,,condition,,,,]) =>
-            new DoStatementNode(new Range(start,p.pos),body,condition)
-    );
-
-}
+grm.define("IterationStatement_do",
+    sequence([
+        pos,               // 14
+        keyword("do"),     // 13
+        whitespace,        // 12
+        ref("Statement"),  // 11 = body
+        whitespace,        // 10
+        keyword("while"),  // 9
+        whitespace,        // 8
+        keyword("("),      // 7
+        whitespace,        // 6
+        ref("Expression"), // 5 = condition
+        whitespace,        // 4
+        keyword(")"),      // 3
+        whitespace,        // 2
+        keyword(";"),      // 1 = end
+        pos,               // 0 = start
+        spliceNode(14,"DoStatement",14,0,[11,5]),
+    ]));
 
 // IterationStatement_while
 
-function IterationStatement_while(p: Parser): WhileStatementNode | ErrorNode {
-    return p.seq10([
-        pos,
-        keyword("while"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,condition,,,,body]) => {
-            return new WhileStatementNode(new Range(start,p.pos),condition,body);
-    });
-}
+grm.define("IterationStatement_while",
+    sequence([
+        pos,                // 10 = start
+        keyword("while"),   // 9
+        whitespace,         // 8
+        keyword("("),       // 7
+        whitespace,         // 6
+        ref("Expression"),  // 5 = condition
+        whitespace,         // 4
+        keyword(")"),       // 3
+        whitespace,         // 2
+        ref("Statement"),   // 1 = body
+        pos,                // 0 = end
+        spliceNode(10,"WhileStatement",10,0,[5,1]),
+    ]));
 
 // IterationStatement_for_c
 
-function IterationStatement_for_c(p: Parser): ForCNode | ErrorNode {
+grm.define("IterationStatement_for_c",
     // for ( [lookahead ∉ {let [}] Expression-opt ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( var VariableDeclarationList          ; Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
-    return p.seq14([
-        pos,
-        keyword("for"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        () => p.choice<ForCInitType | ErrorNode>([
-            () => p.seq6([
-                notKeyword("let"), // FIXME: need tests for this
-                notKeyword("["), // FIXME: need tests for this
-                Expression,
+    sequence([
+        pos,                                    // 14 = start
+        keyword("for"),                         // 13
+        whitespace,                             // 12
+        keyword("("),                           // 11
+        whitespace,                             // 10
+        choice([
+            sequence([
+                not(keyword("let")), // FIXME: need tests for this
+                not(keyword("[")), // FIXME: need tests for this
+                ref("Expression"),              // 3 = expr
+                whitespace,                     // 2
+                keyword(";"),                   // 1
+                whitespace,                     // 0
+                spliceReplace(3,3),
+            ]),
+            sequence([
+                pos,                            // 7 = start2
+                keyword("var"),                 // 6
+                whitespace,                     // 5
+                ref("VariableDeclarationList"), // 4 = declarations
+                pos,                            // 3 = end
+                whitespace,                     // 2
+                keyword(";"),                   // 1
+                whitespace,                     // 0
+                spliceNode(7,"Var",7,3,[4]),
+            ]),
+            sequence([
+                ref("LexicalDeclaration"),
                 whitespace,
-                keyword(";"),
-                whitespace],
-                ([,,inner,,,]) => inner),
-            () => p.seq8([
-                pos,
-                keyword("var"),
-                whitespace,
-                VariableDeclarationList,
-                pos,
-                whitespace,
-                keyword(";"),
-                whitespace],
-                ([start2,,,declarations,end,,,]) =>
-                    new VarNode(new Range(start2,end),declarations)),
-            () => p.seq2([LexicalDeclaration,whitespace],([decl,]) => decl),
+                spliceReplace(1,1),
+            ]),
             // initializer part can be empty, but need to distinguish this from an error
-            () => p.seq1([keyword(";")],() => null),
+            sequence([
+                keyword(";"),
+                spliceNull(0),
+            ]),
         ]),
-        opt(Expression),
-        whitespace,
-        keyword(";"),
-        whitespace,
-        opt(() => p.seq2([Expression,whitespace],([inner,]) => inner)),
-        keyword(")"),
-        whitespace,
-        Statement,
-    ],([start,,,,,init,condition,,,,update,,,body]) => {
-        return new ForCNode(new Range(start,p.pos),init,condition,update,body);
-    });
-}
+        opt(ref("Expression")), // 8 = condition
+        whitespace,             // 7
+        keyword(";"),           // 6
+        whitespace,             // 5
+        opt(sequence([
+            ref("Expression"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword(")"),           // 3
+        whitespace,             // 2
+        ref("Statement"),       // 1 = body
+        pos,                    // 0 = end
+        spliceNode(14,"ForC",14,0,[9,8,4,1]),
+    ]));
 
 // IterationStatement_for_in
 
-function IterationStatement_for_in(p: Parser): ForInNode | ErrorNode {
+grm.define("IterationStatement_for_in",
     // for ( [lookahead ∉ {let [}] LeftHandSideExpression in Expression )             Statement[?Yield, ?Return]
     // for ( var ForBinding                               in Expression )             Statement[?Yield, ?Return]
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
-    return p.seq14([
-        pos,
-        keyword("for"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        () => p.choice<ForInBindingType | ErrorNode>([
-            () => p.seq3([
-                notKeyword("let"), // FIXME: need tests for this
-                notKeyword("["), // FIXME: need tests for this
-                () => LeftHandSideExpression(p)],
-                ([,,inner]) => inner
-            ),
-            () => p.seq4([
+    sequence([
+        pos,                       // 14 = start
+        keyword("for"),            // 13
+        whitespace,                // 12
+        keyword("("),              // 11
+        whitespace,                // 10
+        choice([                   // 9 = binding
+            sequence([
+                not(keyword("let")), // FIXME: need tests for this
+                not(keyword("[")), // FIXME: need tests for this
+                ref("LeftHandSideExpression"),
+            ]),
+            sequence([
                 pos,
                 keyword("var"),
                 whitespace,
-                ForBinding],
-                ([start2,,,inner]) => new VarForDeclarationNode(new Range(start2,p.pos),inner)
-            ),
-            ForDeclaration,
+                ref("ForBinding"),
+                pos,
+                spliceNode(4,"VarForDeclaration",4,0,[1]),
+            ]),
+            ref("ForDeclaration"),
         ]),
-        whitespace,
-        keyword("in"),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,binding,,,,expr,,,,body]) => new ForInNode(new Range(start,p.pos),binding,expr,body));
-}
+        whitespace,                // 8
+        keyword("in"),             // 7
+        whitespace,                // 6
+        ref("Expression"),         // 5 = expr
+        whitespace,                // 4
+        keyword(")"),              // 3
+        whitespace,                // 2
+        ref("Statement"),          // 1 = body
+        pos,                       // 0 = end
+        spliceNode(14,"ForIn",14,0,[9,5,1]),
+    ]));
 
 // IterationStatement_for_of
 
-function IterationStatement_for_of(p: Parser): ForOfNode | ErrorNode {
+grm.define("IterationStatement_for_of",
     // for ( [lookahead ≠ let ] LeftHandSideExpression    of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( var ForBinding                               of AssignmentExpression )   Statement[?Yield, ?Return]
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
-    return p.seq14([
-        pos,
-        keyword("for"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        () => p.choice<ForOfBindingType | ErrorNode>([
-            () => p.seq3([
-                notKeyword("let"), // FIXME: need tests for this
-                notKeyword("["), // FIXME: need tests for this
-                LeftHandSideExpression],
-                ([,,inner]) => inner),
-            () => p.seq4([
+    sequence([
+        pos,                       // 14 = start
+        keyword("for"),            // 13
+        whitespace,                // 12
+        keyword("("),              // 11
+        whitespace,                // 10
+        choice([                   // 9
+            sequence([
+                not(keyword("let")), // FIXME: need tests for this
+                not(keyword("[")), // FIXME: need tests for this
+                ref("LeftHandSideExpression"),
+            ]),
+            sequence([
                 pos,
                 keyword("var"),
                 whitespace,
-                ForBinding],
-                ([start2,,,inner]) => new VarForDeclarationNode(new Range(start2,p.pos),inner)),
-            ForDeclaration,
+                ref("ForBinding"),
+                pos,
+                spliceNode(4,"VarForDeclaration",4,0,[1]),
+            ]),
+            ref("ForDeclaration"),
         ]),
-        whitespace,
-        keyword("of"),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,binding,,,,expr,,,,body]) =>
-            new ForOfNode(new Range(start,p.pos),binding,expr,body));
-}
+        whitespace,                // 8
+        keyword("of"),             // 7
+        whitespace,                // 6
+        ref("Expression"),         // 5 = expr
+        whitespace,                // 4
+        keyword(")"),              // 3
+        whitespace,                // 2
+        ref("Statement"),          // 1 = body
+        pos,                       // 0 = end
+        spliceNode(14,"ForOf",14,0,[9,5,1]),
+    ]));
 
 // IterationStatement_for
 
-function IterationStatement_for(p: Parser): BreakableStatementNode | ErrorNode {
-    return p.choice<BreakableStatementNode | ErrorNode>([
-        IterationStatement_for_c,
-        IterationStatement_for_in,
-        IterationStatement_for_of,
-    ]);
-}
+grm.define("IterationStatement_for",
+    choice([
+        ref("IterationStatement_for_c"),
+        ref("IterationStatement_for_in"),
+        ref("IterationStatement_for_of"),
+    ]));
 
 // IterationStatement
 
-function IterationStatement(p: Parser): BreakableStatementNode | ErrorNode {
-    return p.choice<BreakableStatementNode | ErrorNode>([
-        IterationStatement_do,
-        IterationStatement_while,
-        IterationStatement_for,
-    ]);
-}
+grm.define("IterationStatement",
+    choice([
+        ref("IterationStatement_do"),
+        ref("IterationStatement_while"),
+        ref("IterationStatement_for"),
+    ]));
 
 // ForDeclaration
 
-function ForDeclaration(p: Parser): LetForDeclarationNode | ConstForDeclarationNode | ErrorNode {
-    return p.choice<LetForDeclarationNode | ConstForDeclarationNode | ErrorNode>([
-        () => p.seq4([
-            pos,
-            keyword("let"),
-            whitespace,
-            ForBinding],
-            ([start,,,binding]) => new LetForDeclarationNode(new Range(start,p.pos),binding)),
-        () => p.seq4([
-            pos,
-            keyword("const"),
-            whitespace,
-            ForBinding],
-            ([start,,,binding]) => new ConstForDeclarationNode(new Range(start,p.pos),binding)),
-    ]);
-}
+grm.define("ForDeclaration",
+    sequence([
+        choice([
+            sequence([
+                pos,               // 4 = start
+                keyword("let"),    // 3
+                whitespace,        // 2
+                ref("ForBinding"), // 1 = binding
+                pos,               // 0 = end
+                spliceNode(4,"LetForDeclaration",4,0,[1]),
+            ]),
+            sequence([
+                pos,               // 4 = start
+                keyword("const"),  // 3
+                whitespace,        // 2
+                ref("ForBinding"), // 1 = binding
+                pos,               // 0 = end
+                spliceNode(4,"ConstForDeclaration",4,0,[1]),
+            ]),
+        ]),
+    ]));
 
 // ForBinding
 
-function ForBinding(p: Parser): ForBindingType | ErrorNode {
-    return p.choice<ForBindingType | ErrorNode>([
-        BindingIdentifier,
-        BindingPattern, // FIXME: Need test cases for this
-    ]);
-}
+grm.define("ForBinding",
+    choice([
+        ref("BindingIdentifier"),
+        ref("BindingPattern"), // FIXME: Need test cases for this
+    ]));
 
 // Section 13.8
 
 // ContinueStatement
 
-function ContinueStatement(p: Parser): ContinueStatementNode | ErrorNode {
-    return p.choice<ContinueStatementNode | ErrorNode>([
-        () => p.seq4([
-            pos,
-            keyword("continue"),
-            whitespace,
-            keyword(";")],
-            ([start,,,]) => new ContinueStatementNode(new Range(start,p.pos),null)),
-        () => p.seq6([
-            pos,
-            keyword("continue"),
-            whitespaceNoNewline,
-            LabelIdentifier,
-            whitespace,
-            keyword(";")],
-            ([start,,,ident,,]) => new ContinueStatementNode(new Range(start,p.pos),ident)),
-    ]);
-}
+grm.define("ContinueStatement",
+    sequence([
+        choice([
+            sequence([
+                pos,                    // 5 = start
+                keyword("continue"),    // 4
+                whitespace,             // 3
+                value(null),            // 2 = null
+                keyword(";"),           // 1
+                pos,                    // 0 = end
+                spliceNode(5,"ContinueStatement",5,0,[2]),
+            ]),
+            sequence([
+                pos,                    // 6 = start
+                keyword("continue"),    // 5
+                whitespaceNoNewline,    // 4
+                ref("LabelIdentifier"), // 3 = ident
+                whitespace,             // 2
+                keyword(";"),           // 1
+                pos,                    // 0 = end
+                spliceNode(6,"ContinueStatement",6,0,[3]),
+            ]),
+        ]),
+    ]));
 
 // Section 13.9
 
 // BreakStatement
 
-function BreakStatement(p: Parser): BreakStatementNode | ErrorNode {
-    return p.choice<BreakStatementNode | ErrorNode>([
-        () => p.seq4([
-            pos,
-            keyword("break"),
-            whitespace,
-            keyword(";")],
-            ([start,,,]) => new BreakStatementNode(new Range(start,p.pos),null)),
-        () => p.seq6([
-            pos,
-            keyword("break"),
-            whitespaceNoNewline,
-            LabelIdentifier,
-            whitespace,
-            keyword(";")],
-            ([start,,,ident,,]) => new BreakStatementNode(new Range(start,p.pos),ident)),
-    ]);
-}
+grm.define("BreakStatement",
+    sequence([
+        choice([
+            sequence([
+                pos,                    // 5 = start
+                keyword("break"),       // 4
+                whitespace,             // 3
+                value(null),            // 2 = null
+                keyword(";"),           // 1
+                pos,                    // 0 = end
+                spliceNode(5,"BreakStatement",5,0,[2]),
+            ]),
+            sequence([
+                pos,                    // 6 = start
+                keyword("break"),       // 5
+                whitespaceNoNewline,    // 4
+                ref("LabelIdentifier"), // 3 = ident
+                whitespace,             // 2
+                keyword(";"),           // 1
+                pos,                    // 0 = end
+                spliceNode(6,"BreakStatement",6,0,[3]),
+            ]),
+        ]),
+    ]));
 
 // Section 13.10
 
 // ReturnStatement
 
-function ReturnStatement(p: Parser): ReturnStatementNode | ErrorNode {
-    return p.choice<ReturnStatementNode | ErrorNode>([
-        () => p.seq4([
-            pos,
-            keyword("return"),
-            whitespace,
-            keyword(";")],
-            ([start,,,]) => new ReturnStatementNode(new Range(start,p.pos),null)),
-        () => p.seq6([
-            pos,
-            keyword("return"),
-            whitespaceNoNewline,
-            Expression,
-            whitespace,
-            keyword(";")],
-            ([start,,,expr,,]) => new ReturnStatementNode(new Range(start,p.pos),expr)),
-    ]);
-}
+grm.define("ReturnStatement",
+    sequence([
+        choice([
+            sequence([
+                pos,                 // 5 = start
+                keyword("return"),   // 4
+                whitespace,          // 3
+                value(null),         // 2 = null
+                keyword(";"),        // 1
+                pos,                 // 0 = end
+                spliceNode(5,"ReturnStatement",5,0,[2]),
+            ]),
+            sequence([
+                pos,                 // 6 = start
+                keyword("return"),   // 5
+                whitespaceNoNewline, // 4
+                ref("Expression"),   // 3 = expr
+                whitespace,          // 2
+                keyword(";"),        // 1
+                pos,                 // 0 = end
+                spliceNode(6,"ReturnStatement",6,0,[3]),
+            ]),
+        ]),
+    ]));
 
 // Section 13.11
 
 // WithStatement
 
-function WithStatement(p: Parser): WithStatementNode | ErrorNode {
-    return p.seq10([
-        pos,
-        keyword("with"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        Statement],
-        ([start,,,,,expr,,,,body]) =>
-            new WithStatementNode(new Range(start,p.pos),expr,body));
-}
+grm.define("WithStatement",
+    sequence([
+        pos,               // 10 = start
+        keyword("with"),   // 9
+        whitespace,        // 8
+        keyword("("),      // 7
+        whitespace,        // 6
+        ref("Expression"), // 5 = expr
+        whitespace,        // 4
+        keyword(")"),      // 3
+        whitespace,        // 2
+        ref("Statement"),  // 1 = body
+        pos,               // 0 = end
+        spliceNode(10,"WithStatement",10,0,[5,1]),
+    ]));
 
 // Section 13.12
 
 // SwitchStatement
 
-function SwitchStatement(p: Parser): SwitchStatementNode | ErrorNode {
-    return p.seq10([
-        pos,
-        keyword("switch"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        CaseBlock],
-        ([start,arg2,arg3,arg4,arg5,expr,arg7,arg8,arg9,cases]) =>
-            new SwitchStatementNode(new Range(start,p.pos),expr,cases));
-}
+grm.define("SwitchStatement",
+    sequence([
+        pos,               // 10 = start
+        keyword("switch"), // 9
+        whitespace,        // 8
+        keyword("("),      // 7
+        whitespace,        // 6
+        ref("Expression"), // 5 = expr
+        whitespace,        // 4
+        keyword(")"),      // 3
+        whitespace,        // 2
+        ref("CaseBlock"),  // 1 = cases
+        pos,               // 0 = end
+        spliceNode(10,"SwitchStatement",10,0,[5,1]),
+    ]));
 
 // CaseBlock_1
 
-function CaseBlock_1(p: Parser): CaseBlockNode | ErrorNode {
-    return p.seq7([
-        pos,
-        keyword("{"),
-        whitespace,
-        () => p.choice([
-            CaseClauses,
-            () => new CaseClauseListNode(new Range(p.pos,p.pos),[]),
+grm.define("CaseBlock_1",
+    sequence([
+        pos,          // 7
+        keyword("{"), // 6
+        whitespace,   // 5
+        pos,          // 4 = midpos
+        choice([      // 3 = clauses
+            ref("CaseClauses"),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        whitespace,
-        keyword("}"),
-        pos],
-        ([start,,,clauses,,,end]) => {
-            return new CaseBlock1Node(new Range(start,end),clauses);
-        });
-}
+        whitespace,   // 2
+        keyword("}"), // 1
+        pos,          // 0
+        spliceNode(7,"CaseBlock1",7,0,[3]),
+    ]));
 
 // CaseBlock_2
 
-function CaseBlock_2(p: Parser): CaseBlockNode | ErrorNode {
-    return p.seq11([
-        pos,
-        keyword("{"),
-        whitespace,
-        opt(CaseClauses),
-        whitespace,
-        DefaultClause,
-        whitespace,
-        opt(CaseClauses),
-        whitespace,
-        keyword("}"),
-        pos],
-        ([start,,,clauses1,,defaultClause,,clauses2,,,end]) => {
-            return new CaseBlock2Node(new Range(start,end),clauses1,defaultClause,clauses2);
-        });
-}
+grm.define("CaseBlock_2",
+    sequence([
+        pos,                     // 10 = start
+        keyword("{"),            // 9
+        whitespace,              // 8
+        opt(ref("CaseClauses")), // 7 = clauses1
+        whitespace,              // 6
+        ref("DefaultClause"),    // 5 = defaultClause
+        whitespace,              // 4
+        opt(ref("CaseClauses")), // 3 = clauses2
+        whitespace,              // 2
+        keyword("}"),            // 1
+        pos,                     // 0 = end
+        spliceNode(10,"CaseBlock2",10,0,[7,5,3]),
+    ]));
 
 // CaseBlock
 
-function CaseBlock(p: Parser): CaseBlockNode | ErrorNode {
-    return p.choice([
-        CaseBlock_1,
-        CaseBlock_2,
-    ]);
-}
+grm.define("CaseBlock",
+    choice([
+        ref("CaseBlock_1"),
+        ref("CaseBlock_2"),
+    ]));
 
 // CaseClauses
 
-function CaseClauses(p: Parser): CaseClauseListNode | ErrorNode {
-    const start = p.pos;
-    const clauses: (CaseClauseNode | DefaultClauseNode | ErrorNode)[] = [];
-    const first = CaseClause(p);
-    clauses.push(first);
-    let end = first.range.end;
-    while (true) {
-        try {
-            let clause: CaseClauseNode | ErrorNode;
-            p.sequence([
-                () => clause = CaseClause(p),
-            ]);
-            clauses.push(clause);
-            end = clause.range.end;
-        }
-        catch (e) {
-            return new CaseClauseListNode(new Range(start,end),clauses);
-        }
-    }
-}
+grm.define("CaseClauses",
+    list(
+        ref("CaseClause"),
+        sequence([
+            whitespace,
+            ref("CaseClause"),
+            spliceReplace(1,0),
+        ])
+    ));
 
 // CaseClause
 
-function CaseClause(p: Parser): CaseClauseNode | ErrorNode {
-    return p.seq8([
-        pos,
-        keyword("case"),
-        whitespace,
-        Expression,
-        whitespace,
-        keyword(":"),
-        whitespace,
-        StatementList],
-        ([start,,,expr,,,,statements]) => new CaseClauseNode(new Range(start,statements.range.end),expr,statements));
-}
+grm.define("CaseClause",
+    sequence([
+        pos,                  // 8 = start
+        keyword("case"),      // 7
+        whitespace,           // 6
+        ref("Expression"),    // 5 = expr
+        whitespace,           // 4
+        keyword(":"),         // 3
+        whitespace,           // 2
+        ref("StatementList"), // 1 = statements
+        pos,                  // 0 = end
+        spliceNode(8,"CaseClause",8,0,[5,1]),
+    ]));
 
 // DefaultClause
 
-function DefaultClause(p: Parser): DefaultClauseNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("default"),
-        whitespace,
-        keyword(":"),
-        whitespace,
-        StatementList],
-        ([start,arg2,arg3,arg4,arg5,statements]) =>
-            new DefaultClauseNode(new Range(start,statements.range.end),statements));
-}
+grm.define("DefaultClause",
+    sequence([
+        pos,                  // 7 = start
+        keyword("default"),   // 6
+        whitespace,           // 5
+        keyword(":"),         // 4
+        whitespace,           // 3
+        ref("StatementList"), // 2 = statements
+        pos,                  // 1 = end
+        whitespace,           // 0
+        spliceNode(7,"DefaultClause",7,1,[2]),
+    ]));
 
 // Section 13.13
 
 // LabelledStatement
 
-function LabelledStatement(p: Parser): LabelledStatementNode | ErrorNode {
-    return p.seq6([
-        pos,
-        LabelIdentifier,
-        whitespace,
-        keyword(":"),
-        whitespace,
-        LabelledItem],
-        ([start,ident,,,,item]) =>
-            new LabelledStatementNode(new Range(start,p.pos),ident,item));
-}
+grm.define("LabelledStatement",
+    sequence([
+        pos,                    // 6 = start
+        ref("LabelIdentifier"), // 5 = ident
+        whitespace,             // 4
+        keyword(":"),           // 3
+        whitespace,             // 2
+        ref("LabelledItem"),    // 1 = item
+        pos,                    // 0 = end
+        spliceNode(6,"LabelledStatement",6,0,[5,1]),
+    ]));
 
 // LabelledItem
 
-function LabelledItem(p: Parser): StatementNode | FunctionDeclarationNode | ErrorNode {
-    return p.choice<StatementNode | FunctionDeclarationNode | ErrorNode>([
-        Statement,
-        FunctionDeclaration,
-    ]);
-}
+grm.define("LabelledItem",
+    choice([
+        ref("Statement"),
+        ref("FunctionDeclaration"),
+    ]));
 
 // Section 13.14
 
 // ThrowStatement
 
-function ThrowStatement(p: Parser): ThrowStatementNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("throw"),
-        whitespaceNoNewline,
-        Expression,
-        whitespace,
-        keyword(";")],
-        ([start,,,expr,,]) =>
-            new ThrowStatementNode(new Range(start,p.pos),expr));
-}
+grm.define("ThrowStatement",
+    sequence([
+        pos,                 // 6 = start
+        keyword("throw"),    // 5
+        whitespaceNoNewline, // 4
+        ref("Expression"),   // 3 = expr
+        whitespace,          // 2
+        keyword(";"),        // 1
+        pos,                 // 0 = end
+        spliceNode(6,"ThrowStatement",6,0,[3]),
+    ]));
 
 // Section 13.15
 
 // TryStatement
 
-function TryStatement(p: Parser): TryStatementNode | ErrorNode {
-    return p.attempt((start) => {
-        let catchBlock: CatchNode | ErrorNode;
-        let finallyBlock: FinallyNode | ErrorNode;
-
-        const tryBlock = p.seq3([
-            keyword("try"),
-            whitespace,
-            Block],
-            ([,,block]) => block);
-
-        finallyBlock = p.opt(() => p.seq2([
-            whitespace,
-            Finally],
-            ([,inner]) => inner));
-
-        if (finallyBlock == null) {
-            p.sequence([
-                whitespace,
-                () => catchBlock = Catch(p),
-                () => finallyBlock = p.opt(() => p.seq2([
+grm.define("TryStatement",
+    sequence([
+        pos,                         // 7 = start
+        keyword("try"),              // 6
+        whitespace,                  // 5
+        ref("Block"),                // 4 = tryBlock
+        choice([
+            sequence([
+                whitespace,          // 3
+                value(null),         // 2 = catchBlock
+                ref("Finally"),      // 1 = finallyBlock
+            ]),
+            sequence([
+                whitespace,          // 3
+                ref("Catch"),        // 2 = catchBlock
+                opt(sequence([          // 1 = finallyBlock
                     whitespace,
-                    Finally],
-                    ([,inner]) => inner)),
-            ]);
-        }
-
-        return new TryStatementNode(new Range(start,p.pos),tryBlock,catchBlock,finallyBlock);
-    });
-}
+                    ref("Finally"),
+                    spliceReplace(1,0),
+                ])),
+            ]),
+        ]),
+        pos,                         // 0 = end
+        spliceNode(7,"TryStatement",7,0,[4,2,1]),
+    ]));
 
 // Catch
 
-function Catch(p: Parser): CatchNode | ErrorNode {
-    return p.seq10([
-        pos,
-        keyword("catch"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        CatchParameter,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        Block],
-        ([start,,,,,param,,,,block]) =>
-            new CatchNode(new Range(start,p.pos),param,block));
-}
+grm.define("Catch",
+    sequence([
+        pos,                   // 10 = start
+        keyword("catch"),      // 9
+        whitespace,            // 8
+        keyword("("),          // 7
+        whitespace,            // 6
+        ref("CatchParameter"), // 5 = param
+        whitespace,            // 4
+        keyword(")"),          // 3
+        whitespace,            // 2
+        ref("Block"),          // 1 = block
+        pos,                   // 0 = end
+        spliceNode(10,"Catch",10,0,[5,1]),
+    ]));
 
 // Finally
 
-function Finally(p: Parser): FinallyNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("finally"),
-        whitespace,
-        Block],
-        ([start,arg2,arg3,block]) =>
-            new FinallyNode(new Range(start,p.pos),block)
-    );
-}
+grm.define("Finally",
+    sequence([
+        pos,                // 4
+        keyword("finally"), // 3
+        whitespace,         // 2
+        ref("Block"),       // 1
+        pos,                // 0
+        spliceNode(4,"Finally",4,0,[1]),
+    ]));
 
 // CatchParameter
 
-function CatchParameter(p: Parser): CatchParameterType | ErrorNode {
-    return p.choice<CatchParameterType | ErrorNode>([
-        BindingIdentifier,
-        BindingPattern,
-    ]);
-}
+grm.define("CatchParameter",
+    choice([
+        ref("BindingIdentifier"),
+        ref("BindingPattern"),
+    ]));
 
 // Section 13.16
 
 // DebuggerStatement
 
-function DebuggerStatement(p: Parser): DebuggerStatementNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("debugger"),
-        whitespace,
-        keyword(";")],
-        ([start,,,]) => new DebuggerStatementNode(new Range(start,p.pos)));
-}
+grm.define("DebuggerStatement",
+    sequence([
+        pos,                 // 4
+        keyword("debugger"), // 3
+        whitespace,          // 2
+        keyword(";"),        // 1
+        pos,                 // 0
+        spliceNode(4,"DebuggerStatement",4,0,[]),
+    ]));
 
 // Section 14.1
 
 // FunctionDeclaration_named
 
-function FunctionDeclaration_named(p: Parser): FunctionDeclarationNode | ErrorNode {
-    return p.seq16([
-        pos,
-        keyword("function"),
-        whitespace,
-        BindingIdentifier,
-        whitespace,
-        keyword("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,ident,,,,params,,,,,,body,,]) =>
-            new FunctionDeclarationNode(new Range(start,p.pos),ident,params,body));
-}
+grm.define("FunctionDeclaration_named",
+    sequence([
+        pos,                      // 16 = start
+        keyword("function"),      // 15
+        whitespace,               // 14
+        ref("BindingIdentifier"), // 13 = ident
+        whitespace,               // 12
+        keyword("("),             // 11
+        whitespace,               // 10
+        ref("FormalParameters"),  // 9 = params
+        whitespace,               // 8
+        keyword(")"),             // 7
+        whitespace,               // 6
+        keyword("{"),             // 5
+        whitespace,               // 4
+        ref("FunctionBody"),      // 3 = body
+        whitespace,               // 2
+        keyword("}"),             // 1
+        pos,                      // 0 = end
+        spliceNode(16,"FunctionDeclaration",16,0,[13,9,3]),
+    ]));
 
 // FunctionDeclaration_unnamed
 
-function FunctionDeclaration_unnamed(p: Parser): FunctionDeclarationNode | ErrorNode {
-    return p.seq14([
-        pos,
-        keyword("function"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,,,params,,,,,,body,,]) =>
-            new FunctionDeclarationNode(new Range(start,p.pos),null,params,body));
-}
+grm.define("FunctionDeclaration_unnamed",
+    sequence([
+        pos,                     // 15 = start
+        keyword("function"),     // 14
+        whitespace,              // 13
+        keyword("("),            // 12
+        whitespace,              // 11
+        value(null),             // 10 = null
+        ref("FormalParameters"), // 9 = params
+        whitespace,              // 8
+        keyword(")"),            // 7
+        whitespace,              // 6
+        keyword("{"),            // 5
+        whitespace,              // 4
+        ref("FunctionBody"),     // 3 = body
+        whitespace,              // 2
+        keyword("}"),            // 1
+        pos,                     // 0 = end
+        spliceNode(15,"FunctionDeclaration",15,0,[10,9,3]),
+    ]));
 
 // FunctionDeclaration
 
-function FunctionDeclaration(p: Parser): FunctionDeclarationNode | ErrorNode {
-    try { return FunctionDeclaration_named(p); } catch (e) {}
-    try { return FunctionDeclaration_unnamed(p); } catch (e) {}
-    throw new ParseError(p,p.pos,"Expected FunctionDeclaration");
-}
+grm.define("FunctionDeclaration",
+    choice([
+        ref("FunctionDeclaration_named"),
+        ref("FunctionDeclaration_unnamed"),
+    ]));
 
 // FunctionExpression
 
-function FunctionExpression(p: Parser): FunctionExpressionNode | ErrorNode {
-    return p.seq15([
-        pos,
-        keyword("function"),
-        whitespace,
-        opt(() => p.seq2([
-            BindingIdentifier,
-            whitespace],
-            ([inner,]) => inner)),
-        keyword("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,ident,,,params,,,,,,body,,]) =>
-            new FunctionExpressionNode(new Range(start,p.pos),ident,params,body));
-}
+grm.define("FunctionExpression",
+    sequence([
+        pos,                     // 15 = start
+        keyword("function"),     // 14
+        whitespace,              // 13
+        opt(sequence([
+            ref("BindingIdentifier"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("("),            // 11
+        whitespace,              // 10
+        ref("FormalParameters"), // 9 = params
+        whitespace,              // 8
+        keyword(")"),            // 7
+        whitespace,              // 6
+        keyword("{"),            // 5
+        whitespace,              // 4
+        ref("FunctionBody"),     // 3 = body
+        whitespace,              // 2
+        keyword("}"),            // 1
+        pos,                     // 0 = end
+        spliceNode(15,"FunctionExpression",15,0,[12,9,3]),
+    ]));
 
 // StrictFormalParameters
 
-function StrictFormalParameters(p: Parser): FormalParametersNode | ErrorNode {
-    return FormalParameters(p);
-}
+grm.define("StrictFormalParameters",
+    ref("FormalParameters"));
 
 // FormalParameters
 
-function FormalParameters(p: Parser): FormalParametersNode | ErrorNode {
-    return p.choice<FormalParametersNode | ErrorNode>([
-        FormalParameterList,
-        () => {
-            return new FormalParameters1Node(new Range(p.pos,p.pos));
-        },
-    ]);
-}
+grm.define("FormalParameters",
+    choice([
+        ref("FormalParameterList"),
+        sequence([
+            pos,
+            spliceNode(0,"FormalParameters1",0,0,[]),
+        ]),
+    ]));
 
 // FormalParameterList
 
-function FormalParameterList(p: Parser): FormalParametersNode | ErrorNode {
-    return p.choice<FormalParametersNode>([
-        () => p.seq2([
-            pos,
-            FunctionRestParameter],
-            ([start,rest]) => new FormalParameters2Node(new Range(start,p.pos),rest)),
-        () => p.seq4([
-            pos,
-            FormalsList,
-            opt(() => p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                FunctionRestParameter],
-                ([,,,rest]) => rest)),
-            pos],
-            ([start,formals,rest,end]) => {
-                if (rest == null)
-                    return new FormalParameters3Node(new Range(start,end),formals);
-                else
-                    return new FormalParameters4Node(new Range(start,end),formals,rest);
-            }),
-    ]);
-}
+grm.define("FormalParameterList",
+    choice([
+        sequence([
+            pos,                          // 2 = start
+            ref("FunctionRestParameter"), // 1 = rest
+            pos,                          // 0 = end
+            spliceNode(2,"FormalParameters2",2,0,[1]),
+        ]),
+        sequence([
+            pos,                // 3 = start
+            ref("FormalsList"), // 2 = formals
+            choice([
+                sequence([
+                    whitespace,
+                    keyword(","),
+                    whitespace,
+                    ref("FunctionRestParameter"),
+                    pos,
+                    spliceNode(6,"FormalParameters4",6,0,[5,1]),
+                ]),
+                sequence([
+                    pos,
+                    spliceNode(2,"FormalParameters3",2,0,[1]),
+                ]),
+            ]),
+        ]),
+    ]));
 
 // FormalsList
 
-function FormalsList(p: Parser): FormalParameterListNode | ErrorNode {
-    const start = p.pos;
-    const elements: (BindingElementType | BindingRestElementNode | ErrorNode)[] = [];
-    elements.push(FormalParameter(p));
-    while (true) {
-        try {
-            // let param: BindingElementType | ErrorNode;
-            const param = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                FormalParameter],
-                ([,,,p]) => p);
-            elements.push(param);
-        }
-        catch (e) {
-            return new FormalParameterListNode(new Range(start,p.pos),elements);
-        }
-    }
-}
+grm.define("FormalsList",
+    list(
+        ref("FormalParameter"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("FormalParameter"),
+            spliceReplace(3,0),
+        ])
+    ));
 
 // FunctionRestParameter
 
-function FunctionRestParameter(p: Parser): BindingRestElementNode | ErrorNode {
-    return BindingRestElement(p);
-}
+grm.define("FunctionRestParameter",
+    ref("BindingRestElement"));
 
 // FormalParameter
 
-function FormalParameter(p: Parser): BindingElementType | ErrorNode {
-    return BindingElement(p);
-}
+grm.define("FormalParameter",
+    ref("BindingElement"));
 
 // FunctionBody
 
-function FunctionBody(p: Parser): StatementListNode | ErrorNode {
-    return FunctionStatementList(p);
-}
+grm.define("FunctionBody",
+    ref("FunctionStatementList"));
 
 // FunctionStatementList
 
-function FunctionStatementList(p: Parser): StatementListNode | ErrorNode {
-    return p.choice([
-        StatementList,
-        () => new StatementListNode(new Range(p.pos,p.pos),[]),
-    ]);
-}
+grm.define("FunctionStatementList",
+    choice([
+        ref("StatementList"),
+        sequence([
+            pos,
+            spliceEmptyListNode(0,0,0),
+        ]),
+    ]));
 
 // Section 14.2
 
 // ArrowFunction
 
-function ArrowFunction(p: Parser): ArrowFunctionNode | ErrorNode {
-    return p.seq6([
-        pos,
-        ArrowParameters,
-        whitespaceNoNewline,
-        keyword("=>"),
-        whitespace,
-        ConciseBody],
-        ([start,params,,,,body]) => new ArrowFunctionNode(new Range(start,p.pos),params,body));
-}
+grm.define("ArrowFunction",
+    sequence([
+        pos,                    // 6 = start
+        ref("ArrowParameters"), // 5 = params
+        whitespaceNoNewline,    // 4
+        keyword("=>"),          // 3
+        whitespace,             // 2
+        ref("ConciseBody"),     // 1 = body
+        pos,                    // 0 = end
+        spliceNode(6,"ArrowFunction",6,0,[5,1]),
+    ]));
 
 // ArrowParameters
 
-function ArrowParameters(p: Parser): BindingIdentifierNode | FormalParametersNode | ErrorNode {
-    return p.choice<BindingIdentifierNode | FormalParametersNode | ErrorNode>([
-        BindingIdentifier,
-        ArrowFormalParameters,
-    ]);
-}
+grm.define("ArrowParameters",
+    choice([
+        ref("BindingIdentifier"),
+        ref("ArrowFormalParameters"),
+    ]));
 
 // ConciseBody_1
 
-function ConciseBody_1(p: Parser): ExpressionNode | ErrorNode {
-    if (p.lookaheadKeyword("{"))
-        throw new ParseIgnore();
-    return AssignmentExpression(p);
-}
+grm.define("ConciseBody_1",
+    sequence([
+        not(keyword("{")),
+        ref("AssignmentExpression"),
+    ]));
 
 // ConciseBody_2
 
-function ConciseBody_2(p: Parser): StatementListNode | ErrorNode {
-    return p.seq5([
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([,,body,,]) => body);
-}
+grm.define("ConciseBody_2",
+    sequence([
+        keyword("{"),        // 4
+        whitespace,          // 3
+        ref("FunctionBody"), // 2
+        whitespace,          // 1
+        keyword("}"),        // 0
+        spliceReplace(4,2),
+    ]));
 
 // ConciseBody
 
-function ConciseBody(p: Parser): ExpressionNode | StatementListNode | ErrorNode {
-    return p.choice<ExpressionNode | StatementListNode | ErrorNode>([
-        ConciseBody_1,
-        ConciseBody_2,
-    ]);
-}
+grm.define("ConciseBody",
+    choice([
+        ref("ConciseBody_1"),
+        ref("ConciseBody_2"),
+    ]));
 
 // ArrowFormalParameters
 
-function ArrowFormalParameters(p: Parser): FormalParametersNode | ErrorNode {
-    return p.seq5([
-        keyword("("),
-        whitespace,
-        StrictFormalParameters,
-        whitespace,
-        keyword(")")],
-        ([,,params,,]) => params);
-}
+grm.define("ArrowFormalParameters",
+    sequence([
+        keyword("("),                  // 4
+        whitespace,                    // 3
+        ref("StrictFormalParameters"), // 2
+        whitespace,                    // 1
+        keyword(")"),                  // 0
+        spliceReplace(4,2),
+    ]));
 
 // Section 14.3
 
 // MethodDefinition_1
 
-function MethodDefinition_1(p: Parser): MethodNode | ErrorNode {
-    return p.seq14([
-        pos,
-        PropertyName,
-        whitespace,
-        keyword("("),
-        whitespace,
-        StrictFormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([start,name,,,,params,,,,,,body,,]) =>
-            new MethodNode(new Range(start,p.pos),name,params,body));
-}
+grm.define("MethodDefinition_1",
+    sequence([
+        pos,                           // 14 = start
+        ref("PropertyName"),           // 13 = name
+        whitespace,                    // 12
+        keyword("("),                  // 11
+        whitespace,                    // 10
+        ref("StrictFormalParameters"), // 9 = params
+        whitespace,                    // 8
+        keyword(")"),                  // 7
+        whitespace,                    // 6
+        keyword("{"),                  // 5
+        whitespace,                    // 4
+        ref("FunctionBody"),           // 3 = body
+        whitespace,                    // 2
+        keyword("}"),                  // 1
+        pos,                           // 0 = end
+        spliceNode(14,"Method",14,0,[13,9,3]),
+    ]));
 
 // MethodDefinition_2
 
-function MethodDefinition_2(p: Parser): GeneratorMethodNode | ErrorNode {
-    return GeneratorMethod(p);
-}
+grm.define("MethodDefinition_2",
+    ref("GeneratorMethod"));
 
 // MethodDefinition_3
 
-function MethodDefinition_3(p: Parser): GetterNode | ErrorNode {
-    return p.seq14([
-        pos,
-        identifier("get"), // "get" is not a reserved word, so we can't use keyword here
-        whitespace,
-        PropertyName,
-        whitespace,
-        keyword("("),
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,name,,,,,,,,body,,]) =>
-            new GetterNode(new Range(start,p.pos),name,body));
-}
+grm.define("MethodDefinition_3",
+    sequence([
+        pos,                 // 14 = start
+        identifier("get"),   // 13 "get" is not a reserved word, so we can't use keyword here
+        whitespace,          // 12
+        ref("PropertyName"), // 11 = name
+        whitespace,          // 10
+        keyword("("),        // 9
+        whitespace,          // 8
+        keyword(")"),        // 7
+        whitespace,          // 6
+        keyword("{"),        // 5
+        whitespace,          // 4
+        ref("FunctionBody"), // 3 = body
+        whitespace,          // 2
+        keyword("}"),        // 1
+        pos,                 // 0 = end
+        spliceNode(14,"Getter",14,0,[11,3]),
+    ]));
 
 // MethodDefinition_4
 
-function MethodDefinition_4(p: Parser): SetterNode | ErrorNode {
-    return p.seq16([
-        pos,
-        identifier("set"),
-        whitespace,
-        PropertyName,
-        whitespace,
-        keyword("("),
-        whitespace,
-        PropertySetParameterList,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        FunctionBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,name,,,,param,,,,,,body,,]) =>
-            new SetterNode(new Range(start,p.pos),name,param,body));
-}
+grm.define("MethodDefinition_4",
+    sequence([
+        pos,                             // 16 = start
+        identifier("set"),               // 15
+        whitespace,                      // 14
+        ref("PropertyName"),             // 13 = name
+        whitespace,                      // 12
+        keyword("("),                    // 11
+        whitespace,                      // 10
+        ref("PropertySetParameterList"), // 9 = param
+        whitespace,                      // 8
+        keyword(")"),                    // 7
+        whitespace,                      // 6
+        keyword("{"),                    // 5
+        whitespace,                      // 4
+        ref("FunctionBody"),             // 3 = body
+        whitespace,                      // 2
+        keyword("}"),                    // 1
+        pos,                             // 0 = end
+        spliceNode(16,"Setter",16,0,[13,9,3]),
+    ]));
 
 // MethodDefinition
 
-function MethodDefinition(p: Parser): MethodDefinitionNode | ErrorNode {
-    return p.choice<MethodDefinitionNode | ErrorNode>([
-        MethodDefinition_1,
-        MethodDefinition_2,
-        MethodDefinition_3,
-        MethodDefinition_4,
-    ]);
-}
+grm.define("MethodDefinition",
+    choice([
+        ref("MethodDefinition_1"),
+        ref("MethodDefinition_2"),
+        ref("MethodDefinition_3"),
+        ref("MethodDefinition_4"),
+    ]));
 
 // PropertySetParameterList
 
-function PropertySetParameterList(p: Parser): BindingElementType | ErrorNode {
-    return FormalParameter(p);
-}
+grm.define("PropertySetParameterList",
+    ref("FormalParameter"));
 
 // Section 14.4
 
 // GeneratorMethod
 
-function GeneratorMethod(p: Parser): GeneratorMethodNode | ErrorNode {
-    return p.seq16([
-        pos,
-        keyword("*"),
-        whitespace,
-        PropertyName,
-        whitespace,
-        keyword("("),
-        whitespace,
-        StrictFormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,name,,,,params,,,,,,body,,]) =>
-            new GeneratorMethodNode(new Range(start,p.pos),name,params,body));
-}
+grm.define("GeneratorMethod",
+    sequence([
+        pos,                           // 16 = start
+        keyword("*"),                  // 15
+        whitespace,                    // 14
+        ref("PropertyName"),           // 13 = name
+        whitespace,                    // 12
+        keyword("("),                  // 11
+        whitespace,                    // 10
+        ref("StrictFormalParameters"), // 9 = params
+        whitespace,                    // 8
+        keyword(")"),                  // 7
+        whitespace,                    // 6
+        keyword("{"),                  // 5
+        whitespace,                    // 4
+        ref("GeneratorBody"),          // 3 = body
+        whitespace,                    // 2
+        keyword("}"),                  // 1
+        pos,                           // 0 = end
+        spliceNode(16,"GeneratorMethod",16,0,[13,9,3]),
+    ]));
 
 // GeneratorDeclaration_1
 
-function GeneratorDeclaration_1(p: Parser): GeneratorDeclarationNode | ErrorNode {
-    return p.seq18([
-        pos,
-        keyword("function"),
-        whitespace,
-        keyword("*"),
-        whitespace,
-        BindingIdentifier,
-        whitespace,
-        keyword("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,,,ident,,,,params,,,,,,body,,]) =>
-            new GeneratorDeclarationNode(new Range(start,p.pos),ident,params,body));
-}
+grm.define("GeneratorDeclaration_1",
+    sequence([
+        pos,                      // 18 = start
+        keyword("function"),      // 17
+        whitespace,               // 16
+        keyword("*"),             // 15
+        whitespace,               // 14
+        ref("BindingIdentifier"), // 13 = ident
+        whitespace,               // 12
+        keyword("("),             // 11
+        whitespace,               // 10
+        ref("FormalParameters"),  // 9 = params
+        whitespace,               // 8
+        keyword(")"),             // 7
+        whitespace,               // 6
+        keyword("{"),             // 5
+        whitespace,               // 4
+        ref("GeneratorBody"),     // 3 = body
+        whitespace,               // 2
+        keyword("}"),             // 1
+        pos,                      // 0 = end
+        spliceNode(18,"GeneratorDeclaration",18,0,[13,9,3]),
+    ]));
 
 // GeneratorDeclaration_2
 
-function GeneratorDeclaration_2(p: Parser): DefaultGeneratorDeclarationNode | ErrorNode {
-    return p.seq16([
-        pos,
-        keyword("function"),
-        whitespace,
-        keyword("*"),
-        whitespace,
-        keyword("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,,,,,params,,,,,,body,,]) =>
-            new DefaultGeneratorDeclarationNode(new Range(start,p.pos),params,body));
-}
+grm.define("GeneratorDeclaration_2",
+    sequence([
+        pos,                     // 16 = start
+        keyword("function"),     // 15
+        whitespace,              // 14
+        keyword("*"),            // 13
+        whitespace,              // 12
+        keyword("("),            // 11
+        whitespace,              // 10
+        ref("FormalParameters"), // 9 = params
+        whitespace,              // 8
+        keyword(")"),            // 7
+        whitespace,              // 6
+        keyword("{"),            // 5
+        whitespace,              // 4
+        ref("GeneratorBody"),    // 3 = body
+        whitespace,              // 2
+        keyword("}"),            // 1
+        pos,                     // 0 = end
+        spliceNode(16,"DefaultGeneratorDeclaration",16,0,[9,3]),
+    ]));
 
 // GeneratorDeclaration
 
-function GeneratorDeclaration(p: Parser): DeclarationNode | ErrorNode {
-    try { return GeneratorDeclaration_1(p); } catch (e) {}
-    try { return GeneratorDeclaration_2(p); } catch (e) {} // FIXME: default only
-    throw new ParseError(p,p.pos,"Expected GeneratorDeclaration");
-}
+grm.define("GeneratorDeclaration",
+    choice([
+        ref("GeneratorDeclaration_1"),
+        ref("GeneratorDeclaration_2"),
+    ]));
 
 // GeneratorExpression
 
-function GeneratorExpression(p: Parser): GeneratorExpressionNode | ErrorNode {
-    return p.seq17([
-        pos,
-        keyword("function"),
-        whitespace,
-        keyword("*"),
-        whitespace,
-        opt(() => p.seq2([
-            BindingIdentifier,
-            whitespace],
-            ([inner,]) => inner)),
-        keyword("("),
-        whitespace,
-        FormalParameters,
-        whitespace,
-        keyword(")"),
-        whitespace,
-        keyword("{"),
-        whitespace,
-        GeneratorBody,
-        whitespace,
-        keyword("}")],
-        ([start,,,,,ident,,,params,,,,,,body,,]) =>
-            new GeneratorExpressionNode(new Range(start,p.pos),ident,params,body));
-}
+grm.define("GeneratorExpression",
+    sequence([
+        pos,                     // 17 = start
+        keyword("function"),     // 16
+        whitespace,              // 15
+        keyword("*"),            // 14
+        whitespace,              // 13
+        opt(sequence([
+            ref("BindingIdentifier"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("("),            // 11
+        whitespace,              // 10
+        ref("FormalParameters"), // 9 = params
+        whitespace,              // 8
+        keyword(")"),            // 7
+        whitespace,              // 6
+        keyword("{"),            // 5
+        whitespace,              // 4
+        ref("GeneratorBody"),    // 3 = body
+        whitespace,              // 2
+        keyword("}"),            // 1
+        pos,                     // 0 = end
+        spliceNode(17,"GeneratorExpression",17,0,[12,9,3]),
+    ]));
 
 // GeneratorBody
 
-function GeneratorBody(p: Parser): StatementListNode | ErrorNode {
-    return FunctionBody(p);
-}
+grm.define("GeneratorBody",
+    ref("FunctionBody"));
 
 // YieldExpression_1
 
-function YieldExpression_1(p: Parser): YieldStarNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("yield"),
-        whitespaceNoNewline,
-        keyword("*"),
-        whitespace,
-        AssignmentExpression],
-        ([start,,,,,expr]) => new YieldStarNode(new Range(start,p.pos),expr));
-}
+grm.define("YieldExpression_1",
+    sequence([
+        pos,                         // 6
+        keyword("yield"),            // 5
+        whitespaceNoNewline,         // 4
+        keyword("*"),                // 3
+        whitespace,                  // 2
+        ref("AssignmentExpression"), // 1
+        pos,                         // 0
+        spliceNode(6,"YieldStar",6,0,[1]),
+    ]));
 
 // YieldExpression_2
 
-function YieldExpression_2(p: Parser): YieldExprNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("yield"),
-        whitespaceNoNewline,
-        AssignmentExpression],
-        ([start,,,expr]) => new YieldExprNode(new Range(start,p.pos),expr));
-}
+grm.define("YieldExpression_2",
+    sequence([
+        pos,                         // 4
+        keyword("yield"),            // 3
+        whitespaceNoNewline,         // 2
+        ref("AssignmentExpression"), // 1
+        pos,                         // 0
+        spliceNode(4,"YieldExpr",4,0,[1]),
+    ]));
 
 // YieldExpression_3
 
-function YieldExpression_3(p: Parser): YieldNothingNode | ErrorNode {
-    return p.seq2([
+grm.define("YieldExpression_3",
+    sequence([
         pos,
-        keyword("yield")],
-        ([start,]) => new YieldNothingNode(new Range(start,p.pos)));
-}
+        keyword("yield"),
+        pos,
+        spliceNode(2,"YieldNothing",2,0,[]),
+    ]));
 
 // YieldExpression
 
-function YieldExpression(p: Parser): ExpressionNode | ErrorNode {
-    return p.choice<ExpressionNode | ErrorNode>([
-        YieldExpression_1,
-        YieldExpression_2,
-        YieldExpression_3,
-    ]);
-}
+grm.define("YieldExpression",
+    choice([
+        ref("YieldExpression_1"),
+        ref("YieldExpression_2"),
+        ref("YieldExpression_3"),
+    ]));
 
 // Section 14.5
 
 // ClassDeclaration_1
 
-function ClassDeclaration_1(p: Parser): ClassDeclarationNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("class"),
-        whitespace,
-        BindingIdentifier,
-        whitespace,
-        ClassTail],
-        ([start,,,ident,,tail]) =>
-            new ClassDeclarationNode(new Range(start,p.pos),ident,tail));
-}
+grm.define("ClassDeclaration_1",
+    sequence([
+        pos,                      // 6 = start
+        keyword("class"),         // 5
+        whitespace,               // 4
+        ref("BindingIdentifier"), // 3 = ident
+        whitespace,               // 2
+        ref("ClassTail"),         // 1 = tail
+        pos,                      // 0 = end
+        spliceNode(6,"ClassDeclaration",6,0,[3,1]),
+    ]));
 
 // ClassDeclaration_2
 
-function ClassDeclaration_2(p: Parser): ClassDeclarationNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("class"),
-        whitespace,
-        ClassTail],
-        ([start,,,tail]) => new ClassDeclarationNode(new Range(start,p.pos),null,tail));
-}
+grm.define("ClassDeclaration_2",
+    sequence([
+        pos,              // 5
+        keyword("class"), // 4
+        whitespace,       // 3
+        value(null),      // 2
+        ref("ClassTail"), // 1
+        pos,              // 0
+        spliceNode(5,"ClassDeclaration",5,0,[2,1]),
+    ]));
 
 // ClassDeclaration
 
-function ClassDeclaration(p: Parser): ClassDeclarationNode | ErrorNode {
-    try { return ClassDeclaration_1(p); } catch (e) {}
-    try { return ClassDeclaration_2(p); } catch (e) {} // FIXME: default only
-    throw new ParseError(p,p.pos,"Expected ClassDeclaration");
-}
+grm.define("ClassDeclaration",
+    choice([
+        ref("ClassDeclaration_1"),
+        ref("ClassDeclaration_2"),
+    ]));
 
 // ClassExpression
 
-function ClassExpression(p: Parser): ClassExpressionNode | ErrorNode {
-    return p.seq5([
-        pos,
-        keyword("class"),
-        whitespace,
-        opt(() =>
-            p.seq2([
-                BindingIdentifier,
-                whitespace],
-                ([inner,]) => inner)
-        ),
-        ClassTail],
-        ([start,,,ident,tail]) =>
-            new ClassExpressionNode(new Range(start,p.pos),ident,tail));
-}
+grm.define("ClassExpression",
+    sequence([
+        pos,                  // 5
+        keyword("class"),     // 4
+        whitespace,           // 3
+        opt(sequence([
+            ref("BindingIdentifier"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        ref("ClassTail"),     // 1
+        pos,                  // 0
+        spliceNode(5,"ClassExpression",5,0,[2,1]),
+    ]));
 
 // ClassTail
 
-function ClassTail(p: Parser): ClassTailNode | ErrorNode {
-    return p.seq6([
-        pos,
-        opt(() =>
-            p.seq2([
-                ClassHeritage,
-                whitespace
-            ],([inner,]) => inner)
-        ),
-        keyword("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq2([
-                ClassBody,
-                whitespace],
-                ([inner,]) => inner),
-            () => new ClassElementListNode(new Range(p.pos,p.pos),[]),
+grm.define("ClassTail",
+    sequence([
+        pos,                // 6 = start
+        opt(sequence([         // 5 = heritage
+            ref("ClassHeritage"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("{"),       // 4
+        whitespace,         // 3
+        choice([            // 2 = body
+            sequence([
+                ref("ClassBody"),
+                whitespace,
+                spliceReplace(1,1),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        keyword("}")],
-        ([start,heritage,,,body,]) =>
-            new ClassTailNode(new Range(start,p.pos),heritage,body));
-}
+        keyword("}"),       // 1
+        pos,                // 0 = end
+        spliceNode(6,"ClassTail",6,0,[5,2]),
+    ]));
 
 // ClassHeritage
 
-function ClassHeritage(p: Parser): ExtendsNode | ErrorNode {
-    return p.seq4([
-        pos,
-        keyword("extends"),
-        whitespace,
-        LeftHandSideExpression],
-        ([start,arg2,arg3,expr]) => new ExtendsNode(new Range(start,p.pos),expr));
-}
+grm.define("ClassHeritage",
+    sequence([
+        pos,                           // 4 = start
+        keyword("extends"),            // 3
+        whitespace,                    // 2
+        ref("LeftHandSideExpression"), // 1 = expr
+        pos,                           // 0 = end
+        spliceNode(4,"Extends",4,0,[1]),
+    ]));
 
 // ClassBody
 
-function ClassBody(p: Parser): ClassElementListNode | ErrorNode {
-    return ClassElementList(p);
-}
+grm.define("ClassBody",
+    ref("ClassElementList"));
 
 // ClassElementList
 
-function ClassElementList(p: Parser): ClassElementListNode | ErrorNode {
-    const start = p.pos;
-    const elements: (ClassElementType | ErrorNode)[] = [];
-    elements.push(ClassElement(p));
-    while (true) {
-        try {
-            const elem = p.seq2([
-                whitespace,
-                ClassElement],
-                ([,e]) => e);
-            elements.push(elem);
-        }
-        catch (e) {
-            return new ClassElementListNode(new Range(start,p.pos),elements);
-        }
-    }
-}
+grm.define("ClassElementList",
+    list(
+        ref("ClassElement"),
+        sequence([
+            whitespace,
+            ref("ClassElement"),
+            spliceReplace(1,0),
+        ])
+    ));
 
 // ClassElement_1
 
-function ClassElement_1(p: Parser): MethodDefinitionNode | ErrorNode {
-    return MethodDefinition(p);
-}
+grm.define("ClassElement_1",
+    ref("MethodDefinition"));
 
 // ClassElement_2
 
-function ClassElement_2(p: Parser): StaticMethodDefinitionNode | ErrorNode {
-    return p.seq4([
+grm.define("ClassElement_2",
+    sequence([
         pos,
         keyword("static"),
         whitespace,
-        MethodDefinition],
-        ([start,arg2,arg3,method]) => new StaticMethodDefinitionNode(new Range(start,p.pos),method));
-}
+        ref("MethodDefinition"),
+        pos,
+        spliceNode(4,"StaticMethodDefinition",4,0,[1]),
+    ]));
 
 // ClassElement_3
 
-function ClassElement_3(p: Parser): EmptyClassElementNode | ErrorNode {
-    return p.seq2([
+grm.define("ClassElement_3",
+    sequence([
         pos,
-        keyword(";")],
-        ([start,]) => new EmptyClassElementNode(new Range(start,p.pos)));
-}
+        keyword(";"),
+        pos,
+        spliceNode(2,"EmptyClassElement",2,0,[]),
+    ]));
 
 // ClassElement
 
-function ClassElement(p: Parser): ClassElementType | ErrorNode {
-    return p.choice<ClassElementType | ErrorNode>([
-        ClassElement_1,
-        ClassElement_2,
-        ClassElement_3,
-    ]);
-}
+grm.define("ClassElement",
+    choice([
+        ref("ClassElement_1"),
+        ref("ClassElement_2"),
+        ref("ClassElement_3"),
+    ]));
 
 // Section 15.1
 
 // Script
 
-export function Script(p: Parser): ScriptNode | ErrorNode {
-    const start = p.pos;
-    let body: StatementListNode | ErrorNode = null;
-    try { body = ScriptBody(p); } catch (e) {}
-    if (body == null)
-        body = new StatementListNode(new Range(start,p.pos),[]);
-    return new ScriptNode(new Range(start,p.pos),body);
-}
+grm.define("Script",
+    sequence([
+        pos,
+        choice([
+            ref("ScriptBody"),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        pos,
+        spliceNode(2,"Script",2,0,[1]),
+    ]));
 
 // ScriptBody
 
-function ScriptBody(p: Parser): StatementListNode | ErrorNode {
-    return StatementList(p);
-}
+grm.define("ScriptBody",
+    ref("StatementList"));
 
 // Section 15.2
 
 // Module
 
-export function Module(p: Parser): ModuleNode | ErrorNode {
-    const start = p.pos;
-    let body: ModuleItemListNode | ErrorNode = null;
-    try { body = ModuleBody(p); } catch (e) {}
-    if (body == null)
-        body = new ModuleItemListNode(new Range(start,p.pos),[]);
-    return new ModuleNode(new Range(start,p.pos),body);
-}
+grm.define("Module",
+    sequence([
+        pos,
+        choice([
+            ref("ModuleBody"),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        pos,
+        spliceNode(2,"Module",2,0,[1]),
+    ]));
 
 // ModuleBody
 
-function ModuleBody(p: Parser): ModuleItemListNode | ErrorNode {
-    return ModuleItemList(p);
-}
+grm.define("ModuleBody",
+    ref("ModuleItemList"));
 
 // ModuleItemList
 
-function ModuleItemList(p: Parser): ModuleItemListNode | ErrorNode {
-    const start = p.pos;
-    const items: (ModuleItemType | ErrorNode)[] = [];
-    items.push(ModuleItem(p));
-    while (true) {
-        try {
-            const mod = p.seq2([
-                whitespace,
-                ModuleItem],
-                ([,m]) => m);
-            items.push(mod);
-        }
-        catch (e) {
-            return new ModuleItemListNode(new Range(start,p.pos),items);
-        }
-    }
-}
+grm.define("ModuleItemList",
+    list(
+        ref("ModuleItem"),
+        sequence([
+            whitespace,
+            ref("ModuleItem"),
+            spliceReplace(1,0),
+        ])
+    ));
 
 // ModuleItem
 
-function ModuleItem(p: Parser): ModuleItemType | ErrorNode {
-    return p.choice<ModuleItemType | ErrorNode>([
-        ImportDeclaration,
-        ExportDeclaration,
-        StatementListItem,
-    ]);
-}
+grm.define("ModuleItem",
+    choice([
+        ref("ImportDeclaration"),
+        ref("ExportDeclaration"),
+        ref("StatementListItem"),
+    ]));
 
 // Section 15.2.2
 
 // ImportDeclaration_from
 
-function ImportDeclaration_from(p: Parser): ImportFromNode | ErrorNode {
-    return p.seq8([
-        pos,
-        keyword("import"),
-        whitespace,
-        ImportClause,
-        whitespace,
-        FromClause,
-        whitespace,
-        keyword(";")],
-        ([start,,,importClause,,fromClause,,]) =>
-            new ImportFromNode(new Range(start,p.pos),importClause,fromClause));
-}
+grm.define("ImportDeclaration_from",
+    sequence([
+        pos,                 // 8 = start
+        keyword("import"),   // 7
+        whitespace,          // 6
+        ref("ImportClause"), // 5 = importClause
+        whitespace,          // 4
+        ref("FromClause"),   // 3 = fromClause
+        whitespace,          // 2
+        keyword(";"),        // 1
+        pos,                 // 0 = end
+        spliceNode(8,"ImportFrom",8,0,[5,3]),
+    ]));
 
 // ImportDeclaration_module
 
-function ImportDeclaration_module(p: Parser): ImportModuleNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("import"),
-        whitespace,
-        ModuleSpecifier,
-        whitespace,
-        keyword(";")],
-        ([start,,,specifier,,]) =>
-            new ImportModuleNode(new Range(start,p.pos),specifier));
-}
+grm.define("ImportDeclaration_module",
+    sequence([
+        pos,                    // 6 = start
+        keyword("import"),      // 5
+        whitespace,             // 4
+        ref("ModuleSpecifier"), // 3 = specifier
+        whitespace,             // 2
+        keyword(";"),           // 1
+        pos,                    // 0 = end
+        spliceNode(6,"ImportModule",6,0,[3]),
+    ]));
 
 // ImportDeclaration
 
-function ImportDeclaration(p: Parser): ImportNode | ErrorNode {
-    return p.choice<ImportNode | ErrorNode>([
-        ImportDeclaration_from,
-        ImportDeclaration_module,
-    ]);
-}
+grm.define("ImportDeclaration",
+    choice([
+        ref("ImportDeclaration_from"),
+        ref("ImportDeclaration_module"),
+    ]));
 
 // ImportClause
 
-function ImportClause(p: Parser): ImportClauseNode | ErrorNode {
-    return p.choice<ImportClauseNode | ErrorNode>([
-        NameSpaceImport,
-        NamedImports,
-        () => {
-            const start = p.pos;
-            const defbinding = ImportedDefaultBinding(p);
-            return p.choice<ImportClauseNode | ErrorNode>([
-                () => p.seq4([
-                    whitespace,
-                    keyword(","),
-                    whitespace,
-                    NameSpaceImport],
-                    ([,,,nsimport]) => new DefaultAndNameSpaceImportsNode(new Range(start,p.pos),defbinding,nsimport)),
-                () => p.seq4([
-                    whitespace,
-                    keyword(","),
-                    whitespace,
-                    NamedImports],
-                    ([,,,nimports]) => new DefaultAndNamedImportsNode(new Range(start,p.pos),defbinding,nimports)),
-                () => new DefaultImportNode(new Range(start,p.pos),defbinding),
-            ]);
-        },
-    ]);
-}
+grm.define("ImportClause",
+    sequence([
+        choice([
+            ref("NameSpaceImport"),
+            ref("NamedImports"),
+            sequence([
+                pos,                            // 6 = start
+                ref("ImportedDefaultBinding"),  // 5 = defbinding
+                choice([
+                    sequence([
+                        whitespace,             // 4
+                        keyword(","),           // 3
+                        whitespace,             // 2
+                        ref("NameSpaceImport"), // 1 = nsimport
+                        pos,                    // 0 = end
+                        spliceNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
+                    ]),
+                    sequence([
+                        whitespace,             // 4
+                        keyword(","),           // 3
+                        whitespace,             // 2
+                        ref("NamedImports"),    // 1 = nsimports
+                        pos,                    // 0 = end
+                        spliceNode(6,"DefaultAndNamedImports",6,0,[5,1]),
+                    ]),
+                    sequence([
+                        pos,
+                        spliceNode(2,"DefaultImport",2,0,[1]),
+                    ]),
+                ]),
+            ]),
+        ]),
+    ]));
 
 // ImportedDefaultBinding
 
-function ImportedDefaultBinding(p: Parser): BindingIdentifierNode | ErrorNode {
-    return ImportedBinding(p);
-}
+grm.define("ImportedDefaultBinding",
+    ref("ImportedBinding"));
 
 // NameSpaceImport
 
-function NameSpaceImport(p: Parser): NameSpaceImportNode | ErrorNode {
-    return p.seq6([
-        pos,
-        keyword("*"),
-        whitespace,
-        keyword("as"),
-        whitespace,
-        ImportedBinding],
-        ([start,,,,,binding]) => new NameSpaceImportNode(new Range(start,p.pos),binding));
-}
+grm.define("NameSpaceImport",
+    sequence([
+        pos,                    // 6 = start
+        keyword("*"),           // 5
+        whitespace,             // 4
+        keyword("as"),          // 3
+        whitespace,             // 2
+        ref("ImportedBinding"), // 1 = binding
+        pos,                    // 0 = end
+        spliceNode(6,"NameSpaceImport",6,0,[1]),
+    ]));
 
 // NamedImports
 
-function NamedImports(p: Parser): NamedImportsNode | ErrorNode {
-    return p.seq5([
-        pos,
-        keyword("{"),
-        whitespace,
-        () => p.choice([
-            () => p.seq3([
-                ImportsList,
+grm.define("NamedImports",
+    sequence([
+        pos,               // 5 = start
+        keyword("{"),      // 4
+        whitespace,        // 3
+        choice([           // 2 = imports
+            sequence([
+                ref("ImportsList"),
                 whitespace,
-                opt(() =>  p.seq2([keyword(","),whitespace],() => {}))],
-                ([inner,,]) => inner),
-            () => new ImportsListNode(new Range(p.pos,p.pos),[]),
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    pop,
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        keyword("}")],
-        ([start,,,imports,]) =>
-            new NamedImportsNode(new Range(start,p.pos),imports));
-}
+        keyword("}"),      // 1
+        pos,               // 0 = end
+        spliceNode(5,"NamedImports",5,0,[2]),
+    ]));
 
 // FromClause
 
-function FromClause(p: Parser): StringLiteralNode | ErrorNode {
-    return p.seq3([
+grm.define("FromClause",
+    sequence([
         keyword("from"),
         whitespace,
-        ModuleSpecifier],
-        ([,,spec]) => spec);
-}
+        ref("ModuleSpecifier"),
+        spliceReplace(2,0),
+    ]));
 
 // ImportsList
 
-function ImportsList(p: Parser): ImportsListNode | ErrorNode {
-    const start = p.pos;
-    const imports: (ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode)[] = [];
-    imports.push(ImportSpecifier(p));
-    while (true) {
-        try {
-            const specifier = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                ImportSpecifier],
-                ([,,,spec]) => spec);
-            imports.push(specifier);
-        }
-        catch (e) {
-            return new ImportsListNode(new Range(start,p.pos),imports);
-        }
-    }
-}
+grm.define("ImportsList",
+    list(
+        ref("ImportSpecifier"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("ImportSpecifier"),
+            spliceReplace(3,0),
+        ])
+    ));
 
 // ImportSpecifier
 
-function ImportSpecifier(p: Parser): ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode {
-    return p.choice<ImportAsSpecifierNode | ImportSpecifierNode | ErrorNode>([
-        () => p.seq6([
-            pos,
-            IdentifierName,
-            whitespace,
-            keyword("as"),
-            whitespace,
-            ImportedBinding],
-            ([start,name,,,,binding]) => new ImportAsSpecifierNode(new Range(start,p.pos),name,binding)),
-        () => p.seq2([
-            pos,
-            ImportedBinding],
-            ([start,binding]) => new ImportSpecifierNode(new Range(start,p.pos),binding)),
-    ]);
-}
+grm.define("ImportSpecifier",
+    sequence([
+        choice([
+            sequence([
+                pos,                     // 6 = start
+                ref("IdentifierName"),   // 5 = name
+                whitespace,              // 4
+                keyword("as"),           // 3
+                whitespace,              // 2
+                ref("ImportedBinding"),  // 1 = binding
+                pos,                     // 0 = end
+                spliceNode(6,"ImportAsSpecifier",6,0,[5,1]),
+            ]),
+            sequence([
+                pos,                     // 2 = start
+                ref("ImportedBinding"),  // 1 = binding
+                pos,                     // 0 = end
+                spliceNode(2,"ImportSpecifier",2,0,[1]),
+            ]),
+        ]),
+    ]));
 
 // ModuleSpecifier
 
-function ModuleSpecifier(p: Parser): StringLiteralNode | ErrorNode {
-    return StringLiteral(p);
-}
+grm.define("ModuleSpecifier",
+    ref("StringLiteral"));
 
 // ImportedBinding
 
-function ImportedBinding(p: Parser): BindingIdentifierNode | ErrorNode {
-    return BindingIdentifier(p);
-}
+grm.define("ImportedBinding",
+    ref("BindingIdentifier"));
 
 // Section 15.2.3
 
 // ExportDeclaration
 
-function ExportDeclaration(p: Parser): ExportNode | ErrorNode {
-    return p.attempt((start) => {
-        p.sequence([
-            keyword("export"),
-            whitespace,
-        ]);
-
-        return p.choice<ExportNode | ErrorNode>([
-            () => p.seq3([
-                keyword("default"),
-                whitespace,
-                () => HoistableDeclaration(p)],
-                ([,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
-            () => p.seq3([
-                keyword("default"),
-                whitespace,
-                () => ClassDeclaration(p)],
-                ([,,node]) => new ExportDefaultNode(new Range(start,p.pos),node)),
-            () => p.seq7([
-                keyword("default"),
-                whitespace,
-                notKeyword("function"), // FIXME: need tests for this
-                notKeyword("class"), // FIXME: need tests for this
-                AssignmentExpression,
-                whitespace,
-                keyword(";")],
-                ([,,,,node,,]) => new ExportDefaultNode(new Range(start,p.pos),node)),
-            () => p.seq5([
-                keyword("*"),
-                whitespace,
-                FromClause,
-                whitespace,
-                keyword(";")],
-                ([,,from,,]) => new ExportStarNode(new Range(start,p.pos),from)),
-            () => p.seq5([
-                ExportClause,
-                whitespace,
-                FromClause,
-                whitespace,
-                keyword(";")],
-                ([exportClause,,fromClause,,]) => new ExportFromNode(new Range(start,p.pos),exportClause,fromClause)),
-            () => p.seq3([
-                ExportClause,
-                whitespace,
-                keyword(";")],
-                ([exportClause,,]) => new ExportPlainNode(new Range(start,p.pos),exportClause)),
-            () => p.seq1([
-                VariableStatement],
-                ([node]) => new ExportVariableNode(new Range(start,p.pos),node)),
-            () => p.seq1([
-                Declaration],
-                ([node]) => new ExportDeclarationNode(new Range(start,p.pos),node)),
-        ]);
-    });
-}
+grm.define("ExportDeclaration",
+    sequence([
+        pos,
+        keyword("export"),
+        whitespace,
+        choice([
+            sequence([
+                keyword("default"),          // 3
+                whitespace,                  // 2
+                ref("HoistableDeclaration"), // 1
+                pos,                         // 0
+                spliceNode(6,"ExportDefault",6,0,[1]),
+            ]),
+            sequence([
+                keyword("default"),          // 3
+                whitespace,                  // 2
+                ref("ClassDeclaration"),     // 1
+                pos,                         // 0
+                spliceNode(6,"ExportDefault",6,0,[1]),
+            ]),
+            sequence([
+                keyword("default"),          // 5
+                whitespace,                  // 4
+                not(keyword("function")),    // FIXME: need tests for this
+                not(keyword("class")),       // FIXME: need tests for this
+                ref("AssignmentExpression"), // 3
+                whitespace,                  // 2
+                keyword(";"),                // 1
+                pos,                         // 0
+                spliceNode(8,"ExportDefault",8,0,[3]),
+            ]),
+            sequence([
+                keyword("*"),                // 5
+                whitespace,                  // 4
+                ref("FromClause"),           // 3
+                whitespace,                  // 2
+                keyword(";"),                // 1
+                pos,                         // 0
+                spliceNode(8,"ExportStar",8,0,[3]),
+            ]),
+            sequence([
+                ref("ExportClause"),         // 5
+                whitespace,                  // 4
+                ref("FromClause"),           // 3
+                whitespace,                  // 2
+                keyword(";"),                // 1
+                pos,                         // 0
+                spliceNode(8,"ExportFrom",8,0,[5,3]),
+            ]),
+            sequence([
+                ref("ExportClause"),         // 3
+                whitespace,                  // 2
+                keyword(";"),                // 1
+                pos,                         // 0
+                spliceNode(6,"ExportPlain",6,0,[3]),
+            ]),
+            sequence([
+                ref("VariableStatement"),    // 1
+                pos,                         // 0
+                spliceNode(4,"ExportVariable",4,0,[1]),
+            ]),
+            sequence([
+                ref("Declaration"),          // 1
+                pos,                         // 0
+                spliceNode(4,"ExportDeclaration",4,0,[1]),
+            ]),
+        ]),
+    ]));
 
 // ExportClause
 
-function ExportClause(p: Parser): ExportClauseNode | ErrorNode {
-    const start = p.pos;
-    let exports: ExportsListNode | ErrorNode;
-    p.sequence([
-        keyword("{"),
-        whitespace,
-        () => exports = p.choice([
-            () => {
-                return p.seq3([
-                    ExportsList,
+grm.define("ExportClause",
+    sequence([
+        pos,             // 5
+        keyword("{"),    // 4
+        whitespace,      // 3
+        choice([         // 2
+            sequence([
+                ref("ExportsList"),
+                whitespace,
+                opt(sequence([
+                    keyword(","),
                     whitespace,
-                    opt(() => {
-                        p.sequence([
-                            keyword(","),
-                            whitespace,
-                        ]);
-                    })],
-                    ([inner,,]) => inner);
-            },
-            () => new ExportsListNode(new Range(p.pos,p.pos),[]),
+                    pop,
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
         ]),
-        keyword("}"),
-    ]);
-    return new ExportClauseNode(new Range(start,p.pos),exports);
-}
+        keyword("}"),    // 1
+        pos,             // 0
+        spliceNode(5,"ExportClause",5,0,[2]),
+    ]));
 
 // ExportsList
 
-function ExportsList(p: Parser): ExportsListNode | ErrorNode {
-    const start = p.pos;
-    const exports: (ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode)[] = [];
-    exports.push(ExportSpecifier(p));
-    while (true) {
-        try {
-            const specifier = p.seq4([
-                whitespace,
-                keyword(","),
-                whitespace,
-                ExportSpecifier],
-                ([,,,spec]) => spec);
-            exports.push(specifier);
-        }
-        catch (e) {
-            return new ExportsListNode(new Range(start,p.pos),exports);
-        }
-    }
-}
+grm.define("ExportsList",
+    list(
+        ref("ExportSpecifier"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("ExportSpecifier"),
+            spliceReplace(3,0),
+        ])
+    ));
 
 // ExportSpecifier
 
-function ExportSpecifier(p: Parser): ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode {
-    const start = p.pos;
-    let ident: IdentifierNode | ErrorNode;
-    let result: ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode;
-    p.sequence([
-        () => ident = IdentifierName(p),
-        () => result = p.choice<ExportAsSpecifierNode | ExportNormalSpecifierNode | ErrorNode>([
-            () => {
-                let asIdent: IdentifierNode | ErrorNode;
-                p.sequence([
-                    whitespace,
-                    keyword("as"),
-                    whitespace,
-                    () => asIdent = IdentifierName(p),
-                ]);
-                return new ExportAsSpecifierNode(new Range(start,p.pos),ident,asIdent);
-            },
-            () => {
-                return new ExportNormalSpecifierNode(new Range(start,p.pos),ident);
-            },
+grm.define("ExportSpecifier",
+    sequence([
+        pos,
+        ref("IdentifierName"),
+        choice([
+            sequence([
+                whitespace,            // 4
+                keyword("as"),         // 3
+                whitespace,            // 2
+                ref("IdentifierName"), // 1
+                pos,                   // 0
+                spliceNode(4,"ExportAsSpecifier",6,0,[5,1]),
+            ]),
+            sequence([
+                pos,
+                spliceNode(0,"ExportNormalSpecifier",2,0,[1]),
+            ]),
         ]),
-    ]);
-    return result;
+        spliceReplace(2,0),
+    ]));
+
+export function parseScript(p: Parser): ASTNode {
+    return p.attempt(() => {
+        const b = new Builder(grm,p);
+        ref("Script").execute(b);
+        b.assertLengthIs(1);
+        return b.getNode(0);
+    });
+}
+
+export function parseModule(p: Parser): ASTNode {
+    return p.attempt(() => {
+        const b = new Builder(grm,p);
+        ref("Module").execute(b);
+        b.assertLengthIs(1);
+        return b.getNode(0);
+    });
 }
