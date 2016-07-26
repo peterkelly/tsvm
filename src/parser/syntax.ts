@@ -446,30 +446,28 @@ grm.define("MemberExpression",
 // SuperProperty
 
 grm.define("SuperProperty",
-    sequence([
-        choice([
-            sequence([
-                pos,               // 8 = start
-                keyword("super"),  // 7
-                whitespace,        // 6
-                keyword("["),      // 5
-                whitespace,        // 4
-                ref("Expression"), // 3 = expr
-                whitespace,        // 2
-                keyword("]"),      // 1
-                pos,               // 0 = end
-                spliceNode(8,"SuperPropertyExpr",8,0,[3]),
-            ]),
-            sequence([
-                pos,               // 6 = start
-                keyword("super"),  // 5
-                whitespace,        // 4
-                keyword("."),      // 3
-                whitespace,        // 2
-                ref("Identifier"), // 1 = ident
-                pos,               // 0 = end
-                spliceNode(6,"SuperPropertyIdent",6,0,[1]),
-            ]),
+    choice([
+        sequence([
+            pos,               // 8 = start
+            keyword("super"),  // 7
+            whitespace,        // 6
+            keyword("["),      // 5
+            whitespace,        // 4
+            ref("Expression"), // 3 = expr
+            whitespace,        // 2
+            keyword("]"),      // 1
+            pos,               // 0 = end
+            spliceNode(8,"SuperPropertyExpr",8,0,[3]),
+        ]),
+        sequence([
+            pos,               // 6 = start
+            keyword("super"),  // 5
+            whitespace,        // 4
+            keyword("."),      // 3
+            whitespace,        // 2
+            ref("Identifier"), // 1 = ident
+            pos,               // 0 = end
+            spliceNode(6,"SuperPropertyIdent",6,0,[1]),
         ]),
     ]));
 
@@ -1403,18 +1401,16 @@ grm.define("VariableStatement",
 // VariableDeclarationList
 
 grm.define("VariableDeclarationList",
-    sequence([
-        list(
+    list(
+        ref("VariableDeclaration"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
             ref("VariableDeclaration"),
-            sequence([
-                whitespace,
-                keyword(","),
-                whitespace,
-                ref("VariableDeclaration"),
-                spliceReplace(3,0),
-            ])
-        ),
-    ]));
+            spliceReplace(3,0),
+        ])
+    ));
 
 // VariableDeclaration_identifier
 
@@ -1518,71 +1514,65 @@ grm.define("ArrayBindingPattern",
 // BindingPropertyList
 
 grm.define("BindingPropertyList",
-    sequence([
-        list(
+    list(
+        ref("BindingProperty"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
             ref("BindingProperty"),
-            sequence([
-                whitespace,
-                keyword(","),
-                whitespace,
-                ref("BindingProperty"),
-                spliceReplace(3,0),
-            ])
-        ),
-    ]));
+            spliceReplace(3,0),
+        ])
+    ));
 
 // BindingElementList
 
 grm.define("BindingElementList",
-    sequence([
-        list(
-            opt(sequence([
-                pos,
-                keyword(","),
-                pos,
-                spliceNode(2,"Elision",2,0,[]),
-            ])),
-            choice([
-                sequence([
-                    whitespace,   // 3
-                    pos,          // 2 = before
-                    keyword(","), // 1
-                    pos,          // 0 = after
-                    spliceNode(3,"Elision",2,0,[]),
-                ]),
-                sequence([
+    list(
+        opt(sequence([
+            pos,
+            keyword(","),
+            pos,
+            spliceNode(2,"Elision",2,0,[]),
+        ])),
+        choice([
+            sequence([
+                whitespace,   // 3
+                pos,          // 2 = before
+                keyword(","), // 1
+                pos,          // 0 = after
+                spliceNode(3,"Elision",2,0,[]),
+            ]),
+            sequence([
+                whitespace,
+                ref("BindingElement"),
+                opt(sequence([
                     whitespace,
-                    ref("BindingElement"),
-                    opt(sequence([
-                        whitespace,
-                        keyword(","),
-                        pop,
-                    ])),
-                    spliceReplace(2,1),
-                ]),
-            ])
-        ),
-    ]));
+                    keyword(","),
+                    pop,
+                ])),
+                spliceReplace(2,1),
+            ]),
+        ])
+    ));
 
 // BindingProperty
 
 grm.define("BindingProperty",
-    sequence([
-        choice([
-            sequence([
-                pos,                   // 6 = start
-                ref("PropertyName"),   // 5 = name
-                whitespace,            // 4
-                keyword(":"),          // 3
-                whitespace,            // 2
-                ref("BindingElement"), // 1 = element
-                pos,                   // 0 = end
-                spliceNode(6,"BindingProperty",6,0,[5,1]),
-            ]),
-            // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
-            // and PropertyName will match an identifier at the start of a colon binding
-            ref("SingleNameBinding"),
+    choice([
+        sequence([
+            pos,                   // 6 = start
+            ref("PropertyName"),   // 5 = name
+            whitespace,            // 4
+            keyword(":"),          // 3
+            whitespace,            // 2
+            ref("BindingElement"), // 1 = element
+            pos,                   // 0 = end
+            spliceNode(6,"BindingProperty",6,0,[5,1]),
         ]),
+        // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
+        // and PropertyName will match an identifier at the start of a colon binding
+        ref("SingleNameBinding"),
     ]));
 
 // BindingElement
@@ -1905,24 +1895,22 @@ grm.define("IterationStatement",
 // ForDeclaration
 
 grm.define("ForDeclaration",
-    sequence([
-        choice([
-            sequence([
-                pos,               // 4 = start
-                keyword("let"),    // 3
-                whitespace,        // 2
-                ref("ForBinding"), // 1 = binding
-                pos,               // 0 = end
-                spliceNode(4,"LetForDeclaration",4,0,[1]),
-            ]),
-            sequence([
-                pos,               // 4 = start
-                keyword("const"),  // 3
-                whitespace,        // 2
-                ref("ForBinding"), // 1 = binding
-                pos,               // 0 = end
-                spliceNode(4,"ConstForDeclaration",4,0,[1]),
-            ]),
+    choice([
+        sequence([
+            pos,               // 4 = start
+            keyword("let"),    // 3
+            whitespace,        // 2
+            ref("ForBinding"), // 1 = binding
+            pos,               // 0 = end
+            spliceNode(4,"LetForDeclaration",4,0,[1]),
+        ]),
+        sequence([
+            pos,               // 4 = start
+            keyword("const"),  // 3
+            whitespace,        // 2
+            ref("ForBinding"), // 1 = binding
+            pos,               // 0 = end
+            spliceNode(4,"ConstForDeclaration",4,0,[1]),
         ]),
     ]));
 
@@ -1939,27 +1927,25 @@ grm.define("ForBinding",
 // ContinueStatement
 
 grm.define("ContinueStatement",
-    sequence([
-        choice([
-            sequence([
-                pos,                    // 5 = start
-                keyword("continue"),    // 4
-                whitespace,             // 3
-                value(null),            // 2 = null
-                keyword(";"),           // 1
-                pos,                    // 0 = end
-                spliceNode(5,"ContinueStatement",5,0,[2]),
-            ]),
-            sequence([
-                pos,                    // 6 = start
-                keyword("continue"),    // 5
-                whitespaceNoNewline,    // 4
-                ref("LabelIdentifier"), // 3 = ident
-                whitespace,             // 2
-                keyword(";"),           // 1
-                pos,                    // 0 = end
-                spliceNode(6,"ContinueStatement",6,0,[3]),
-            ]),
+    choice([
+        sequence([
+            pos,                    // 5 = start
+            keyword("continue"),    // 4
+            whitespace,             // 3
+            value(null),            // 2 = null
+            keyword(";"),           // 1
+            pos,                    // 0 = end
+            spliceNode(5,"ContinueStatement",5,0,[2]),
+        ]),
+        sequence([
+            pos,                    // 6 = start
+            keyword("continue"),    // 5
+            whitespaceNoNewline,    // 4
+            ref("LabelIdentifier"), // 3 = ident
+            whitespace,             // 2
+            keyword(";"),           // 1
+            pos,                    // 0 = end
+            spliceNode(6,"ContinueStatement",6,0,[3]),
         ]),
     ]));
 
@@ -1968,27 +1954,25 @@ grm.define("ContinueStatement",
 // BreakStatement
 
 grm.define("BreakStatement",
-    sequence([
-        choice([
-            sequence([
-                pos,                    // 5 = start
-                keyword("break"),       // 4
-                whitespace,             // 3
-                value(null),            // 2 = null
-                keyword(";"),           // 1
-                pos,                    // 0 = end
-                spliceNode(5,"BreakStatement",5,0,[2]),
-            ]),
-            sequence([
-                pos,                    // 6 = start
-                keyword("break"),       // 5
-                whitespaceNoNewline,    // 4
-                ref("LabelIdentifier"), // 3 = ident
-                whitespace,             // 2
-                keyword(";"),           // 1
-                pos,                    // 0 = end
-                spliceNode(6,"BreakStatement",6,0,[3]),
-            ]),
+    choice([
+        sequence([
+            pos,                    // 5 = start
+            keyword("break"),       // 4
+            whitespace,             // 3
+            value(null),            // 2 = null
+            keyword(";"),           // 1
+            pos,                    // 0 = end
+            spliceNode(5,"BreakStatement",5,0,[2]),
+        ]),
+        sequence([
+            pos,                    // 6 = start
+            keyword("break"),       // 5
+            whitespaceNoNewline,    // 4
+            ref("LabelIdentifier"), // 3 = ident
+            whitespace,             // 2
+            keyword(";"),           // 1
+            pos,                    // 0 = end
+            spliceNode(6,"BreakStatement",6,0,[3]),
         ]),
     ]));
 
@@ -1997,27 +1981,25 @@ grm.define("BreakStatement",
 // ReturnStatement
 
 grm.define("ReturnStatement",
-    sequence([
-        choice([
-            sequence([
-                pos,                 // 5 = start
-                keyword("return"),   // 4
-                whitespace,          // 3
-                value(null),         // 2 = null
-                keyword(";"),        // 1
-                pos,                 // 0 = end
-                spliceNode(5,"ReturnStatement",5,0,[2]),
-            ]),
-            sequence([
-                pos,                 // 6 = start
-                keyword("return"),   // 5
-                whitespaceNoNewline, // 4
-                ref("Expression"),   // 3 = expr
-                whitespace,          // 2
-                keyword(";"),        // 1
-                pos,                 // 0 = end
-                spliceNode(6,"ReturnStatement",6,0,[3]),
-            ]),
+    choice([
+        sequence([
+            pos,                 // 5 = start
+            keyword("return"),   // 4
+            whitespace,          // 3
+            value(null),         // 2 = null
+            keyword(";"),        // 1
+            pos,                 // 0 = end
+            spliceNode(5,"ReturnStatement",5,0,[2]),
+        ]),
+        sequence([
+            pos,                 // 6 = start
+            keyword("return"),   // 5
+            whitespaceNoNewline, // 4
+            ref("Expression"),   // 3 = expr
+            whitespace,          // 2
+            keyword(";"),        // 1
+            pos,                 // 0 = end
+            spliceNode(6,"ReturnStatement",6,0,[3]),
         ]),
     ]));
 
@@ -3017,34 +2999,32 @@ grm.define("ImportDeclaration",
 // ImportClause
 
 grm.define("ImportClause",
-    sequence([
-        choice([
-            ref("NameSpaceImport"),
-            ref("NamedImports"),
-            sequence([
-                pos,                            // 6 = start
-                ref("ImportedDefaultBinding"),  // 5 = defbinding
-                choice([
-                    sequence([
-                        whitespace,             // 4
-                        keyword(","),           // 3
-                        whitespace,             // 2
-                        ref("NameSpaceImport"), // 1 = nsimport
-                        pos,                    // 0 = end
-                        spliceNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
-                    ]),
-                    sequence([
-                        whitespace,             // 4
-                        keyword(","),           // 3
-                        whitespace,             // 2
-                        ref("NamedImports"),    // 1 = nsimports
-                        pos,                    // 0 = end
-                        spliceNode(6,"DefaultAndNamedImports",6,0,[5,1]),
-                    ]),
-                    sequence([
-                        pos,
-                        spliceNode(2,"DefaultImport",2,0,[1]),
-                    ]),
+    choice([
+        ref("NameSpaceImport"),
+        ref("NamedImports"),
+        sequence([
+            pos,                            // 6 = start
+            ref("ImportedDefaultBinding"),  // 5 = defbinding
+            choice([
+                sequence([
+                    whitespace,             // 4
+                    keyword(","),           // 3
+                    whitespace,             // 2
+                    ref("NameSpaceImport"), // 1 = nsimport
+                    pos,                    // 0 = end
+                    spliceNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
+                ]),
+                sequence([
+                    whitespace,             // 4
+                    keyword(","),           // 3
+                    whitespace,             // 2
+                    ref("NamedImports"),    // 1 = nsimports
+                    pos,                    // 0 = end
+                    spliceNode(6,"DefaultAndNamedImports",6,0,[5,1]),
+                ]),
+                sequence([
+                    pos,
+                    spliceNode(2,"DefaultImport",2,0,[1]),
                 ]),
             ]),
         ]),
@@ -3124,24 +3104,22 @@ grm.define("ImportsList",
 // ImportSpecifier
 
 grm.define("ImportSpecifier",
-    sequence([
-        choice([
-            sequence([
-                pos,                     // 6 = start
-                ref("IdentifierName"),   // 5 = name
-                whitespace,              // 4
-                identifier("as"),        // 3
-                whitespace,              // 2
-                ref("ImportedBinding"),  // 1 = binding
-                pos,                     // 0 = end
-                spliceNode(6,"ImportAsSpecifier",6,0,[5,1]),
-            ]),
-            sequence([
-                pos,                     // 2 = start
-                ref("ImportedBinding"),  // 1 = binding
-                pos,                     // 0 = end
-                spliceNode(2,"ImportSpecifier",2,0,[1]),
-            ]),
+    choice([
+        sequence([
+            pos,                     // 6 = start
+            ref("IdentifierName"),   // 5 = name
+            whitespace,              // 4
+            identifier("as"),        // 3
+            whitespace,              // 2
+            ref("ImportedBinding"),  // 1 = binding
+            pos,                     // 0 = end
+            spliceNode(6,"ImportAsSpecifier",6,0,[5,1]),
+        ]),
+        sequence([
+            pos,                     // 2 = start
+            ref("ImportedBinding"),  // 1 = binding
+            pos,                     // 0 = end
+            spliceNode(2,"ImportSpecifier",2,0,[1]),
         ]),
     ]));
 
