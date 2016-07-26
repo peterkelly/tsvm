@@ -243,6 +243,26 @@ class ProductionAction extends Action {
     }
 }
 
+class EmptyAction extends LeafAction {
+    public constructor() {
+        super("empty",0);
+    }
+
+    public equals(other: Action): boolean {
+        return (other instanceof EmptyAction);
+    }
+
+    public execute(b: Builder): void {
+        // Do nothing; just succeed
+    }
+
+    public dump(prefix: string, indent: string, output: (str: string) => void): void {
+        output(indent+"empty");
+    }
+}
+
+export const empty = new EmptyAction();
+
 class NotAction extends Action {
     private child: Action;
 
