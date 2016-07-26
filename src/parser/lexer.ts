@@ -119,8 +119,8 @@ export function isIdChar(c: string): boolean {
     return (isIdStart(c) || ((c >= "0") && (c <= "9")));
 }
 
-export function upcomingKeyword(p: Parser): Token {
-    let longest: string = null;
+export function upcomingKeyword(p: Parser): Token | null {
+    let longest: string | null = null;
     for (let i = 1; i <= keywordMaxLen; i++) {
         const candidate = p.text.substring(p.pos,p.pos+i);
         if (isKeyword(candidate))
@@ -131,7 +131,7 @@ export function upcomingKeyword(p: Parser): Token {
     return new Token(new Range(p.pos,p.pos+longest.length),keywordSet[longest],longest);
 }
 
-export function lexIdent(p: Parser): Token {
+export function lexIdent(p: Parser): Token | null {
     const start = p.pos;
     if ((p.cur != null) && isIdStart(p.cur)) {
         p.next();
@@ -150,7 +150,7 @@ export function lexIdent(p: Parser): Token {
     }
 }
 
-export function lexNumber(p: Parser): Token {
+export function lexNumber(p: Parser): Token | null {
     // TODO: Complete numeric literal syntax according to spec
     const start = p.pos;
     while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
@@ -171,7 +171,7 @@ export function lexNumber(p: Parser): Token {
     return new Token(new Range(start,p.pos),TokenKind.NUMBER,stringValue)
 }
 
-export function lexString(p: Parser): Token {
+export function lexString(p: Parser): Token | null {
     // TODO: Complete string literal syntax according to spec
     const start = p.pos;
     if ((p.cur == "\"") || (p.cur == "'")) {

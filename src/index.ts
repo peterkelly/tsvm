@@ -45,7 +45,7 @@ function nodeToPlainTree(node: ASTNode, p: Parser): string {
     recurse(node);
     return lines.join("\n");
 
-    function recurse(node: ASTNode, indent: string = "") {
+    function recurse(node: ASTNode | null, indent: string = "") {
         if (node == null) {
             lines.push(indent+"null");
             return;
@@ -65,7 +65,7 @@ function nodeToFancyTree(node: ASTNode): string {
     recurse(node);
     return lines.join("\n");
 
-    function recurse(node: ASTNode, prefix: string = "", indent: string = "") {
+    function recurse(node: ASTNode | null, prefix: string = "", indent: string = "") {
         if (node == null) {
             console.log(prefix+"null");
             return;
@@ -123,7 +123,7 @@ function splitTestData(content: string): TestData {
     while ((outputLines.length > 0) && (outputLines[outputLines.length-1] == ""))
         outputLines.length--;
 
-    let command: string = null;
+    let command: string = "";
     if (outputLines.length > 0) {
         command = outputLines[0];
         outputLines.splice(0,1);
@@ -183,8 +183,7 @@ function checkTest(relPath: string, content: string): boolean {
 function genTest(command: string, relPath: string, write: boolean) {
     const absPath = path.resolve(process.cwd(),relPath);
     try {
-        let content: string = null;
-        content = fs.readFileSync(absPath,{ encoding: "utf-8" });
+        const content = fs.readFileSync(absPath,{ encoding: "utf-8" });
 
         const { input } = splitTestData(content);
 
@@ -192,7 +191,7 @@ function genTest(command: string, relPath: string, write: boolean) {
         if (fun == null)
             throw new Error("Unknown command "+JSON.stringify(command));
 
-        let output: string = null;
+        let output: string = "";
         try {
             output = fun(input);
         }
@@ -280,8 +279,7 @@ function showUsageAndExit(): void {
 function compile(relFilename: string) {
     const absFilename = path.resolve(process.cwd(),relFilename);
     try {
-        let content: string = null;
-        content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
+        const content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
 
         const { input } = splitTestData(content);
 
@@ -322,8 +320,8 @@ function main(): void {
     else if ((i < argc) && (argv[i] == "gentest")) {
         i++;
 
-        let command: string = null;
-        let filename: string = null;
+        let command: string = "";
+        let filename: string = "";
         let write: boolean = false;
 
         for (; i < argc; i++) {
@@ -335,7 +333,7 @@ function main(): void {
                 filename = argv[i];
         }
 
-        if ((command == null) || (filename == null))
+        if ((command == "") || (filename == ""))
             showUsageAndExit();
 
         genTest(command,filename,write);

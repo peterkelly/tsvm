@@ -60,7 +60,7 @@ export abstract class ASTNode {
         this.range = range;
         this.kind = kind;
     }
-    public abstract get children(): ASTNode[];
+    public abstract get children(): (ASTNode | null)[];
     public get label(): string { return this.kind; }
 }
 
@@ -115,7 +115,7 @@ export abstract class BinaryNode extends ExpressionNode {
         this.right = right;
         this._children = [left,right];
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this._children;
     }
 }
@@ -129,7 +129,7 @@ export class IdentifierReferenceNode extends ExpressionNode {
         super(range,"IdentifierReference");
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -145,7 +145,7 @@ export class BindingIdentifierNode extends ASTNode {
         super(range,"BindingIdentifier");
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -161,7 +161,7 @@ export class LabelIdentifierNode extends ASTNode {
         super(range,"LabelIdentifier");
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -177,7 +177,7 @@ export class IdentifierNode extends ASTNode {
         super(range,"Identifier");
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -193,7 +193,7 @@ export class ThisNode extends ExpressionNode {
     public constructor(range: Range) {
         super(range,"This");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -203,7 +203,7 @@ export class NullLiteralNode extends ExpressionNode {
     public constructor(range: Range) {
         super(range,"NullLiteral");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -213,7 +213,7 @@ export class TrueNode extends ExpressionNode {
     public constructor(range: Range) {
         super(range,"True");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -223,7 +223,7 @@ export class FalseNode extends ExpressionNode {
     public constructor(range: Range) {
         super(range,"False");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -235,7 +235,7 @@ export class NumericLiteralNode extends ExpressionNode {
         super(range,"NumericLiteral");
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -250,7 +250,7 @@ export class StringLiteralNode extends ExpressionNode {
         super(range,"StringLiteral");
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -268,7 +268,7 @@ export class ArrayLiteralNode extends ExpressionNode {
         super(range,"ArrayLiteral");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.elements];
     }
 }
@@ -278,7 +278,7 @@ export class ElisionNode extends ASTNode {
     public constructor(range: Range) {
         super(range,"Elision");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -290,7 +290,7 @@ export class SpreadElementNode extends ASTNode {
         super(range,"SpreadElement");
         this.child = child;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.child];
     }
 }
@@ -304,7 +304,7 @@ export class ObjectLiteralNode extends ExpressionNode {
         super(range,"ObjectLiteral");
         this.properties = properties;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.properties];
     }
 }
@@ -318,7 +318,7 @@ export class ColonPropertyDefinitionNode extends ASTNode {
         this.name = name;
         this.init = init;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.init];
     }
 }
@@ -330,7 +330,7 @@ export class ComputedPropertyNameNode extends ASTNode {
         super(range,"ComputedPropertyName");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -344,7 +344,7 @@ export class CoverInitializedNameNode extends ASTNode {
         this.ident = ident;
         this.init = init;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.init];
     }
 }
@@ -360,7 +360,7 @@ export class MemberAccessExprNode extends ExpressionNode {
         this.obj = obj;
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.obj,this.expr];
     }
 }
@@ -374,7 +374,7 @@ export class MemberAccessIdentNode extends ExpressionNode {
         this.obj = obj;
         this.ident = ident;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.obj,this.ident];
     }
 }
@@ -386,7 +386,7 @@ export class SuperPropertyExprNode extends ExpressionNode {
         super(range,"SuperPropertyExpr");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -398,7 +398,7 @@ export class SuperPropertyIdentNode extends ExpressionNode {
         super(range,"SuperPropertyIdent");
         this.ident = ident;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident];
     }
 }
@@ -408,7 +408,7 @@ export class NewTargetNode extends ExpressionNode {
     public constructor(range: Range) {
         super(range,"NewTarget");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -422,7 +422,7 @@ export class NewExpressionNode extends ExpressionNode {
         this.expr = expr;
         this.args = args;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr,this.args];
     }
 }
@@ -436,7 +436,7 @@ export class CallNode extends ExpressionNode {
         this.fun = fun;
         this.args = args;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.fun,this.args];
     }
 }
@@ -448,7 +448,7 @@ export class SuperCallNode extends ExpressionNode {
         super(range,"SuperCall");
         this.args = args;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.args];
     }
 }
@@ -460,7 +460,7 @@ export class ArgumentsNode extends ASTNode {
         super(range,"Arguments");
         this.items = items;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.items];
     }
 }
@@ -474,7 +474,7 @@ export class PostIncrementNode extends ExpressionNode {
         super(range,"PostIncrement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -486,7 +486,7 @@ export class PostDecrementNode extends ExpressionNode {
         super(range,"PostDecrement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -500,7 +500,7 @@ export class DeleteNode extends ExpressionNode {
         super(range,"Delete");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -512,7 +512,7 @@ export class VoidNode extends ExpressionNode {
         super(range,"Void");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -524,7 +524,7 @@ export class TypeOfNode extends ExpressionNode {
         super(range,"TypeOf");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -536,7 +536,7 @@ export class PreIncrementNode extends ExpressionNode {
         super(range,"PreIncrement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -548,7 +548,7 @@ export class PreDecrementNode extends ExpressionNode {
         super(range,"PreDecrement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -560,7 +560,7 @@ export class UnaryPlusNode extends ExpressionNode {
         super(range,"UnaryPlus");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -572,7 +572,7 @@ export class UnaryMinusNode extends ExpressionNode {
         super(range,"UnaryMinus");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -584,7 +584,7 @@ export class UnaryBitwiseNotNode extends ExpressionNode {
         super(range,"UnaryBitwiseNot");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -596,7 +596,7 @@ export class UnaryLogicalNotNode extends ExpressionNode {
         super(range,"UnaryLogicalNot");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -794,7 +794,7 @@ export class ConditionalNode extends ExpressionNode {
         this.trueExpr = trueExpr;
         this.falseExpr = falseExpr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.condition,this.trueExpr,this.falseExpr];
     }
 }
@@ -904,7 +904,7 @@ export class BlockNode extends StatementNode {
         super(range,"Block");
         this.statements = statements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.statements];
     }
 }
@@ -918,7 +918,7 @@ export class LetNode extends DeclarationNode {
         super(range,"Let");
         this.bindings = bindings;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.bindings];
     }
 }
@@ -930,7 +930,7 @@ export class ConstNode extends DeclarationNode {
         super(range,"Const");
         this.bindings = bindings;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.bindings];
     }
 }
@@ -948,7 +948,7 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
         this.identifier = identifier;
         this.initializer = initializer;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.identifier,this.initializer];
     }
 }
@@ -966,7 +966,7 @@ export class LexicalPatternBindingNode extends LexicalBindingNode {
         this.pattern = pattern;
         this.initializer = initializer;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.pattern,this.initializer];
     }
 }
@@ -980,7 +980,7 @@ export class VarNode extends StatementNode {
         super(range,"Var");
         this.declarations = declarations;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.declarations];
     }
 }
@@ -998,7 +998,7 @@ export class VarIdentifierNode extends ASTNode {
         this.identifier = identifier;
         this.initializer = initializer;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.identifier,this.initializer];
     }
 }
@@ -1016,7 +1016,7 @@ export class VarPatternNode extends ASTNode {
         this.pattern = pattern;
         this.initializer = initializer;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.pattern,this.initializer];
     }
 }
@@ -1030,7 +1030,7 @@ export class ObjectBindingPatternNode extends BindingPatternNode {
         super(range,"ObjectBindingPattern");
         this.properties = properties;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.properties];
     }
 }
@@ -1047,7 +1047,7 @@ export class ArrayBindingPatternNode extends BindingPatternNode {
         this.elements = elements;
         this.rest = rest;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.elements,this.rest];
     }
 }
@@ -1061,7 +1061,7 @@ export class BindingPropertyNode extends ASTNode {
         this.name = name;
         this.element = element;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.element];
     }
 }
@@ -1079,7 +1079,7 @@ export class BindingPatternInitNode extends ASTNode {
         this.pattern = pattern;
         this.init = init;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.pattern,this.init];
     }
 }
@@ -1093,7 +1093,7 @@ export class SingleNameBindingNode extends ASTNode {
         this.ident = ident;
         this.init = init;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.init];
     }
 }
@@ -1105,7 +1105,7 @@ export class BindingRestElementNode extends ASTNode {
         super(range,"BindingRestElement");
         this.ident = ident;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident];
     }
 }
@@ -1117,7 +1117,7 @@ export class EmptyStatementNode extends StatementNode {
     public constructor(range: Range) {
         super(range,"EmptyStatement");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -1131,7 +1131,7 @@ export class ExpressionStatementNode extends StatementNode {
         super(range,"ExpressionStatement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -1154,7 +1154,7 @@ export class IfStatementNode extends StatementNode {
         this.trueBranch = trueBranch;
         this.falseBranch = falseBranch;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.condition,this.trueBranch,this.falseBranch];
     }
 }
@@ -1170,7 +1170,7 @@ export class DoStatementNode extends BreakableStatementNode {
         this.body = body;
         this.condition = condition;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.body,this.condition];
     }
 }
@@ -1184,7 +1184,7 @@ export class WhileStatementNode extends BreakableStatementNode {
         this.condition = condition;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.condition,this.body];
     }
 }
@@ -1208,7 +1208,7 @@ export class ForCNode extends BreakableStatementNode {
         this.update = update;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.init,this.condition,this.update,this.body];
     }
 }
@@ -1229,7 +1229,7 @@ export class ForInNode extends BreakableStatementNode {
         this.expr = expr;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
     }
 }
@@ -1250,7 +1250,7 @@ export class ForOfNode extends BreakableStatementNode {
         this.expr = expr;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
     }
 }
@@ -1262,7 +1262,7 @@ export class VarForDeclarationNode extends ASTNode {
         super(range,"VarForDeclaration");
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
 }
@@ -1274,7 +1274,7 @@ export class LetForDeclarationNode extends ASTNode {
         super(range,"LetForDeclaration");
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
 }
@@ -1286,7 +1286,7 @@ export class ConstForDeclarationNode extends ASTNode {
         super(range,"ConstForDeclaration");
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
 }
@@ -1301,7 +1301,7 @@ export class ContinueStatementNode extends StatementNode {
         super(range,"ContinueStatement");
         this.labelIdentifier = labelIdentifier;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.labelIdentifier];
     }
 }
@@ -1315,7 +1315,7 @@ export class BreakStatementNode extends StatementNode {
         super(range,"BreakStatement");
         this.labelIdentifier = labelIdentifier;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.labelIdentifier];
     }
 }
@@ -1329,7 +1329,7 @@ export class ReturnStatementNode extends StatementNode {
         super(range,"ReturnStatement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -1345,7 +1345,7 @@ export class WithStatementNode extends StatementNode {
         this.expr = expr;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr,this.body];
     }
 }
@@ -1361,7 +1361,7 @@ export class SwitchStatementNode extends BreakableStatementNode {
         this.expr = expr;
         this.cases = cases;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr,this.cases];
     }
 }
@@ -1377,7 +1377,7 @@ export class CaseBlock1Node extends CaseBlockNode {
         super(range,"CaseBlock1");
         this.caseClauses = caseClauses;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.caseClauses];
     }
 }
@@ -1399,7 +1399,7 @@ export class CaseBlock2Node extends CaseBlockNode {
         this.defaultClause = defaultClause;
         this.caseClauses2 = caseClauses2;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.caseClauses1,this.defaultClause,this.caseClauses2];
     }
 }
@@ -1413,7 +1413,7 @@ export class CaseClauseNode extends ASTNode {
         this.expr = expr;
         this.statements = statements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr,this.statements];
     }
 }
@@ -1425,7 +1425,7 @@ export class DefaultClauseNode extends ASTNode {
         super(range,"DefaultClause");
         this.statements = statements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.statements];
     }
 }
@@ -1445,7 +1445,7 @@ export class LabelledStatementNode extends StatementNode {
         this.ident = ident;
         this.item = item;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.item];
     }
 }
@@ -1459,7 +1459,7 @@ export class ThrowStatementNode extends StatementNode {
         super(range,"ThrowStatement");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -1482,7 +1482,7 @@ export class TryStatementNode extends StatementNode {
         this.catchNode = catchNode;
         this.finallyNode = finallyNode;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.tryNode,this.catchNode,this.finallyNode];
     }
 }
@@ -1496,7 +1496,7 @@ export class CatchNode extends ASTNode {
         this.param = param;
         this.block = block;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.param,this.block];
     }
 }
@@ -1508,7 +1508,7 @@ export class FinallyNode extends ASTNode {
         super(range,"Finally");
         this.block = block;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.block];
     }
 }
@@ -1520,7 +1520,7 @@ export class DebuggerStatementNode extends StatementNode {
     public constructor(range: Range) {
         super(range,"DebuggerStatement");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -1543,7 +1543,7 @@ export class FunctionDeclarationNode extends DeclarationNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
 }
@@ -1564,7 +1564,7 @@ export class FunctionExpressionNode extends ExpressionNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
 }
@@ -1578,7 +1578,7 @@ export class FormalParameters1Node extends FormalParametersNode {
     public constructor(range: Range) {
         super(range,"FormalParameters1");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -1590,7 +1590,7 @@ export class FormalParameters2Node extends FormalParametersNode {
         super(range,"FormalParameters2");
         this.rest = rest;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.rest];
     }
 }
@@ -1602,7 +1602,7 @@ export class FormalParameters3Node extends FormalParametersNode {
         super(range,"FormalParameters3");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.elements];
     }
 }
@@ -1616,7 +1616,7 @@ export class FormalParameters4Node extends FormalParametersNode {
         this.elements = elements;
         this.rest = rest;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.elements,this.rest];
     }
 }
@@ -1636,7 +1636,7 @@ export class ArrowFunctionNode extends ExpressionNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
     }
 }
@@ -1659,7 +1659,7 @@ export class MethodNode extends MethodDefinitionNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.params,this.body];
     }
 }
@@ -1673,7 +1673,7 @@ export class GetterNode extends MethodDefinitionNode {
         this.name = name;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.body];
     }
 }
@@ -1694,7 +1694,7 @@ export class SetterNode extends MethodDefinitionNode {
         this.param = param;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.param,this.body];
     }
 }
@@ -1717,7 +1717,7 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.params,this.body];
     }
 }
@@ -1738,7 +1738,7 @@ export class GeneratorDeclarationNode extends DeclarationNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
 }
@@ -1752,7 +1752,7 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
     }
 }
@@ -1773,7 +1773,7 @@ export class GeneratorExpressionNode extends ExpressionNode {
         this.params = params;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
 }
@@ -1785,7 +1785,7 @@ export class YieldExprNode extends ExpressionNode {
         super(range,"YieldExpr");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -1797,7 +1797,7 @@ export class YieldStarNode extends ExpressionNode {
         super(range,"YieldStar");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -1807,7 +1807,7 @@ export class YieldNothingNode extends ExpressionNode {
     public constructor(range: Range) {
         super(range,"YieldNothing");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -1823,7 +1823,7 @@ export class ClassDeclarationNode extends DeclarationNode {
         this.ident = ident;
         this.tail = tail;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
     }
 }
@@ -1837,7 +1837,7 @@ export class ClassExpressionNode extends ExpressionNode {
         this.ident = ident;
         this.tail = tail;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
     }
 }
@@ -1851,7 +1851,7 @@ export class ClassTailNode extends ASTNode {
         this.heritage = heritage;
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.heritage,this.body];
     }
 }
@@ -1863,7 +1863,7 @@ export class ExtendsNode extends ASTNode {
         super(range,"Extends");
         this.expr = expr;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
 }
@@ -1875,7 +1875,7 @@ export class StaticMethodDefinitionNode extends ASTNode {
         super(range,"StaticMethodDefinition");
         this.method = method;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.method];
     }
 }
@@ -1885,7 +1885,7 @@ export class EmptyClassElementNode extends ASTNode {
     public constructor(range: Range) {
         super(range,"EmptyClassElement");
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
 }
@@ -1899,7 +1899,7 @@ export class ScriptNode extends ASTNode {
         super(range,"Script");
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.body];
     }
 }
@@ -1913,7 +1913,7 @@ export class ModuleNode extends ASTNode {
         super(range,"Module");
         this.body = body;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.body];
     }
 }
@@ -1929,7 +1929,7 @@ export class ImportFromNode extends ImportNode {
         this.importClause = importClause;
         this.fromClause = fromClause;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.importClause,this.fromClause];
     }
 }
@@ -1941,7 +1941,7 @@ export class ImportModuleNode extends ImportNode {
         super(range,"ImportModule");
         this.specifier = specifier;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.specifier];
     }
 }
@@ -1959,7 +1959,7 @@ export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
         this.defaultBinding = defaultBinding;
         this.nameSpaceImport = nameSpaceImport;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.defaultBinding,this.nameSpaceImport];
     }
 }
@@ -1977,7 +1977,7 @@ export class DefaultAndNamedImportsNode extends ImportClauseNode {
         this.defaultBinding = defaultBinding;
         this.namedImports = namedImports;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.defaultBinding,this.namedImports];
     }
 }
@@ -1989,7 +1989,7 @@ export class DefaultImportNode extends ImportClauseNode {
         super(range,"DefaultImport");
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
 }
@@ -2001,7 +2001,7 @@ export class NameSpaceImportNode extends ImportClauseNode {
         super(range,"NameSpaceImport");
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
 }
@@ -2013,7 +2013,7 @@ export class NamedImportsNode extends ImportClauseNode {
         super(range,"NamedImports");
         this.imports = imports;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.imports];
     }
 }
@@ -2025,7 +2025,7 @@ export class ImportSpecifierNode extends ASTNode {
         super(range,"ImportSpecifier");
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
 }
@@ -2039,7 +2039,7 @@ export class ImportAsSpecifierNode extends ASTNode {
         this.name = name;
         this.binding = binding;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.name,this.binding];
     }
 }
@@ -2053,7 +2053,7 @@ export class ExportDefaultNode extends ExportNode {
         super(range,"ExportDefault");
         this.decl = decl;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.decl];
     }
 }
@@ -2065,7 +2065,7 @@ export class ExportStarNode extends ExportNode {
         super(range,"ExportStar");
         this.from = from;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.from];
     }
 }
@@ -2077,7 +2077,7 @@ export class ExportPlainNode extends ExportNode {
         super(range,"ExportPlain");
         this.clause = clause;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.clause];
     }
 }
@@ -2089,7 +2089,7 @@ export class ExportVariableNode extends ExportNode {
         super(range,"ExportVariable");
         this.variable = variable;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.variable];
     }
 }
@@ -2101,7 +2101,7 @@ export class ExportDeclarationNode extends ExportNode {
         super(range,"ExportDeclaration");
         this.decl = decl;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.decl];
     }
 }
@@ -2119,7 +2119,7 @@ export class ExportFromNode extends ExportNode {
         this.exportClause = exportClause;
         this.fromClause = fromClause;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.exportClause,this.fromClause];
     }
 }
@@ -2131,7 +2131,7 @@ export class ExportClauseNode extends ExportNode {
         super(range,"ExportClause");
         this.items = items;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.items];
     }
 }
@@ -2143,7 +2143,7 @@ export class ExportNormalSpecifierNode extends ASTNode {
         super(range,"ExportNormalSpecifier");
         this.ident = ident;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident];
     }
 }
@@ -2157,7 +2157,7 @@ export class ExportAsSpecifierNode extends ASTNode {
         this.ident = ident;
         this.asIdent = asIdent;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [this.ident,this.asIdent];
     }
 }
@@ -2169,7 +2169,7 @@ export class ListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2181,7 +2181,7 @@ export class StatementListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2193,7 +2193,7 @@ export class PropertyDefinitionListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2205,7 +2205,7 @@ export class ArgumentListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2217,7 +2217,7 @@ export class BindingListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2229,7 +2229,7 @@ export class VariableDeclarationListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2241,7 +2241,7 @@ export class CaseClauseListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2253,7 +2253,7 @@ export class FormalParameterListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2265,7 +2265,7 @@ export class ModuleItemListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2277,7 +2277,7 @@ export class ImportsListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2289,7 +2289,7 @@ export class ExportsListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2301,7 +2301,7 @@ export class BindingPropertyListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2313,7 +2313,7 @@ export class ElementListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2325,7 +2325,7 @@ export class BindingElementListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2337,7 +2337,7 @@ export class ClassElementListNode extends ASTNode {
         super(range,"[]");
         this.elements = elements;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this.elements;
     }
 }
@@ -2349,7 +2349,7 @@ export class ErrorNode extends ASTNode {
         super(range,"Error");
         this.message = message;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -2371,7 +2371,7 @@ export class GenericNode extends ASTNode {
         }
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return this._children;
     }
     public get label(): string {
@@ -2388,7 +2388,7 @@ export class GenericStringNode extends ASTNode {
         this.value = value;
         this.raw = raw;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
@@ -2406,7 +2406,7 @@ export class GenericNumberNode extends ASTNode {
         super(range,kind);
         this.value = value;
     }
-    public get children(): ASTNode[] {
+    public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
