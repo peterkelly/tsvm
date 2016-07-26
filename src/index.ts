@@ -299,6 +299,7 @@ function compile(relFilename: string) {
 
 function printGrammar(): void {
     const components: string[] = [];
+    // grm.leftFactor();
     grm.dump((str: string) => components.push(str));
     console.log(components.join(""));
 }

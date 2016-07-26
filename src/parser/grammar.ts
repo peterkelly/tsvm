@@ -51,6 +51,11 @@ export class Grammar {
         for (const name of this.names)
             this.productions[name].dump("","",output);
     }
+
+    public leftFactor(): void {
+        for (const name of this.names)
+            this.productions[name] = this.productions[name].leftFactor();
+    }
 }
 
 export class Builder {
@@ -423,7 +428,7 @@ export function list(first: Action, rest: Action): Action {
 }
 
 class SequenceAction extends Action {
-    private actions: Action[];
+    public actions: Action[];
 
     public constructor(actions: Action[]) {
         super("sequence",actionsTotalOffset(actions));
@@ -811,7 +816,47 @@ class ChoiceAction extends Action {
     public leftFactor(): Action {
         for (let i = 0; i < this.actions.length; i++)
             this.actions[i] = this.actions[i].leftFactor();
-        return this;
+
+        // Currently, we limit ourselves to a single left factoring where all choices are sequences
+        // that share a single common prefix. There is not yet any support for the case where there
+        // are different sets of prefixes (which themselves possibly share a prefix).
+        const sequenceActions: SequenceAction[] = [];
+        for (const act of this.actions) {
+            if (act instanceof SequenceAction)
+                sequenceActions.push(act);
+        }
+        if (sequenceActions.length != this.actions.length)
+            return this;
+
+        let commonPrefix = 0;
+        let keepGoing = true;
+        do {
+            const nextPrefix = commonPrefix+1;
+            for (const act of sequenceActions) {
+                if (nextPrefix > act.actions.length) {
+                    keepGoing = false;
+                    break;
+                }
+                if (!act.actions[commonPrefix].equals(sequenceActions[0].actions[commonPrefix])) {
+                    keepGoing = false;
+                    break;
+                }
+            }
+            if (keepGoing)
+                commonPrefix = nextPrefix;
+        } while (keepGoing);
+
+        if (commonPrefix == 0)
+            return this;
+
+        const commonActions = sequenceActions[0].actions.slice(0,commonPrefix);
+        const newChoiceArray: Action[] = [];
+        for (const act of sequenceActions)
+            newChoiceArray.push(new SequenceAction(act.actions.slice(commonPrefix)));
+        commonActions.push(new ChoiceAction(newChoiceArray));
+        const result = new SequenceAction(commonActions);
+
+        return result;
     }
 }
 
