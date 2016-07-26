@@ -206,9 +206,14 @@ export abstract class Action {
     public abstract execute(b: Builder): void;
 
     public abstract dump(prefix: string, indent: string, output: (str: string) => void): void;
+
+    public abstract leftFactor(): Action;
 }
 
 export abstract class LeafAction extends Action {
+    public leftFactor(): Action {
+        return this;
+    }
 }
 
 class ProductionAction extends Action {
@@ -240,6 +245,11 @@ class ProductionAction extends Action {
         output("grm.define("+JSON.stringify(this.name)+",\n");
         this.child.dump(indent+"    ",indent+"    ",output);
         output(");\n\n");
+    }
+
+    public leftFactor(): Action {
+        this.child = this.child.leftFactor();
+        return this;
     }
 }
 
@@ -304,6 +314,11 @@ class NotAction extends Action {
         this.child.dump("",indent,output);
         output(")");
     }
+
+    public leftFactor(): Action {
+        this.child = this.child.leftFactor();
+        return this;
+    }
 }
 
 export function not(f: Action): Action {
@@ -332,6 +347,10 @@ class RefAction extends Action {
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(prefix+"ref("+JSON.stringify(this.name)+")");
+    }
+
+    public leftFactor(): Action {
+        return this;
     }
 }
 
@@ -391,6 +410,12 @@ class ListAction extends Action {
         this.rest.dump(indent+"    ",indent+"    ",output);
         output("\n"+indent+")");
     }
+
+    public leftFactor(): Action {
+        this.first = this.first.leftFactor();
+        this.rest = this.rest.leftFactor();
+        return this;
+    }
 }
 
 export function list(first: Action, rest: Action): Action {
@@ -422,6 +447,12 @@ class SequenceAction extends Action {
             output(",\n");
         }
         output(indent+"])");
+    }
+
+    public leftFactor(): Action {
+        for (let i = 0; i < this.actions.length; i++)
+            this.actions[i] = this.actions[i].leftFactor();
+        return this;
     }
 }
 
@@ -726,6 +757,11 @@ class OptAction extends Action {
         this.child.dump("",indent,output);
         output(")");
     }
+
+    public leftFactor(): Action {
+        this.child = this.child.leftFactor();
+        return this;
+    }
 }
 
 export function opt(f: Action): Action {
@@ -771,6 +807,12 @@ class ChoiceAction extends Action {
         }
         output(indent+"])");
     }
+
+    public leftFactor(): Action {
+        for (let i = 0; i < this.actions.length; i++)
+            this.actions[i] = this.actions[i].leftFactor();
+        return this;
+    }
 }
 
 export function choice(actions: Action[]): Action {
@@ -800,6 +842,11 @@ class RepeatAction extends Action {
         output(indent+"repeat(");
         this.child.dump("",indent,output);
         output(")");
+    }
+
+    public leftFactor(): Action {
+        this.child = this.child.leftFactor();
+        return this;
     }
 }
 
