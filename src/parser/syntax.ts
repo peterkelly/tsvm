@@ -31,6 +31,7 @@ import {
 import {
     Builder,
     Grammar,
+    empty,
     not,
     ref,
     list,
@@ -1064,8 +1065,7 @@ grm.define("ConditionalExpression",
                 pos,                         // 0 = end
                 spliceNode(9,"Conditional",10,0,[9,5,1]),
             ]),
-            sequence([
-            ]),
+            empty,
         ]),
         spliceReplace(1,0),
     ]));
