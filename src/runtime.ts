@@ -61,6 +61,7 @@ export class JSSymbol extends JSValue {
         this.symbolId = JSSymbol.nextSymbolId++;
     }
 
+    // Well-known symbols
     public static readonly $$hasInstance = new JSSymbol(new JSString("Symbol.hasInstance"));
     public static readonly $$isConcatSpreadable = new JSSymbol(new JSString("Symbol.isConcatSpreadable"));
     public static readonly $$iterator = new JSSymbol(new JSString("Symbol.iterator"));
@@ -86,10 +87,66 @@ export class JSNumber extends JSValue {
 
 export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
-    public readonly properties: { [name: string]: PropertyDesc };
+    public readonly properties: { [key: string]: Property };
     public constructor() {
         super();
         this.properties = {};
+    }
+
+    public __GetPrototypeOf__(): Completion {
+        throw new Error("JSObject.__GetPrototypeOf__ Not implemented");
+    }
+
+    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion {
+        throw new Error("JSObject.__SetPrototypeOf__ Not implemented");
+    }
+
+    public __IsExtensible__(): Completion {
+        throw new Error("JSObject.__IsExtensible__ Not implemented");
+    }
+
+    public __PreventExtensions__(): Completion {
+        throw new Error("JSObject.__PreventExtensions__ Not implemented");
+    }
+
+    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion {
+        throw new Error("JSObject.__GetOwnProperty__ Not implemented");
+    }
+
+    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion {
+        throw new Error("JSObject.__HasProperty__ Not implemented");
+    }
+
+    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion {
+        throw new Error("JSObject.__Get__ Not implemented");
+    }
+
+    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion {
+        throw new Error("JSObject.__Set__ Not implemented");
+    }
+
+    public __Delete__(propertyKey: JSString | JSSymbol): Completion {
+        throw new Error("JSObject.__Delete__ Not implemented");
+    }
+
+    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion {
+        throw new Error("JSObject.__DefineOwnProperty__ Not implemented");
+    }
+
+    public __Enumerate__(): Completion {
+        throw new Error("JSObject.__Enumerate__ Not implemented");
+    }
+
+    public __OwnPropertyKeys__(): Completion {
+        throw new Error("JSObject.__OwnPropertyKeys__ Not implemented");
+    }
+
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion {
+        throw new Error("JSObject.__Call__ Not implemented");
+    }
+
+    public __Construct__(args: JSValue[], obj: JSObject): Completion {
+        throw new Error("JSObject.__Construct__ Not implemented");
     }
 }
 
@@ -192,8 +249,32 @@ export function IsSuperReference(V: Reference): boolean {
 //     return NormalCompletion(new Empty());
 // }
 
-export class PropertyDesc {
-    _nominal_type_PropertyDesc: any;
+export abstract class Property {
+    _nominal_type_Property: any;
+    public enumerable: boolean = true;
+    public configurable: boolean = true;
+    public constructor() {
+    }
+}
+
+export class DataProperty extends Property {
+    _nominal_type_DataProperty: any;
+    public value: JSValue;
+    public writable: boolean;
+    public constructor(value: JSValue, writable: boolean) {
+        super();
+        this.value = value;
+        this.writable = writable;
+    }
+}
+
+export class AccessorProperty extends Property {
+    _nominal_type_AccessorProperty: any;
+    public __get__: JSObject | JSUndefined = new JSUndefined;
+    public __set__: JSObject | JSUndefined = new JSUndefined;
+    public constructor() {
+        super();
+    }
 }
 
 export class LexicalEnvironment {
