@@ -15,7 +15,8 @@
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "build",
-        "sourceMap": true
+        "sourceMap": true,
+        "strictNullChecks": true
     },
     "exclude": [
         "node_modules",

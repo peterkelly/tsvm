@@ -29,14 +29,14 @@ export class Parser {
     public pos: number;
     public len: number;
 
-    public get cur(): string {
+    public get cur(): string | null {
         if (this.pos < this.len)
             return this.text[this.pos];
         else
             return null;
     }
 
-    public next(): string {
+    public next(): string | null {
         if (this.pos < this.len)
             this.pos++;
         return this.cur;
@@ -105,7 +105,7 @@ export class Parser {
         this.skipws(false);
     }
 
-    public nextToken(): Token {
+    public nextToken(): Token | null {
         if (this.pos >= this.len)
             return null;
         const token = upcomingKeyword(this);
@@ -153,7 +153,7 @@ export class Parser {
         }
     }
 
-    public opt<T>(f: (p: Parser) => T): T {
+    public opt<T>(f: (p: Parser) => T): T | null {
         const start = this.pos;
         try {
             return f(this);

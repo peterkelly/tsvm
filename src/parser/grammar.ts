@@ -566,7 +566,10 @@ class SpliceStringNodeAction extends LeafAction {
         const end = b.getNumber(this.endIndex);
         const range = new Range(start,end);
         const valueNode = b.getStringNode(this.valueIndex);
-        b.splice(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
+        if (valueNode == null)
+            b.splice(this.index,null);
+        else
+            b.splice(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
@@ -613,7 +616,10 @@ class SpliceNumberNodeAction extends LeafAction {
         const end = b.getNumber(this.endIndex);
         const range = new Range(start,end);
         const valueNode = b.getNumberNode(this.valueIndex);
-        b.splice(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
+        if (valueNode == null)
+            b.splice(this.index,null);
+        else
+            b.splice(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
