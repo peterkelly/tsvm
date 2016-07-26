@@ -8,5 +8,6 @@ Module 0-10 "x => { } ;"
     ExpressionStatement 0-10 "x => { } ;"
       ArrowFunction 0-8 "x => { }"
         BindingIdentifier("x") 0-1 "x"
-        [] 7-7 ""
+        ArrowBlockBody 5-8 "{ }"
+          [] 7-7 ""
 *******************************************************************************/

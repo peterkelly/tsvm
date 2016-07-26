@@ -2113,6 +2113,7 @@ grm.define("CaseClause",
         whitespace,           // 4
         keyword(":"),         // 3
         whitespace,           // 2
+        // FIXME: following should be optional
         ref("StatementList"), // 1 = statements
         pos,                  // 0 = end
         spliceNode(8,"CaseClause",8,0,[5,1]),
@@ -2127,6 +2128,7 @@ grm.define("DefaultClause",
         whitespace,           // 5
         keyword(":"),         // 4
         whitespace,           // 3
+        // FIXME: following should be optional
         ref("StatementList"), // 2 = statements
         pos,                  // 1 = end
         whitespace,           // 0
@@ -2454,19 +2456,24 @@ grm.define("ArrowParameters",
 grm.define("ConciseBody_1",
     sequence([
         not(keyword("{")),
-        ref("AssignmentExpression"),
+        pos,                         // 2
+        ref("AssignmentExpression"), // 1
+        pos,                         // 0
+        spliceNode(2,"ArrowExpressionBody",2,0,[1]),
     ]));
 
 // ConciseBody_2
 
 grm.define("ConciseBody_2",
     sequence([
-        keyword("{"),        // 4
-        whitespace,          // 3
-        ref("FunctionBody"), // 2
-        whitespace,          // 1
-        keyword("}"),        // 0
-        spliceReplace(4,2),
+        pos,                 // 6
+        keyword("{"),        // 5
+        whitespace,          // 4
+        ref("FunctionBody"), // 3
+        whitespace,          // 2
+        keyword("}"),        // 1
+        pos,                 // 0
+        spliceNode(6,"ArrowBlockBody",6,0,[3]),
     ]));
 
 // ConciseBody

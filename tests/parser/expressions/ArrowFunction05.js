@@ -14,5 +14,6 @@ Module 0-31 "( x , y , z , ... rest ) => 1 ;"
             BindingIdentifier("z") 10-11 "z"
           BindingRestElement 14-22 "... rest"
             BindingIdentifier("rest") 18-22 "rest"
-        1 28-29 "1"
+        ArrowExpressionBody 28-29 "1"
+          1 28-29 "1"
 *******************************************************************************/

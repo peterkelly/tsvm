@@ -8,5 +8,6 @@ Module 0-8 "a => 1 ;"
     ExpressionStatement 0-8 "a => 1 ;"
       ArrowFunction 0-6 "a => 1"
         BindingIdentifier("a") 0-1 "a"
-        1 5-6 "1"
+        ArrowExpressionBody 5-6 "1"
+          1 5-6 "1"
 *******************************************************************************/

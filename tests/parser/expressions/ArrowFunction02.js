@@ -8,5 +8,6 @@ Module 0-10 "( ) => 1 ;"
     ExpressionStatement 0-10 "( ) => 1 ;"
       ArrowFunction 0-8 "( ) => 1"
         FormalParameters1 2-2 ""
-        1 7-8 "1"
+        ArrowExpressionBody 7-8 "1"
+          1 7-8 "1"
 *******************************************************************************/

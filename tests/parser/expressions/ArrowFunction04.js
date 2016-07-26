@@ -12,5 +12,6 @@ Module 0-20 "( x , y , z ) => 1 ;"
             BindingIdentifier("x") 2-3 "x"
             BindingIdentifier("y") 6-7 "y"
             BindingIdentifier("z") 10-11 "z"
-        1 17-18 "1"
+        ArrowExpressionBody 17-18 "1"
+          1 17-18 "1"
 *******************************************************************************/
