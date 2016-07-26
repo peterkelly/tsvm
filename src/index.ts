@@ -17,7 +17,7 @@ import path = require("path");
 import { grm, parseModule } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
-import { compileModule } from "./compiler";
+// import { compileModule } from "./parser/compiler";
 
 type CommandFunction = (input: string) => string;
 type CommandSet = { [name: string]: CommandFunction };
@@ -289,7 +289,7 @@ function compile(relFilename: string) {
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
 
-        compileModule(root);
+        // compileModule(root);
     }
     catch (e) {
         console.error(absFilename+": "+e);
