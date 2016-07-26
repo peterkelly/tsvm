@@ -12,41 +12,185 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export class JSValue {
+export abstract class JSValue {
     _nominal_type_JSValue: any;
+    public constructor() {
+    }
 }
 
 export class JSUndefined extends JSValue {
     _nominal_type_JSUndefined: any;
+    public constructor() {
+        super();
+    }
 }
 
 export class JSNull extends JSValue {
     _nominal_type_JSNull: any;
+    public constructor() {
+        super();
+    }
 }
 
 export class JSBoolean extends JSValue {
     _nominal_type_JSBoolean: any;
+    public readonly booleanValue: boolean;
+    public constructor(booleanValue: boolean) {
+        super();
+        this.booleanValue = booleanValue;
+    }
 }
 
 export class JSString extends JSValue {
     _nominal_type_JSString: any;
+    public readonly stringValue: string;
+    public constructor(stringValue: string) {
+        super();
+        this.stringValue = stringValue;
+    }
 }
 
 export class JSSymbol extends JSValue {
     _nominal_type_JSSymbol: any;
+    public readonly description: JSString | JSUndefined;
+    private readonly symbolId: number;
+    private static nextSymbolId: number = 1;
+    public constructor(description: JSString | JSUndefined) {
+        super();
+        this.description = description;
+        this.symbolId = JSSymbol.nextSymbolId++;
+    }
+
+    public static readonly $$hasInstance = new JSSymbol(new JSString("Symbol.hasInstance"));
+    public static readonly $$isConcatSpreadable = new JSSymbol(new JSString("Symbol.isConcatSpreadable"));
+    public static readonly $$iterator = new JSSymbol(new JSString("Symbol.iterator"));
+    public static readonly $$match = new JSSymbol(new JSString("Symbol.match"));
+    public static readonly $$replace = new JSSymbol(new JSString("Symbol.replace"));
+    public static readonly $$search = new JSSymbol(new JSString("Symbol.search"));
+    public static readonly $$species = new JSSymbol(new JSString("Symbol.species"));
+    public static readonly $$split = new JSSymbol(new JSString("Symbol.split"));
+    public static readonly $$toPrimitive = new JSSymbol(new JSString("Symbol.toPrimitive"));
+    public static readonly $$toStringTag = new JSSymbol(new JSString("Symbol.toStringTag"));
+    public static readonly $$unscopables = new JSSymbol(new JSString("Symbol.unscopables"));
 }
+
 
 export class JSNumber extends JSValue {
     _nominal_type_JSNumber: any;
+    public readonly numberValue: number;
+    public constructor(numberValue: number) {
+        super();
+        this.numberValue = numberValue;
+    }
 }
 
 export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
+    public readonly properties: { [name: string]: PropertyDesc };
+    public constructor() {
+        super();
+        this.properties = {};
+    }
 }
+
+type ReferenceBase = JSUndefined | JSObject | JSBoolean | JSString | JSSymbol | JSNumber | EnvironmentRecord;
+type SuperReferenceBase = JSUndefined | JSObject | JSBoolean | JSString | JSSymbol | JSNumber;
 
 export class Reference {
     _nominal_type_Reference: any;
+    public base: ReferenceBase;
+    public name: JSString | JSSymbol;
+    public strict: JSBoolean;
+    public constructor(base: ReferenceBase, name: JSString | JSSymbol, strict: JSBoolean) {
+        this.base = base;
+        this.name = name;
+        this.strict = strict;
+    }
 }
+
+export class SuperReference extends Reference {
+    _nominal_type_SuperReference: any;
+    public thisValue: JSValue;
+    public constructor(base: SuperReferenceBase, name: JSString | JSSymbol, strict: JSBoolean) {
+        super(base,name,strict);
+        this.thisValue = new JSUndefined();
+    }
+}
+
+export function GetBase(V: Reference): ReferenceBase {
+    return V.base;
+}
+
+export function GetReferencedName(V: Reference): JSString | JSSymbol {
+    return V.name;
+}
+
+export function IsStrictReference(V: Reference): boolean {
+    return V.strict.booleanValue;
+}
+
+export function HasPrimitiveBase(V: Reference): boolean {
+    return ((V.base instanceof JSBoolean) ||
+            (V.base instanceof JSString) ||
+            (V.base instanceof JSSymbol) ||
+            (V.base instanceof JSNumber));
+}
+
+export function IsPropertyReference(V: Reference): boolean {
+    return ((V.base instanceof JSObject) || HasPrimitiveBase(V));
+}
+
+export function IsUnresolvableReference(V: Reference): boolean {
+    return (V.base instanceof JSUndefined);
+}
+
+export function IsSuperReference(V: Reference): boolean {
+    return (V instanceof SuperReference);
+}
+
+// export function GetValue(V: any): Completion {
+//     // if (isAbruptCompletion(V))
+//     //     return V;
+//
+//     // 1
+//     if ((V instanceof Completion) && (V.type != CompletionType.Normal))
+//         return V;
+//
+//     // 2
+//     if (!(V instanceof Reference)) {
+//         if (V instanceof Completion)
+//             return V;
+//         else
+//             return new Completion(CompletionType.Return,V,new Empty());
+//     }
+//
+//     // 3
+//     const base = GetBase(V);
+//
+//     // 4
+//     if (IsUnresolvableReference(V))
+//         return throwReferenceError();
+//
+//     // 5
+//     if (IsPropertyReference(V)) {
+//         // a
+//         if (HasPrimitiveBase(V)) {
+//             if ((base instanceof JSNull) || (base instanceof JSUndefined))
+//                 throw new Error("Assertion failure: base is null or undefined");
+//             base = ToObject(base);
+//
+//         }
+//     }
+//
+//     // 6
+//     else {
+//
+//     }
+//
+//
+//
+//     return NormalCompletion(new Empty());
+// }
 
 export class PropertyDesc {
     _nominal_type_PropertyDesc: any;
@@ -91,8 +235,21 @@ export class Completion {
     }
 }
 
+export function isAbruptCompletion(comp: any): comp is Completion {
+    return ((comp instanceof Completion) && (comp.type != CompletionType.Normal));
+}
+
 export function NormalCompletion(value: JSValue | Empty): Completion {
     return new Completion(CompletionType.Normal,value,new Empty());
+}
+
+export function createThrowCompletion(value: JSValue | Empty): Completion {
+    return new Completion(CompletionType.Throw,value,new Empty());
+}
+
+export function throwReferenceError(): Completion {
+    const error = new JSObject();
+    return new Completion(CompletionType.Throw,error,new Empty());
 }
 
 export function UpdateEmpty(completionRecord: Completion, value: JSValue | Empty): Completion {
@@ -104,4 +261,16 @@ export function UpdateEmpty(completionRecord: Completion, value: JSValue | Empty
     if (!(completionRecord.value instanceof Empty))
         return completionRecord;
     return new Completion(completionRecord.type,value,completionRecord.target);
+}
+
+
+
+
+
+
+
+
+
+export function ToObject(V: JSValue): JSObject {
+    throw new Error("ToObject not implemented");
 }
