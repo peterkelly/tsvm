@@ -22,11 +22,13 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSFunctionObject,
     Completion,
-    ThisMode,
     Intrinsics,
 } from "./datatypes";
+import {
+    JSFunctionObject,
+    ThisMode,
+} from "./objects";
 
 // ES6 Chapter 8: Executable Code and Execution Contexts
 

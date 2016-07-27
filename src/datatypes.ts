@@ -131,23 +131,6 @@ export class JSNumber extends JSValue {
 
 // 6.1.7 The Object Type
 
-export enum ThisMode {
-    Lexical,
-    Strict,
-    Global,
-}
-
-export enum FunctionKind {
-    Normal,
-    ClassConstructor,
-    Generator,
-}
-
-export enum ConstructorKind {
-    Base,
-    Derived,
-}
-
 export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
     public readonly properties: { [key: string]: Property };
@@ -213,35 +196,6 @@ export class JSObject extends JSValue {
     public __Construct__(args: JSValue[], obj: JSObject): Completion {
         throw new Error("JSObject.__Construct__ Not implemented");
     }
-}
-
-export class JSFunctionObject extends JSObject {
-    _nominal_type_JSFunctionObject: any;
-    public environment: LexicalEnvironment;
-    public formalParameters: ASTNode;
-    public functionKind: FunctionKind;
-    public ecmaScriptCode: ASTNode;
-    public constructorKind: ConstructorKind;
-    public realm: Realm;
-    public thisMode: ThisMode;
-    public strict: boolean;
-    public homeObject: JSObject;
-
-    public constructor() {
-        super();
-    }
-
-    // 9.2.1 [[Call]] ( thisArgument, argumentsList)
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion {
-        throw new Error("JSFunctionObject.__Call__ Not implemented");
-    }
-
-}
-
-// 9.2.1.1 PrepareForOrdinaryCall( F, newTarget )
-
-export function PrepareForOrdinaryCall(F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion {
-    throw new Error("PrepareForOrdinaryCall Not implemented");
 }
 
 // 6.1.7.1 Property Attributes
