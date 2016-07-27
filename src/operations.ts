@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {
-    BasicType,
+    ValueType,
     Completion,
     JSValue,
     JSUndefined,
@@ -25,13 +25,15 @@ import {
     JSNumber,
     JSObject,
     Property,
-} from "./runtime";
+} from "./datatypes";
+
+// Chapter 7 Abstract Operations
 
 // Section 7.1 Type Conversion
 
 // Section 7.1.1 ToPrimitive ( input [, PreferredType] )
 
-export function ToPrimitive(argument: any, preferredType?: BasicType): Completion {
+export function ToPrimitive(argument: any, preferredType?: ValueType): Completion {
     throw new Error("ToPrimitive not implemented");
 }
 
