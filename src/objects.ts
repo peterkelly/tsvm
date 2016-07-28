@@ -49,43 +49,43 @@ export class JSOrdinaryObject extends JSObject {
 
     // 9.1.1 [[GetPrototypeOf]] ( )
 
-    public __GetPrototypeOf__(): Completion<JSValue> {
+    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
         throw new Error("JSOrdinaryObject.__GetPrototypeOf__ Not implemented");
     }
 
     // 9.1.2 [[SetPrototypeOf]] (V)
 
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<JSValue> {
+    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__SetPrototypeOf__ Not implemented");
     }
 
     // 9.1.3 [[IsExtensible]] ( )
 
-    public __IsExtensible__(): Completion<JSValue> {
+    public __IsExtensible__(): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__IsExtensible__ Not implemented");
     }
 
     // 9.1.4 [[PreventExtensions]] ( )
 
-    public __PreventExtensions__(): Completion<JSValue> {
+    public __PreventExtensions__(): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__PreventExtensions__ Not implemented");
     }
 
     // 9.1.5 [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
+    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
         throw new Error("JSOrdinaryObject.__GetOwnProperty__ Not implemented");
     }
 
     // 9.1.6 [[DefineOwnProperty]] (P, Desc)
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<JSValue> {
+    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__DefineOwnProperty__ Not implemented");
     }
 
     // 9.1.7 [[HasProperty]](P)
 
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
+    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__HasProperty__ Not implemented");
     }
 
@@ -97,25 +97,25 @@ export class JSOrdinaryObject extends JSObject {
 
     // 9.1.9 [[Set]] ( P, V, Receiver)
 
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<JSValue> {
+    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__Set__ Not implemented");
     }
 
     // 9.1.10 [[Delete]] (P)
 
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
+    public __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__Delete__ Not implemented");
     }
 
     // 9.1.11 [[Enumerate]] ()
 
-    public __Enumerate__(): Completion<JSValue> {
+    public __Enumerate__(): Completion<JSObject> {
         throw new Error("JSOrdinaryObject.__Enumerate__ Not implemented");
     }
 
     // 9.1.12 [[OwnPropertyKeys]] ( )
 
-    public __OwnPropertyKeys__(): Completion<JSValue> {
+    public __OwnPropertyKeys__(): Completion<PropertyKey[]> {
         throw new Error("JSOrdinaryObject.__OwnPropertyKeys__ Not implemented");
     }
 

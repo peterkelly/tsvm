@@ -141,27 +141,27 @@ export class JSObject extends JSValue {
 
     // 6.1.7.2 Object Internal Methods and Internal Slots
 
-    public __GetPrototypeOf__(): Completion<JSValue> {
+    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
         throw new Error("JSObject.__GetPrototypeOf__ Not implemented");
     }
 
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<JSValue> {
+    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean> {
         throw new Error("JSObject.__SetPrototypeOf__ Not implemented");
     }
 
-    public __IsExtensible__(): Completion<JSValue> {
+    public __IsExtensible__(): Completion<boolean> {
         throw new Error("JSObject.__IsExtensible__ Not implemented");
     }
 
-    public __PreventExtensions__(): Completion<JSValue> {
+    public __PreventExtensions__(): Completion<boolean> {
         throw new Error("JSObject.__PreventExtensions__ Not implemented");
     }
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
+    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
         throw new Error("JSObject.__GetOwnProperty__ Not implemented");
     }
 
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
+    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean> {
         throw new Error("JSObject.__HasProperty__ Not implemented");
     }
 
@@ -169,23 +169,23 @@ export class JSObject extends JSValue {
         throw new Error("JSObject.__Get__ Not implemented");
     }
 
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<JSValue> {
+    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean> {
         throw new Error("JSObject.__Set__ Not implemented");
     }
 
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
+    public __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean> {
         throw new Error("JSObject.__Delete__ Not implemented");
     }
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<JSValue> {
+    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean> {
         throw new Error("JSObject.__DefineOwnProperty__ Not implemented");
     }
 
-    public __Enumerate__(): Completion<JSValue> {
+    public __Enumerate__(): Completion<JSObject> {
         throw new Error("JSObject.__Enumerate__ Not implemented");
     }
 
-    public __OwnPropertyKeys__(): Completion<JSValue> {
+    public __OwnPropertyKeys__(): Completion<PropertyKey[]> {
         throw new Error("JSObject.__OwnPropertyKeys__ Not implemented");
     }
 
@@ -336,13 +336,13 @@ export class Intrinsics {
 // }
 
 export abstract class Completion<T> {
-    _nominal_type_Completion: any;
+    _nominal_type_Completion: T;
     public constructor() {
     }
 }
 
 export class NormalCompletion<T> extends Completion<T> {
-    _nominal_type_NormalCompletion: any;
+    _nominal_type_NormalCompletion: T;
     public value: T;
     public constructor(value: T) {
         super();
@@ -351,7 +351,7 @@ export class NormalCompletion<T> extends Completion<T> {
 }
 
 export class BreakCompletion<T> extends Completion<T> {
-    _nominal_type_BreakCompletion: any;
+    _nominal_type_BreakCompletion: T;
     public target: string;
     public constructor(target: string) {
         super();
@@ -360,7 +360,7 @@ export class BreakCompletion<T> extends Completion<T> {
 }
 
 export class ContinueCompletion<T> extends Completion<T> {
-    _nominal_type_ContinueCompletion: any;
+    _nominal_type_ContinueCompletion: T;
     public target: string;
     public constructor(target: string) {
         super();
@@ -369,7 +369,7 @@ export class ContinueCompletion<T> extends Completion<T> {
 }
 
 export class ReturnCompletion<T> extends Completion<T> {
-    _nominal_type_ReturnCompletion: any;
+    _nominal_type_ReturnCompletion: T;
     public value: T;
     public constructor(value: T) {
         super();
@@ -378,7 +378,7 @@ export class ReturnCompletion<T> extends Completion<T> {
 }
 
 export class ThrowCompletion<T> extends Completion<T> {
-    _nominal_type_ThrowCompletion: any;
+    _nominal_type_ThrowCompletion: T;
     public exceptionValue: JSValue;
     public constructor(exceptionValue: JSValue) {
         super();
