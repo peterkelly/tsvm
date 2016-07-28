@@ -167,10 +167,6 @@ export abstract class JSObject extends JSValue {
     public abstract __Enumerate__(): Completion<JSObject>;
 
     public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
-
-    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType>;
-
-    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType>;
 }
 
 // Additional implementation types

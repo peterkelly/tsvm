@@ -48,14 +48,6 @@ export class JSOrdinaryObject extends JSObject {
         super();
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType> {
-        throw new Error("JSOrdinaryObject.__Call__ Not implemented");
-    }
-
-    public __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType> {
-        throw new Error("JSOrdinaryObject.__Construct__ Not implemented");
-    }
-
     // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
 
     public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
