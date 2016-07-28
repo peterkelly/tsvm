@@ -141,59 +141,59 @@ export class JSObject extends JSValue {
 
     // 6.1.7.2 Object Internal Methods and Internal Slots
 
-    public __GetPrototypeOf__(): Completion {
+    public __GetPrototypeOf__(): Completion<JSValue> {
         throw new Error("JSObject.__GetPrototypeOf__ Not implemented");
     }
 
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion {
+    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<JSValue> {
         throw new Error("JSObject.__SetPrototypeOf__ Not implemented");
     }
 
-    public __IsExtensible__(): Completion {
+    public __IsExtensible__(): Completion<JSValue> {
         throw new Error("JSObject.__IsExtensible__ Not implemented");
     }
 
-    public __PreventExtensions__(): Completion {
+    public __PreventExtensions__(): Completion<JSValue> {
         throw new Error("JSObject.__PreventExtensions__ Not implemented");
     }
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion {
+    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
         throw new Error("JSObject.__GetOwnProperty__ Not implemented");
     }
 
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion {
+    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
         throw new Error("JSObject.__HasProperty__ Not implemented");
     }
 
-    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion {
+    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<JSValue> {
         throw new Error("JSObject.__Get__ Not implemented");
     }
 
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion {
+    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<JSValue> {
         throw new Error("JSObject.__Set__ Not implemented");
     }
 
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion {
+    public __Delete__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
         throw new Error("JSObject.__Delete__ Not implemented");
     }
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion {
+    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<JSValue> {
         throw new Error("JSObject.__DefineOwnProperty__ Not implemented");
     }
 
-    public __Enumerate__(): Completion {
+    public __Enumerate__(): Completion<JSValue> {
         throw new Error("JSObject.__Enumerate__ Not implemented");
     }
 
-    public __OwnPropertyKeys__(): Completion {
+    public __OwnPropertyKeys__(): Completion<JSValue> {
         throw new Error("JSObject.__OwnPropertyKeys__ Not implemented");
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion {
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSObject.__Call__ Not implemented");
     }
 
-    public __Construct__(args: JSValue[], obj: JSObject): Completion {
+    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSValue> {
         throw new Error("JSObject.__Construct__ Not implemented");
     }
 }
@@ -325,61 +325,112 @@ export class Intrinsics {
 
 // 6.2 ECMAScript Specification Types
 
-// 6.2.2 The Completion Record Specification Type
+// 6.2.2 The Completion<JSValue> Record Specification Type
 
-export enum CompletionType {
-    Normal,
-    Break,
-    Continue,
-    Return,
-    Throw,
+// export enum CompletionType {
+//     Normal,
+//     Break,
+//     Continue,
+//     Return,
+//     Throw,
+// }
+
+export abstract class Completion<T> {
+    _nominal_type_Completion: any;
+    public constructor() {
+    }
 }
 
-export class Completion {
-    _nominal_type_Completion: any;
-    public type: CompletionType;
-    public value: JSValue | Empty;
-    public target: JSString | Empty;
-
-    public constructor(type: CompletionType, value: JSValue | Empty, target: JSString | Empty) {
-        this.type = type;
+export class NormalCompletion<T> extends Completion<T> {
+    _nominal_type_NormalCompletion: any;
+    public value: T;
+    public constructor(value: T) {
+        super();
         this.value = value;
+    }
+}
+
+export class BreakCompletion<T> extends Completion<T> {
+    _nominal_type_BreakCompletion: any;
+    public target: string;
+    public constructor(target: string) {
+        super();
         this.target = target;
     }
 }
 
-export function isAbruptCompletion(comp: any): comp is Completion {
-    return ((comp instanceof Completion) && (comp.type != CompletionType.Normal));
+export class ContinueCompletion<T> extends Completion<T> {
+    _nominal_type_ContinueCompletion: any;
+    public target: string;
+    public constructor(target: string) {
+        super();
+        this.target = target;
+    }
 }
 
-export function createThrowCompletion(value: JSValue | Empty): Completion {
-    return new Completion(CompletionType.Throw,value,new Empty());
+export class ReturnCompletion<T> extends Completion<T> {
+    _nominal_type_ReturnCompletion: any;
+    public value: T;
+    public constructor(value: T) {
+        super();
+        this.value = value;
+    }
 }
 
-export function throwReferenceError(): Completion {
-    const error = new JSObject();
-    return new Completion(CompletionType.Throw,error,new Empty());
+export class ThrowCompletion<T> extends Completion<T> {
+    _nominal_type_ThrowCompletion: any;
+    public exceptionValue: JSValue;
+    public constructor(exceptionValue: JSValue) {
+        super();
+        this.exceptionValue = exceptionValue;
+    }
 }
+
+// export class Completion<JSValue> {
+//     _nominal_type_Completion: any;
+//     public type: CompletionType;
+//     public value: JSValue | Empty;
+//     public target: JSString | Empty;
+//
+//     public constructor(type: CompletionType, value: JSValue | Empty, target: JSString | Empty) {
+//         this.type = type;
+//         this.value = value;
+//         this.target = target;
+//     }
+// }
+//
+// export function isAbruptCompletion(comp: any): comp is Completion<JSValue> {
+//     return ((comp instanceof Completion) && (comp.type != CompletionType.Normal));
+// }
+//
+// export function createThrowCompletion(value: JSValue | Empty): Completion<JSValue> {
+//     return new Completion(CompletionType.Throw,value,new Empty());
+// }
+//
+// export function throwReferenceError(): Completion<JSValue> {
+//     const error = new JSObject();
+//     return new Completion(CompletionType.Throw,error,new Empty());
+// }
 
 
 // 6.2.2.1 NormalCompletion
 
-export function NormalCompletion(value: JSValue | Empty): Completion {
-    return new Completion(CompletionType.Normal,value,new Empty());
-}
+// export function NormalCompletion(value: JSValue | Empty): Completion<JSValue> {
+//     return new Completion(CompletionType.Normal,value,new Empty());
+// }
 
 // 6.2.2.5 UpdateEmpty ( completionRecord, value)
 
-export function UpdateEmpty(completionRecord: Completion, value: JSValue | Empty): Completion {
-    if ((completionRecord.type == CompletionType.Throw) &&
-        (completionRecord.value instanceof Empty))
-        throw new Error("Assertion error: Completion record has type throw, but empty value");
-    if (completionRecord.type == CompletionType.Throw)
-        return completionRecord;
-    if (!(completionRecord.value instanceof Empty))
-        return completionRecord;
-    return new Completion(completionRecord.type,value,completionRecord.target);
-}
+// export function UpdateEmpty(completionRecord: Completion, value: JSValue | Empty): Completion<JSValue> {
+//     if ((completionRecord.type == CompletionType.Throw) &&
+//         (completionRecord.value instanceof Empty))
+//         throw new Error("Assertion error: Completion<JSValue> record has type throw, but empty value");
+//     if (completionRecord.type == CompletionType.Throw)
+//         return completionRecord;
+//     if (!(completionRecord.value instanceof Empty))
+//         return completionRecord;
+//     return new Completion(completionRecord.type,value,completionRecord.target);
+// }
 
 // 6.2.3 The Reference Specification Type
 
@@ -440,25 +491,25 @@ export function IsSuperReference(V: Reference): boolean {
 
 // 6.2.3.1 GetValue (V)
 
-export function GetValue(V: any): Completion {
+export function GetValue(V: any): Completion<JSValue> {
     throw new Error("GetValue not implemented");
 }
 
 // 6.2.3.2 PutValue (V, W)
 
-export function PutValue(V: any, W: any): Completion {
+export function PutValue(V: any, W: any): Completion<JSValue> {
     throw new Error("PutValue not implemented");
 }
 
 // 6.2.3.3 GetThisValue (V)
 
-export function GetThisValue(V: any): Completion {
+export function GetThisValue(V: any): Completion<JSValue> {
     throw new Error("GetThisValue not implemented");
 }
 
 // 6.2.3.4 InitializeReferencedBinding (V, W)
 
-export function InitializeReferencedBinding(V: any): Completion {
+export function InitializeReferencedBinding(V: any): Completion<JSValue> {
     throw new Error("InitializeReferencedBinding not implemented");
 }
 
@@ -466,37 +517,37 @@ export function InitializeReferencedBinding(V: any): Completion {
 
 // 6.2.4.1 IsAccessorDescriptor ( Desc )
 
-export function IsAccessorDescriptor(Desc: Property | JSUndefined): Completion {
+export function IsAccessorDescriptor(Desc: Property | JSUndefined): Completion<JSValue> {
     throw new Error("IsAccessorDescriptor not implemented");
 }
 
 // 6.2.4.2 IsDataDescriptor ( Desc )
 
-export function IsDataDescriptor(Desc: Property | JSUndefined): Completion {
+export function IsDataDescriptor(Desc: Property | JSUndefined): Completion<JSValue> {
     throw new Error("IsDataDescriptor not implemented");
 }
 
 // 6.2.4.3 IsGenericDescriptor ( Desc )
 
-export function IsGenericDescriptor(Desc: Property | JSUndefined): Completion {
+export function IsGenericDescriptor(Desc: Property | JSUndefined): Completion<JSValue> {
     throw new Error("IsGenericDescriptor not implemented");
 }
 
 // 6.2.4.4 FromPropertyDescriptor ( Desc )
 
-export function FromPropertyDescriptor(Desc: Property | JSUndefined): Completion {
+export function FromPropertyDescriptor(Desc: Property | JSUndefined): Completion<JSValue> {
     throw new Error("FromPropertyDescriptor not implemented");
 }
 
 // 6.2.4.5 ToPropertyDescriptor ( Obj )
 
-export function ToPropertyDescriptor(Obj: any): Completion {
+export function ToPropertyDescriptor(Obj: any): Completion<JSValue> {
     throw new Error("ToPropertyDescriptor not implemented");
 }
 
 // 6.2.4.6 CompletePropertyDescriptor ( Desc )
 
-export function CompletePropertyDescriptor(Desc: any): Completion {
+export function CompletePropertyDescriptor(Desc: any): Completion<JSValue> {
     throw new Error("CompletePropertyDescriptor not implemented");
 }
 
@@ -514,6 +565,6 @@ export function CreateByteDataBlock(size: number): DataBlock {
 
 // 6.2.6.2 CopyDataBlockBytes(toBlock, toIndex, fromBlock, fromIndex, count)
 
-export function CopyDataBlockBytes(toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion {
+export function CopyDataBlockBytes(toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<JSValue> {
     throw new Error("CopyDataBlockBytes not implemented");
 }

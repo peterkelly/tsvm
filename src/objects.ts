@@ -49,73 +49,73 @@ export class JSOrdinaryObject extends JSObject {
 
     // 9.1.1 [[GetPrototypeOf]] ( )
 
-    public __GetPrototypeOf__(): Completion {
+    public __GetPrototypeOf__(): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__GetPrototypeOf__ Not implemented");
     }
 
     // 9.1.2 [[SetPrototypeOf]] (V)
 
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion {
+    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__SetPrototypeOf__ Not implemented");
     }
 
     // 9.1.3 [[IsExtensible]] ( )
 
-    public __IsExtensible__(): Completion {
+    public __IsExtensible__(): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__IsExtensible__ Not implemented");
     }
 
     // 9.1.4 [[PreventExtensions]] ( )
 
-    public __PreventExtensions__(): Completion {
+    public __PreventExtensions__(): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__PreventExtensions__ Not implemented");
     }
 
     // 9.1.5 [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion {
+    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__GetOwnProperty__ Not implemented");
     }
 
     // 9.1.6 [[DefineOwnProperty]] (P, Desc)
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion {
+    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__DefineOwnProperty__ Not implemented");
     }
 
     // 9.1.7 [[HasProperty]](P)
 
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion {
+    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__HasProperty__ Not implemented");
     }
 
     // 9.1.8 [[Get]] (P , Receiver)
 
-    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion {
+    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__Get__ Not implemented");
     }
 
     // 9.1.9 [[Set]] ( P, V, Receiver)
 
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion {
+    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__Set__ Not implemented");
     }
 
     // 9.1.10 [[Delete]] (P)
 
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion {
+    public __Delete__(propertyKey: JSString | JSSymbol): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__Delete__ Not implemented");
     }
 
     // 9.1.11 [[Enumerate]] ()
 
-    public __Enumerate__(): Completion {
+    public __Enumerate__(): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__Enumerate__ Not implemented");
     }
 
     // 9.1.12 [[OwnPropertyKeys]] ( )
 
-    public __OwnPropertyKeys__(): Completion {
+    public __OwnPropertyKeys__(): Completion<JSValue> {
         throw new Error("JSOrdinaryObject.__OwnPropertyKeys__ Not implemented");
     }
 
@@ -140,19 +140,19 @@ export class JSOrdinaryObject extends JSObject {
 
 // 9.1.5.1 OrdinaryGetOwnProperty (O, P)
 
-export function OrdinaryGetOwnProperty(O: JSOrdinaryObject, P: PropertyKey): Completion {
+export function OrdinaryGetOwnProperty(O: JSOrdinaryObject, P: PropertyKey): Completion<JSValue> {
     throw new Error("OrdinaryGetOwnProperty Not implemented");
 }
 
 // 9.1.6.1 OrdinaryDefineOwnProperty (O, P, Desc)
 
-export function OrdinaryDefineOwnProperty(O: JSOrdinaryObject, P: PropertyKey, Desc: Property): Completion {
+export function OrdinaryDefineOwnProperty(O: JSOrdinaryObject, P: PropertyKey, Desc: Property): Completion<JSValue> {
     throw new Error("OrdinaryDefineOwnProperty Not implemented");
 }
 
 // 9.1.6.2 IsCompatiblePropertyDescriptor (Extensible, Desc, Current)
 
-export function IsCompatiblePropertyDescriptor(Extensible: boolean, Desc: Property, Current: Property): Completion {
+export function IsCompatiblePropertyDescriptor(Extensible: boolean, Desc: Property, Current: Property): Completion<JSValue> {
     throw new Error("IsCompatiblePropertyDescriptor Not implemented");
 }
 
@@ -163,31 +163,31 @@ export function ValidateAndApplyPropertyDescriptor(
     P: PropertyKey,
     extensible: boolean,
     Desc: Property,
-    current: Property): Completion {
+    current: Property): Completion<JSValue> {
     throw new Error("ValidateAndApplyPropertyDescriptor Not implemented");
 }
 
 // 9.1.7.1 OrdinaryHasProperty (O, P)
 
-export function OrdinaryHasProperty(O: JSOrdinaryObject, P: PropertyKey): Completion {
+export function OrdinaryHasProperty(O: JSOrdinaryObject, P: PropertyKey): Completion<JSValue> {
     throw new Error("OrdinaryHasProperty Not implemented");
 }
 
 // 9.1.13 ObjectCreate(proto, internalSlotsList)
 
-export function ObjectCreate(proto: JSObject | JSNull, internalSlotsList: string[]): Completion {
+export function ObjectCreate(proto: JSObject | JSNull, internalSlotsList: string[]): Completion<JSValue> {
     throw new Error("ObjectCreate Not implemented");
 }
 
 // 9.1.14 OrdinaryCreateFromConstructor ( constructor, intrinsicDefaultProto, internalSlotsList )
 
-export function OrdinaryCreateFromConstructor(constructor: any, intrinsicDefaultProto: any, internalSlotsList: any): Completion {
+export function OrdinaryCreateFromConstructor(constructor: any, intrinsicDefaultProto: any, internalSlotsList: any): Completion<JSValue> {
     throw new Error("OrdinaryCreateFromConstructor Not implemented");
 }
 
 // 9.1.15 GetPrototypeFromConstructor ( constructor, intrinsicDefaultProto )
 
-export function GetPrototypeFromConstructor(constructor: any, intrinsicDefaultProto: any): Completion {
+export function GetPrototypeFromConstructor(constructor: any, intrinsicDefaultProto: any): Completion<JSValue> {
     throw new Error("GetPrototypeFromConstructor Not implemented");
 }
 
@@ -228,13 +228,13 @@ export class JSFunctionObject extends JSObject {
 
     // 9.2.1 [[Call]] ( thisArgument, argumentsList)
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion {
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSFunctionObject.__Call__ Not implemented");
     }
 
     // 9.2.2 [[Construct]] ( argumentsList, newT arget)
 
-    public __Construct__(args: JSValue[], obj: JSObject): Completion {
+    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSValue> {
         throw new Error("JSFunctionObject.__Construct__ Not implemented");
     }
 
@@ -243,25 +243,25 @@ export class JSFunctionObject extends JSObject {
 
 // 9.2.1.1 PrepareForOrdinaryCall( F, newTarget )
 
-export function PrepareForOrdinaryCall(F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion {
+export function PrepareForOrdinaryCall(F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion<JSValue> {
     throw new Error("PrepareForOrdinaryCall Not implemented");
 }
 
 // 9.2.1.2 OrdinaryCallBindThis ( F, calleeContext, thisArgument )
 
-export function OrdinaryCallBindThis(F: JSFunctionObject, calleeContext: ExecutionContext, thisArgument: JSValue): Completion {
+export function OrdinaryCallBindThis(F: JSFunctionObject, calleeContext: ExecutionContext, thisArgument: JSValue): Completion<JSValue> {
     throw new Error("OrdinaryCallBindThis Not implemented");
 }
 
 // 9.2.1.3 OrdinaryCallEvaluateBody ( F, argumentsList )
 
-export function OrdinaryCallEvaluateBody(F: JSFunctionObject, argumentsList: JSValue[]): Completion {
+export function OrdinaryCallEvaluateBody(F: JSFunctionObject, argumentsList: JSValue[]): Completion<JSValue> {
     throw new Error("OrdinaryCallEvaluateBody Not implemented");
 }
 
 // 9.2.3 FunctionAllocate (functionPrototype, strict [,functionKind] )
 
-export function FunctionAllocate(functionPrototype: JSObject, strict: boolean, functionKind?: string): Completion {
+export function FunctionAllocate(functionPrototype: JSObject, strict: boolean, functionKind?: string): Completion<JSValue> {
     throw new Error("FunctionAllocate Not implemented");
 }
 
@@ -285,37 +285,37 @@ export function GeneratorFunctionCreate(kind: any, ParameterList: any, Body: any
 
 // 9.2.7 AddRestrictedFunctionProperties ( F, realm )
 
-export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Realm): Completion {
+export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Realm): Completion<JSValue> {
     throw new Error("AddRestrictedFunctionProperties Not implemented");
 }
 
 // 9.2.7.1 %ThrowTypeError% ( )
 
-export function intrinsic_ThrowTypeError(): Completion {
+export function intrinsic_ThrowTypeError(): Completion<JSValue> {
     throw new Error("intrinsic_ThrowTypeError Not implemented");
 }
 
 // 9.2.8 MakeConstructor (F, writablePrototype, prototype)
 
-export function MakeConstructor(F: JSFunctionObject, writablePrototype: any, prototype: any): Completion {
+export function MakeConstructor(F: JSFunctionObject, writablePrototype: any, prototype: any): Completion<JSValue> {
     throw new Error("MakeConstructor Not implemented");
 }
 
 // 9.2.9 MakeClassConstructor ( F)
 
-export function MakeClassConstructor(F: JSFunctionObject): Completion {
+export function MakeClassConstructor(F: JSFunctionObject): Completion<JSValue> {
     throw new Error("MakeClassConstructor Not implemented");
 }
 
 // 9.2.10 MakeMethod ( F, homeObject)
 
-export function MakeMethod(F: JSFunctionObject, homeObject: JSObject): Completion {
+export function MakeMethod(F: JSFunctionObject, homeObject: JSObject): Completion<JSValue> {
     throw new Error("MakeMethod Not implemented");
 }
 
 // 9.2.11 SetFunctionName (F, name, prefix)
 
-export function SetFunctionName(F: JSFunctionObject, name: string, prefix: string): Completion {
+export function SetFunctionName(F: JSFunctionObject, name: string, prefix: string): Completion<JSValue> {
     throw new Error("SetFunctionName Not implemented");
 }
 
