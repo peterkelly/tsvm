@@ -36,7 +36,7 @@ import {
 } from "./context";
 import {
     ASTNode,
-} from "./parser/ast";
+} from "../parser/ast";
 
 // ES6 Section 9.1: Ordinary Object Internal Methods and Internal Slots
 

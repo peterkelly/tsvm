@@ -21,7 +21,7 @@ import {
 } from "./context";
 import {
     ASTNode
-} from "./parser/ast";
+} from "../parser/ast";
 
 export class UnknownType {
     _nominal_type_UnknownType: any;
