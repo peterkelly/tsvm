@@ -38,7 +38,7 @@ import {
     ASTNode,
 } from "./parser/ast";
 
-// 9.1 Ordinary Object Internal Methods and Internal Slots
+// ES6 Section 9.1: Ordinary Object Internal Methods and Internal Slots
 
 export class JSOrdinaryObject extends JSObject {
     public __prototype__: JSObject | JSNull;
@@ -48,116 +48,99 @@ export class JSOrdinaryObject extends JSObject {
         super();
     }
 
-    // 9.1.1 [[GetPrototypeOf]] ( )
+    // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
 
     public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
         throw new Error("JSOrdinaryObject.__GetPrototypeOf__ Not implemented");
     }
 
-    // 9.1.2 [[SetPrototypeOf]] (V)
+    // ES6 Section 9.1.2: [[SetPrototypeOf]] (V)
 
     public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__SetPrototypeOf__ Not implemented");
     }
 
-    // 9.1.3 [[IsExtensible]] ( )
+    // ES6 Section 9.1.3: [[IsExtensible]] ()
 
     public __IsExtensible__(): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__IsExtensible__ Not implemented");
     }
 
-    // 9.1.4 [[PreventExtensions]] ( )
+    // ES6 Section 9.1.4: [[PreventExtensions]] ()
 
     public __PreventExtensions__(): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__PreventExtensions__ Not implemented");
     }
 
-    // 9.1.5 [[GetOwnProperty]] (P)
+    // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
     public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
         throw new Error("JSOrdinaryObject.__GetOwnProperty__ Not implemented");
     }
 
-    // 9.1.6 [[DefineOwnProperty]] (P, Desc)
+    // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
     public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__DefineOwnProperty__ Not implemented");
     }
 
-    // 9.1.7 [[HasProperty]](P)
+    // ES6 Section 9.1.7: [[HasProperty]](P)
 
     public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__HasProperty__ Not implemented");
     }
 
-    // 9.1.8 [[Get]] (P , Receiver)
+    // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
     public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<UnknownType> {
         throw new Error("JSOrdinaryObject.__Get__ Not implemented");
     }
 
-    // 9.1.9 [[Set]] ( P, V, Receiver)
+    // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
     public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__Set__ Not implemented");
     }
 
-    // 9.1.10 [[Delete]] (P)
+    // ES6 Section 9.1.10: [[Delete]] (P)
 
     public __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean> {
         throw new Error("JSOrdinaryObject.__Delete__ Not implemented");
     }
 
-    // 9.1.11 [[Enumerate]] ()
+    // ES6 Section 9.1.11: [[Enumerate]] ()
 
     public __Enumerate__(): Completion<JSObject> {
         throw new Error("JSOrdinaryObject.__Enumerate__ Not implemented");
     }
 
-    // 9.1.12 [[OwnPropertyKeys]] ( )
+    // ES6 Section 9.1.12: [[OwnPropertyKeys]] ()
 
     public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
         throw new Error("JSOrdinaryObject.__OwnPropertyKeys__ Not implemented");
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 
-// 9.1.5.1 OrdinaryGetOwnProperty (O, P)
+// ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
 export function OrdinaryGetOwnProperty(O: JSOrdinaryObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("OrdinaryGetOwnProperty Not implemented");
 }
 
-// 9.1.6.1 OrdinaryDefineOwnProperty (O, P, Desc)
+// ES6 Section 9.1.6.1: OrdinaryDefineOwnProperty (O, P, Desc)
 
 export function OrdinaryDefineOwnProperty(O: JSOrdinaryObject, P: JSPropertyKey, Desc: Property): Completion<UnknownType> {
     throw new Error("OrdinaryDefineOwnProperty Not implemented");
 }
 
-// 9.1.6.2 IsCompatiblePropertyDescriptor (Extensible, Desc, Current)
+// ES6 Section 9.1.6.2: IsCompatiblePropertyDescriptor (Extensible, Desc, Current)
 
 export function IsCompatiblePropertyDescriptor(Extensible: boolean, Desc: Property, Current: Property): Completion<UnknownType> {
     throw new Error("IsCompatiblePropertyDescriptor Not implemented");
 }
 
-// 9.1.6.3 ValidateAndApplyPropertyDescriptor (O, P, extensible, Desc, current)
+// ES6 Section 9.1.6.3: ValidateAndApplyPropertyDescriptor (O, P, extensible, Desc, current)
 
 export function ValidateAndApplyPropertyDescriptor(
     O: JSOrdinaryObject,
@@ -168,31 +151,31 @@ export function ValidateAndApplyPropertyDescriptor(
     throw new Error("ValidateAndApplyPropertyDescriptor Not implemented");
 }
 
-// 9.1.7.1 OrdinaryHasProperty (O, P)
+// ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
 
 export function OrdinaryHasProperty(O: JSOrdinaryObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("OrdinaryHasProperty Not implemented");
 }
 
-// 9.1.13 ObjectCreate(proto, internalSlotsList)
+// ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
 
 export function ObjectCreate(proto: JSObject | JSNull, internalSlotsList: string[]): Completion<UnknownType> {
     throw new Error("ObjectCreate Not implemented");
 }
 
-// 9.1.14 OrdinaryCreateFromConstructor ( constructor, intrinsicDefaultProto, internalSlotsList )
+// ES6 Section 9.1.14: OrdinaryCreateFromConstructor (constructor, intrinsicDefaultProto, internalSlotsList)
 
 export function OrdinaryCreateFromConstructor(constructor: any, intrinsicDefaultProto: any, internalSlotsList: any): Completion<UnknownType> {
     throw new Error("OrdinaryCreateFromConstructor Not implemented");
 }
 
-// 9.1.15 GetPrototypeFromConstructor ( constructor, intrinsicDefaultProto )
+// ES6 Section 9.1.15: GetPrototypeFromConstructor (constructor, intrinsicDefaultProto)
 
 export function GetPrototypeFromConstructor(constructor: any, intrinsicDefaultProto: any): Completion<UnknownType> {
     throw new Error("GetPrototypeFromConstructor Not implemented");
 }
 
-// 9.2 ECMAScript Function Objects
+// ES6 Section 9.2: ECMAScript Function Objects
 
 export enum ThisMode {
     Lexical,
@@ -227,13 +210,13 @@ export class JSFunctionObject extends JSObject {
         super();
     }
 
-    // 9.2.1 [[Call]] ( thisArgument, argumentsList)
+    // ES6 Section 9.2.1: [[Call]] (thisArgument, argumentsList)
 
     public __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType> {
         throw new Error("JSFunctionObject.__Call__ Not implemented");
     }
 
-    // 9.2.2 [[Construct]] ( argumentsList, newT arget)
+    // ES6 Section 9.2.2: [[Construct]] (argumentsList, newTarget)
 
     public __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType> {
         throw new Error("JSFunctionObject.__Construct__ Not implemented");
@@ -242,88 +225,90 @@ export class JSFunctionObject extends JSObject {
 
 }
 
-// 9.2.1.1 PrepareForOrdinaryCall( F, newTarget )
+// ES6 Section 9.2.1.1: PrepareForOrdinaryCall (F, newTarget)
 
 export function PrepareForOrdinaryCall(F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion<UnknownType> {
     throw new Error("PrepareForOrdinaryCall Not implemented");
 }
 
-// 9.2.1.2 OrdinaryCallBindThis ( F, calleeContext, thisArgument )
+// ES6 Section 9.2.1.2: OrdinaryCallBindThis (F, calleeContext, thisArgument)
 
 export function OrdinaryCallBindThis(F: JSFunctionObject, calleeContext: ExecutionContext, thisArgument: JSValue): Completion<UnknownType> {
     throw new Error("OrdinaryCallBindThis Not implemented");
 }
 
-// 9.2.1.3 OrdinaryCallEvaluateBody ( F, argumentsList )
+// ES6 Section 9.2.1.3: OrdinaryCallEvaluateBody (F, argumentsList)
 
 export function OrdinaryCallEvaluateBody(F: JSFunctionObject, argumentsList: JSValue[]): Completion<UnknownType> {
     throw new Error("OrdinaryCallEvaluateBody Not implemented");
 }
 
-// 9.2.3 FunctionAllocate (functionPrototype, strict [,functionKind] )
+// ES6 Section 9.2.3 FunctionAllocate (functionPrototype, strict [,functionKind])
 
 export function FunctionAllocate(functionPrototype: JSObject, strict: boolean, functionKind?: string): Completion<UnknownType> {
     throw new Error("FunctionAllocate Not implemented");
 }
 
-// 9.2.4 FunctionInitialize (F, kind, ParameterList, Body, Scope)
+// ES6 Section 9.2.4: FunctionInitialize (F, kind, ParameterList, Body, Scope)
 
 export function FunctionInitialize(F: JSFunctionObject, kind: any, ParameterList: any, Body: any, Scope: any): JSFunctionObject {
     throw new Error("FunctionInitialize Not implemented");
 }
 
-// 9.2.5 FunctionCreate (kind, ParameterList, Body, Scope, Strict, prototype)
+// ES6 Section 9.2.5: FunctionCreate (kind, ParameterList, Body, Scope, Strict, prototype)
 
 export function FunctionCreate(kind: any, ParameterList: any, Body: any, Scope: any, Strict: any, prototype: any): JSFunctionObject {
     throw new Error("FunctionInitialize Not implemented");
 }
 
-// 9.2.6 GeneratorFunctionCreate (kind, ParameterList, Body, Scope, Strict)
+// ES6 Section 9.2.6: GeneratorFunctionCreate (kind, ParameterList, Body, Scope, Strict)
 
 export function GeneratorFunctionCreate(kind: any, ParameterList: any, Body: any, Scope: any, Strict: any): JSFunctionObject {
     throw new Error("FunctionInitialize Not implemented");
 }
 
-// 9.2.7 AddRestrictedFunctionProperties ( F, realm )
+// ES6 Section 9.2.7 AddRestrictedFunctionProperties (F, realm)
 
 export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Realm): Completion<UnknownType> {
     throw new Error("AddRestrictedFunctionProperties Not implemented");
 }
 
-// 9.2.7.1 %ThrowTypeError% ( )
+// ES6 Section 9.2.7.1: %ThrowTypeError% ()
 
 export function intrinsic_ThrowTypeError(): Completion<UnknownType> {
     throw new Error("intrinsic_ThrowTypeError Not implemented");
 }
 
-// 9.2.8 MakeConstructor (F, writablePrototype, prototype)
+// ES6 Section 9.2.8 MakeConstructor: (F, writablePrototype, prototype)
 
 export function MakeConstructor(F: JSFunctionObject, writablePrototype: any, prototype: any): Completion<UnknownType> {
     throw new Error("MakeConstructor Not implemented");
 }
 
-// 9.2.9 MakeClassConstructor ( F)
+// ES6 Section 9.2.9: MakeClassConstructor (F)
 
 export function MakeClassConstructor(F: JSFunctionObject): Completion<UnknownType> {
     throw new Error("MakeClassConstructor Not implemented");
 }
 
-// 9.2.10 MakeMethod ( F, homeObject)
+// ES6 Section 9.2.10 MakeMethod: (F, homeObject)
 
 export function MakeMethod(F: JSFunctionObject, homeObject: JSObject): Completion<UnknownType> {
     throw new Error("MakeMethod Not implemented");
 }
 
-// 9.2.11 SetFunctionName (F, name, prefix)
+// ES6 Section 9.2.11: SetFunctionName (F, name, prefix)
 
 export function SetFunctionName(F: JSFunctionObject, name: string, prefix: string): Completion<UnknownType> {
     throw new Error("SetFunctionName Not implemented");
 }
 
-// 9.2.12 FunctionDeclarationInstantiation(func, argumentsList)
+// ES6 Section 9.2.12: FunctionDeclarationInstantiation(func, argumentsList)
 
 export function FunctionDeclarationInstantiation(func: JSFunctionObject, argumentsList: any[]) {
     throw new Error("FunctionDeclarationInstantiation Not implemented");
 }
 
-// 9.3 Built-in Function Objects
+// ES6 Section 9.3: Built-in Function Objects
+
+// TODO

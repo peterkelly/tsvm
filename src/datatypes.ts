@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Chapter 6 ECMAScript Data Types and Values
+// ES6 Chapter 6: ECMAScript Data Types and Values
 
 import {
     LexicalEnvironment,
@@ -31,7 +31,7 @@ export class Empty {
     _nominal_type_EmptyType: any;
 }
 
-// 6.1 ECMAScript Language Types
+// ES6 Section 6.1: ECMAScript Language Types
 
 export enum ValueType {
     Undefined,
@@ -49,7 +49,7 @@ export abstract class JSValue {
     }
 }
 
-// 6.1.1 The Undefined Type
+// ES6 Section 6.1.1: The Undefined Type
 
 export class JSUndefined extends JSPrimitiveValue {
     _nominal_type_JSUndefined: any;
@@ -58,7 +58,7 @@ export class JSUndefined extends JSPrimitiveValue {
     }
 }
 
-// 6.1.2 The Null Type
+// ES6 Section 6.1.2: The Null Type
 
 export class JSNull extends JSPrimitiveValue {
     _nominal_type_JSNull: any;
@@ -67,7 +67,7 @@ export class JSNull extends JSPrimitiveValue {
     }
 }
 
-// 6.1.3 The Boolean Type
+// ES6 Section 6.1.3: The Boolean Type
 
 export class JSBoolean extends JSPrimitiveValue {
     _nominal_type_JSBoolean: any;
@@ -78,7 +78,7 @@ export class JSBoolean extends JSPrimitiveValue {
     }
 }
 
-// 6.1.4 The String Type
+// ES6 Section 6.1.4: The String Type
 
 export class JSString extends JSPropertyKey {
     _nominal_type_JSString: any;
@@ -89,7 +89,7 @@ export class JSString extends JSPropertyKey {
     }
 }
 
-// 6.1.5 The Symbol Type
+// ES6 Section 6.1.5: The Symbol Type
 
 export class JSSymbol extends JSPropertyKey {
     _nominal_type_JSSymbol: any;
@@ -102,7 +102,7 @@ export class JSSymbol extends JSPropertyKey {
         this.symbolId = JSSymbol.nextSymbolId++;
     }
 
-    // 6.1.5.1 Well-Known Symbols
+    // ES6 Section 6.1.5.1: Well-Known Symbols
 
     public static readonly $$hasInstance = new JSSymbol(new JSString("Symbol.hasInstance"));
     public static readonly $$isConcatSpreadable = new JSSymbol(new JSString("Symbol.isConcatSpreadable"));
@@ -118,7 +118,7 @@ export class JSSymbol extends JSPropertyKey {
 }
 
 
-// 6.1.6 The Number Type
+// ES6 Section 6.1.6: The Number Type
 
 export class JSNumber extends JSPrimitiveValue {
     _nominal_type_JSNumber: any;
@@ -129,7 +129,7 @@ export class JSNumber extends JSPrimitiveValue {
     }
 }
 
-// 6.1.7 The Object Type
+// ES6 Section 6.1.7: The Object Type
 
 export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
@@ -139,7 +139,7 @@ export class JSObject extends JSValue {
         this.properties = {};
     }
 
-    // 6.1.7.2 Object Internal Methods and Internal Slots
+    // ES6 Section 6.1.7.2: Object Internal Methods and Internal Slots
 
     public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
         throw new Error("JSObject.__GetPrototypeOf__ Not implemented");
@@ -198,7 +198,7 @@ export class JSObject extends JSValue {
     }
 }
 
-// begin additional types
+// Additional implementation types
 
 export abstract class JSPrimitiveValue extends JSValue {
     _nominal_type_JSPrimitiveValue: any;
@@ -264,9 +264,7 @@ export class JSUInt8 extends JSInteger {
     }
 }
 
-// end additional types
-
-// 6.1.7.1 Property Attributes
+// ES6 Section 6.1.7.1: Property Attributes
 
 export abstract class Property {
     _nominal_type_Property: any;
@@ -296,7 +294,7 @@ export class AccessorProperty extends Property {
     }
 }
 
-// 6.1.7.4 Well-Known Intrinsic Objects
+// ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
 
 export class Intrinsics {
     $Array$: JSObject = new JSObject(); // TODO
@@ -391,9 +389,9 @@ export class Intrinsics {
     $WeakSetPrototype$: JSObject = new JSObject(); // TODO
 }
 
-// 6.2 ECMAScript Specification Types
+// ES6 Section 6.2: ECMAScript Specification Types
 
-// 6.2.2 The Completion<UnknownType> Record Specification Type
+// ES6 Section 6.2.2: The Completion Record Specification Type
 
 export type Completion<T> =
     NormalCompletion<T> |
@@ -442,13 +440,13 @@ export class ThrowCompletion {
     }
 }
 
-// 6.2.2.1 NormalCompletion
+// ES6 Section 6.2.2.1: NormalCompletion ()
 
 // export function NormalCompletion(value: JSValue | Empty): Completion<UnknownType> {
 //     return new Completion(CompletionType.Normal,value,new Empty());
 // }
 
-// 6.2.2.5 UpdateEmpty ( completionRecord, value)
+// ES6 Section 6.2.2.5: UpdateEmpty (completionRecord, value)
 
 // export function UpdateEmpty(completionRecord: Completion, value: JSValue | Empty): Completion<UnknownType> {
 //     if ((completionRecord.type == CompletionType.Throw) &&
@@ -461,7 +459,7 @@ export class ThrowCompletion {
 //     return new Completion(completionRecord.type,value,completionRecord.target);
 // }
 
-// 6.2.3 The Reference Specification Type
+// ES6 Section 6.2.3: The Reference Specification Type
 
 type ReferenceBase = JSUndefined | JSObject | JSBoolean | JSString | JSSymbol | JSNumber | EnvironmentRecord;
 type SuperReferenceBase = JSUndefined | JSObject | JSBoolean | JSString | JSSymbol | JSNumber;
@@ -518,71 +516,71 @@ export function IsSuperReference(V: Reference): boolean {
     return (V instanceof SuperReference);
 }
 
-// 6.2.3.1 GetValue (V)
+// ES6 Section 6.2.3.1: GetValue (V)
 
 export function GetValue(V: any): Completion<UnknownType> {
     throw new Error("GetValue not implemented");
 }
 
-// 6.2.3.2 PutValue (V, W)
+// ES6 Section 6.2.3.2: PutValue (V, W)
 
 export function PutValue(V: any, W: any): Completion<UnknownType> {
     throw new Error("PutValue not implemented");
 }
 
-// 6.2.3.3 GetThisValue (V)
+// ES6 Section 6.2.3.3: GetThisValue (V)
 
 export function GetThisValue(V: any): Completion<UnknownType> {
     throw new Error("GetThisValue not implemented");
 }
 
-// 6.2.3.4 InitializeReferencedBinding (V, W)
+// ES6 Section 6.2.3.4: InitializeReferencedBinding (V, W)
 
 export function InitializeReferencedBinding(V: any): Completion<UnknownType> {
     throw new Error("InitializeReferencedBinding not implemented");
 }
 
-// 6.2.4 The Property Descriptor Specification Type
+// ES6 Section 6.2.4: The Property Descriptor Specification Type
 
-// 6.2.4.1 IsAccessorDescriptor ( Desc )
+// ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
 
 export function IsAccessorDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
     throw new Error("IsAccessorDescriptor not implemented");
 }
 
-// 6.2.4.2 IsDataDescriptor ( Desc )
+// ES6 Section 6.2.4.2: IsDataDescriptor (Desc)
 
 export function IsDataDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
     throw new Error("IsDataDescriptor not implemented");
 }
 
-// 6.2.4.3 IsGenericDescriptor ( Desc )
+// ES6 Section 6.2.4.3: IsGenericDescriptor (Desc)
 
 export function IsGenericDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
     throw new Error("IsGenericDescriptor not implemented");
 }
 
-// 6.2.4.4 FromPropertyDescriptor ( Desc )
+// ES6 Section 6.2.4.4: FromPropertyDescriptor (Desc)
 
 export function FromPropertyDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
     throw new Error("FromPropertyDescriptor not implemented");
 }
 
-// 6.2.4.5 ToPropertyDescriptor ( Obj )
+// ES6 Section 6.2.4.5: ToPropertyDescriptor (Obj)
 
 export function ToPropertyDescriptor(Obj: any): Completion<UnknownType> {
     throw new Error("ToPropertyDescriptor not implemented");
 }
 
-// 6.2.4.6 CompletePropertyDescriptor ( Desc )
+// ES6 Section 6.2.4.6: CompletePropertyDescriptor (Desc)
 
 export function CompletePropertyDescriptor(Desc: any): Completion<UnknownType> {
     throw new Error("CompletePropertyDescriptor not implemented");
 }
 
-// 6.2.6 Data Blocks
+// ES6 Section 6.2.6: Data Blocks
 
-// 6.2.6.1 CreateByteDataBlock(size)
+// ES6 Section 6.2.6.1: CreateByteDataBlock (size)
 
 export class DataBlock {
     _nominal_type_DataBlock: any;
@@ -592,7 +590,7 @@ export function CreateByteDataBlock(size: number): DataBlock {
     throw new Error("CreateByteDataBlock not implemented");
 }
 
-// 6.2.6.2 CopyDataBlockBytes(toBlock, toIndex, fromBlock, fromIndex, count)
+// ES6 Section 6.2.6.2: CopyDataBlockBytes (toBlock, toIndex, fromBlock, fromIndex, count)
 
 export function CopyDataBlockBytes(toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<UnknownType> {
     throw new Error("CopyDataBlockBytes not implemented");
