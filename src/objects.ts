@@ -19,7 +19,7 @@ import {
     JSUndefined,
     JSNull,
     JSBoolean,
-    PropertyKey,
+    JSPropertyKey,
     JSString,
     JSSymbol,
     JSNumber,
@@ -116,7 +116,7 @@ export class JSOrdinaryObject extends JSObject {
 
     // 9.1.12 [[OwnPropertyKeys]] ( )
 
-    public __OwnPropertyKeys__(): Completion<PropertyKey[]> {
+    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
         throw new Error("JSOrdinaryObject.__OwnPropertyKeys__ Not implemented");
     }
 
@@ -141,13 +141,13 @@ export class JSOrdinaryObject extends JSObject {
 
 // 9.1.5.1 OrdinaryGetOwnProperty (O, P)
 
-export function OrdinaryGetOwnProperty(O: JSOrdinaryObject, P: PropertyKey): Completion<UnknownType> {
+export function OrdinaryGetOwnProperty(O: JSOrdinaryObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("OrdinaryGetOwnProperty Not implemented");
 }
 
 // 9.1.6.1 OrdinaryDefineOwnProperty (O, P, Desc)
 
-export function OrdinaryDefineOwnProperty(O: JSOrdinaryObject, P: PropertyKey, Desc: Property): Completion<UnknownType> {
+export function OrdinaryDefineOwnProperty(O: JSOrdinaryObject, P: JSPropertyKey, Desc: Property): Completion<UnknownType> {
     throw new Error("OrdinaryDefineOwnProperty Not implemented");
 }
 
@@ -161,7 +161,7 @@ export function IsCompatiblePropertyDescriptor(Extensible: boolean, Desc: Proper
 
 export function ValidateAndApplyPropertyDescriptor(
     O: JSOrdinaryObject,
-    P: PropertyKey,
+    P: JSPropertyKey,
     extensible: boolean,
     Desc: Property,
     current: Property): Completion<UnknownType> {
@@ -170,7 +170,7 @@ export function ValidateAndApplyPropertyDescriptor(
 
 // 9.1.7.1 OrdinaryHasProperty (O, P)
 
-export function OrdinaryHasProperty(O: JSOrdinaryObject, P: PropertyKey): Completion<UnknownType> {
+export function OrdinaryHasProperty(O: JSOrdinaryObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("OrdinaryHasProperty Not implemented");
 }
 

@@ -1,0 +1,5 @@
+#!/bin/bash
+cat "$1" | \
+    grep -E '^export *((type)|(class)|(abstract *class)) *' |\
+    sed -E 's/^export *((type)|(class)|(abstract *class)) *//g' |\
+    sed -E 's/^([A-Za-z0-9_]+).*$/    \1,/g'

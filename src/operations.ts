@@ -25,7 +25,7 @@ import {
     JSUndefined,
     JSNull,
     JSBoolean,
-    PropertyKey,
+    JSPropertyKey,
     JSString,
     JSSymbol,
     JSNumber,
@@ -122,22 +122,14 @@ export function ToObject(argument: JSValue): Completion<JSObject> {
 
 // 7.1.14 ToPropertyKey ( argument )
 
-export function ToPropertyKey(argument: JSValue): Completion<PropertyKey> {
+export function ToPropertyKey(argument: JSValue): Completion<JSPropertyKey> {
     const keyComp = ToPrimitive(argument,ValueType.String);
-    if (keyComp instanceof NormalCompletion) {
-        const primitiveKey: NormalCompletion<JSPrimitiveValue> = keyComp;
-
-        const booleanKey: NormalCompletion<boolean> = keyComp;
-
-        const autoKey = keyComp;
-    }
     if (!(keyComp instanceof NormalCompletion))
-        return keyComp.convert<PropertyKey>();
+        return keyComp;
 
     const key = keyComp.value;
     if (key instanceof JSSymbol) {
-        const x = new NormalCompletion(key);
-        return x;
+        return new NormalCompletion(key);
     }
     else
         return ToString(key);
@@ -239,67 +231,67 @@ export function _strictEqualityComparison(x: any, y: any): Completion<UnknownTyp
 
 // 7.3.1 Get (O, P)
 
-export function Get(O: JSObject, P: PropertyKey): Completion<UnknownType> {
+export function Get(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("Get not implemented");
 }
 
 // 7.3.2 GetV (V, P)
 
-export function GetV(O: any, P: PropertyKey): Completion<UnknownType> {
+export function GetV(O: any, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("GetV not implemented");
 }
 
 // 7.3.3 Set (O, P, V, Throw)
 
-export function Set(O: JSObject, P: PropertyKey, V: JSValue, Throw: boolean): Completion<UnknownType> {
+export function Set(O: JSObject, P: JSPropertyKey, V: JSValue, Throw: boolean): Completion<UnknownType> {
     throw new Error("Set not implemented");
 }
 
 // 7.3.4 CreateDataProperty (O, P, V)
 
-export function CreateDataProperty(O: JSObject, P: PropertyKey, V: JSValue): Completion<UnknownType> {
+export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<UnknownType> {
     throw new Error("CreateDataProperty not implemented");
 }
 
 // 7.3.5 CreateMethodProperty (O, P, V)
 
-export function CreateMethodProperty(O: JSObject, P: PropertyKey, V: JSValue): Completion<UnknownType> {
+export function CreateMethodProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<UnknownType> {
     throw new Error("CreateMethodProperty not implemented");
 }
 
 // 7.3.6 CreateDataPropertyOrThrow (O, P, V)
 
-export function CreateDataPropertyOrThrow(O: JSObject, P: PropertyKey, V: JSValue): Completion<UnknownType> {
+export function CreateDataPropertyOrThrow(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<UnknownType> {
     throw new Error("CreateDataPropertyOrThrow not implemented");
 }
 
 // 7.3.7 DefinePropertyOrThrow (O, P, desc)
 
-export function DefinePropertyOrThrow(O: JSObject, P: PropertyKey, desc: Property): Completion<UnknownType> {
+export function DefinePropertyOrThrow(O: JSObject, P: JSPropertyKey, desc: Property): Completion<UnknownType> {
     throw new Error("DefinePropertyOrThrow not implemented");
 }
 
 // 7.3.8 DeletePropertyOrThrow (O, P)
 
-export function DeletePropertyOrThrow(O: JSObject, P: PropertyKey): Completion<UnknownType> {
+export function DeletePropertyOrThrow(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("DeletePropertyOrThrow not implemented");
 }
 
 // 7.3.9 GetMethod (O, P)
 
-export function GetMethod(O: JSObject, P: PropertyKey): Completion<UnknownType> {
+export function GetMethod(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("GetMethod not implemented");
 }
 
 // 7.3.10 HasProperty (O, P)
 
-export function HasProperty(O: JSObject, P: PropertyKey): Completion<UnknownType> {
+export function HasProperty(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("HasProperty not implemented");
 }
 
 // 7.3.11 HasOwnProperty (O, P)
 
-export function HasOwnProperty(O: JSObject, P: PropertyKey): Completion<UnknownType> {
+export function HasOwnProperty(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("HasOwnProperty not implemented");
 }
 
@@ -341,7 +333,7 @@ export function CreateListFromArrayLike(obj: JSValue, elementTypes: any): Comple
 
 // 7.3.18 Invoke(O,P, [argumentsList])
 
-export function Invoke(O: JSObject, P: PropertyKey, argumentsList: JSValue[]): Completion<UnknownType> {
+export function Invoke(O: JSObject, P: JSPropertyKey, argumentsList: JSValue[]): Completion<UnknownType> {
     throw new Error("Invoke not implemented");
 }
 

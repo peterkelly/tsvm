@@ -49,10 +49,6 @@ export abstract class JSValue {
     }
 }
 
-export abstract class JSPrimitiveValue extends JSValue {
-    _nominal_type_JSPrimitiveValue: any;
-}
-
 // 6.1.1 The Undefined Type
 
 export class JSUndefined extends JSPrimitiveValue {
@@ -84,11 +80,7 @@ export class JSBoolean extends JSPrimitiveValue {
 
 // 6.1.4 The String Type
 
-export abstract class PropertyKey extends JSPrimitiveValue {
-    _nominal_type_PropertyKey: any;
-}
-
-export class JSString extends PropertyKey {
+export class JSString extends JSPropertyKey {
     _nominal_type_JSString: any;
     public readonly stringValue: string;
     public constructor(stringValue: string) {
@@ -99,7 +91,7 @@ export class JSString extends PropertyKey {
 
 // 6.1.5 The Symbol Type
 
-export class JSSymbol extends PropertyKey {
+export class JSSymbol extends JSPropertyKey {
     _nominal_type_JSSymbol: any;
     public readonly description: JSString | JSUndefined;
     private readonly symbolId: number;
@@ -193,7 +185,7 @@ export class JSObject extends JSValue {
         throw new Error("JSObject.__Enumerate__ Not implemented");
     }
 
-    public __OwnPropertyKeys__(): Completion<PropertyKey[]> {
+    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
         throw new Error("JSObject.__OwnPropertyKeys__ Not implemented");
     }
 
@@ -205,6 +197,74 @@ export class JSObject extends JSValue {
         throw new Error("JSObject.__Construct__ Not implemented");
     }
 }
+
+// begin additional types
+
+export abstract class JSPrimitiveValue extends JSValue {
+    _nominal_type_JSPrimitiveValue: any;
+}
+
+export abstract class JSPropertyKey extends JSPrimitiveValue {
+    _nominal_type_PropertyKey: any;
+}
+
+export class JSInteger extends JSNumber {
+    public readonly integerValue: number;
+    public constructor(integerValue: number) {
+        super(integerValue);
+        this.integerValue = integerValue;
+    }
+}
+
+export class JSInt32 extends JSInteger {
+    public readonly int32Value: number;
+    public constructor(int32Value: number) {
+        super(int32Value);
+        this.int32Value = int32Value;
+    }
+}
+
+export class JSUInt32 extends JSInteger {
+    public readonly uint32Value: number;
+    public constructor(uint32Value: number) {
+        super(uint32Value);
+        this.uint32Value = uint32Value;
+    }
+}
+
+export class JSInt16 extends JSInteger {
+    public readonly int16Value: number;
+    public constructor(int16Value: number) {
+        super(int16Value);
+        this.int16Value = int16Value;
+    }
+}
+
+export class JSUInt16 extends JSInteger {
+    public readonly uint16Value: number;
+    public constructor(uint16Value: number) {
+        super(uint16Value);
+        this.uint16Value = uint16Value;
+    }
+}
+
+export class JSInt8 extends JSInteger {
+    public readonly int8Value: number;
+    public constructor(int8Value: number) {
+        super(int8Value);
+        this.int8Value = int8Value;
+    }
+}
+
+export class JSUInt8 extends JSInteger {
+    public readonly uint8Value: number;
+    public constructor(uint8Value: number) {
+        super(uint8Value);
+        this.uint8Value = uint8Value;
+    }
+}
+
+// end additional types
 
 // 6.1.7.1 Property Attributes
 
@@ -335,113 +395,52 @@ export class Intrinsics {
 
 // 6.2.2 The Completion<UnknownType> Record Specification Type
 
-// export enum CompletionType {
-//     Normal,
-//     Break,
-//     Continue,
-//     Return,
-//     Throw,
-// }
+export type Completion<T> =
+    NormalCompletion<T> |
+    BreakCompletion |
+    ContinueCompletion |
+    ReturnCompletion |
+    ThrowCompletion;
 
-export abstract class Completion<T> {
-    public _nominal_type_Completion: T;
-    public constructor() {
-    }
-    public isAbrupt(): boolean {
-        return true;
-    }
-    public abstract convert<R>(): Completion<R>;
-}
-
-export class NormalCompletion<T> extends Completion<T> {
+export class NormalCompletion<T> {
     public _nominal_type_NormalCompletion: T;
     public value: T;
     public constructor(value: T) {
-        super();
         this.value = value;
     }
-    public isAbrupt(): boolean {
-        return false;
-    }
-    public convert<R>(): Completion<R> {
-        throw new Error("Cannot convert NormalCompletion");
-    }
 }
 
-export class BreakCompletion<T> extends Completion<T> {
-    public _nominal_type_BreakCompletion: T;
+export class BreakCompletion {
+    public _nominal_type_BreakCompletion: any;
     public target: string;
     public constructor(target: string) {
-        super();
         this.target = target;
-    }
-    public convert<R>(): Completion<R> {
-        throw new BreakCompletion<T>(this.target);
     }
 }
 
-export class ContinueCompletion<T> extends Completion<T> {
-    public _nominal_type_ContinueCompletion: T;
+export class ContinueCompletion {
+    public _nominal_type_ContinueCompletion: any;
     public target: string;
     public constructor(target: string) {
-        super();
         this.target = target;
-    }
-    public convert<R>(): Completion<R> {
-        throw new ContinueCompletion<T>(this.target);
     }
 }
 
-export class ReturnCompletion<T> extends Completion<T> {
-    public _nominal_type_ReturnCompletion: T;
+export class ReturnCompletion {
+    public _nominal_type_ReturnCompletion: any;
     public returnValue: JSValue;
     public constructor(returnValue: JSValue) {
-        super();
         this.returnValue = returnValue;
     }
-    public convert<R>(): Completion<R> {
-        throw new ReturnCompletion<R>(this.returnValue);
-    }
 }
 
-export class ThrowCompletion<T> extends Completion<T> {
-    public _nominal_type_ThrowCompletion: T;
+export class ThrowCompletion {
+    public _nominal_type_ThrowCompletion: any;
     public exceptionValue: JSValue;
     public constructor(exceptionValue: JSValue) {
-        super();
         this.exceptionValue = exceptionValue;
     }
-    public convert<R>(): Completion<R> {
-        throw new ThrowCompletion<R>(this.exceptionValue);
-    }
 }
-
-// export class Completion<UnknownType> {
-//     _nominal_type_Completion: any;
-//     public type: CompletionType;
-//     public value: JSValue | Empty;
-//     public target: JSString | Empty;
-//
-//     public constructor(type: CompletionType, value: JSValue | Empty, target: JSString | Empty) {
-//         this.type = type;
-//         this.value = value;
-//         this.target = target;
-//     }
-// }
-//
-// export function isAbruptCompletion(comp: any): comp is Completion<UnknownType> {
-//     return ((comp instanceof Completion) && (comp.type != CompletionType.Normal));
-// }
-//
-// export function createThrowCompletion(value: JSValue | Empty): Completion<UnknownType> {
-//     return new Completion(CompletionType.Throw,value,new Empty());
-// }
-//
-// export function throwReferenceError(): Completion<UnknownType> {
-//     const error = new JSObject();
-//     return new Completion(CompletionType.Throw,error,new Empty());
-// }
-
 
 // 6.2.2.1 NormalCompletion
 

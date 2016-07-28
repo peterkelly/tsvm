@@ -17,7 +17,7 @@ import {
     JSUndefined,
     JSNull,
     JSBoolean,
-    PropertyKey,
+    JSPropertyKey,
     JSString,
     JSSymbol,
     JSNumber,
