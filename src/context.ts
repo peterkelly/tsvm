@@ -29,6 +29,7 @@ import {
     ReturnCompletion,
     ThrowCompletion,
     Intrinsics,
+    UnknownType,
 } from "./datatypes";
 import {
     JSFunctionObject,
@@ -60,13 +61,13 @@ export abstract class EnvironmentRecord {
 
     public abstract HasBinding(N: string): Completion<boolean>;
 
-    public abstract CreateMutableBinding(N: string, D: boolean): Completion<undefined>;
+    public abstract CreateMutableBinding(N: string, D: boolean): Completion<void>;
 
-    public abstract CreateImmutableBinding(N: string, S: boolean): Completion<undefined>;
+    public abstract CreateImmutableBinding(N: string, S: boolean): Completion<void>;
 
-    public abstract InitializeBinding(N: string, V: JSValue): Completion<undefined>;
+    public abstract InitializeBinding(N: string, V: JSValue): Completion<void>;
 
-    public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<undefined>;
+    public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
 
     public abstract GetBindingValue(N: string, S: boolean): Completion<JSValue>;
 
@@ -96,25 +97,25 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 
     // 8.1.1.1.2 CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): Completion<undefined> {
+    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
         throw new Error("DeclarativeEnvironmentRecord.CreateMutableBinding not implemented");
     }
 
     // 8.1.1.1.3 CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): Completion<undefined> {
+    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
         throw new Error("DeclarativeEnvironmentRecord.CreateImmutableBinding not implemented");
     }
 
     // 8.1.1.1.4 InitializeBinding (N,V)
 
-    public InitializeBinding(N: string, V: JSValue): Completion<undefined> {
+    public InitializeBinding(N: string, V: JSValue): Completion<void> {
         throw new Error("DeclarativeEnvironmentRecord.InitializeBinding not implemented");
     }
 
     // 8.1.1.1.5 SetMutableBinding (N,V,S)
 
-    public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<undefined> {
+    public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
         throw new Error("DeclarativeEnvironmentRecord.SetMutableBinding not implemented");
     }
 
@@ -166,25 +167,25 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
 
     // 8.1.1.2.2 CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): Completion<undefined> {
+    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
         throw new Error("ObjectEnvironmentRecord.CreateMutableBinding not implemented");
     }
 
     // 8.1.1.2.3 CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): Completion<undefined> {
+    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
         throw new Error("ObjectEnvironmentRecord.CreateImmutableBinding not implemented");
     }
 
     // 8.1.1.2.4 InitializeBinding (N,V)
 
-    public InitializeBinding(N: string, V: JSValue): Completion<undefined> {
+    public InitializeBinding(N: string, V: JSValue): Completion<void> {
         throw new Error("ObjectEnvironmentRecord.InitializeBinding not implemented");
     }
 
     // 8.1.1.2.5 SetMutableBinding (N,V,S)
 
-    public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<undefined> {
+    public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
         throw new Error("ObjectEnvironmentRecord.SetMutableBinding not implemented");
     }
 
@@ -250,7 +251,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     // 8.1.1.3.1 BindThisValue(V)
 
-    public BindThisValue(V: JSValue): Completion<JSValue> {
+    public BindThisValue(V: JSValue): Completion<UnknownType> {
         throw new Error("FunctionEnvironmentRecord.BindThisValue not implemented");
     }
 
@@ -268,13 +269,13 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     // 8.1.1.3.4 GetThisBinding ()
 
-    public GetThisBinding(): Completion<JSValue> {
+    public GetThisBinding(): Completion<UnknownType> {
         throw new Error("FunctionEnvironmentRecord.GetThisBinding not implemented");
     }
 
     // 8.1.1.3.5 GetSuperBase ()
 
-    public GetSuperBase(): Completion<JSValue> {
+    public GetSuperBase(): Completion<UnknownType> {
         throw new Error("FunctionEnvironmentRecord.GetSuperBase not implemented");
     }
 }
@@ -302,25 +303,25 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
     // 8.1.1.4.2 CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): Completion<undefined> {
+    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.CreateMutableBinding not implemented");
     }
 
     // 8.1.1.4.3 CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): Completion<undefined> {
+    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.CreateImmutableBinding not implemented");
     }
 
     // 8.1.1.4.4 InitializeBinding (N,V)
 
-    public InitializeBinding(N: string, V: JSValue): Completion<undefined> {
+    public InitializeBinding(N: string, V: JSValue): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.InitializeBinding not implemented");
     }
 
     // 8.1.1.4.5 SetMutableBinding (N,V,S)
 
-    public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<undefined> {
+    public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.SetMutableBinding not implemented");
     }
 
@@ -356,49 +357,49 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
     // 8.1.1.4.11 GetThisBinding ()
 
-    public GetThisBinding(): Completion<JSValue> {
+    public GetThisBinding(): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.GetThisBinding not implemented");
     }
 
     // 8.1.1.4.12 HasVarDeclaration (N)
 
-    public HasVarDeclaration(N: string): Completion<JSValue> {
+    public HasVarDeclaration(N: string): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.HasVarDeclaration not implemented");
     }
 
     // 8.1.1.4.13 HasLexicalDeclaration (N)
 
-    public HasLexicalDeclaration(N: string): Completion<JSValue> {
+    public HasLexicalDeclaration(N: string): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.HasLexicalDeclaration not implemented");
     }
 
     // 8.1.1.4.14 HasRestrictedGlobalProperty (N)
 
-    public HasRestrictedGlobalProperty(N: string): Completion<JSValue> {
+    public HasRestrictedGlobalProperty(N: string): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.HasRestrictedGlobalProperty not implemented");
     }
 
     // 8.1.1.4.15 CanDeclareGlobalVar (N)
 
-    public CanDeclareGlobalVar(N: string): Completion<JSValue> {
+    public CanDeclareGlobalVar(N: string): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.CanDeclareGlobalVar not implemented");
     }
 
     // 8.1.1.4.16 CanDeclareGlobalFunction (N)
 
-    public CanDeclareGlobalFunction(N: string): Completion<JSValue> {
+    public CanDeclareGlobalFunction(N: string): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.CanDeclareGlobalFunction not implemented");
     }
 
     // 8.1.1.4.17 CreateGlobalVarBinding (N, D)
 
-    public CreateGlobalVarBinding(N: string, D: boolean): Completion<JSValue> {
+    public CreateGlobalVarBinding(N: string, D: boolean): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.CreateGlobalVarBinding not implemented");
     }
 
     // 8.1.1.4.18 CreateGlobalFunctionBinding (N, V, D)
 
-    public CreateGlobalFunctionBinding(N: string, V: JSValue, D: boolean): Completion<JSValue> {
+    public CreateGlobalFunctionBinding(N: string, V: JSValue, D: boolean): Completion<UnknownType> {
         throw new Error("GlobalEnvironmentRecord.CreateGlobalFunctionBinding not implemented");
     }
 }
@@ -432,13 +433,13 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     // 8.1.1.5.4 GetThisBinding ()
 
-    public GetThisBinding(): Completion<JSValue> {
+    public GetThisBinding(): Completion<UnknownType> {
         throw new Error("ModuleEnvironmentRecord.GetThisBinding not implemented");
     }
 
     // 8.1.1.5.5 CreateImportBinding (N, M, N2)
 
-    public CreateImportBinding(N: string, M: any, N2: any): Completion<JSValue> {
+    public CreateImportBinding(N: string, M: any, N2: any): Completion<UnknownType> {
         throw new Error("ModuleEnvironmentRecord.CreateImportBinding not implemented");
     }
 }
@@ -447,7 +448,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 // 8.1.2.1 GetIdentifierReference (lex, name, strict)
 
-export function GetIdentifierReference(lex: LexicalEnvironment, name: string, strict: boolean): Completion<JSValue> {
+export function GetIdentifierReference(lex: LexicalEnvironment, name: string, strict: boolean): Completion<UnknownType> {
     throw new Error("GetIdentifierReference not implemented");
 }
 
@@ -515,7 +516,7 @@ export function CreateRealm(): Realm {
 
 // 8.2.2 CreateIntrinsics ( realmRec )
 
-export function CreateIntrinsics(realmRec: Realm): Completion<JSValue> {
+export function CreateIntrinsics(realmRec: Realm): Completion<UnknownType> {
     throw new Error("CreateIntrinsics not implemented");
 }
 
@@ -527,7 +528,7 @@ export function SetRealmGlobalObject(realmRec: Realm, globalObj: JSObject | JSUn
 
 // 8.2.4 SetDefaultGlobalBindings ( realmRec )
 
-export function SetDefaultGlobalBindings(realmRec: Realm): Completion<JSValue> {
+export function SetDefaultGlobalBindings(realmRec: Realm): Completion<UnknownType> {
     throw new Error("SetDefaultGlobalBindings not implemented");
 }
 
@@ -544,31 +545,31 @@ export class ExecutionContext {
 
     // 8.3.1 ResolveBinding ( name, [env] )
 
-    public ResolveBinding(name: JSString, env?: LexicalEnvironment | undefined ): Completion<JSValue> {
+    public ResolveBinding(name: JSString, env?: LexicalEnvironment | undefined ): Completion<UnknownType> {
         throw new Error("ExecutionContext.ResolveBinding not implemented");
     }
 
     // 8.3.2 GetThisEnvironment ( )
 
-    public GetThisEnvironment(): Completion<JSValue> {
+    public GetThisEnvironment(): Completion<UnknownType> {
         throw new Error("ExecutionContext.GetThisEnvironment not implemented");
     }
 
     // 8.3.3 ResolveThisBinding ( )
 
-    public ResolveThisBinding(): Completion<JSValue> {
+    public ResolveThisBinding(): Completion<UnknownType> {
         throw new Error("ExecutionContext.ResolveThisBinding not implemented");
     }
 
     // 8.3.4 GetNewTarget ( )
 
-    public GetNewTarget(): Completion<JSValue> {
+    public GetNewTarget(): Completion<UnknownType> {
         throw new Error("ExecutionContext.GetNewTarget not implemented");
     }
 
     // 8.3.5 GetGlobalObject ( )
 
-    public GetGlobalObject(): Completion<JSValue> {
+    public GetGlobalObject(): Completion<UnknownType> {
         throw new Error("ExecutionContext.GetGlobalObject not implemented");
     }
 }
