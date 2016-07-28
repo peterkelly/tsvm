@@ -49,9 +49,13 @@ export abstract class JSValue {
     }
 }
 
+export abstract class JSPrimitiveValue extends JSValue {
+    _nominal_type_JSPrimitiveValue: any;
+}
+
 // 6.1.1 The Undefined Type
 
-export class JSUndefined extends JSValue {
+export class JSUndefined extends JSPrimitiveValue {
     _nominal_type_JSUndefined: any;
     public constructor() {
         super();
@@ -60,7 +64,7 @@ export class JSUndefined extends JSValue {
 
 // 6.1.2 The Null Type
 
-export class JSNull extends JSValue {
+export class JSNull extends JSPrimitiveValue {
     _nominal_type_JSNull: any;
     public constructor() {
         super();
@@ -69,7 +73,7 @@ export class JSNull extends JSValue {
 
 // 6.1.3 The Boolean Type
 
-export class JSBoolean extends JSValue {
+export class JSBoolean extends JSPrimitiveValue {
     _nominal_type_JSBoolean: any;
     public readonly booleanValue: boolean;
     public constructor(booleanValue: boolean) {
@@ -80,11 +84,11 @@ export class JSBoolean extends JSValue {
 
 // 6.1.4 The String Type
 
-export abstract class PropertyKey extends JSValue {
+export abstract class PropertyKey extends JSPrimitiveValue {
     _nominal_type_PropertyKey: any;
 }
 
-export class JSString extends JSValue {
+export class JSString extends PropertyKey {
     _nominal_type_JSString: any;
     public readonly stringValue: string;
     public constructor(stringValue: string) {
@@ -95,7 +99,7 @@ export class JSString extends JSValue {
 
 // 6.1.5 The Symbol Type
 
-export class JSSymbol extends JSValue {
+export class JSSymbol extends PropertyKey {
     _nominal_type_JSSymbol: any;
     public readonly description: JSString | JSUndefined;
     private readonly symbolId: number;
@@ -124,7 +128,7 @@ export class JSSymbol extends JSValue {
 
 // 6.1.6 The Number Type
 
-export class JSNumber extends JSValue {
+export class JSNumber extends JSPrimitiveValue {
     _nominal_type_JSNumber: any;
     public readonly numberValue: number;
     public constructor(numberValue: number) {
@@ -340,53 +344,75 @@ export class Intrinsics {
 // }
 
 export abstract class Completion<T> {
-    _nominal_type_Completion: T;
+    public _nominal_type_Completion: T;
     public constructor() {
     }
+    public isAbrupt(): boolean {
+        return true;
+    }
+    public abstract convert<R>(): Completion<R>;
 }
 
 export class NormalCompletion<T> extends Completion<T> {
-    _nominal_type_NormalCompletion: T;
+    public _nominal_type_NormalCompletion: T;
     public value: T;
     public constructor(value: T) {
         super();
         this.value = value;
+    }
+    public isAbrupt(): boolean {
+        return false;
+    }
+    public convert<R>(): Completion<R> {
+        throw new Error("Cannot convert NormalCompletion");
     }
 }
 
 export class BreakCompletion<T> extends Completion<T> {
-    _nominal_type_BreakCompletion: T;
+    public _nominal_type_BreakCompletion: T;
     public target: string;
     public constructor(target: string) {
         super();
         this.target = target;
+    }
+    public convert<R>(): Completion<R> {
+        throw new BreakCompletion<T>(this.target);
     }
 }
 
 export class ContinueCompletion<T> extends Completion<T> {
-    _nominal_type_ContinueCompletion: T;
+    public _nominal_type_ContinueCompletion: T;
     public target: string;
     public constructor(target: string) {
         super();
         this.target = target;
     }
+    public convert<R>(): Completion<R> {
+        throw new ContinueCompletion<T>(this.target);
+    }
 }
 
 export class ReturnCompletion<T> extends Completion<T> {
-    _nominal_type_ReturnCompletion: T;
-    public value: T;
-    public constructor(value: T) {
+    public _nominal_type_ReturnCompletion: T;
+    public returnValue: JSValue;
+    public constructor(returnValue: JSValue) {
         super();
-        this.value = value;
+        this.returnValue = returnValue;
+    }
+    public convert<R>(): Completion<R> {
+        throw new ReturnCompletion<R>(this.returnValue);
     }
 }
 
 export class ThrowCompletion<T> extends Completion<T> {
-    _nominal_type_ThrowCompletion: T;
+    public _nominal_type_ThrowCompletion: T;
     public exceptionValue: JSValue;
     public constructor(exceptionValue: JSValue) {
         super();
         this.exceptionValue = exceptionValue;
+    }
+    public convert<R>(): Completion<R> {
+        throw new ThrowCompletion<R>(this.exceptionValue);
     }
 }
 

@@ -15,7 +15,13 @@
 import {
     ValueType,
     Completion,
+    NormalCompletion,
+    BreakCompletion,
+    ContinueCompletion,
+    ReturnCompletion,
+    ThrowCompletion,
     JSValue,
+    JSPrimitiveValue,
     JSUndefined,
     JSNull,
     JSBoolean,
@@ -34,91 +40,112 @@ import {
 
 // Section 7.1.1 ToPrimitive ( input [, PreferredType] )
 
-export function ToPrimitive(argument: any, preferredType?: ValueType): Completion<UnknownType> {
+export function ToPrimitive(argument: JSValue, preferredType?: ValueType): Completion<JSPrimitiveValue> {
     throw new Error("ToPrimitive not implemented");
+}
+
+export function OrdinaryToPrimitive(O: JSObject, hint: "string" | "number"): Completion<JSPrimitiveValue> {
+    throw new Error("OrdinaryToPrimitive not implemented");
 }
 
 // 7.1.2 ToBoolean ( argument )
 
-export function ToBoolean(argument: any): Completion<UnknownType> {
+export function ToBoolean(argument: JSValue): Completion<JSBoolean> {
     throw new Error("ToBoolean not implemented");
 }
 
 // 7.1.3 ToNumber ( argument )
 
-export function ToNumber(argument: any): Completion<UnknownType> {
+export function ToNumber(argument: JSValue): Completion<JSNumber> {
     throw new Error("ToNumber not implemented");
 }
 
 // 7.1.4 ToInteger ( argument )
 
-export function ToInteger(argument: any): Completion<UnknownType> {
+export function ToInteger(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToInteger not implemented");
 }
 
 // 7.1.5 ToInt32 ( argument )
 
-export function ToInt32(argument: any): Completion<UnknownType> {
+export function ToInt32(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToInt32 not implemented");
 }
 
 // 7.1.6 ToUint32 ( argument )
 
-export function ToUint32(argument: any): Completion<UnknownType> {
+export function ToUint32(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToUint32 not implemented");
 }
 
 // 7.1.7 ToInt16 ( argument )
 
-export function ToInt16(argument: any): Completion<UnknownType> {
+export function ToInt16(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToInt16 not implemented");
 }
 
 // 7.1.8 ToUint16 ( argument )
 
-export function ToUint16(argument: any): Completion<UnknownType> {
+export function ToUint16(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToUint16 not implemented");
 }
 
 // 7.1.9 ToInt8 ( argument )
 
-export function ToInt8(argument: any): Completion<UnknownType> {
+export function ToInt8(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToInt8 not implemented");
 }
 
 // 7.1.10 ToUint8 ( argument )
 
-export function ToUint8(argument: any): Completion<UnknownType> {
+export function ToUint8(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToUint8 not implemented");
 }
 
 // 7.1.11 ToUint8Clamp ( argument )
 
-export function ToUint8Clamp(argument: any): Completion<UnknownType> {
+export function ToUint8Clamp(argument: JSValue): Completion<UnknownType> {
     throw new Error("ToUint8Clamp not implemented");
 }
 
 // 7.1.12 ToString ( argument )
 
-export function ToString(argument: any): Completion<UnknownType> {
+export function ToString(argument: JSValue): Completion<JSString> {
     throw new Error("ToString not implemented");
 }
 
 // 7.1.13 ToObject ( argument )
 
-export function ToObject(argument: any): Completion<UnknownType> {
+export function ToObject(argument: JSValue): Completion<JSObject> {
     throw new Error("ToObject not implemented");
 }
 
 // 7.1.14 ToPropertyKey ( argument )
 
-export function ToPropertyKey(argument: any): Completion<UnknownType> {
-    throw new Error("ToPropertyKey not implemented");
+export function ToPropertyKey(argument: JSValue): Completion<PropertyKey> {
+    const keyComp = ToPrimitive(argument,ValueType.String);
+    if (keyComp instanceof NormalCompletion) {
+        const primitiveKey: NormalCompletion<JSPrimitiveValue> = keyComp;
+
+        const booleanKey: NormalCompletion<boolean> = keyComp;
+
+        const autoKey = keyComp;
+    }
+    if (!(keyComp instanceof NormalCompletion))
+        return keyComp.convert<PropertyKey>();
+
+    const key = keyComp.value;
+    if (key instanceof JSSymbol) {
+        const x = new NormalCompletion(key);
+        return x;
+    }
+    else
+        return ToString(key);
 }
 
 // 7.1.15 ToLength ( argument )
 
-export function ToLength(argument: any): Completion<UnknownType> {
+export function ToLength(argument: any): Completion<JSNumber> {
     throw new Error("ToLength not implemented");
 }
 
