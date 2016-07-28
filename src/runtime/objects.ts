@@ -48,6 +48,14 @@ export class JSOrdinaryObject extends JSObject {
         super();
     }
 
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType> {
+        throw new Error("JSOrdinaryObject.__Call__ Not implemented");
+    }
+
+    public __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType> {
+        throw new Error("JSOrdinaryObject.__Construct__ Not implemented");
+    }
+
     // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
 
     public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
@@ -194,7 +202,7 @@ export enum ConstructorKind {
     Derived,
 }
 
-export class JSFunctionObject extends JSObject {
+export class JSFunctionObject extends JSOrdinaryObject {
     _nominal_type_JSFunctionObject: any;
     public environment: LexicalEnvironment;
     public formalParameters: ASTNode;
@@ -310,5 +318,11 @@ export function FunctionDeclarationInstantiation(func: JSFunctionObject, argumen
 }
 
 // ES6 Section 9.3: Built-in Function Objects
+
+// ES6 Section 9.3.3: CreateBuiltinFunction(realm, steps, prototype, internalSlotsList)
+
+export function CreateBuiltinFunction(realm: Realm, steps: any, prototype: any, internalSlotsList: any): Completion<UnknownType> {
+    throw new Error("CreateBuiltinFunction Not implemented");
+}
 
 // TODO

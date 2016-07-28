@@ -20,6 +20,9 @@ import {
     Realm,
 } from "./context";
 import {
+    JSOrdinaryObject,
+} from "./objects";
+import {
     ASTNode
 } from "../parser/ast";
 
@@ -131,7 +134,7 @@ export class JSNumber extends JSPrimitiveValue {
 
 // ES6 Section 6.1.7: The Object Type
 
-export class JSObject extends JSValue {
+export abstract class JSObject extends JSValue {
     _nominal_type_JSObject: any;
     public readonly properties: { [key: string]: Property };
     public constructor() {
@@ -141,61 +144,33 @@ export class JSObject extends JSValue {
 
     // ES6 Section 6.1.7.2: Object Internal Methods and Internal Slots
 
-    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
-        throw new Error("JSObject.__GetPrototypeOf__ Not implemented");
-    }
+    public abstract __GetPrototypeOf__(): Completion<JSObject | JSNull>;
 
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean> {
-        throw new Error("JSObject.__SetPrototypeOf__ Not implemented");
-    }
+    public abstract __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean>;
 
-    public __IsExtensible__(): Completion<boolean> {
-        throw new Error("JSObject.__IsExtensible__ Not implemented");
-    }
+    public abstract __IsExtensible__(): Completion<boolean>;
 
-    public __PreventExtensions__(): Completion<boolean> {
-        throw new Error("JSObject.__PreventExtensions__ Not implemented");
-    }
+    public abstract __PreventExtensions__(): Completion<boolean>;
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
-        throw new Error("JSObject.__GetOwnProperty__ Not implemented");
-    }
+    public abstract __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property>;
 
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean> {
-        throw new Error("JSObject.__HasProperty__ Not implemented");
-    }
+    public abstract __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean>;
 
-    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<UnknownType> {
-        throw new Error("JSObject.__Get__ Not implemented");
-    }
+    public abstract __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<UnknownType>;
 
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean> {
-        throw new Error("JSObject.__Set__ Not implemented");
-    }
+    public abstract __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean>;
 
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean> {
-        throw new Error("JSObject.__Delete__ Not implemented");
-    }
+    public abstract __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean>;
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean> {
-        throw new Error("JSObject.__DefineOwnProperty__ Not implemented");
-    }
+    public abstract __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean>;
 
-    public __Enumerate__(): Completion<JSObject> {
-        throw new Error("JSObject.__Enumerate__ Not implemented");
-    }
+    public abstract __Enumerate__(): Completion<JSObject>;
 
-    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
-        throw new Error("JSObject.__OwnPropertyKeys__ Not implemented");
-    }
+    public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType> {
-        throw new Error("JSObject.__Call__ Not implemented");
-    }
+    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType>;
 
-    public __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType> {
-        throw new Error("JSObject.__Construct__ Not implemented");
-    }
+    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType>;
 }
 
 // Additional implementation types
@@ -297,96 +272,96 @@ export class AccessorProperty extends Property {
 // ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
 
 export class Intrinsics {
-    $Array$: JSObject = new JSObject(); // TODO
-    $ArrayBuffer$: JSObject = new JSObject(); // TODO
-    $ArrayBufferPrototype$: JSObject = new JSObject(); // TODO
-    $ArrayIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $ArrayProto_values$: JSObject = new JSObject(); // TODO;
-    $Boolean$: JSObject = new JSObject(); // TODO
-    $BooleanPrototype$: JSObject = new JSObject(); // TODO
-    $DataView$: JSObject = new JSObject(); // TODO
-    $DataViewPrototype$: JSObject = new JSObject(); // TODO
-    $Date$: JSObject = new JSObject(); // TODO
-    $DatePrototype$: JSObject = new JSObject(); // TODO
-    $decodeURI$: JSObject = new JSObject(); // TODO
-    $decodeURIComponent$: JSObject = new JSObject(); // TODO
-    $encodeURI$: JSObject = new JSObject(); // TODO
-    $encodeURIComponent$: JSObject = new JSObject(); // TODO
-    $Error$: JSObject = new JSObject(); // TODO
-    $ErrorPrototype$: JSObject = new JSObject(); // TODO
-    $eval$: JSObject = new JSObject(); // TODO
-    $EvalError$: JSObject = new JSObject(); // TODO
-    $EvalErrorPrototype$: JSObject = new JSObject(); // TODO
-    $Float32Array$: JSObject = new JSObject(); // TODO
-    $Float32ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Float64Array$: JSObject = new JSObject(); // TODO
-    $Float64ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Function$: JSObject = new JSObject(); // TODO
-    $FunctionPrototype$: JSObject = new JSObject(); // TODO
-    $Generator$: JSObject = new JSObject(); // TODO
-    $GeneratorFunction$: JSObject = new JSObject(); // TODO
-    $GeneratorPrototype$: JSObject = new JSObject(); // TODO
-    $Int8Array$: JSObject = new JSObject(); // TODO
-    $Int8ArrayPrototype$: JSObject = new JSObject(); // TODO;
-    $Int16Array$: JSObject = new JSObject(); // TODO
-    $Int16ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Int32Array$: JSObject = new JSObject(); // TODO
-    $Int32ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $isFinite$: JSObject = new JSObject(); // TODO
-    $isNaN$: JSObject = new JSObject(); // TODO
-    $IteratorPrototype$: JSObject = new JSObject(); // TODO
-    $JSON$: JSObject = new JSObject(); // TODO
-    $Map$: JSObject = new JSObject(); // TODO
-    $MapIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $MapPrototype$: JSObject = new JSObject(); // TODO
-    $Math$: JSObject = new JSObject(); // TODO
-    $Number$: JSObject = new JSObject(); // TODO
-    $NumberPrototype$: JSObject = new JSObject(); // TODO
-    $Object$: JSObject = new JSObject(); // TODO
-    $ObjectPrototype$: JSObject = new JSObject(); // TODO
-    $ObjProto_toString$: JSObject = new JSObject(); // TODO
-    $parseFloat$: JSObject = new JSObject(); // TODO
-    $parseInt$: JSObject = new JSObject(); // TODO
-    $Promise$: JSObject = new JSObject(); // TODO
-    $PromisePrototype$: JSObject = new JSObject(); // TODO
-    $Proxy$: JSObject = new JSObject(); // TODO
-    $RangeError$: JSObject = new JSObject(); // TODO
-    $RangeErrorPrototype$: JSObject = new JSObject(); // TODO
-    $ReferenceError$: JSObject = new JSObject(); // TODO
-    $ReferenceErrorPrototype$: JSObject = new JSObject(); // TODO
-    $Reflect$: JSObject = new JSObject(); // TODO
-    $RegExp$: JSObject = new JSObject(); // TODO
-    $RegExpPrototype$: JSObject = new JSObject(); // TODO
-    $Set$: JSObject = new JSObject(); // TODO
-    $SetIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $SetPrototype$: JSObject = new JSObject(); // TODO
-    $String$: JSObject = new JSObject(); // TODO
-    $StringIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $StringPrototype$: JSObject = new JSObject(); // TODO
-    $Symbol$: JSObject = new JSObject(); // TODO
-    $SymbolPrototype$: JSObject = new JSObject(); // TODO
-    $SyntaxError$: JSObject = new JSObject(); // TODO
-    $SyntaxErrorPrototype$: JSObject = new JSObject(); // TODO
-    $ThrowTypeError$: JSObject = new JSObject(); // TODO
-    $TypedArray$: JSObject = new JSObject(); // TODO
-    $TypedArrayPrototype$: JSObject = new JSObject(); // TODO
-    $TypeError$: JSObject = new JSObject(); // TODO
-    $TypeErrorPrototype$: JSObject = new JSObject(); // TODO
-    $Uint8Array$: JSObject = new JSObject(); // TODO
-    $Uint8ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Uint8ClampedArray$: JSObject = new JSObject(); // TODO
-    $Uint8ClampedArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Uint16Array$: JSObject = new JSObject(); // TODO
-    $Uint16ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Uint32Array$: JSObject = new JSObject(); // TODO
-    $Uint32ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $URIError$: JSObject = new JSObject(); // TODO
-    $URIErrorPrototype$: JSObject = new JSObject(); // TODO
-    $WeakMap$: JSObject = new JSObject(); // TODO
-    $WeakMapPrototype$: JSObject = new JSObject(); // TODO
-    $WeakSet$: JSObject = new JSObject(); // TODO
-    $WeakSetPrototype$: JSObject = new JSObject(); // TODO
+    $Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $ArrayBuffer$: JSObject = new JSOrdinaryObject(); // TODO
+    $ArrayBufferPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $ArrayIteratorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $ArrayProto_values$: JSObject = new JSOrdinaryObject(); // TODO;
+    $Boolean$: JSObject = new JSOrdinaryObject(); // TODO
+    $BooleanPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $DataView$: JSObject = new JSOrdinaryObject(); // TODO
+    $DataViewPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Date$: JSObject = new JSOrdinaryObject(); // TODO
+    $DatePrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $decodeURI$: JSObject = new JSOrdinaryObject(); // TODO
+    $decodeURIComponent$: JSObject = new JSOrdinaryObject(); // TODO
+    $encodeURI$: JSObject = new JSOrdinaryObject(); // TODO
+    $encodeURIComponent$: JSObject = new JSOrdinaryObject(); // TODO
+    $Error$: JSObject = new JSOrdinaryObject(); // TODO
+    $ErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $eval$: JSObject = new JSOrdinaryObject(); // TODO
+    $EvalError$: JSObject = new JSOrdinaryObject(); // TODO
+    $EvalErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Float32Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Float32ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Float64Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Float64ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Function$: JSObject = new JSOrdinaryObject(); // TODO
+    $FunctionPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Generator$: JSObject = new JSOrdinaryObject(); // TODO
+    $GeneratorFunction$: JSObject = new JSOrdinaryObject(); // TODO
+    $GeneratorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Int8Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Int8ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO;
+    $Int16Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Int16ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Int32Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Int32ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $isFinite$: JSObject = new JSOrdinaryObject(); // TODO
+    $isNaN$: JSObject = new JSOrdinaryObject(); // TODO
+    $IteratorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $JSON$: JSObject = new JSOrdinaryObject(); // TODO
+    $Map$: JSObject = new JSOrdinaryObject(); // TODO
+    $MapIteratorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $MapPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Math$: JSObject = new JSOrdinaryObject(); // TODO
+    $Number$: JSObject = new JSOrdinaryObject(); // TODO
+    $NumberPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Object$: JSObject = new JSOrdinaryObject(); // TODO
+    $ObjectPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $ObjProto_toString$: JSObject = new JSOrdinaryObject(); // TODO
+    $parseFloat$: JSObject = new JSOrdinaryObject(); // TODO
+    $parseInt$: JSObject = new JSOrdinaryObject(); // TODO
+    $Promise$: JSObject = new JSOrdinaryObject(); // TODO
+    $PromisePrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Proxy$: JSObject = new JSOrdinaryObject(); // TODO
+    $RangeError$: JSObject = new JSOrdinaryObject(); // TODO
+    $RangeErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $ReferenceError$: JSObject = new JSOrdinaryObject(); // TODO
+    $ReferenceErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Reflect$: JSObject = new JSOrdinaryObject(); // TODO
+    $RegExp$: JSObject = new JSOrdinaryObject(); // TODO
+    $RegExpPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Set$: JSObject = new JSOrdinaryObject(); // TODO
+    $SetIteratorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $SetPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $String$: JSObject = new JSOrdinaryObject(); // TODO
+    $StringIteratorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $StringPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Symbol$: JSObject = new JSOrdinaryObject(); // TODO
+    $SymbolPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $SyntaxError$: JSObject = new JSOrdinaryObject(); // TODO
+    $SyntaxErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $ThrowTypeError$: JSObject = new JSOrdinaryObject(); // TODO
+    $TypedArray$: JSObject = new JSOrdinaryObject(); // TODO
+    $TypedArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $TypeError$: JSObject = new JSOrdinaryObject(); // TODO
+    $TypeErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint8Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint8ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint8ClampedArray$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint8ClampedArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint16Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint16ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint32Array$: JSObject = new JSOrdinaryObject(); // TODO
+    $Uint32ArrayPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $URIError$: JSObject = new JSOrdinaryObject(); // TODO
+    $URIErrorPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $WeakMap$: JSObject = new JSOrdinaryObject(); // TODO
+    $WeakMapPrototype$: JSObject = new JSOrdinaryObject(); // TODO
+    $WeakSet$: JSObject = new JSOrdinaryObject(); // TODO
+    $WeakSetPrototype$: JSObject = new JSOrdinaryObject(); // TODO
 }
 
 // ES6 Section 6.2: ECMAScript Specification Types
