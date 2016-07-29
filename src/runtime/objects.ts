@@ -25,6 +25,7 @@ import {
     JSNumber,
     JSObject,
     Completion,
+    ThrowCompletion,
     Intrinsics,
     Property,
     UnknownType,
@@ -195,7 +196,7 @@ export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Real
 
 // ES6 Section 9.2.7.1: %ThrowTypeError% ()
 
-export function intrinsic_ThrowTypeError(): Completion<UnknownType> {
+export function intrinsic_ThrowTypeError(): ThrowCompletion {
     throw new Error("intrinsic_ThrowTypeError Not implemented");
 }
 

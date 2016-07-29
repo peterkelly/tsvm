@@ -22,6 +22,12 @@ import {
 import {
     ASTNode
 } from "../parser/ast";
+import {
+    SameValue,
+} from "./operations";
+// import {
+//     intrinsic_ThrowTypeError
+// } from "./objects";
 
 export class UnknownType {
     _nominal_type_UnknownType: any;
@@ -47,6 +53,7 @@ export abstract class JSValue {
     _nominal_type_JSValue: any;
     public constructor() {
     }
+    public abstract get type(): ValueType;
 }
 
 // ES6 Section 6.1.1: The Undefined Type
@@ -56,6 +63,9 @@ export class JSUndefined extends JSPrimitiveValue {
     public constructor() {
         super();
     }
+    public get type(): ValueType {
+        return ValueType.Undefined;
+    }
 }
 
 // ES6 Section 6.1.2: The Null Type
@@ -64,6 +74,9 @@ export class JSNull extends JSPrimitiveValue {
     _nominal_type_JSNull: any;
     public constructor() {
         super();
+    }
+    public get type(): ValueType {
+        return ValueType.Null;
     }
 }
 
@@ -76,6 +89,9 @@ export class JSBoolean extends JSPrimitiveValue {
         super();
         this.booleanValue = booleanValue;
     }
+    public get type(): ValueType {
+        return ValueType.Boolean;
+    }
 }
 
 // ES6 Section 6.1.4: The String Type
@@ -86,6 +102,9 @@ export class JSString extends JSPropertyKey {
     public constructor(stringValue: string) {
         super();
         this.stringValue = stringValue;
+    }
+    public get type(): ValueType {
+        return ValueType.String;
     }
 }
 
@@ -100,6 +119,9 @@ export class JSSymbol extends JSPropertyKey {
         super();
         this.description = description;
         this.symbolId = JSSymbol.nextSymbolId++;
+    }
+    public get type(): ValueType {
+        return ValueType.Symbol;
     }
 
     // ES6 Section 6.1.5.1: Well-Known Symbols
@@ -127,6 +149,18 @@ export class JSNumber extends JSPrimitiveValue {
         super();
         this.numberValue = numberValue;
     }
+    public get type(): ValueType {
+        return ValueType.Number;
+    }
+    public isNaN(): boolean {
+        return isNaN(this.numberValue);
+    }
+    public isPositiveZero(): boolean {
+        return (this.numberValue == 0); // FIXME
+    }
+    public isNegativeZero(): boolean {
+        return false; // FIXME
+    }
 }
 
 // ES6 Section 6.1.7: The Object Type
@@ -134,11 +168,21 @@ export class JSNumber extends JSPrimitiveValue {
 export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
     public __prototype__: JSObject | JSNull;
-    public __extensible__: JSBoolean;
+    public __extensible__: boolean;
     public readonly properties: { [key: string]: Property };
     public constructor() {
         super();
+        this.__prototype__ = new JSNull();
+        this.__extensible__ = true;
         this.properties = {};
+    }
+
+    public get type(): ValueType {
+        return ValueType.Object;
+    }
+
+    public get overridesGetPrototypeOf(): boolean {
+        return (this.__GetPrototypeOf__ !== JSObject.prototype.__GetPrototypeOf__);
     }
 
     // ES6 Section 6.1.7.2: Object Internal Methods and Internal Slots
@@ -147,25 +191,48 @@ export class JSObject extends JSValue {
     // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
 
     public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
-        throw new Error("JSObject.__GetPrototypeOf__ not implemented");
+        return new NormalCompletion(this.__prototype__);
     }
 
     // ES6 Section 9.1.2: [[SetPrototypeOf]] (V)
 
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean> {
-        throw new Error("JSObject.__SetPrototypeOf__ not implemented");
+    public __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean> {
+        const extensible = this.__extensible__;
+        const current = this.__prototype__;
+        if (SameValue(V,current))
+            return new NormalCompletion(true);
+        if (!extensible)
+            return new NormalCompletion(false);
+        let p = V;
+        let done = false;
+        while (!done) {
+            if (p instanceof JSNull)
+                done = true;
+            else if (SameValue(p,this))
+                return new NormalCompletion(false);
+            else if (p.overridesGetPrototypeOf)
+                done = true;
+            else
+                p = p.__prototype__;
+        }
+        this.__prototype__ = V;
+        return new NormalCompletion(true);
+
+
+        // throw new Error("JSObject.__SetPrototypeOf__ not implemented");
     }
 
     // ES6 Section 9.1.3: [[IsExtensible]] ()
 
     public __IsExtensible__(): Completion<boolean> {
-        throw new Error("JSObject.__IsExtensible__ not implemented");
+        return new NormalCompletion(this.__extensible__);
     }
 
     // ES6 Section 9.1.4: [[PreventExtensions]] ()
 
     public __PreventExtensions__(): Completion<boolean> {
-        throw new Error("JSObject.__PreventExtensions__ not implemented");
+        this.__extensible__ = false;
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)

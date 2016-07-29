@@ -199,20 +199,75 @@ export function IsRegExp(argument: any): Completion<UnknownType> {
 
 // ES6 Section 7.2.9: SameValue (x, y)
 
-export function SameValue(x: any, y: any): Completion<UnknownType> {
-    throw new Error("SameValue not implemented");
+export function SameValue(x: JSValue, y: JSValue): boolean {
+    return SameValue2(x,y,false);
 }
 
 // ES6 Section 7.2.10: SameValueZero (x, y)
 
-export function SameValueZero(x: any, y: any): Completion<UnknownType> {
-    throw new Error("SameValueZero not implemented");
+export function SameValueZero(x: any, y: any): boolean {
+    return SameValue2(x,y,true);
+}
+
+function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
+    if (x.type != y.type)
+        return false;
+
+    switch (x.type) {
+        case ValueType.Undefined:
+            return true;
+        case ValueType.Null:
+            return true;
+        case ValueType.Number:
+            if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
+                if (x.isNaN() && y.isNaN())
+                    return true;
+                if (!zero) {
+                    // Logic for the SameValue operation
+                    if (x.isPositiveZero() && y.isNegativeZero())
+                        return false;
+                    if (x.isNegativeZero() && y.isPositiveZero())
+                        return false;
+                }
+                else {
+                    // Logic for the SameValueZero operation
+                    if (x.isPositiveZero() && y.isNegativeZero())
+                        return true;
+                    if (x.isNegativeZero() && y.isPositiveZero())
+                        return true;
+                }
+                if (x.numberValue === y.numberValue)
+                    return true;
+                return false;
+            }
+            else {
+                throw new Error("Incorrect JSValue.type (Number); should never get here");
+            }
+        case ValueType.String:
+            if ((x instanceof JSString) && (y instanceof JSString))
+                return (x.stringValue === y.stringValue);
+            else
+                throw new Error("Incorrect JSValue.type (String); should never get here");
+        case ValueType.Boolean:
+            if ((x instanceof JSBoolean) && (y instanceof JSBoolean))
+                return (x.booleanValue == y.booleanValue);
+            else
+                throw new Error("Incorrect JSValue.type (Boolean); should never get here");
+        case ValueType.Object:
+            if ((x instanceof JSObject) && (y instanceof JSObject))
+                return (x === y);
+            else
+                throw new Error("Incorrect JSValue.type (Object); should never get here");
+    }
+
+    throw new Error("Unhandled case; should never get here");
 }
 
 // ES6 Section 7.2.11: Abstract Relational Comparison
 
-export function _abstractRelationalComparison(x: any, y: any): Completion<UnknownType> {
-    throw new Error("_abstractRelationalComparison not implemented");
+export function abstractRelationalComparison(x: JSValue, y: JSValue, leftFirst: boolean = true): Completion<JSBoolean | JSUndefined> {
+    
+    throw new Error("abstractRelationalComparison not implemented");
 }
 
 // ES6 Section 7.2.12: Abstract Equality Comparison
