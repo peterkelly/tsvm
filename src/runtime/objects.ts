@@ -41,6 +41,7 @@ import {
 // ES6 Section 9.1: Ordinary Object Internal Methods and Internal Slots
 
 export class JSOrdinaryObject extends JSObject {
+    _nominal_type_JSOrdinaryObject: any;
     public __prototype__: JSObject | JSNull;
     public __extensible__: JSBoolean
 
@@ -121,6 +122,9 @@ export class JSOrdinaryObject extends JSObject {
     }
 }
 
+export abstract class JSExoticObject extends JSObject {
+    _nominal_type_JSExoticObject: any;
+}
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
@@ -303,7 +307,7 @@ export function SetFunctionName(F: JSFunctionObject, name: string, prefix: strin
     throw new Error("SetFunctionName Not implemented");
 }
 
-// ES6 Section 9.2.12: FunctionDeclarationInstantiation(func, argumentsList)
+// ES6 Section 9.2.12: FunctionDeclarationInstantiation (func, argumentsList)
 
 export function FunctionDeclarationInstantiation(func: JSFunctionObject, argumentsList: any[]) {
     throw new Error("FunctionDeclarationInstantiation Not implemented");
@@ -311,10 +315,226 @@ export function FunctionDeclarationInstantiation(func: JSFunctionObject, argumen
 
 // ES6 Section 9.3: Built-in Function Objects
 
-// ES6 Section 9.3.3: CreateBuiltinFunction(realm, steps, prototype, internalSlotsList)
+// ES6 Section 9.3.3: CreateBuiltinFunction (realm, steps, prototype, internalSlotsList)
 
 export function CreateBuiltinFunction(realm: Realm, steps: any, prototype: any, internalSlotsList: any): Completion<UnknownType> {
     throw new Error("CreateBuiltinFunction Not implemented");
 }
+
+// ES6 Section 9.4: Built-in Exotic Object Internal Methods and Slots
+
+// ES6 Section 9.4.1: Bound Function Exotic Objects
+
+// ES6 Section 9.4.1.1: [[Call]] (thisArgument, argumentsList)
+
+// TODO
+
+// ES6 Section 9.4.1.2: [[Construct]] (argumentsList, newTarget)
+
+// TODO
+
+// ES6 Section 9.4.1.3: BoundFunctionCreate (targetFunction, boundThis, boundArgs)
+
+export function BoundFunctionCreate(targetFunction: any, boundThis: any, boundArgs: any): Completion<UnknownType> {
+    throw new Error("BoundFunctionCreate not implemented");
+}
+
+// ES6 Section 9.4.2: Array Exotic Objects
+
+// ES6 Section 9.4.2.1: [[DefineOwnProperty]] (P, Desc)
+
+// TODO
+
+// ES6 Section 9.4.2.2: ArrayCreate(length, proto)
+
+export function ArrayCreate(length: any, proto: any): Completion<UnknownType> {
+    throw new Error("ArrayCreate not implemented");
+}
+
+// ES6 Section 9.4.2.3: ArraySpeciesCreate(originalArray, length)
+
+export function ArraySpeciesCreate(originalArray: any, length: any): Completion<UnknownType> {
+    throw new Error("ArraySpeciesCreate not implemented");
+}
+
+// ES6 Section 9.4.2.4: ArraySetLength(A, Desc)
+
+export function ArraySetLength(A: any, Desc: any): Completion<UnknownType> {
+    throw new Error("ArraySetLength not implemented");
+}
+
+// ES6 Section 9.4.3: String Exotic Objects
+
+// ES6 Section 9.4.3.1: [[GetOwnProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.3.1.1: StringGetIndexProperty (S, P)
+
+export function StringGetIndexProperty(S: any, P: any): Completion<UnknownType> {
+    throw new Error("StringGetIndexProperty not implemented");
+}
+
+// ES6 Section 9.4.3.2: [[HasProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.3.3: [[OwnPropertyKeys]] ()
+
+// TODO
+
+// ES6 Section 9.4.3.4: StringCreate (value, prototype)
+
+export function StringCreate(value: any, prototype: any): Completion<UnknownType> {
+    throw new Error("StringCreate not implemented");
+}
+
+// ES6 Section 9.4.4: Arguments Exotic Objects
+
+// ES6 Section 9.4.4.1: [[GetOwnProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.4.2: [[DefineOwnProperty]] (P, Desc)
+
+// TODO
+
+// ES6 Section 9.4.4.3: [[Get]] (P, Receiver)
+
+// TODO
+
+// ES6 Section 9.4.4.4: [[Set]] (P, V, Receiver)
+
+// TODO
+
+// ES6 Section 9.4.4.5: [[Delete]] (P)
+
+// TODO
+
+// ES6 Section 9.4.4.6: CreateUnmappedArgumentsObject (argumentsList)
+
+export function CreateUnmappedArgumentsObject(argumentsList: any): Completion<UnknownType> {
+    throw new Error("CreateUnmappedArgumentsObject not implemented");
+}
+
+// ES6 Section 9.4.4.7: CreateMappedArgumentsObject (func, formals, argumentsList, env)
+
+export function CreateMappedArgumentsObject(func: any, formals: any, argumentsList: any, env: any): Completion<UnknownType> {
+    throw new Error("CreateMappedArgumentsObject not implemented");
+}
+
+// ES6 Section 9.4.4.7.1: MakeArgGetter (name, env)
+
+export function MakeArgGetter(name: any, env: any): Completion<UnknownType> {
+    throw new Error("MakeArgGetter not implemented");
+}
+
+// ES6 Section 9.4.4.7.2: MakeArgSetter (name, env)
+
+export function MakeArgSetter(name: any, env: any): Completion<UnknownType> {
+    throw new Error("MakeArgSetter not implemented");
+}
+
+// ES6 Section 9.4.5: Integer Indexed Exotic Objects
+
+// ES6 Section 9.4.5.1: [[GetOwnProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.5.2: [[HasProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.5.3: [[DefineOwnProperty]] (P, Desc)
+
+// TODO
+
+// ES6 Section 9.4.5.4: [[Get]] (P, Receiver)
+
+// TODO
+
+// ES6 Section 9.4.5.5: [[Set]] (P, V, Receiver)
+
+// TODO
+
+// ES6 Section 9.4.5.6: [[OwnPropertyKeys]] ()
+
+// TODO
+
+// ES6 Section 9.4.5.7: IntegerIndexedObjectCreate (prototype, internalSlotsList)
+
+export function IntegerIndexedObjectCreate(prototype: any, internalSlotsList: any): Completion<UnknownType> {
+    throw new Error("IntegerIndexedObjectCreate not implemented");
+}
+
+// ES6 Section 9.4.5.8: IntegerIndexedElementGet (O, index)
+
+export function IntegerIndexedElementGet(O: any, index: any): Completion<UnknownType> {
+    throw new Error("IntegerIndexedElementGet not implemented");
+}
+
+// ES6 Section 9.4.5.9: IntegerIndexedElementSet (O, index, value)
+
+export function IntegerIndexedElementSet(O: any, index: any, value: any): Completion<UnknownType> {
+    throw new Error("IntegerIndexedElementGet not implemented");
+}
+
+// ES6 Section 9.4.6: Module Namespace Exotic Objects
+
+// ES6 Section 9.4.6.1: [[GetPrototypeOf]] ()
+
+// TODO
+
+// ES6 Section 9.4.6.2: [[SetPrototypeOf]] (V)
+
+// TODO
+
+// ES6 Section 9.4.6.3: [[IsExtensible]] ()
+
+// TODO
+
+// ES6 Section 9.4.6.4: [[PreventExtensions]] ()
+
+// TODO
+
+// ES6 Section 9.4.6.5: [[GetOwnProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.6.6: [[DefineOwnProperty]] (P, Desc)
+
+// TODO
+
+// ES6 Section 9.4.6.7: [[HasProperty]] (P)
+
+// TODO
+
+// ES6 Section 9.4.6.8: [[Get]] (P, Receiver)
+
+// TODO
+
+// ES6 Section 9.4.6.9: [[Set]] (P, V, Receiver)
+
+// TODO
+
+// ES6 Section 9.4.6.10: [[Delete]] (P)
+
+// TODO
+
+// ES6 Section 9.4.6.11: [[Enumerate]] ()
+
+// TODO
+
+// ES6 Section 9.4.6.12: [[OwnPropertyKeys]] ()
+
+// TODO
+
+// ES6 Section 9.4.6.13: ModuleNamespaceCreate (module, exports)
+
+export function ModuleNamespaceCreate(module: any, exports: any): Completion<UnknownType> {
+    throw new Error("ModuleNamespaceCreate not implemented");
+}
+
+// ES6 Section 9.5: Proxy Object Internal Methods and Internal Slots
 
 // TODO

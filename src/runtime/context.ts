@@ -545,7 +545,7 @@ export class ExecutionContext {
 
     // ES6 Section 8.3.1: ResolveBinding (name, [env])
 
-    public ResolveBinding(name: JSString, env?: LexicalEnvironment | undefined ): Completion<UnknownType> {
+    public ResolveBinding(name: JSString, env?: LexicalEnvironment | undefined ): Completion<JSValue> {
         throw new Error("ExecutionContext.ResolveBinding not implemented");
     }
 
@@ -557,7 +557,7 @@ export class ExecutionContext {
 
     // ES6 Section 8.3.3: ResolveThisBinding ()
 
-    public ResolveThisBinding(): Completion<UnknownType> {
+    public ResolveThisBinding(): Completion<JSValue> {
         throw new Error("ExecutionContext.ResolveThisBinding not implemented");
     }
 
