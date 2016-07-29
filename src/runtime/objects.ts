@@ -38,103 +38,19 @@ import {
     ASTNode,
 } from "../parser/ast";
 
-// ES6 Section 9.1: Ordinary Object Internal Methods and Internal Slots
-
-export class JSOrdinaryObject extends JSObject {
-    _nominal_type_JSOrdinaryObject: any;
-    public __prototype__: JSObject | JSNull;
-    public __extensible__: JSBoolean
-
-    public constructor() {
-        super();
-    }
-
-    // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
-
-    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
-        throw new Error("JSOrdinaryObject.__GetPrototypeOf__ Not implemented");
-    }
-
-    // ES6 Section 9.1.2: [[SetPrototypeOf]] (V)
-
-    public __SetPrototypeOf__(prototype: JSObject | JSNull): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__SetPrototypeOf__ Not implemented");
-    }
-
-    // ES6 Section 9.1.3: [[IsExtensible]] ()
-
-    public __IsExtensible__(): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__IsExtensible__ Not implemented");
-    }
-
-    // ES6 Section 9.1.4: [[PreventExtensions]] ()
-
-    public __PreventExtensions__(): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__PreventExtensions__ Not implemented");
-    }
-
-    // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
-
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
-        throw new Error("JSOrdinaryObject.__GetOwnProperty__ Not implemented");
-    }
-
-    // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
-
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__DefineOwnProperty__ Not implemented");
-    }
-
-    // ES6 Section 9.1.7: [[HasProperty]](P)
-
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__HasProperty__ Not implemented");
-    }
-
-    // ES6 Section 9.1.8: [[Get]] (P, Receiver)
-
-    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<UnknownType> {
-        throw new Error("JSOrdinaryObject.__Get__ Not implemented");
-    }
-
-    // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
-
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__Set__ Not implemented");
-    }
-
-    // ES6 Section 9.1.10: [[Delete]] (P)
-
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean> {
-        throw new Error("JSOrdinaryObject.__Delete__ Not implemented");
-    }
-
-    // ES6 Section 9.1.11: [[Enumerate]] ()
-
-    public __Enumerate__(): Completion<JSObject> {
-        throw new Error("JSOrdinaryObject.__Enumerate__ Not implemented");
-    }
-
-    // ES6 Section 9.1.12: [[OwnPropertyKeys]] ()
-
-    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
-        throw new Error("JSOrdinaryObject.__OwnPropertyKeys__ Not implemented");
-    }
-}
-
 export abstract class JSExoticObject extends JSObject {
     _nominal_type_JSExoticObject: any;
 }
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
-export function OrdinaryGetOwnProperty(O: JSOrdinaryObject, P: JSPropertyKey): Completion<UnknownType> {
+export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("OrdinaryGetOwnProperty Not implemented");
 }
 
 // ES6 Section 9.1.6.1: OrdinaryDefineOwnProperty (O, P, Desc)
 
-export function OrdinaryDefineOwnProperty(O: JSOrdinaryObject, P: JSPropertyKey, Desc: Property): Completion<UnknownType> {
+export function OrdinaryDefineOwnProperty(O: JSObject, P: JSPropertyKey, Desc: Property): Completion<UnknownType> {
     throw new Error("OrdinaryDefineOwnProperty Not implemented");
 }
 
@@ -147,7 +63,7 @@ export function IsCompatiblePropertyDescriptor(Extensible: boolean, Desc: Proper
 // ES6 Section 9.1.6.3: ValidateAndApplyPropertyDescriptor (O, P, extensible, Desc, current)
 
 export function ValidateAndApplyPropertyDescriptor(
-    O: JSOrdinaryObject,
+    O: JSObject,
     P: JSPropertyKey,
     extensible: boolean,
     Desc: Property,
@@ -157,7 +73,7 @@ export function ValidateAndApplyPropertyDescriptor(
 
 // ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
 
-export function OrdinaryHasProperty(O: JSOrdinaryObject, P: JSPropertyKey): Completion<UnknownType> {
+export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
     throw new Error("OrdinaryHasProperty Not implemented");
 }
 
@@ -198,7 +114,7 @@ export enum ConstructorKind {
     Derived,
 }
 
-export class JSFunctionObject extends JSOrdinaryObject {
+export class JSFunctionObject extends JSObject {
     _nominal_type_JSFunctionObject: any;
     public environment: LexicalEnvironment;
     public formalParameters: ASTNode;

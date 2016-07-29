@@ -47,9 +47,6 @@ import {
     DataBlock,
 } from "./datatypes";
 import {
-    JSOrdinaryObject,
-} from "./objects";
-import {
     ExecutionContext,
 } from "./context";
 import {
