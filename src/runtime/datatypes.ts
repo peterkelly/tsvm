@@ -113,7 +113,7 @@ export class JSString extends JSPropertyKey {
 export class JSSymbol extends JSPropertyKey {
     _nominal_type_JSSymbol: any;
     public readonly description: JSString | JSUndefined;
-    private readonly symbolId: number;
+    public readonly symbolId: number;
     private static nextSymbolId: number = 1;
     public constructor(description: JSString | JSUndefined) {
         super();
@@ -152,13 +152,19 @@ export class JSNumber extends JSPrimitiveValue {
     public get type(): ValueType {
         return ValueType.Number;
     }
-    public isNaN(): boolean {
+    public get isNaN(): boolean {
         return isNaN(this.numberValue);
     }
-    public isPositiveZero(): boolean {
+    public get isPositiveZero(): boolean {
         return (this.numberValue == 0); // FIXME
     }
-    public isNegativeZero(): boolean {
+    public get isNegativeZero(): boolean {
+        return false; // FIXME
+    }
+    public get isPositiveInfinity(): boolean {
+        return false; // FIXME
+    }
+    public get isNegativeInfinity(): boolean {
         return false; // FIXME
     }
 }

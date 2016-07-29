@@ -220,20 +220,20 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
             return true;
         case ValueType.Number:
             if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
-                if (x.isNaN() && y.isNaN())
+                if (x.isNaN && y.isNaN)
                     return true;
                 if (!zero) {
                     // Logic for the SameValue operation
-                    if (x.isPositiveZero() && y.isNegativeZero())
+                    if (x.isPositiveZero && y.isNegativeZero)
                         return false;
-                    if (x.isNegativeZero() && y.isPositiveZero())
+                    if (x.isNegativeZero && y.isPositiveZero)
                         return false;
                 }
                 else {
                     // Logic for the SameValueZero operation
-                    if (x.isPositiveZero() && y.isNegativeZero())
+                    if (x.isPositiveZero && y.isNegativeZero)
                         return true;
-                    if (x.isNegativeZero() && y.isPositiveZero())
+                    if (x.isNegativeZero && y.isPositiveZero)
                         return true;
                 }
                 if (x.numberValue === y.numberValue)
@@ -266,20 +266,135 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
 // ES6 Section 7.2.11: Abstract Relational Comparison
 
 export function abstractRelationalComparison(x: JSValue, y: JSValue, leftFirst: boolean = true): Completion<JSBoolean | JSUndefined> {
-    
-    throw new Error("abstractRelationalComparison not implemented");
+    let px: JSValue;
+    let py: JSValue;
+    if (leftFirst) {
+        const pxComp = ToPrimitive(x,ValueType.Number);
+        if (!(pxComp instanceof NormalCompletion))
+            return pxComp;
+        px = pxComp.value;
+        const pyComp = ToPrimitive(y,ValueType.Number);
+        if (!(pyComp instanceof NormalCompletion))
+            return pyComp;
+        py = pyComp.value;
+    }
+    else {
+        const pyComp = ToPrimitive(y,ValueType.Number);
+        if (!(pyComp instanceof NormalCompletion))
+            return pyComp;
+        py = pyComp.value;
+        const pxComp = ToPrimitive(x,ValueType.Number);
+        if (!(pxComp instanceof NormalCompletion))
+            return pxComp;
+        px = pxComp.value;
+    }
+    if ((px instanceof JSString) && (py instanceof JSString)) {
+        return new NormalCompletion(new JSBoolean(stringLessThan(px,px)));
+    }
+    else {
+        const nxComp = ToNumber(px);
+        if (!(nxComp instanceof NormalCompletion))
+            return nxComp;
+        const nx = nxComp.value;
+        const nyComp = ToNumber(py);
+        if (!(nyComp instanceof NormalCompletion))
+            return nyComp;
+        const ny = nyComp.value;
+        if (nx.isNaN)
+            return new NormalCompletion(new JSUndefined());
+        if (ny.isNaN)
+            return new NormalCompletion(new JSUndefined());
+        if (nx.numberValue === ny.numberValue)
+            return new NormalCompletion(new JSBoolean(false));
+        if (nx.isPositiveZero && ny.isNegativeZero)
+            return new NormalCompletion(new JSBoolean(false));
+        if (nx.isNegativeZero && ny.isPositiveZero)
+            return new NormalCompletion(new JSBoolean(false));
+        if (nx.isPositiveInfinity)
+            return new NormalCompletion(new JSBoolean(false));
+        if (ny.isPositiveInfinity)
+            return new NormalCompletion(new JSBoolean(true));
+        if (ny.isNegativeInfinity)
+            return new NormalCompletion(new JSBoolean(false));
+        if (nx.isNegativeInfinity)
+            return new NormalCompletion(new JSBoolean(true));
+        const result = (nx.numberValue < ny.numberValue);
+        return new NormalCompletion(new JSBoolean(result));
+    }
+}
+
+function stringLessThan(x: JSString, y: JSString): boolean {
+    // FIXME: Use a lower-level algorithm that can be more easily translated to native code
+    return (x.stringValue < y.stringValue);
 }
 
 // ES6 Section 7.2.12: Abstract Equality Comparison
 
-export function _abstractEqualityComparison(x: any, y: any): Completion<UnknownType> {
+export function abstractEqualityComparison(x: any, y: any): Completion<UnknownType> {
     throw new Error("_abstractEqualityComparison not implemented");
 }
 
 // ES6 Section 7.2.13: Strict Equality Comparison
 
-export function _strictEqualityComparison(x: any, y: any): Completion<UnknownType> {
-    throw new Error("_strictEqualityComparison not implemented");
+export function strictEqualityComparison(x: JSValue, y: JSValue): boolean {
+    if (x.type != y.type)
+        return false;
+    switch (x.type) {
+        case ValueType.Undefined:
+            return true;
+        case ValueType.Null:
+            return true;
+        case ValueType.Number:
+            if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
+                if (x.isNaN)
+                    return false;
+                if (y.isNaN)
+                    return false;
+                if (isSameNumberValue(x,y))
+                    return true;
+                if (x.isPositiveZero && y.isNegativeZero)
+                    return true;
+                if (x.isNegativeZero && y.isPositiveZero)
+                    return true;
+                return false;
+            }
+            else {
+                throw new Error("Incorrect JSValue.type (Number); should never get here");
+            }
+        case ValueType.String:
+            if ((x instanceof JSString) && (y instanceof JSString)) {
+                // FIXME: Define a set of functions for primitive operations like this that the
+                // runtime must supply itself, so we're not relying on the host JS implementation
+                // within our own implementation functions.
+                return (x.stringValue === y.stringValue);
+            }
+            else {
+                throw new Error("Incorrect JSValue.type (String); should never get here");
+            }
+        case ValueType.Boolean:
+            if ((x instanceof JSBoolean) && (y instanceof JSBoolean)) {
+                return (x.booleanValue == y.booleanValue);
+            }
+            else {
+                throw new Error("Incorrect JSValue.type (Boolean); should never get here");
+            }
+        case ValueType.Symbol:
+            if ((x instanceof JSSymbol) && (y instanceof JSSymbol))
+                return (x.symbolId === y.symbolId);
+            else
+                throw new Error("Incorrect JSValue.type (Symbol); should never get here");
+        case ValueType.Object:
+            return (x === y);
+    }
+
+    throw new Error("Unhandled case; should never get here");
+}
+
+function isSameNumberValue(x: JSNumber, y: JSNumber) {
+    // This calls through to the host JS engine's strict equality comparison, even though we
+    // call it from our own. However the only cases we manually check for are positive & negative
+    // zeros, which this will already give the correct result for.
+    return (x.numberValue === y.numberValue);
 }
 
 // ES6 Section 7.3: Operations on Objects
