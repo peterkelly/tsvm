@@ -25,6 +25,7 @@ import {
     JSNumber,
     JSObject,
     Completion,
+    NormalCompletion,
     ThrowCompletion,
     Intrinsics,
     PropertyDescriptor,
@@ -32,12 +33,18 @@ import {
 } from "./datatypes";
 import {
     LexicalEnvironment,
+    EnvironmentRecord,
     ExecutionContext,
     Realm,
 } from "./context";
 import {
     ASTNode,
 } from "../parser/ast";
+import {
+    ArgSetterFunction,
+    ArgGetterFunction,
+    ThrowTypeErrorFunction,
+} from "./builtins";
 
 export abstract class JSExoticObject extends JSObject {
     _nominal_type_JSExoticObject: any;
@@ -346,14 +353,16 @@ export function CreateMappedArgumentsObject(func: any, formals: any, argumentsLi
 
 // ES6 Section 9.4.4.7.1: MakeArgGetter (name, env)
 
-export function MakeArgGetter(name: any, env: any): Completion<UnknownType> {
-    throw new Error("MakeArgGetter not implemented");
+export function MakeArgGetter(realm: Realm, name: string, env: EnvironmentRecord): Completion<JSValue> {
+    const fun = new ArgGetterFunction(realm,name,env);
+    return new NormalCompletion(fun);
 }
 
 // ES6 Section 9.4.4.7.2: MakeArgSetter (name, env)
 
-export function MakeArgSetter(name: any, env: any): Completion<UnknownType> {
-    throw new Error("MakeArgSetter not implemented");
+export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord): Completion<JSValue> {
+    const fun = new ArgSetterFunction(realm,name,env);
+    return new NormalCompletion(fun);
 }
 
 // ES6 Section 9.4.5: Integer Indexed Exotic Objects

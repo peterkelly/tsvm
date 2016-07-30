@@ -492,6 +492,18 @@ export class DataDescriptor extends BaseDescriptor {
     }
 }
 
+export function newDataDescriptor(options: {
+    enumerable: boolean,
+    configurable: boolean,
+    value: JSValue,
+    writable: boolean
+}): DataDescriptor {
+    const desc = new DataDescriptor(options.value,options.writable);
+    desc.enumerable = options.enumerable;
+    desc.configurable = options.configurable;
+    return desc;
+}
+
 export class AccessorDescriptor extends BaseDescriptor {
     _nominal_type_AccessorDescriptor: any;
     public __get__: JSObject | JSUndefined = new JSUndefined;
@@ -499,6 +511,20 @@ export class AccessorDescriptor extends BaseDescriptor {
     public constructor() {
         super();
     }
+}
+
+export function newAccessorDescriptor(options: {
+    enumerable: boolean,
+    configurable: boolean,
+    __get__: JSObject | JSUndefined,
+    __set__: JSObject | JSUndefined,
+}): AccessorDescriptor {
+    const desc = new AccessorDescriptor();
+    desc.__get__ = options.__get__;
+    desc.__set__ = options.__set__;
+    desc.enumerable = options.enumerable;
+    desc.configurable = options.configurable;
+    return desc;
 }
 
 // ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
