@@ -38,10 +38,16 @@ import {
     ThisMode,
     intrinsic_ThrowTypeError,
     intrinsic_ThrowReferenceError,
+    ObjectCreate,
 } from "./objects";
 import {
     HasProperty,
 } from "./operations";
+import {
+    ThrowTypeErrorFunction,
+    FunctionPrototypeFunction,
+} from "./builtins";
+
 
 // ES6 Section 8.1: Lexical Environments
 
@@ -619,6 +625,9 @@ export function CreateRealm(): Realm {
 // ES6 Section 8.2.2: CreateIntrinsics (realmRec)
 
 export function CreateIntrinsics(realmRec: Realm): Completion<UnknownType> {
+    const objProto = new JSObject();
+    
+
     throw new Error("CreateIntrinsics not implemented");
 }
 

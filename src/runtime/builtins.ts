@@ -129,3 +129,12 @@ export class TypeErrorObject extends JSObject {
         });
     }
 }
+
+export class FunctionPrototypeFunction extends BuiltinFunction {
+    public constructor(realm: Realm) {
+        super(realm);
+    }
+    public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
+        return new NormalCompletion(new JSUndefined());
+    }
+}

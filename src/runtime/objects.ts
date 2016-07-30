@@ -44,6 +44,7 @@ import {
     ArgSetterFunction,
     ArgGetterFunction,
     ThrowTypeErrorFunction,
+    FunctionPrototypeFunction,
 } from "./builtins";
 
 export abstract class JSExoticObject extends JSObject {
@@ -87,8 +88,11 @@ export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<U
 
 // ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
 
-export function ObjectCreate(proto: JSObject | JSNull, internalSlotsList: string[]): Completion<UnknownType> {
-    throw new Error("ObjectCreate Not implemented");
+export function ObjectCreate(proto: JSObject | JSNull/*, internalSlotsList: string[]*/): JSObject {
+    const obj = new JSObject();
+    obj.__prototype__ = proto;
+    obj.__extensible__ = true; // not really necessary; JSObjects are extensible by default
+    return obj;
 }
 
 // ES6 Section 9.1.14: OrdinaryCreateFromConstructor (constructor, intrinsicDefaultProto, internalSlotsList)
