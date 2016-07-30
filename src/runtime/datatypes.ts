@@ -233,19 +233,19 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(P: JSString | JSSymbol, copy: boolean = true): Completion<JSUndefined | PropertyDescriptor> {
+    public __GetOwnProperty__(P: JSPropertyKey, copy: boolean = true): Completion<JSUndefined | PropertyDescriptor> {
         return new NormalCompletion(OrdinaryGetOwnProperty(this,P,copy));
     }
 
     // ES6 Section 9.1.7: [[HasProperty]](P)
 
-    public __HasProperty__(P: JSString | JSSymbol): Completion<boolean> {
+    public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
         return OrdinaryHasProperty(this,P);
     }
 
     // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
-    public __Get__(P: JSString | JSSymbol, Receiver: JSValue): Completion<JSValue> {
+    public __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
         const descComp = this.__GetOwnProperty__(P,false);
         if (!(descComp instanceof NormalCompletion))
             return descComp;
@@ -272,7 +272,7 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
-    public __Set__(P: JSString | JSSymbol, V: JSValue, Receiver: JSValue): Completion<boolean> {
+    public __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
         const O = this;
         const ownDescComp = O.__GetOwnProperty__(P,false);
         if (!(ownDescComp instanceof NormalCompletion))
@@ -327,7 +327,7 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.10: [[Delete]] (P)
 
-    public __Delete__(P: JSString | JSSymbol): Completion<boolean> {
+    public __Delete__(P: JSPropertyKey): Completion<boolean> {
         const descComp = this.__GetOwnProperty__(P);
         if (!(descComp instanceof NormalCompletion))
             return descComp;
@@ -343,7 +343,7 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: PropertyDescriptor): Completion<boolean> {
+    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
         throw new Error("JSObject.__DefineOwnProperty__ not implemented");
     }
 
@@ -362,7 +362,7 @@ export class JSObject extends JSValue {
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
-export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol, copy: boolean = true): JSUndefined | PropertyDescriptor {
+export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey, copy: boolean = true): JSUndefined | PropertyDescriptor {
     // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
     // where we can avoid doing so.
     const stringKey = P.stringRep;
@@ -389,7 +389,7 @@ export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol, copy
 
 // ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
 
-export function OrdinaryHasProperty(O: JSObject, P: JSString | JSSymbol): Completion<boolean> {
+export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<boolean> {
     const hasOwn = OrdinaryGetOwnProperty(O,P);
     if (!(hasOwn instanceof JSUndefined))
         return new NormalCompletion(true);
@@ -668,15 +668,15 @@ export class ThrowCompletion {
 
 // ES6 Section 6.2.3: The Reference Specification Type
 
-type ReferenceBase = JSUndefined | JSObject | JSBoolean | JSString | JSSymbol | JSNumber | EnvironmentRecord;
-type SuperReferenceBase = JSUndefined | JSObject | JSBoolean | JSString | JSSymbol | JSNumber;
+type ReferenceBase = JSUndefined | JSObject | JSBoolean | JSPropertyKey | JSNumber | EnvironmentRecord;
+type SuperReferenceBase = JSUndefined | JSObject | JSBoolean | JSPropertyKey | JSNumber;
 
 export class Reference {
     _nominal_type_Reference: any;
     public base: ReferenceBase;
-    public name: JSString | JSSymbol;
+    public name: JSPropertyKey;
     public strict: JSBoolean;
-    public constructor(base: ReferenceBase, name: JSString | JSSymbol, strict: JSBoolean) {
+    public constructor(base: ReferenceBase, name: JSPropertyKey, strict: JSBoolean) {
         this.base = base;
         this.name = name;
         this.strict = strict;
@@ -686,7 +686,7 @@ export class Reference {
 export class SuperReference extends Reference {
     _nominal_type_SuperReference: any;
     public thisValue: JSValue;
-    public constructor(base: SuperReferenceBase, name: JSString | JSSymbol, strict: JSBoolean) {
+    public constructor(base: SuperReferenceBase, name: JSPropertyKey, strict: JSBoolean) {
         super(base,name,strict);
         this.thisValue = new JSUndefined();
     }
@@ -696,7 +696,7 @@ export function GetBase(V: Reference): ReferenceBase {
     return V.base;
 }
 
-export function GetReferencedName(V: Reference): JSString | JSSymbol {
+export function GetReferencedName(V: Reference): JSPropertyKey {
     return V.name;
 }
 

@@ -39,6 +39,9 @@ import {
     intrinsic_ThrowTypeError,
     intrinsic_ThrowReferenceError,
 } from "./objects";
+import {
+    HasProperty,
+} from "./operations";
 
 // ES6 Section 8.1: Lexical Environments
 
@@ -61,6 +64,7 @@ export abstract class EnvironmentRecord {
     public constructor() {
     }
 
+    // FIXME: I believe this can just return a boolean, not a completion
     public abstract HasBinding(N: string): Completion<boolean>;
 
     public abstract CreateMutableBinding(N: string, D: boolean): void;
@@ -219,16 +223,29 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 export class ObjectEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_ObjectEnvironmentRecord: any;
     public bindingObject: JSObject;
+    // public withEnvironment: boolean;
 
     public constructor(bindingObject: JSObject) {
         super();
         this.bindingObject = bindingObject;
+        // this.withEnvironment = false;
     }
 
     // ES6 Section 8.1.1.2.1: HasBinding(N)
 
     public HasBinding(N: string): Completion<boolean> {
-        throw new Error("ObjectEnvironmentRecord.HasBinding not implemented");
+        const envRec = this;
+        const bindings = envRec.bindingObject;
+        const foundBindingComp = HasProperty(bindings,new JSString(N));
+        if (!(foundBindingComp instanceof NormalCompletion))
+            return foundBindingComp;
+        const foundBinding = foundBindingComp.value;
+        if (!foundBinding)
+            return new NormalCompletion(false);
+        // if (!envRec.withEnvironment)
+            return new NormalCompletion(true);
+        // FIXME: Unscopables
+        // throw new Error("ObjectEnvironmentRecord.HasBinding not implemented");
     }
 
     // ES6 Section 8.1.1.2.2: CreateMutableBinding (N, D)
@@ -304,7 +321,6 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     public constructor(F: JSFunctionObject, newTarget: JSUndefined | JSObject) {
         super();
-
         this.functionObject = F;
         if (F.thisMode == ThisMode.Lexical)
             this.thisBindingStatus = BindingStatus.Lexical;
@@ -317,32 +333,52 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     // ES6 Section 8.1.1.3.1: BindThisValue(V)
 
-    public BindThisValue(V: JSValue): Completion<UnknownType> {
-        throw new Error("FunctionEnvironmentRecord.BindThisValue not implemented");
+    public BindThisValue(V: JSValue): Completion<JSValue> {
+        const envRec = this;
+        if (envRec.thisBindingStatus == BindingStatus.Lexical)
+            throw new Error("FunctionEnvironmentRecord.BindThisValue: thisBindingStatus is Lexical");
+        if (envRec.thisBindingStatus == BindingStatus.Initialized)
+            return intrinsic_ThrowReferenceError();
+        envRec.thisValue = V;
+        envRec.thisBindingStatus = BindingStatus.Initialized;
+        return new NormalCompletion(V);
     }
 
     // ES6 Section 8.1.1.3.2: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("FunctionEnvironmentRecord.HasThisBinding not implemented");
+        const envRec = this;
+        const result = (envRec.thisBindingStatus != BindingStatus.Lexical);
+        return new NormalCompletion(result);
     }
 
     // ES6 Section 8.1.1.3.3: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("FunctionEnvironmentRecord.HasSuperBinding not implemented");
+        const envRec = this;
+        const result = (envRec.thisBindingStatus != BindingStatus.Lexical);
+        return new NormalCompletion(result);
     }
 
     // ES6 Section 8.1.1.3.4: GetThisBinding ()
 
-    public GetThisBinding(): Completion<UnknownType> {
-        throw new Error("FunctionEnvironmentRecord.GetThisBinding not implemented");
+    public GetThisBinding(): Completion<JSValue> {
+        const envRec = this;
+        if (envRec.thisBindingStatus == BindingStatus.Lexical)
+            throw new Error("FunctionEnvironmentRecord.GetThisBinding: thisBindingStatus is Lexical");
+        if (envRec.thisBindingStatus == BindingStatus.Uninitialized)
+            return intrinsic_ThrowReferenceError();
+        return new NormalCompletion(envRec.thisValue);
     }
 
     // ES6 Section 8.1.1.3.5: GetSuperBase ()
 
-    public GetSuperBase(): Completion<UnknownType> {
-        throw new Error("FunctionEnvironmentRecord.GetSuperBase not implemented");
+    public GetSuperBase(): Completion<JSValue> {
+        const envRec = this;
+        const home = envRec.homeObject;
+        if (home instanceof JSUndefined)
+            return new NormalCompletion(new JSUndefined());
+        return home.__GetPrototypeOf__();
     }
 }
 
@@ -423,7 +459,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
     // ES6 Section 8.1.1.4.11: GetThisBinding ()
 
-    public GetThisBinding(): Completion<UnknownType> {
+    public GetThisBinding(): Completion<JSValue> {
         throw new Error("GlobalEnvironmentRecord.GetThisBinding not implemented");
     }
 
@@ -499,7 +535,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     // ES6 Section 8.1.1.5.4: GetThisBinding ()
 
-    public GetThisBinding(): Completion<UnknownType> {
+    public GetThisBinding(): Completion<JSValue> {
         throw new Error("ModuleEnvironmentRecord.GetThisBinding not implemented");
     }
 

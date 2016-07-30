@@ -83,6 +83,20 @@ export function rt_double_isNegativeInfinity(value: number): boolean {
     return (value === Number.NEGATIVE_INFINITY);
 }
 
+export function rt_double_isInteger(value: number): boolean {
+    if (rt_double_isNaN(value))
+        return false;
+    if (rt_double_isPositiveInfinity(value))
+        return false;
+    if (rt_double_isNegativeInfinity(value))
+        return false;
+    return (Math.floor(Math.abs(value)) === Math.abs(value));
+}
+
+export function rt_double_to_string(value: number): string {
+    return ""+value;
+}
+
 export function rt_string_to_double(value: string): number {
     return new Number(value).valueOf();
 }

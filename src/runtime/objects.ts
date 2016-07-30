@@ -133,13 +133,13 @@ export class JSFunctionObject extends JSObject {
 
     // ES6 Section 9.2.1: [[Call]] (thisArgument, argumentsList)
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<UnknownType> {
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSFunctionObject.__Call__ Not implemented");
     }
 
     // ES6 Section 9.2.2: [[Construct]] (argumentsList, newTarget)
 
-    public __Construct__(args: JSValue[], obj: JSObject): Completion<UnknownType> {
+    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
         throw new Error("JSFunctionObject.__Construct__ Not implemented");
     }
 
