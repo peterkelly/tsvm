@@ -168,7 +168,7 @@ export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
-    public readonly properties: { [key: string]: Property };
+    public readonly properties: { [key: string]: PropertyDescriptor };
     public constructor() {
         super();
         this.__prototype__ = new JSNull();
@@ -233,7 +233,7 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
+    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | PropertyDescriptor> {
         return OrdinaryGetOwnProperty(this,propertyKey);
     }
 
@@ -256,17 +256,14 @@ export class JSObject extends JSValue {
             return parent.__Get__(P,Receiver);
         }
         const desc = this.properties[P.stringRep];
-        if (desc instanceof DataProperty) {
+        if (desc instanceof DataDescriptor) {
             return new NormalCompletion(desc.value);
         }
-        else if (desc instanceof AccessorProperty) {
+        else {
             const getter = desc.__get__;
             if (getter instanceof JSUndefined)
                 return new NormalCompletion(new JSUndefined());
             return Call(getter,Receiver,[]);
-        }
-        else {
-            throw new Error("Unknown Property subclass; should never get here");
         }
     }
 
@@ -288,13 +285,13 @@ export class JSObject extends JSValue {
                 return parent.__Set__(P,V,Receiver);
             }
             else {
-                ownDesc = new DataProperty(new JSUndefined(),true);
+                ownDesc = new DataDescriptor(new JSUndefined(),true);
                 ownDesc.enumerable = true;
                 ownDesc.configurable = true;
             }
         }
 
-        if (ownDesc instanceof DataProperty) {
+        if (ownDesc instanceof DataDescriptor) {
             if (!ownDesc.writable)
                 return new NormalCompletion(false);
             if (!(Receiver instanceof JSObject))
@@ -304,20 +301,18 @@ export class JSObject extends JSValue {
                 return existingDescriptorComp;
             const existingDescriptor = existingDescriptorComp.value;
             if (!(existingDescriptor instanceof JSUndefined)) {
-                if (existingDescriptor instanceof AccessorProperty)
+                if (existingDescriptor instanceof AccessorDescriptor)
                     return new NormalCompletion(false);
-                if (!(existingDescriptor instanceof DataProperty))
-                    throw new Error("Unknown Property subclass; should never get here");
                 if (!(existingDescriptor.writable))
                     return new NormalCompletion(false);
-                const valueDesc = new DataProperty(V,true);
+                const valueDesc = new DataDescriptor(V,true);
                 return Receiver.__DefineOwnProperty__(P,valueDesc);
             }
             else {
                 return CreateDataProperty(Receiver,P,V);
             }
         }
-        else if (ownDesc instanceof AccessorProperty) {
+        else {
             const setter = ownDesc.__set__;
             if (setter instanceof JSUndefined)
                 return new NormalCompletion(false);
@@ -325,9 +320,6 @@ export class JSObject extends JSValue {
             if (!(setterResultComp instanceof NormalCompletion))
                 return setterResultComp;
             return new NormalCompletion(true);
-        }
-        else {
-            throw new Error("Unknown Property subclass; should never get here");
         }
     }
 
@@ -339,7 +331,7 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
-    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: Property): Completion<boolean> {
+    public __DefineOwnProperty__(propertyKey: JSString | JSSymbol, property: PropertyDescriptor): Completion<boolean> {
         throw new Error("JSObject.__DefineOwnProperty__ not implemented");
     }
 
@@ -356,29 +348,26 @@ export class JSObject extends JSValue {
     }
 }
 
-export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol): Completion<JSUndefined | Property> {
+export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol): Completion<JSUndefined | PropertyDescriptor> {
     // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
     // where we can avoid doing so.
     const stringKey = P.stringRep;
     if (!(stringKey in O.properties))
         return new NormalCompletion(new JSUndefined());
     const X = O.properties[stringKey];
-    if (X instanceof DataProperty) {
-        const D = new DataProperty(X.value,X.writable);
-        D.enumerable = X.enumerable;
-        D.configurable = X.configurable;
-        return new NormalCompletion(D);
-    }
-    else if (X instanceof AccessorProperty) {
-        const D = new AccessorProperty();
-        D.__get__ = X.__get__;
-        D.__set__ = X.__set__;
+    if (X instanceof DataDescriptor) {
+        const D = new DataDescriptor(X.value,X.writable);
         D.enumerable = X.enumerable;
         D.configurable = X.configurable;
         return new NormalCompletion(D);
     }
     else {
-        throw new Error("Unknown Property subclass; should never get here");
+        const D = new AccessorDescriptor();
+        D.__get__ = X.__get__;
+        D.__set__ = X.__set__;
+        D.enumerable = X.enumerable;
+        D.configurable = X.configurable;
+        return new NormalCompletion(D);
     }
 }
 
@@ -469,7 +458,9 @@ export class JSUInt8 extends JSInteger {
 
 // ES6 Section 6.1.7.1: Property Attributes
 
-export abstract class Property {
+export type PropertyDescriptor = DataDescriptor | AccessorDescriptor;
+
+export abstract class BaseDescriptor {
     _nominal_type_Property: any;
     public enumerable: boolean = true;
     public configurable: boolean = true;
@@ -477,8 +468,8 @@ export abstract class Property {
     }
 }
 
-export class DataProperty extends Property {
-    _nominal_type_DataProperty: any;
+export class DataDescriptor extends BaseDescriptor {
+    _nominal_type_DataDescriptor: any;
     public value: JSValue;
     public writable: boolean;
     public constructor(value: JSValue, writable: boolean) {
@@ -488,8 +479,8 @@ export class DataProperty extends Property {
     }
 }
 
-export class AccessorProperty extends Property {
-    _nominal_type_AccessorProperty: any;
+export class AccessorDescriptor extends BaseDescriptor {
+    _nominal_type_AccessorDescriptor: any;
     public __get__: JSObject | JSUndefined = new JSUndefined;
     public __set__: JSObject | JSUndefined = new JSUndefined;
     public constructor() {
@@ -747,25 +738,29 @@ export function InitializeReferencedBinding(V: any): Completion<UnknownType> {
 
 // ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
 
-export function IsAccessorDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
-    throw new Error("IsAccessorDescriptor not implemented");
+export function IsAccessorDescriptor(Desc: PropertyDescriptor): Desc is AccessorDescriptor {
+    return (Desc instanceof AccessorDescriptor);
 }
 
 // ES6 Section 6.2.4.2: IsDataDescriptor (Desc)
 
-export function IsDataDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
-    throw new Error("IsDataDescriptor not implemented");
+export function IsDataDescriptor(Desc: PropertyDescriptor): Desc is DataDescriptor {
+    return (Desc instanceof DataDescriptor);
 }
 
 // ES6 Section 6.2.4.3: IsGenericDescriptor (Desc)
 
-export function IsGenericDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
-    throw new Error("IsGenericDescriptor not implemented");
+export function IsGenericDescriptor(Desc: BaseDescriptor | JSUndefined): boolean {
+    if (Desc instanceof JSUndefined)
+        return false;
+    if (!(Desc instanceof AccessorDescriptor) && !(Desc instanceof DataDescriptor))
+        return true;
+    return false;
 }
 
 // ES6 Section 6.2.4.4: FromPropertyDescriptor (Desc)
 
-export function FromPropertyDescriptor(Desc: Property | JSUndefined): Completion<UnknownType> {
+export function FromPropertyDescriptor(Desc: PropertyDescriptor): Completion<UnknownType> {
     throw new Error("FromPropertyDescriptor not implemented");
 }
 

@@ -32,7 +32,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    Property,
+    PropertyDescriptor,
     UnknownType,
 } from "./datatypes";
 import {
@@ -459,7 +459,7 @@ export function CreateDataPropertyOrThrow(O: JSObject, P: JSPropertyKey, V: JSVa
 
 // ES6 Section 7.3.7: DefinePropertyOrThrow (O, P, desc)
 
-export function DefinePropertyOrThrow(O: JSObject, P: JSPropertyKey, desc: Property): Completion<UnknownType> {
+export function DefinePropertyOrThrow(O: JSObject, P: JSPropertyKey, desc: PropertyDescriptor): Completion<UnknownType> {
     throw new Error("DefinePropertyOrThrow not implemented");
 }
 
