@@ -233,20 +233,24 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | PropertyDescriptor> {
-        return OrdinaryGetOwnProperty(this,propertyKey);
+    public __GetOwnProperty__(P: JSString | JSSymbol, copy: boolean = true): Completion<JSUndefined | PropertyDescriptor> {
+        return new NormalCompletion(OrdinaryGetOwnProperty(this,P,copy));
     }
 
     // ES6 Section 9.1.7: [[HasProperty]](P)
 
-    public __HasProperty__(propertyKey: JSString | JSSymbol): Completion<boolean> {
-        throw new Error("JSObject.__HasProperty__ not implemented");
+    public __HasProperty__(P: JSString | JSSymbol): Completion<boolean> {
+        return OrdinaryHasProperty(this,P);
     }
 
     // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
     public __Get__(P: JSString | JSSymbol, Receiver: JSValue): Completion<JSValue> {
-        if (!(P.stringRep in this.properties)) {
+        const descComp = this.__GetOwnProperty__(P,false);
+        if (!(descComp instanceof NormalCompletion))
+            return descComp;
+        const desc = descComp.value;
+        if (desc instanceof JSUndefined) {
             const parentComp = this.__GetPrototypeOf__();
             if (!(parentComp instanceof NormalCompletion))
                 return parentComp;
@@ -255,8 +259,7 @@ export class JSObject extends JSValue {
                 return new NormalCompletion(new JSUndefined());
             return parent.__Get__(P,Receiver);
         }
-        const desc = this.properties[P.stringRep];
-        if (desc instanceof DataDescriptor) {
+        else if (desc instanceof DataDescriptor) {
             return new NormalCompletion(desc.value);
         }
         else {
@@ -270,9 +273,8 @@ export class JSObject extends JSValue {
     // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
     public __Set__(P: JSString | JSSymbol, V: JSValue, Receiver: JSValue): Completion<boolean> {
-
         const O = this;
-        const ownDescComp = O.__GetOwnProperty__(P);
+        const ownDescComp = O.__GetOwnProperty__(P,false);
         if (!(ownDescComp instanceof NormalCompletion))
             return ownDescComp;
         let ownDesc = ownDescComp.value;
@@ -325,8 +327,18 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.10: [[Delete]] (P)
 
-    public __Delete__(propertyKey: JSString | JSSymbol): Completion<boolean> {
-        throw new Error("JSObject.__Delete__ not implemented");
+    public __Delete__(P: JSString | JSSymbol): Completion<boolean> {
+        const descComp = this.__GetOwnProperty__(P);
+        if (!(descComp instanceof NormalCompletion))
+            return descComp;
+        const desc = descComp.value;
+        if (desc instanceof JSUndefined)
+            return new NormalCompletion(true);
+        if (desc.configurable) {
+            delete this.properties[P.stringRep];
+            return new NormalCompletion(true);
+        }
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
@@ -348,18 +360,22 @@ export class JSObject extends JSValue {
     }
 }
 
-export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol): Completion<JSUndefined | PropertyDescriptor> {
+// ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
+
+export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol, copy: boolean = true): JSUndefined | PropertyDescriptor {
     // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
     // where we can avoid doing so.
     const stringKey = P.stringRep;
     if (!(stringKey in O.properties))
-        return new NormalCompletion(new JSUndefined());
+        return new JSUndefined();
     const X = O.properties[stringKey];
+    if (!copy)
+        return X;
     if (X instanceof DataDescriptor) {
         const D = new DataDescriptor(X.value,X.writable);
         D.enumerable = X.enumerable;
         D.configurable = X.configurable;
-        return new NormalCompletion(D);
+        return D;
     }
     else {
         const D = new AccessorDescriptor();
@@ -367,18 +383,15 @@ export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol): Com
         D.__set__ = X.__set__;
         D.enumerable = X.enumerable;
         D.configurable = X.configurable;
-        return new NormalCompletion(D);
+        return D;
     }
 }
 
 // ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
 
 export function OrdinaryHasProperty(O: JSObject, P: JSString | JSSymbol): Completion<boolean> {
-    // The spec says to call OrdinaryGetOwnProperty, but that function makes a copy of the existing
-    // property, which is unnecessary here. So we simply check for the existence of the own property
-    // directly.
-    const stringKey = P.stringRep;
-    if (stringKey in O.properties)
+    const hasOwn = OrdinaryGetOwnProperty(O,P);
+    if (!(hasOwn instanceof JSUndefined))
         return new NormalCompletion(true);
     const parentComp = O.__GetPrototypeOf__();
     if (!(parentComp instanceof NormalCompletion))

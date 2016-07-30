@@ -36,6 +36,8 @@ import {
 import {
     JSFunctionObject,
     ThisMode,
+    intrinsic_ThrowTypeError,
+    intrinsic_ThrowReferenceError,
 } from "./objects";
 
 // ES6 Section 8.1: Lexical Environments
@@ -61,11 +63,11 @@ export abstract class EnvironmentRecord {
 
     public abstract HasBinding(N: string): Completion<boolean>;
 
-    public abstract CreateMutableBinding(N: string, D: boolean): Completion<void>;
+    public abstract CreateMutableBinding(N: string, D: boolean): void;
 
-    public abstract CreateImmutableBinding(N: string, S: boolean): Completion<void>;
+    public abstract CreateImmutableBinding(N: string, S: boolean): void;
 
-    public abstract InitializeBinding(N: string, V: JSValue): Completion<void>;
+    public abstract InitializeBinding(N: string, V: JSValue): void;
 
     public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
 
@@ -82,8 +84,18 @@ export abstract class EnvironmentRecord {
 
 // ES6 Section 8.1.1.1: Declarative Environment Records
 
+interface DeclarativeBinding {
+    value: JSValue;
+    canDelete: boolean;
+    mutable: boolean;
+    initialized: boolean;
+    strict: boolean;
+}
+
 export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_DeclarativeEnvironmentRecord: any;
+
+    public readonly bindings: { [name: string]: DeclarativeBinding } = {};
 
     public constructor() {
         super();
@@ -92,61 +104,115 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     // ES6 Section 8.1.1.1.1: HasBinding(N)
 
     public HasBinding(N: string): Completion<boolean> {
-        throw new Error("DeclarativeEnvironmentRecord.HasBinding not implemented");
+        const result = (N in this.bindings);
+        return new NormalCompletion(result);
     }
 
     // ES6 Section 8.1.1.1.2: CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
-        throw new Error("DeclarativeEnvironmentRecord.CreateMutableBinding not implemented");
+    public CreateMutableBinding(N: string, D: boolean = false): void {
+        if (N in this.bindings)
+            throw new Error("Binding for "+N+" already exists");
+        this.bindings[N] = {
+            value: new JSUndefined(),
+            canDelete: D,
+            mutable: true,
+            initialized: false,
+            strict: false,
+        };
     }
 
     // ES6 Section 8.1.1.1.3: CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
-        throw new Error("DeclarativeEnvironmentRecord.CreateImmutableBinding not implemented");
+    public CreateImmutableBinding(N: string, S: boolean = false): void {
+        if (N in this.bindings)
+            throw new Error("Binding for "+N+" already exists");
+        this.bindings[N] = {
+            value: new JSUndefined(),
+            canDelete: false,
+            mutable: true,
+            initialized: false,
+            strict: S,
+        };
     }
 
     // ES6 Section 8.1.1.1.4: InitializeBinding (N, V)
 
-    public InitializeBinding(N: string, V: JSValue): Completion<void> {
-        throw new Error("DeclarativeEnvironmentRecord.InitializeBinding not implemented");
+    public InitializeBinding(N: string, V: JSValue): void {
+        if (!(N in this.bindings))
+            throw new Error("Binding for "+N+" does not exist");
+        const binding = this.bindings[N];
+        if (binding.initialized)
+            throw new Error("Binding for "+N+" is already initialized");
+        binding.value = V;
+        binding.initialized = true;
     }
 
     // ES6 Section 8.1.1.1.5 SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
-        throw new Error("DeclarativeEnvironmentRecord.SetMutableBinding not implemented");
+        const envRec = this;
+
+        if (!(N in envRec.bindings)) {
+            if (S)
+                return intrinsic_ThrowReferenceError();
+            envRec.CreateMutableBinding(N,true);
+            envRec.InitializeBinding(N,V);
+            return new NormalCompletion(undefined);
+        }
+
+        const binding = envRec.bindings[N];
+        if (binding.strict)
+            S = true;
+        if (!binding.initialized)
+            return intrinsic_ThrowReferenceError();
+        else if (binding.mutable)
+            binding.value = V;
+        else if (S)
+            return intrinsic_ThrowTypeError();
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.1.6: GetBindingValue(N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        throw new Error("DeclarativeEnvironmentRecord.GetBindingValue not implemented");
+        const envRec = this;
+        if (!(N in this.bindings))
+            throw new Error("Binding for "+N+" does not exist");
+        const binding = this.bindings[N];
+        if (!binding.initialized)
+            return intrinsic_ThrowReferenceError();
+        return new NormalCompletion(binding.value);
     }
 
     // ES6 Section 8.1.1.1.7: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        throw new Error("DeclarativeEnvironmentRecord.DeleteBinding not implemented");
+        if (!(N in this.bindings))
+            throw new Error("Binding for "+N+" does not exist");
+        const binding = this.bindings[N];
+        if (!binding.canDelete)
+            return new NormalCompletion(false);
+        delete this.bindings[N];
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.1.8: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("DeclarativeEnvironmentRecord.HasThisBinding not implemented");
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.1.9: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("DeclarativeEnvironmentRecord.HasSuperBinding not implemented");
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.1.10: WithBaseObject ()
 
     public WithBaseObject(): Completion<JSObject | JSUndefined> {
-        throw new Error("DeclarativeEnvironmentRecord.WithBaseObject not implemented");
+        return new NormalCompletion(new JSUndefined());
     }
 }
 
@@ -167,19 +233,19 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
 
     // ES6 Section 8.1.1.2.2: CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
+    public CreateMutableBinding(N: string, D: boolean): void {
         throw new Error("ObjectEnvironmentRecord.CreateMutableBinding not implemented");
     }
 
     // ES6 Section 8.1.1.2.3: CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
+    public CreateImmutableBinding(N: string, S: boolean): void {
         throw new Error("ObjectEnvironmentRecord.CreateImmutableBinding not implemented");
     }
 
     // ES6 Section 8.1.1.2.4: InitializeBinding (N, V)
 
-    public InitializeBinding(N: string, V: JSValue): Completion<void> {
+    public InitializeBinding(N: string, V: JSValue): void {
         throw new Error("ObjectEnvironmentRecord.InitializeBinding not implemented");
     }
 
@@ -303,29 +369,29 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
     // ES6 Section 8.1.1.4.2: CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
+    public CreateMutableBinding(N: string, D: boolean): void {
         throw new Error("GlobalEnvironmentRecord.CreateMutableBinding not implemented");
     }
 
     // ES6 Section 8.1.1.4.3: CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
+    public CreateImmutableBinding(N: string, S: boolean): void {
         throw new Error("GlobalEnvironmentRecord.CreateImmutableBinding not implemented");
     }
 
-    // ES6 Section 8.1.1.4.4: InitializeBinding (N,V)
+    // ES6 Section 8.1.1.4.4: InitializeBinding (N, V)
 
-    public InitializeBinding(N: string, V: JSValue): Completion<void> {
+    public InitializeBinding(N: string, V: JSValue): void {
         throw new Error("GlobalEnvironmentRecord.InitializeBinding not implemented");
     }
 
-    // ES6 Section 8.1.1.4.5: SetMutableBinding (N,V,S)
+    // ES6 Section 8.1.1.4.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.SetMutableBinding not implemented");
     }
 
-    // ES6 Section 8.1.1.4.6: GetBindingValue(N,S)
+    // ES6 Section 8.1.1.4.6: GetBindingValue(N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
         throw new Error("GlobalEnvironmentRecord.GetBindingValue not implemented");

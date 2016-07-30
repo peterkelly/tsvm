@@ -200,6 +200,10 @@ export function intrinsic_ThrowTypeError(): ThrowCompletion {
     throw new Error("intrinsic_ThrowTypeError Not implemented");
 }
 
+export function intrinsic_ThrowReferenceError(): ThrowCompletion {
+    throw new Error("intrinsic_ThrowReferenceError Not implemented");
+}
+
 // ES6 Section 9.2.8 MakeConstructor: (F, writablePrototype, prototype)
 
 export function MakeConstructor(F: JSFunctionObject, writablePrototype: any, prototype: any): Completion<UnknownType> {
