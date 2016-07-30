@@ -24,6 +24,8 @@ import {
 } from "../parser/ast";
 import {
     SameValue,
+    Call,
+    CreateDataProperty,
 } from "./operations";
 // import {
 //     intrinsic_ThrowTypeError
@@ -106,6 +108,9 @@ export class JSString extends JSPropertyKey {
     public get type(): ValueType {
         return ValueType.String;
     }
+    public get stringRep(): string {
+        return this.stringValue;
+    }
 }
 
 // ES6 Section 6.1.5: The Symbol Type
@@ -122,6 +127,9 @@ export class JSSymbol extends JSPropertyKey {
     }
     public get type(): ValueType {
         return ValueType.Symbol;
+    }
+    public get stringRep(): string {
+        return "%%symbol:"+this.symbolId;
     }
 
     // ES6 Section 6.1.5.1: Well-Known Symbols
@@ -151,21 +159,6 @@ export class JSNumber extends JSPrimitiveValue {
     }
     public get type(): ValueType {
         return ValueType.Number;
-    }
-    public get isNaN(): boolean {
-        return isNaN(this.numberValue);
-    }
-    public get isPositiveZero(): boolean {
-        return (this.numberValue == 0); // FIXME
-    }
-    public get isNegativeZero(): boolean {
-        return false; // FIXME
-    }
-    public get isPositiveInfinity(): boolean {
-        return false; // FIXME
-    }
-    public get isNegativeInfinity(): boolean {
-        return false; // FIXME
     }
 }
 
@@ -223,9 +216,6 @@ export class JSObject extends JSValue {
         }
         this.__prototype__ = V;
         return new NormalCompletion(true);
-
-
-        // throw new Error("JSObject.__SetPrototypeOf__ not implemented");
     }
 
     // ES6 Section 9.1.3: [[IsExtensible]] ()
@@ -244,7 +234,7 @@ export class JSObject extends JSValue {
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
     public __GetOwnProperty__(propertyKey: JSString | JSSymbol): Completion<JSUndefined | Property> {
-        throw new Error("JSObject.__GetOwnProperty__ not implemented");
+        return OrdinaryGetOwnProperty(this,propertyKey);
     }
 
     // ES6 Section 9.1.7: [[HasProperty]](P)
@@ -255,14 +245,90 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
-    public __Get__(propertyKey: JSString | JSSymbol, receiver: JSValue): Completion<UnknownType> {
-        throw new Error("JSObject.__Get__ not implemented");
+    public __Get__(P: JSString | JSSymbol, Receiver: JSValue): Completion<JSValue> {
+        if (!(P.stringRep in this.properties)) {
+            const parentComp = this.__GetPrototypeOf__();
+            if (!(parentComp instanceof NormalCompletion))
+                return parentComp;
+            const parent = parentComp.value;
+            if (parent instanceof JSNull)
+                return new NormalCompletion(new JSUndefined());
+            return parent.__Get__(P,Receiver);
+        }
+        const desc = this.properties[P.stringRep];
+        if (desc instanceof DataProperty) {
+            return new NormalCompletion(desc.value);
+        }
+        else if (desc instanceof AccessorProperty) {
+            const getter = desc.__get__;
+            if (getter instanceof JSUndefined)
+                return new NormalCompletion(new JSUndefined());
+            return Call(getter,Receiver,[]);
+        }
+        else {
+            throw new Error("Unknown Property subclass; should never get here");
+        }
     }
 
     // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
-    public __Set__(propertyKey: JSString | JSSymbol, value: JSValue, receiver: JSValue): Completion<boolean> {
-        throw new Error("JSObject.__Set__ not implemented");
+    public __Set__(P: JSString | JSSymbol, V: JSValue, Receiver: JSValue): Completion<boolean> {
+
+        const O = this;
+        const ownDescComp = O.__GetOwnProperty__(P);
+        if (!(ownDescComp instanceof NormalCompletion))
+            return ownDescComp;
+        let ownDesc = ownDescComp.value;
+        if (ownDesc instanceof JSUndefined) {
+            const parentComp = O.__GetPrototypeOf__();
+            if (!(parentComp instanceof NormalCompletion))
+                return parentComp;
+            const parent = parentComp.value;
+            if (!(parent instanceof JSNull)) {
+                return parent.__Set__(P,V,Receiver);
+            }
+            else {
+                ownDesc = new DataProperty(new JSUndefined(),true);
+                ownDesc.enumerable = true;
+                ownDesc.configurable = true;
+            }
+        }
+
+        if (ownDesc instanceof DataProperty) {
+            if (!ownDesc.writable)
+                return new NormalCompletion(false);
+            if (!(Receiver instanceof JSObject))
+                return new NormalCompletion(false);
+            const existingDescriptorComp = Receiver.__GetOwnProperty__(P);
+            if (!(existingDescriptorComp instanceof NormalCompletion))
+                return existingDescriptorComp;
+            const existingDescriptor = existingDescriptorComp.value;
+            if (!(existingDescriptor instanceof JSUndefined)) {
+                if (existingDescriptor instanceof AccessorProperty)
+                    return new NormalCompletion(false);
+                if (!(existingDescriptor instanceof DataProperty))
+                    throw new Error("Unknown Property subclass; should never get here");
+                if (!(existingDescriptor.writable))
+                    return new NormalCompletion(false);
+                const valueDesc = new DataProperty(V,true);
+                return Receiver.__DefineOwnProperty__(P,valueDesc);
+            }
+            else {
+                return CreateDataProperty(Receiver,P,V);
+            }
+        }
+        else if (ownDesc instanceof AccessorProperty) {
+            const setter = ownDesc.__set__;
+            if (setter instanceof JSUndefined)
+                return new NormalCompletion(false);
+            const setterResultComp = Call(setter,Receiver,[V]);
+            if (!(setterResultComp instanceof NormalCompletion))
+                return setterResultComp;
+            return new NormalCompletion(true);
+        }
+        else {
+            throw new Error("Unknown Property subclass; should never get here");
+        }
     }
 
     // ES6 Section 9.1.10: [[Delete]] (P)
@@ -290,6 +356,50 @@ export class JSObject extends JSValue {
     }
 }
 
+export function OrdinaryGetOwnProperty(O: JSObject, P: JSString | JSSymbol): Completion<JSUndefined | Property> {
+    // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
+    // where we can avoid doing so.
+    const stringKey = P.stringRep;
+    if (!(stringKey in O.properties))
+        return new NormalCompletion(new JSUndefined());
+    const X = O.properties[stringKey];
+    if (X instanceof DataProperty) {
+        const D = new DataProperty(X.value,X.writable);
+        D.enumerable = X.enumerable;
+        D.configurable = X.configurable;
+        return new NormalCompletion(D);
+    }
+    else if (X instanceof AccessorProperty) {
+        const D = new AccessorProperty();
+        D.__get__ = X.__get__;
+        D.__set__ = X.__set__;
+        D.enumerable = X.enumerable;
+        D.configurable = X.configurable;
+        return new NormalCompletion(D);
+    }
+    else {
+        throw new Error("Unknown Property subclass; should never get here");
+    }
+}
+
+// ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
+
+export function OrdinaryHasProperty(O: JSObject, P: JSString | JSSymbol): Completion<boolean> {
+    // The spec says to call OrdinaryGetOwnProperty, but that function makes a copy of the existing
+    // property, which is unnecessary here. So we simply check for the existence of the own property
+    // directly.
+    const stringKey = P.stringRep;
+    if (stringKey in O.properties)
+        return new NormalCompletion(true);
+    const parentComp = O.__GetPrototypeOf__();
+    if (!(parentComp instanceof NormalCompletion))
+        return parentComp;
+    const parent = parentComp.value;
+    if (!(parent instanceof JSNull))
+        return parent.__HasProperty__(P);
+    return new NormalCompletion(false);
+}
+
 // Additional implementation types
 
 export abstract class JSPrimitiveValue extends JSValue {
@@ -298,6 +408,7 @@ export abstract class JSPrimitiveValue extends JSValue {
 
 export abstract class JSPropertyKey extends JSPrimitiveValue {
     _nominal_type_PropertyKey: any;
+    public abstract get stringRep(): string;
 }
 
 export class JSInteger extends JSNumber {

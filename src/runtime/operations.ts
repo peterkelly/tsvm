@@ -35,6 +35,19 @@ import {
     Property,
     UnknownType,
 } from "./datatypes";
+import {
+    rt_isSameNumberValue,
+    rt_double_abstractRelationalComparison,
+    rt_double_strictEqualityComparison,
+    rt_double_equalsExact,
+    rt_double_isNaN,
+    rt_double_isPositiveZero,
+    rt_double_isNegativeZero,
+    rt_double_isPositiveInfinity,
+    rt_double_isNegativeInfinity,
+    rt_string_to_double,
+    rt_string_lessThan,
+} from "./runtime";
 
 // ES6 Section 7.1: Type Conversion
 
@@ -58,6 +71,14 @@ export function ToBoolean(argument: JSValue): Completion<JSBoolean> {
 
 export function ToNumber(argument: JSValue): Completion<JSNumber> {
     throw new Error("ToNumber not implemented");
+}
+
+function ToNumber_string(argument: JSString): JSNumber {
+    return new JSNumber(rt_string_to_double(argument.stringValue));
+}
+
+function ToNumber_boolean(argument: JSBoolean): JSNumber {
+    throw new Error("ToNumber_boolean not implemented");
 }
 
 // ES6 Section 7.1.4: ToInteger (argument)
@@ -220,23 +241,23 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
             return true;
         case ValueType.Number:
             if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
-                if (x.isNaN && y.isNaN)
+                if (rt_double_isNaN(x.numberValue) && rt_double_isNaN(y.numberValue))
                     return true;
                 if (!zero) {
                     // Logic for the SameValue operation
-                    if (x.isPositiveZero && y.isNegativeZero)
+                    if (rt_double_isPositiveZero(x.numberValue) && rt_double_isNegativeZero(y.numberValue))
                         return false;
-                    if (x.isNegativeZero && y.isPositiveZero)
+                    if (rt_double_isNegativeZero(x.numberValue) && rt_double_isPositiveZero(y.numberValue))
                         return false;
                 }
                 else {
                     // Logic for the SameValueZero operation
-                    if (x.isPositiveZero && y.isNegativeZero)
+                    if (rt_double_isPositiveZero(x.numberValue) && rt_double_isNegativeZero(y.numberValue))
                         return true;
-                    if (x.isNegativeZero && y.isPositiveZero)
+                    if (rt_double_isNegativeZero(x.numberValue) && rt_double_isPositiveZero(y.numberValue))
                         return true;
                 }
-                if (x.numberValue === y.numberValue)
+                if (rt_double_equalsExact(x.numberValue,y.numberValue))
                     return true;
                 return false;
             }
@@ -289,7 +310,8 @@ export function abstractRelationalComparison(x: JSValue, y: JSValue, leftFirst: 
         px = pxComp.value;
     }
     if ((px instanceof JSString) && (py instanceof JSString)) {
-        return new NormalCompletion(new JSBoolean(stringLessThan(px,px)));
+        const result = rt_string_lessThan(px.stringValue,py.stringValue);
+        return new NormalCompletion(new JSBoolean(result));
     }
     else {
         const nxComp = ToNumber(px);
@@ -300,44 +322,61 @@ export function abstractRelationalComparison(x: JSValue, y: JSValue, leftFirst: 
         if (!(nyComp instanceof NormalCompletion))
             return nyComp;
         const ny = nyComp.value;
-        if (nx.isNaN)
+        const result = rt_double_abstractRelationalComparison(nx.numberValue,ny.numberValue);
+        if (result === undefined)
             return new NormalCompletion(new JSUndefined());
-        if (ny.isNaN)
-            return new NormalCompletion(new JSUndefined());
-        if (nx.numberValue === ny.numberValue)
-            return new NormalCompletion(new JSBoolean(false));
-        if (nx.isPositiveZero && ny.isNegativeZero)
-            return new NormalCompletion(new JSBoolean(false));
-        if (nx.isNegativeZero && ny.isPositiveZero)
-            return new NormalCompletion(new JSBoolean(false));
-        if (nx.isPositiveInfinity)
-            return new NormalCompletion(new JSBoolean(false));
-        if (ny.isPositiveInfinity)
-            return new NormalCompletion(new JSBoolean(true));
-        if (ny.isNegativeInfinity)
-            return new NormalCompletion(new JSBoolean(false));
-        if (nx.isNegativeInfinity)
-            return new NormalCompletion(new JSBoolean(true));
-        const result = (nx.numberValue < ny.numberValue);
-        return new NormalCompletion(new JSBoolean(result));
+        else
+            return new NormalCompletion(new JSBoolean(result));
     }
-}
-
-function stringLessThan(x: JSString, y: JSString): boolean {
-    // FIXME: Use a lower-level algorithm that can be more easily translated to native code
-    return (x.stringValue < y.stringValue);
 }
 
 // ES6 Section 7.2.12: Abstract Equality Comparison
 
-export function abstractEqualityComparison(x: any, y: any): Completion<UnknownType> {
-    throw new Error("_abstractEqualityComparison not implemented");
+export function abstractEqualityComparison(x: JSValue, y: JSValue): Completion<boolean> {
+    if (x.type === y.type)
+        return new NormalCompletion(strictEqualityComparison(x,y));
+
+    if ((x instanceof JSNull) && (y instanceof JSUndefined))
+        return new NormalCompletion(true);
+
+    if ((x instanceof JSUndefined) && (y instanceof JSNull))
+        return new NormalCompletion(true);
+
+    if ((x instanceof JSNumber) && (y instanceof JSString))
+        return abstractEqualityComparison(x,ToNumber_string(y));
+
+    if ((x instanceof JSString) && (y instanceof JSNumber))
+        return abstractEqualityComparison(ToNumber_string(x),y);
+
+    if (x instanceof JSBoolean)
+        return abstractEqualityComparison(ToNumber_boolean(x),y);
+
+    if (y instanceof JSBoolean)
+        return abstractEqualityComparison(x,ToNumber_boolean(y));
+
+    if ((y instanceof JSObject) &&
+        ((x instanceof JSString) || (x instanceof JSNumber) || (x instanceof JSSymbol))) {
+        const yComp = ToPrimitive(y);
+        if (!(yComp instanceof NormalCompletion))
+            return yComp;
+        return abstractEqualityComparison(x,yComp.value);
+    }
+
+    if ((x instanceof JSObject) &&
+        ((y instanceof JSString) || (y instanceof JSNumber) || (y instanceof JSSymbol))) {
+        const xComp = ToPrimitive(x);
+        if (!(xComp instanceof NormalCompletion))
+            return xComp;
+        return abstractEqualityComparison(xComp.value,y);
+    }
+
+    return new NormalCompletion(false);
 }
 
 // ES6 Section 7.2.13: Strict Equality Comparison
 
 export function strictEqualityComparison(x: JSValue, y: JSValue): boolean {
-    if (x.type != y.type)
+    if (x.type !== y.type)
         return false;
     switch (x.type) {
         case ValueType.Undefined:
@@ -346,17 +385,7 @@ export function strictEqualityComparison(x: JSValue, y: JSValue): boolean {
             return true;
         case ValueType.Number:
             if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
-                if (x.isNaN)
-                    return false;
-                if (y.isNaN)
-                    return false;
-                if (isSameNumberValue(x,y))
-                    return true;
-                if (x.isPositiveZero && y.isNegativeZero)
-                    return true;
-                if (x.isNegativeZero && y.isPositiveZero)
-                    return true;
-                return false;
+                return rt_double_strictEqualityComparison(x.numberValue,y.numberValue);
             }
             else {
                 throw new Error("Incorrect JSValue.type (Number); should never get here");
@@ -390,13 +419,6 @@ export function strictEqualityComparison(x: JSValue, y: JSValue): boolean {
     throw new Error("Unhandled case; should never get here");
 }
 
-function isSameNumberValue(x: JSNumber, y: JSNumber) {
-    // This calls through to the host JS engine's strict equality comparison, even though we
-    // call it from our own. However the only cases we manually check for are positive & negative
-    // zeros, which this will already give the correct result for.
-    return (x.numberValue === y.numberValue);
-}
-
 // ES6 Section 7.3: Operations on Objects
 
 // ES6 Section 7.3.1: Get (O, P)
@@ -419,7 +441,7 @@ export function Set(O: JSObject, P: JSPropertyKey, V: JSValue, Throw: boolean): 
 
 // ES6 Section 7.3.4: CreateDataProperty (O, P, V)
 
-export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<UnknownType> {
+export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
     throw new Error("CreateDataProperty not implemented");
 }
 
@@ -467,7 +489,7 @@ export function HasOwnProperty(O: JSObject, P: JSPropertyKey): Completion<Unknow
 
 // ES6 Section 7.3.12: Call(F, V, [argumentsList])
 
-export function Call(F: JSObject, V: JSValue, argumentList: JSValue[]): Completion<UnknownType> {
+export function Call(F: JSObject, V: JSValue, argumentList: JSValue[]): Completion<JSValue> {
     throw new Error("Call not implemented");
 }
 
