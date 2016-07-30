@@ -529,97 +529,97 @@ export function newAccessorDescriptor(options: {
 
 // ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
 
-export class Intrinsics {
-    $Array$: JSObject = new JSObject(); // TODO
-    $ArrayBuffer$: JSObject = new JSObject(); // TODO
-    $ArrayBufferPrototype$: JSObject = new JSObject(); // TODO
-    $ArrayIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $ArrayProto_values$: JSObject = new JSObject(); // TODO;
-    $Boolean$: JSObject = new JSObject(); // TODO
-    $BooleanPrototype$: JSObject = new JSObject(); // TODO
-    $DataView$: JSObject = new JSObject(); // TODO
-    $DataViewPrototype$: JSObject = new JSObject(); // TODO
-    $Date$: JSObject = new JSObject(); // TODO
-    $DatePrototype$: JSObject = new JSObject(); // TODO
-    $decodeURI$: JSObject = new JSObject(); // TODO
-    $decodeURIComponent$: JSObject = new JSObject(); // TODO
-    $encodeURI$: JSObject = new JSObject(); // TODO
-    $encodeURIComponent$: JSObject = new JSObject(); // TODO
-    $Error$: JSObject = new JSObject(); // TODO
-    $ErrorPrototype$: JSObject = new JSObject(); // TODO
-    $eval$: JSObject = new JSObject(); // TODO
-    $EvalError$: JSObject = new JSObject(); // TODO
-    $EvalErrorPrototype$: JSObject = new JSObject(); // TODO
-    $Float32Array$: JSObject = new JSObject(); // TODO
-    $Float32ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Float64Array$: JSObject = new JSObject(); // TODO
-    $Float64ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Function$: JSObject = new JSObject(); // TODO
-    $FunctionPrototype$: JSObject = new JSObject(); // TODO
-    $Generator$: JSObject = new JSObject(); // TODO
-    $GeneratorFunction$: JSObject = new JSObject(); // TODO
-    $GeneratorPrototype$: JSObject = new JSObject(); // TODO
-    $Int8Array$: JSObject = new JSObject(); // TODO
-    $Int8ArrayPrototype$: JSObject = new JSObject(); // TODO;
-    $Int16Array$: JSObject = new JSObject(); // TODO
-    $Int16ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Int32Array$: JSObject = new JSObject(); // TODO
-    $Int32ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $isFinite$: JSObject = new JSObject(); // TODO
-    $isNaN$: JSObject = new JSObject(); // TODO
-    $IteratorPrototype$: JSObject = new JSObject(); // TODO
-    $JSON$: JSObject = new JSObject(); // TODO
-    $Map$: JSObject = new JSObject(); // TODO
-    $MapIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $MapPrototype$: JSObject = new JSObject(); // TODO
-    $Math$: JSObject = new JSObject(); // TODO
-    $Number$: JSObject = new JSObject(); // TODO
-    $NumberPrototype$: JSObject = new JSObject(); // TODO
-    $Object$: JSObject = new JSObject(); // TODO
-    $ObjectPrototype$: JSObject = new JSObject(); // TODO
-    $ObjProto_toString$: JSObject = new JSObject(); // TODO
-    $parseFloat$: JSObject = new JSObject(); // TODO
-    $parseInt$: JSObject = new JSObject(); // TODO
-    $Promise$: JSObject = new JSObject(); // TODO
-    $PromisePrototype$: JSObject = new JSObject(); // TODO
-    $Proxy$: JSObject = new JSObject(); // TODO
-    $RangeError$: JSObject = new JSObject(); // TODO
-    $RangeErrorPrototype$: JSObject = new JSObject(); // TODO
-    $ReferenceError$: JSObject = new JSObject(); // TODO
-    $ReferenceErrorPrototype$: JSObject = new JSObject(); // TODO
-    $Reflect$: JSObject = new JSObject(); // TODO
-    $RegExp$: JSObject = new JSObject(); // TODO
-    $RegExpPrototype$: JSObject = new JSObject(); // TODO
-    $Set$: JSObject = new JSObject(); // TODO
-    $SetIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $SetPrototype$: JSObject = new JSObject(); // TODO
-    $String$: JSObject = new JSObject(); // TODO
-    $StringIteratorPrototype$: JSObject = new JSObject(); // TODO
-    $StringPrototype$: JSObject = new JSObject(); // TODO
-    $Symbol$: JSObject = new JSObject(); // TODO
-    $SymbolPrototype$: JSObject = new JSObject(); // TODO
-    $SyntaxError$: JSObject = new JSObject(); // TODO
-    $SyntaxErrorPrototype$: JSObject = new JSObject(); // TODO
-    $ThrowTypeError$: JSObject = new JSObject(); // TODO
-    $TypedArray$: JSObject = new JSObject(); // TODO
-    $TypedArrayPrototype$: JSObject = new JSObject(); // TODO
-    $TypeError$: JSObject = new JSObject(); // TODO
-    $TypeErrorPrototype$: JSObject = new JSObject(); // TODO
-    $Uint8Array$: JSObject = new JSObject(); // TODO
-    $Uint8ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Uint8ClampedArray$: JSObject = new JSObject(); // TODO
-    $Uint8ClampedArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Uint16Array$: JSObject = new JSObject(); // TODO
-    $Uint16ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $Uint32Array$: JSObject = new JSObject(); // TODO
-    $Uint32ArrayPrototype$: JSObject = new JSObject(); // TODO
-    $URIError$: JSObject = new JSObject(); // TODO
-    $URIErrorPrototype$: JSObject = new JSObject(); // TODO
-    $WeakMap$: JSObject = new JSObject(); // TODO
-    $WeakMapPrototype$: JSObject = new JSObject(); // TODO
-    $WeakSet$: JSObject = new JSObject(); // TODO
-    $WeakSetPrototype$: JSObject = new JSObject(); // TODO
+export interface Intrinsics {
+    // Array: JSObject;
+    // ArrayBuffer: JSObject;
+    // ArrayBufferPrototype: JSObject;
+    // ArrayIteratorPrototype: JSObject;
+    // ArrayPrototype: JSObject;
+    // ArrayProto_values: JSObject;
+    // Boolean: JSObject;
+    // BooleanPrototype: JSObject;
+    // DataView: JSObject;
+    // DataViewPrototype: JSObject;
+    // Date: JSObject;
+    // DatePrototype: JSObject;
+    // decodeURI: JSObject;
+    // decodeURIComponent: JSObject;
+    // encodeURI: JSObject;
+    // encodeURIComponent: JSObject;
+    // Error: JSObject;
+    // ErrorPrototype: JSObject;
+    // eval: JSObject;
+    // EvalError: JSObject;
+    // EvalErrorPrototype: JSObject;
+    // Float32Array: JSObject;
+    // Float32ArrayPrototype: JSObject;
+    // Float64Array: JSObject;
+    // Float64ArrayPrototype: JSObject;
+    // Function: JSObject;
+    FunctionPrototype: JSObject;
+    // Generator: JSObject;
+    // GeneratorFunction: JSObject;
+    // GeneratorPrototype: JSObject;
+    // Int8Array: JSObject;
+    // Int8ArrayPrototype: JSObject;
+    // Int16Array: JSObject;
+    // Int16ArrayPrototype: JSObject;
+    // Int32Array: JSObject;
+    // Int32ArrayPrototype: JSObject;
+    // isFinite: JSObject;
+    // isNaN: JSObject;
+    // IteratorPrototype: JSObject;
+    // JSON: JSObject;
+    // Map: JSObject;
+    // MapIteratorPrototype: JSObject;
+    // MapPrototype: JSObject;
+    // Math: JSObject;
+    // Number: JSObject;
+    // NumberPrototype: JSObject;
+    // Object: JSObject;
+    ObjectPrototype: JSObject;
+    // ObjProto_toString: JSObject;
+    // parseFloat: JSObject;
+    // parseInt: JSObject;
+    // Promise: JSObject;
+    // PromisePrototype: JSObject;
+    // Proxy: JSObject;
+    // RangeError: JSObject;
+    // RangeErrorPrototype: JSObject;
+    // ReferenceError: JSObject;
+    // ReferenceErrorPrototype: JSObject;
+    // Reflect: JSObject;
+    // RegExp: JSObject;
+    // RegExpPrototype: JSObject;
+    // Set: JSObject;
+    // SetIteratorPrototype: JSObject;
+    // SetPrototype: JSObject;
+    // String: JSObject;
+    // StringIteratorPrototype: JSObject;
+    // StringPrototype: JSObject;
+    // Symbol: JSObject;
+    // SymbolPrototype: JSObject;
+    // SyntaxError: JSObject;
+    // SyntaxErrorPrototype: JSObject;
+    ThrowTypeError: JSObject;
+    // TypedArray: JSObject;
+    // TypedArrayPrototype: JSObject;
+    // TypeError: JSObject;
+    // TypeErrorPrototype: JSObject;
+    // Uint8Array: JSObject;
+    // Uint8ArrayPrototype: JSObject;
+    // Uint8ClampedArray: JSObject;
+    // Uint8ClampedArrayPrototype: JSObject;
+    // Uint16Array: JSObject;
+    // Uint16ArrayPrototype: JSObject;
+    // Uint32Array: JSObject;
+    // Uint32ArrayPrototype: JSObject;
+    // URIError: JSObject;
+    // URIErrorPrototype: JSObject;
+    // WeakMap: JSObject;
+    // WeakMapPrototype: JSObject;
+    // WeakSet: JSObject;
+    // WeakSetPrototype: JSObject;
 }
 
 // ES6 Section 6.2: ECMAScript Specification Types

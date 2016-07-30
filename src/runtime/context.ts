@@ -603,13 +603,13 @@ export function NewModuleEnvironment(E: LexicalEnvironment): LexicalEnvironment 
 
 export class Realm {
     _nominal_type_Realm: any;
-    public intrinsics: any;
+    public intrinsics: Intrinsics | undefined;
     public globalThis: JSObject | JSUndefined;
     public globalEnv: LexicalEnvironment | JSUndefined;
     public templateMap: any[]; // FIXME
 
     public constructor() {
-        this.intrinsics = new Intrinsics();
+        // this.intrinsics = new Intrinsics();
         this.globalThis = new JSUndefined();
         this.globalEnv = new JSUndefined;
         this.templateMap = [];
@@ -624,11 +624,22 @@ export function CreateRealm(): Realm {
 
 // ES6 Section 8.2.2: CreateIntrinsics (realmRec)
 
-export function CreateIntrinsics(realmRec: Realm): Completion<UnknownType> {
+export function CreateIntrinsics(realm: Realm): Intrinsics {
     const objProto = new JSObject();
+    const thrower = new ThrowTypeErrorFunction(realm);
+    const funcProto = new FunctionPrototypeFunction(realm);
+
+    thrower.__prototype__ = funcProto;
     
 
-    throw new Error("CreateIntrinsics not implemented");
+
+    return {
+        FunctionPrototype: funcProto,
+        ObjectPrototype: objProto,
+        ThrowTypeError: thrower,
+    };
+
+    // throw new Error("CreateIntrinsics not implemented");
 }
 
 // ES6 Section 8.2.3: SetRealmGlobalObject (realmRec, globalObj)
