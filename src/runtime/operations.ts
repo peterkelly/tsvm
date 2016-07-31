@@ -75,11 +75,21 @@ import {
     rt_string_to_double,
     rt_string_lessThan,
 } from "./runtime";
-import {
-    intrinsic_ThrowTypeError,
-    intrinsic_ThrowReferenceError,
-    // JSFunctionObject,
-} from "./objects";
+
+// ES6 Section 9.2.7.1: %ThrowTypeError% ()
+
+export function intrinsic_ThrowTypeError(realm: Realm, message?: string): ThrowCompletion {
+    // const proto = realm.intrinsics.TypeErrorPrototype;
+    // if (message !== undefined)
+    //     return new ThrowCompletion(new bi.TypeErrorObject(realm,proto,new JSString(message)));
+    // else
+    //     return new ThrowCompletion(new bi.TypeErrorObject(realm,proto,new JSUndefined()));
+    throw new Error("intrinsic_ThrowReferenceError Not implemented");
+}
+
+export function intrinsic_ThrowReferenceError(realm: Realm): ThrowCompletion {
+    throw new Error("intrinsic_ThrowReferenceError Not implemented");
+}
 
 // ES6 Section 7.1: Type Conversion
 

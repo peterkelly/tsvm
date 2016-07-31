@@ -63,9 +63,9 @@ import {
 import {
     ASTNode
 } from "../parser/ast";
-// import {
-//     ToObject,
-// } from "./operations";
+import {
+    ToObject,
+} from "./operations";
 // import {
 //     intrinsic_ThrowTypeError
 // } from "./objects";
@@ -368,11 +368,11 @@ export function GetValue(realm: Realm, V: Reference): Completion<JSValue> {
         (base instanceof JSPropertyKey) ||
         (base instanceof JSNumber)) {
         if (!(base instanceof JSObject)) {
-            // const baseComp = ToObject(realm,base);
-            // if (!(baseComp instanceof NormalCompletion))
-            //     return baseComp;
-            // base = baseComp.value;
-            base = realm.intrinsics.Object;
+            const baseComp = ToObject(realm,base);
+            if (!(baseComp instanceof NormalCompletion))
+                return baseComp;
+            base = baseComp.value;
+            // base = realm.intrinsics.Object;
         }
         const name = GetReferencedName(realm,V);
         const thisValueComp = GetThisValue(realm,V);

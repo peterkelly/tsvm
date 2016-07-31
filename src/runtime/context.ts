@@ -66,11 +66,11 @@ import {
 import {
     JSFunctionObject,
     ThisMode,
-    intrinsic_ThrowTypeError,
-    intrinsic_ThrowReferenceError,
     ObjectCreate,
 } from "./objects";
 import {
+    intrinsic_ThrowTypeError,
+    intrinsic_ThrowReferenceError,
     HasProperty,
 } from "./operations";
 // import {
