@@ -110,7 +110,7 @@ export function ToPrimitive(realm: Realm, input: JSValue, preferredType?: ValueT
     else
         hint = new JSString("number");
 
-    const exoticToPrimComp = GetMethod(this.realm,input,JSSymbol.$$toPrimitive);
+    const exoticToPrimComp = GetMethod(realm,input,JSSymbol.$$toPrimitive);
     if (!(exoticToPrimComp instanceof NormalCompletion))
         return exoticToPrimComp;
     const exoticToPrim = exoticToPrimComp.value;

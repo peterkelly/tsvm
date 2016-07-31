@@ -290,7 +290,13 @@ function execute(relFilename: string) {
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
 
-        evalModule(root);
+        try {
+            evalModule(root);
+        }
+        catch (e) {
+            console.log(e);
+            console.log(e.stack);
+        }
     }
     catch (e) {
         console.error(absFilename+": "+e);

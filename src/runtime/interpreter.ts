@@ -176,6 +176,12 @@ export function evalModule(node: ASTNode): void {
     const envRec = new DeclarativeEnvironmentRecord(realm);
     const lexEnv = { record: envRec, outer: null };
     const ctx = new ExecutionContext(realm, new JSNull(),lexEnv);
+
+    envRec.CreateImmutableBinding("console",true);
+    const consoleObject = new JSOrdinaryObject(realm);
+    envRec.InitializeBinding("console",consoleObject);
+
+
     // const envRec = new EnvironmentRecord
     // const obj = new JSOrdinaryObject(realm);
     // console.log("evalModule");
