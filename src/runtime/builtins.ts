@@ -148,398 +148,399 @@ export class FunctionPrototypeFunction extends BuiltinFunction {
     }
 }
 
-export class ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class ArrayBufferConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinArrayBufferConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class ArrayBufferPrototype_Intrinsic extends JSObject {
+export class BuiltinArrayBufferPrototype extends JSObject {
 }
 
-export class ArrayIteratorPrototype_Intrinsic extends JSObject {
+export class BuiltinArrayIteratorPrototype extends JSObject {
 }
 
-export class ArrayPrototypePrototype_Intrinsic extends JSObject {
+export class BuiltinArrayPrototype extends JSObject {
 }
 
-export class ArrayProto_values_Intrinsic extends JSObject {
+export class BuiltinArrayProto_values extends JSObject {
 }
 
-export class BooleanConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinBooleanConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class BooleanPrototype_Intrinsic extends JSObject {
+export class BuiltinBooleanPrototype extends JSObject {
 }
 
-export class DataViewConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinDataViewConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class DataViewPrototype_Intrinsic extends JSObject {
+export class BuiltinDataViewPrototype extends JSObject {
 }
 
-export class DateConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinDateConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class DatePrototype_Intrinsic extends JSObject {
+export class BuiltinDatePrototype extends JSObject {
 }
 
-export class decodeURIFunction_Intrinsic extends BuiltinFunction {
+export class BuiltindecodeURIFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("decodeURI not implemented");
     }
 }
 
-export class decodeURIComponentFunction_Intrinsic extends BuiltinFunction {
+export class BuiltindecodeURIComponentFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("decodeURIComponent not implemented");
     }
 }
 
-export class encodeURIFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinencodeURIFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("encodeURI not implemented");
     }
 }
 
-export class encodeURIComponentFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinencodeURIComponentFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("encodeURIComponent not implemented");
     }
 }
 
-export class ErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class ErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinErrorPrototype extends JSObject {
 }
 
-export class evalFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinevalFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("eval not implemented");
     }
 }
 
-export class EvalErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinEvalErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class EvalErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinEvalErrorPrototype extends JSObject {
 }
 
-export class Float32ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinFloat32ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Float32ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinFloat32ArrayPrototype extends JSObject {
 }
 
-export class Float64ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinFloat64ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Float64ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinFloat64ArrayPrototype extends JSObject {
 }
 
-export class FunctionConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinFunctionConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Generator_Intrinsic extends JSObject {
+export class BuiltinGenerator extends JSObject {
 }
 
-export class GeneratorFunctionConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinGeneratorFunctionConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class GeneratorPrototype_Intrinsic extends JSObject {
+export class BuiltinGeneratorPrototype extends JSObject {
 }
 
-export class Int8ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinInt8ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Int8ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinInt8ArrayPrototype extends JSObject {
 }
 
-export class Int16ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinInt16ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Int16ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinInt16ArrayPrototype extends JSObject {
 }
 
-export class Int32ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinInt32ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Int32ArrayPrototype extends JSObject {
+export class BuiltinInt32ArrayPrototype extends JSObject {
 }
 
-export class isFiniteFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinisFiniteFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("isFinite not implemented");
     }
 }
 
-export class isNaNFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinisNaNFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("isNaN not implemented");
     }
 }
 
-export class IteratorPrototype_Intrinsic extends JSObject {
+export class BuiltinIteratorPrototype extends JSObject {
 }
 
-export class JSON_Intrinsic extends JSObject {
+export class BuiltinJSONObject extends JSObject {
 }
 
-export class MapConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinMapConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class MapIteratorPrototype_Intrinsic extends JSObject {
+export class BuiltinMapIteratorPrototype extends JSObject {
 }
 
-export class MapPrototype_Intrinsic extends JSObject {
+export class BuiltinMapPrototype extends JSObject {
 }
 
-export class Math_Intrinsic extends JSObject {
+export class BuiltinMathObject extends JSObject {
 }
 
-export class NumberConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinNumberConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class NumberPrototype_Intrinsic extends JSObject {
+export class BuiltinNumberPrototype extends JSObject {
 }
 
-export class ObjectConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinObjectConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class ObjectPrototype_Intrinsic extends JSObject {
+// FIXME: I don't think this is actually used
+export class BuiltinObjectPrototype extends JSObject {
 }
 
-export class ObjProto_toStringFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinObjProto_toStringFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("Object.prototype.toString not implemented");
     }
 }
 
-export class parseFloatFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinparseFloatFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("parseFloat not implemented");
     }
 }
 
-export class parseIntFunction_Intrinsic extends BuiltinFunction {
+export class BuiltinparseIntFunction extends BuiltinFunction {
     public Call(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("parseInt not implemented");
     }
 }
 
-export class PromiseConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinPromiseConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class PromisePrototype_Intrinsic extends JSObject {
+export class BuiltinPromisePrototype extends JSObject {
 }
 
-export class ProxyConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinProxyConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class RangeErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinRangeErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class RangeErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinRangeErrorPrototype extends JSObject {
 }
 
-export class ReferenceErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinReferenceErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class ReferenceErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinReferenceErrorPrototype extends JSObject {
 }
 
-export class Reflect_Intrinsic extends JSObject {
+export class BuiltinReflectObject extends JSObject {
 }
 
-export class RegExpConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinRegExpConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class RegExpPrototype_Intrinsic extends JSObject {
+export class BuiltinRegExpPrototype extends JSObject {
 }
 
-export class SetConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinSetConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class SetIteratorPrototype_Intrinsic extends JSObject {
+export class BuiltinSetIteratorPrototype extends JSObject {
 }
 
-export class SetPrototype_Intrinsic extends JSObject {
+export class BuiltinSetPrototype extends JSObject {
 }
 
-export class StringConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinStringConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class StringIteratorPrototype_Intrinsic extends JSObject {
+export class BuiltinStringIteratorPrototype extends JSObject {
 }
 
-export class StringPrototype_Intrinsic extends JSObject {
+export class BuiltinStringPrototype extends JSObject {
 }
 
-export class SymbolConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinSymbolConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class SymbolPrototype_Intrinsic extends JSObject {
+export class BuiltinSymbolPrototype extends JSObject {
 }
 
-export class SyntaxErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinSyntaxErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class SyntaxErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinSyntaxErrorPrototype extends JSObject {
 }
 
-export abstract class TypedArrayConstructor_Intrinsic extends BuiltinConstructor {
+export abstract class BuiltinTypedArrayConstructor extends BuiltinConstructor {
 }
 
-export class TypedArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinTypedArrayPrototype extends JSObject {
 }
 
-export class TypeErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinTypeErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class TypeErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinTypeErrorPrototype extends JSObject {
 }
 
-export class Uint8ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinUint8ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Uint8ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinUint8ArrayPrototype extends JSObject {
 }
 
-export class Uint8ClampedArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinUint8ClampedArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Uint8ClampedArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinUint8ClampedArrayPrototype extends JSObject {
 }
 
-export class Uint16ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinUint16ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Uint16ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinUint16ArrayPrototype extends JSObject {
 }
 
-export class Uint32ArrayConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinUint32ArrayConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class Uint32ArrayPrototype_Intrinsic extends JSObject {
+export class BuiltinUint32ArrayPrototype extends JSObject {
 }
 
-export class URIErrorConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinURIErrorConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class URIErrorPrototype_Intrinsic extends JSObject {
+export class BuiltinURIErrorPrototype extends JSObject {
 }
 
-export class WeakMapConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinWeakMapConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class WeakMapPrototype_Intrinsic extends JSObject {
+export class BuiltinWeakMapPrototype extends JSObject {
 }
 
-export class WeakSetConstructor_Intrinsic extends BuiltinConstructor {
+export class BuiltinWeakSetConstructor extends BuiltinConstructor {
     public Construct(thisValue: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSObject());
     }
 }
 
-export class WeakSetPrototype_Intrinsic extends JSObject {
+export class BuiltinWeakSetPrototype extends JSObject {
 }

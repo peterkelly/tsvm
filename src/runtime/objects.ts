@@ -40,12 +40,7 @@ import {
 import {
     ASTNode,
 } from "../parser/ast";
-import {
-    ArgSetterFunction,
-    ArgGetterFunction,
-    ThrowTypeErrorFunction,
-    FunctionPrototypeFunction,
-} from "./builtins";
+import * as bi from "./builtins";
 
 export abstract class JSExoticObject extends JSObject {
     _nominal_type_JSExoticObject: any;
@@ -358,14 +353,14 @@ export function CreateMappedArgumentsObject(func: any, formals: any, argumentsLi
 // ES6 Section 9.4.4.7.1: MakeArgGetter (name, env)
 
 export function MakeArgGetter(realm: Realm, name: string, env: EnvironmentRecord): Completion<JSValue> {
-    const fun = new ArgGetterFunction(realm,name,env);
+    const fun = new bi.ArgGetterFunction(realm,name,env);
     return new NormalCompletion(fun);
 }
 
 // ES6 Section 9.4.4.7.2: MakeArgSetter (name, env)
 
 export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord): Completion<JSValue> {
-    const fun = new ArgSetterFunction(realm,name,env);
+    const fun = new bi.ArgSetterFunction(realm,name,env);
     return new NormalCompletion(fun);
 }
 

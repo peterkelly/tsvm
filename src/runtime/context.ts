@@ -43,10 +43,11 @@ import {
 import {
     HasProperty,
 } from "./operations";
-import {
-    ThrowTypeErrorFunction,
-    FunctionPrototypeFunction,
-} from "./builtins";
+// import {
+//     ThrowTypeErrorFunction,
+//     FunctionPrototypeFunction,
+// } from "./builtins";
+import * as bi from "./builtins";
 
 
 // ES6 Section 8.1: Lexical Environments
@@ -626,14 +627,103 @@ export function CreateRealm(): Realm {
 
 export function CreateIntrinsics(realm: Realm): Intrinsics {
     const objProto = new JSObject();
-    const thrower = new ThrowTypeErrorFunction(realm);
-    const funcProto = new FunctionPrototypeFunction(realm);
+    const thrower = new bi.ThrowTypeErrorFunction(realm);
+    const funcProto = new bi.FunctionPrototypeFunction(realm);
 
     thrower.__prototype__ = funcProto;
-    
+
+
+
 
 
     return {
+        Array: new bi.BuiltinArrayConstructor(realm),
+        ArrayBuffer: new bi.BuiltinArrayBufferConstructor(realm),
+        ArrayBufferPrototype: new bi.BuiltinArrayBufferPrototype(),
+        ArrayIteratorPrototype: new bi.BuiltinArrayBufferPrototype(),
+        ArrayPrototype: new bi.BuiltinArrayPrototype(),
+        ArrayProto_values: new bi.BuiltinArrayProto_values(),
+        Boolean: new bi.BuiltinBooleanConstructor(realm),
+        BooleanPrototype: new bi.BuiltinBooleanPrototype(),
+        DataView: new bi.BuiltinDataViewConstructor(realm),
+        DataViewPrototype: new bi.BuiltinDataViewPrototype(),
+        Date: new bi.BuiltinDateConstructor(realm),
+        DatePrototype: new bi.BuiltinDatePrototype(),
+        decodeURI: new bi.BuiltindecodeURIFunction(realm),
+        decodeURIComponent: new bi.BuiltindecodeURIComponentFunction(realm),
+        encodeURI: new bi.BuiltinencodeURIFunction(realm),
+        encodeURIComponent: new bi.BuiltinencodeURIComponentFunction(realm),
+        Error: new bi.BuiltinErrorConstructor(realm),
+        ErrorPrototype: new bi.BuiltinErrorPrototype(),
+        eval: new bi.BuiltinevalFunction(realm),
+        EvalError: new bi.BuiltinEvalErrorConstructor(realm),
+        EvalErrorPrototype: new bi.BuiltinEvalErrorPrototype(),
+        Float32Array: new bi.BuiltinFloat32ArrayConstructor(realm),
+        Float32ArrayPrototype: new bi.BuiltinFloat32ArrayPrototype(),
+        Float64Array: new bi.BuiltinFloat64ArrayConstructor(realm),
+        Float64ArrayPrototype: new bi.BuiltinFloat64ArrayPrototype(),
+        Function: new bi.BuiltinFunctionConstructor(realm),
+        Generator: new bi.BuiltinGenerator(),
+        GeneratorFunction: new bi.BuiltinGeneratorFunctionConstructor(realm),
+        GeneratorPrototype: new bi.BuiltinGeneratorPrototype(),
+        Int8Array: new bi.BuiltinInt8ArrayConstructor(realm),
+        Int8ArrayPrototype: new bi.BuiltinInt8ArrayPrototype(),
+        Int16Array: new bi.BuiltinInt16ArrayConstructor(realm),
+        Int16ArrayPrototype: new bi.BuiltinInt16ArrayPrototype(),
+        Int32Array: new bi.BuiltinInt32ArrayConstructor(realm),
+        Int32ArrayPrototype: new bi.BuiltinInt32ArrayPrototype(),
+        isFinite: new bi.BuiltinisFiniteFunction(realm),
+        isNaN: new bi.BuiltinisNaNFunction(realm),
+        IteratorPrototype: new bi.BuiltinIteratorPrototype(),
+        JSON: new bi.BuiltinJSONObject(),
+        Map: new bi.BuiltinMapConstructor(realm),
+        MapIteratorPrototype: new bi.BuiltinMapIteratorPrototype(),
+        MapPrototype: new bi.BuiltinMapPrototype(),
+        Math: new bi.BuiltinMathObject(),
+        Number: new bi.BuiltinNumberConstructor(realm),
+        NumberPrototype: new bi.BuiltinNumberPrototype(),
+        Object: new bi.BuiltinObjectConstructor(realm),
+        ObjProto_toString: new bi.BuiltinObjProto_toStringFunction(realm),
+        parseFloat: new bi.BuiltinparseFloatFunction(realm),
+        parseInt: new bi.BuiltinparseIntFunction(realm),
+        Promise: new bi.BuiltinPromiseConstructor(realm),
+        PromisePrototype: new bi.BuiltinPromisePrototype(),
+        Proxy: new bi.BuiltinProxyConstructor(realm),
+        RangeError: new bi.BuiltinRangeErrorConstructor(realm),
+        RangeErrorPrototype: new bi.BuiltinRangeErrorPrototype(),
+        ReferenceError: new bi.BuiltinReferenceErrorConstructor(realm),
+        ReferenceErrorPrototype: new bi.BuiltinReferenceErrorPrototype(),
+        Reflect: new bi.BuiltinReflectObject(),
+        RegExp: new bi.BuiltinRegExpConstructor(realm),
+        RegExpPrototype: new bi.BuiltinRegExpPrototype(),
+        Set: new bi.BuiltinSetConstructor(realm),
+        SetIteratorPrototype: new bi.BuiltinSetIteratorPrototype(),
+        SetPrototype: new bi.BuiltinSetPrototype(),
+        String: new bi.BuiltinStringConstructor(realm),
+        StringIteratorPrototype: new bi.BuiltinStringIteratorPrototype(),
+        StringPrototype: new bi.BuiltinStringPrototype(),
+        Symbol: new bi.BuiltinSymbolConstructor(realm),
+        SymbolPrototype: new bi.BuiltinSymbolPrototype(),
+        SyntaxError: new bi.BuiltinSyntaxErrorConstructor(realm),
+        SyntaxErrorPrototype: new bi.BuiltinSyntaxErrorPrototype(),
+        TypedArrayPrototype: new bi.BuiltinTypedArrayPrototype(),
+        TypeError: new bi.BuiltinTypeErrorConstructor(realm),
+        TypeErrorPrototype: new bi.BuiltinTypeErrorPrototype(),
+        Uint8Array: new bi.BuiltinUint8ArrayConstructor(realm),
+        Uint8ArrayPrototype: new bi.BuiltinUint8ArrayPrototype(),
+        Uint8ClampedArray: new bi.BuiltinUint8ClampedArrayConstructor(realm),
+        Uint8ClampedArrayPrototype: new bi.BuiltinUint8ClampedArrayPrototype(),
+        Uint16Array: new bi.BuiltinUint16ArrayConstructor(realm),
+        Uint16ArrayPrototype: new bi.BuiltinUint16ArrayPrototype(),
+        Uint32Array: new bi.BuiltinUint32ArrayConstructor(realm),
+        Uint32ArrayPrototype: new bi.BuiltinUint32ArrayPrototype(),
+        URIError: new bi.BuiltinURIErrorConstructor(realm),
+        URIErrorPrototype: new bi.BuiltinURIErrorPrototype(),
+        WeakMap: new bi.BuiltinWeakMapConstructor(realm),
+        WeakMapPrototype: new bi.BuiltinWeakMapPrototype(),
+        WeakSet: new bi.BuiltinWeakSetConstructor(realm),
+        WeakSetPrototype: new bi.BuiltinWeakSetPrototype(),
+
         FunctionPrototype: funcProto,
         ObjectPrototype: objProto,
         ThrowTypeError: thrower,
