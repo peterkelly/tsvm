@@ -17,6 +17,8 @@
 import {
     UnknownType,
     Empty,
+    LexicalEnvironment,
+    Realm,
     EnvironmentRecord,
     ValueType,
     JSValue,

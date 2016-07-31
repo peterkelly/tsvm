@@ -134,6 +134,18 @@ export enum ConstructorKind {
     Derived,
 }
 
+interface FunctionObjectOptions {
+    environment: LexicalEnvironment;
+    formalParameters: ASTNode;
+    functionKind: FunctionKind;
+    ecmaScriptCode: ASTNode;
+    constructorKind: ConstructorKind;
+    realm: Realm;
+    thisMode: ThisMode;
+    strict: boolean;
+    homeObject: JSObject;
+}
+
 export class JSFunctionObject extends JSOrdinaryObject {
     _nominal_type_JSFunctionObject: any;
     public environment: LexicalEnvironment;
@@ -146,8 +158,17 @@ export class JSFunctionObject extends JSOrdinaryObject {
     public strict: boolean;
     public homeObject: JSObject;
 
-    public constructor() {
+    public constructor(options: FunctionObjectOptions) {
         super();
+        this.environment = options.environment;
+        this.formalParameters = options.formalParameters;
+        this.functionKind = options.functionKind;
+        this.ecmaScriptCode = options.ecmaScriptCode;
+        this.constructorKind = options.constructorKind;
+        this.realm = options.realm;
+        this.thisMode = options.thisMode;
+        this.strict = options.strict;
+        this.homeObject = options.homeObject;
     }
 
     // ES6 Section 9.2.1: [[Call]] (thisArgument, argumentsList)
