@@ -188,12 +188,14 @@ export class JSNumber extends JSPrimitiveValue {
 export abstract class JSObject extends JSValue {
     _nominal_type_JSObject: any;
 
+    public realm: Realm;
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
     public readonly properties: { [key: string]: PropertyDescriptor };
 
-    public constructor(prototype?: JSObject | JSNull) {
+    public constructor(realm: Realm, prototype?: JSObject | JSNull) {
         super();
+        this.realm = realm;
         if (prototype !== undefined)
             this.__prototype__ = prototype;
         else

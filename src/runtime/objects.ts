@@ -73,19 +73,20 @@ export abstract class JSExoticObject extends JSOrdinaryObject {
 
 // ES6 Section 9.1.6.1: OrdinaryDefineOwnProperty (O, P, Desc)
 
-export function OrdinaryDefineOwnProperty(O: JSObject, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<UnknownType> {
+export function OrdinaryDefineOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<UnknownType> {
     throw new Error("OrdinaryDefineOwnProperty Not implemented");
 }
 
 // ES6 Section 9.1.6.2: IsCompatiblePropertyDescriptor (Extensible, Desc, Current)
 
-export function IsCompatiblePropertyDescriptor(Extensible: boolean, Desc: PropertyDescriptor, Current: PropertyDescriptor): Completion<UnknownType> {
+export function IsCompatiblePropertyDescriptor(realm: Realm, Extensible: boolean, Desc: PropertyDescriptor, Current: PropertyDescriptor): Completion<UnknownType> {
     throw new Error("IsCompatiblePropertyDescriptor Not implemented");
 }
 
 // ES6 Section 9.1.6.3: ValidateAndApplyPropertyDescriptor (O, P, extensible, Desc, current)
 
 export function ValidateAndApplyPropertyDescriptor(
+    realm: Realm,
     O: JSObject,
     P: JSPropertyKey,
     extensible: boolean,
@@ -96,8 +97,8 @@ export function ValidateAndApplyPropertyDescriptor(
 
 // ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
 
-export function ObjectCreate(proto: JSObject | JSNull/*, internalSlotsList: string[]*/): JSObject {
-    const obj = new JSOrdinaryObject();
+export function ObjectCreate(realm: Realm, proto: JSObject | JSNull/*, internalSlotsList: string[]*/): JSObject {
+    const obj = new JSOrdinaryObject(realm);
     obj.__prototype__ = proto;
     obj.__extensible__ = true; // not really necessary; JSObjects are extensible by default
     return obj;
@@ -105,13 +106,13 @@ export function ObjectCreate(proto: JSObject | JSNull/*, internalSlotsList: stri
 
 // ES6 Section 9.1.14: OrdinaryCreateFromConstructor (constructor, intrinsicDefaultProto, internalSlotsList)
 
-export function OrdinaryCreateFromConstructor(constructor: any, intrinsicDefaultProto: any, internalSlotsList: any): Completion<UnknownType> {
+export function OrdinaryCreateFromConstructor(realm: Realm, constructor: any, intrinsicDefaultProto: any, internalSlotsList: any): Completion<UnknownType> {
     throw new Error("OrdinaryCreateFromConstructor Not implemented");
 }
 
 // ES6 Section 9.1.15: GetPrototypeFromConstructor (constructor, intrinsicDefaultProto)
 
-export function GetPrototypeFromConstructor(constructor: any, intrinsicDefaultProto: any): Completion<UnknownType> {
+export function GetPrototypeFromConstructor(realm: Realm, constructor: any, intrinsicDefaultProto: any): Completion<UnknownType> {
     throw new Error("GetPrototypeFromConstructor Not implemented");
 }
 
@@ -159,7 +160,7 @@ export class JSFunctionObject extends JSOrdinaryObject {
     public homeObject: JSObject;
 
     public constructor(options: FunctionObjectOptions) {
-        super();
+        super(options.realm);
         this.environment = options.environment;
         this.formalParameters = options.formalParameters;
         this.functionKind = options.functionKind;
@@ -186,43 +187,43 @@ export class JSFunctionObject extends JSOrdinaryObject {
 
 // ES6 Section 9.2.1.1: PrepareForOrdinaryCall (F, newTarget)
 
-export function PrepareForOrdinaryCall(F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion<UnknownType> {
+export function PrepareForOrdinaryCall(realm: Realm, F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion<UnknownType> {
     throw new Error("PrepareForOrdinaryCall Not implemented");
 }
 
 // ES6 Section 9.2.1.2: OrdinaryCallBindThis (F, calleeContext, thisArgument)
 
-export function OrdinaryCallBindThis(F: JSFunctionObject, calleeContext: ExecutionContext, thisArgument: JSValue): Completion<UnknownType> {
+export function OrdinaryCallBindThis(realm: Realm, F: JSFunctionObject, calleeContext: ExecutionContext, thisArgument: JSValue): Completion<UnknownType> {
     throw new Error("OrdinaryCallBindThis Not implemented");
 }
 
 // ES6 Section 9.2.1.3: OrdinaryCallEvaluateBody (F, argumentsList)
 
-export function OrdinaryCallEvaluateBody(F: JSFunctionObject, argumentsList: JSValue[]): Completion<UnknownType> {
+export function OrdinaryCallEvaluateBody(realm: Realm, F: JSFunctionObject, argumentsList: JSValue[]): Completion<UnknownType> {
     throw new Error("OrdinaryCallEvaluateBody Not implemented");
 }
 
 // ES6 Section 9.2.3 FunctionAllocate (functionPrototype, strict [,functionKind])
 
-export function FunctionAllocate(functionPrototype: JSObject, strict: boolean, functionKind?: string): Completion<UnknownType> {
+export function FunctionAllocate(realm: Realm, functionPrototype: JSObject, strict: boolean, functionKind?: string): Completion<UnknownType> {
     throw new Error("FunctionAllocate Not implemented");
 }
 
 // ES6 Section 9.2.4: FunctionInitialize (F, kind, ParameterList, Body, Scope)
 
-export function FunctionInitialize(F: JSFunctionObject, kind: any, ParameterList: any, Body: any, Scope: any): JSFunctionObject {
+export function FunctionInitialize(realm: Realm, F: JSFunctionObject, kind: any, ParameterList: any, Body: any, Scope: any): JSFunctionObject {
     throw new Error("FunctionInitialize Not implemented");
 }
 
 // ES6 Section 9.2.5: FunctionCreate (kind, ParameterList, Body, Scope, Strict, prototype)
 
-export function FunctionCreate(kind: any, ParameterList: any, Body: any, Scope: any, Strict: any, prototype: any): JSFunctionObject {
+export function FunctionCreate(realm: Realm, kind: any, ParameterList: any, Body: any, Scope: any, Strict: any, prototype: any): JSFunctionObject {
     throw new Error("FunctionInitialize Not implemented");
 }
 
 // ES6 Section 9.2.6: GeneratorFunctionCreate (kind, ParameterList, Body, Scope, Strict)
 
-export function GeneratorFunctionCreate(kind: any, ParameterList: any, Body: any, Scope: any, Strict: any): JSFunctionObject {
+export function GeneratorFunctionCreate(realm: Realm, kind: any, ParameterList: any, Body: any, Scope: any, Strict: any): JSFunctionObject {
     throw new Error("FunctionInitialize Not implemented");
 }
 
@@ -234,49 +235,45 @@ export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Real
 
 // ES6 Section 9.2.7.1: %ThrowTypeError% ()
 
-export function intrinsic_ThrowTypeError(message?: string): ThrowCompletion {
-    throw new Error("intrinsic_ThrowTypeError Not implemented");
-}
-
-export function intrinsic_ThrowTypeErr2(realm: Realm, message?: string): ThrowCompletion {
+export function intrinsic_ThrowTypeError(realm: Realm, message?: string): ThrowCompletion {
     const proto = realm.intrinsics.TypeErrorPrototype;
     if (message !== undefined)
-        return new ThrowCompletion(new bi.TypeErrorObject(proto,new JSString(message)));
+        return new ThrowCompletion(new bi.TypeErrorObject(realm,proto,new JSString(message)));
     else
-        return new ThrowCompletion(new bi.TypeErrorObject(proto,new JSUndefined()));
+        return new ThrowCompletion(new bi.TypeErrorObject(realm,proto,new JSUndefined()));
 }
 
-export function intrinsic_ThrowReferenceError(): ThrowCompletion {
+export function intrinsic_ThrowReferenceError(realm: Realm): ThrowCompletion {
     throw new Error("intrinsic_ThrowReferenceError Not implemented");
 }
 
 // ES6 Section 9.2.8 MakeConstructor: (F, writablePrototype, prototype)
 
-export function MakeConstructor(F: JSFunctionObject, writablePrototype: any, prototype: any): Completion<UnknownType> {
+export function MakeConstructor(realm: Realm, F: JSFunctionObject, writablePrototype: any, prototype: any): Completion<UnknownType> {
     throw new Error("MakeConstructor Not implemented");
 }
 
 // ES6 Section 9.2.9: MakeClassConstructor (F)
 
-export function MakeClassConstructor(F: JSFunctionObject): Completion<UnknownType> {
+export function MakeClassConstructor(realm: Realm, F: JSFunctionObject): Completion<UnknownType> {
     throw new Error("MakeClassConstructor Not implemented");
 }
 
 // ES6 Section 9.2.10 MakeMethod: (F, homeObject)
 
-export function MakeMethod(F: JSFunctionObject, homeObject: JSObject): Completion<UnknownType> {
+export function MakeMethod(realm: Realm, F: JSFunctionObject, homeObject: JSObject): Completion<UnknownType> {
     throw new Error("MakeMethod Not implemented");
 }
 
 // ES6 Section 9.2.11: SetFunctionName (F, name, prefix)
 
-export function SetFunctionName(F: JSFunctionObject, name: string, prefix: string): Completion<UnknownType> {
+export function SetFunctionName(realm: Realm, F: JSFunctionObject, name: string, prefix: string): Completion<UnknownType> {
     throw new Error("SetFunctionName Not implemented");
 }
 
 // ES6 Section 9.2.12: FunctionDeclarationInstantiation (func, argumentsList)
 
-export function FunctionDeclarationInstantiation(func: JSFunctionObject, argumentsList: any[]) {
+export function FunctionDeclarationInstantiation(realm: Realm, func: JSFunctionObject, argumentsList: any[]) {
     throw new Error("FunctionDeclarationInstantiation Not implemented");
 }
 
@@ -302,7 +299,7 @@ export function CreateBuiltinFunction(realm: Realm, steps: any, prototype: any, 
 
 // ES6 Section 9.4.1.3: BoundFunctionCreate (targetFunction, boundThis, boundArgs)
 
-export function BoundFunctionCreate(targetFunction: any, boundThis: any, boundArgs: any): Completion<UnknownType> {
+export function BoundFunctionCreate(realm: Realm, targetFunction: any, boundThis: any, boundArgs: any): Completion<UnknownType> {
     throw new Error("BoundFunctionCreate not implemented");
 }
 
@@ -314,19 +311,19 @@ export function BoundFunctionCreate(targetFunction: any, boundThis: any, boundAr
 
 // ES6 Section 9.4.2.2: ArrayCreate(length, proto)
 
-export function ArrayCreate(length: any, proto: any): Completion<UnknownType> {
+export function ArrayCreate(realm: Realm, length: any, proto: any): Completion<UnknownType> {
     throw new Error("ArrayCreate not implemented");
 }
 
 // ES6 Section 9.4.2.3: ArraySpeciesCreate(originalArray, length)
 
-export function ArraySpeciesCreate(originalArray: any, length: any): Completion<UnknownType> {
+export function ArraySpeciesCreate(realm: Realm, originalArray: any, length: any): Completion<UnknownType> {
     throw new Error("ArraySpeciesCreate not implemented");
 }
 
 // ES6 Section 9.4.2.4: ArraySetLength(A, Desc)
 
-export function ArraySetLength(A: any, Desc: any): Completion<UnknownType> {
+export function ArraySetLength(realm: Realm, A: any, Desc: any): Completion<UnknownType> {
     throw new Error("ArraySetLength not implemented");
 }
 
@@ -338,7 +335,7 @@ export function ArraySetLength(A: any, Desc: any): Completion<UnknownType> {
 
 // ES6 Section 9.4.3.1.1: StringGetIndexProperty (S, P)
 
-export function StringGetIndexProperty(S: any, P: any): Completion<UnknownType> {
+export function StringGetIndexProperty(realm: Realm, S: any, P: any): Completion<UnknownType> {
     throw new Error("StringGetIndexProperty not implemented");
 }
 
@@ -352,7 +349,7 @@ export function StringGetIndexProperty(S: any, P: any): Completion<UnknownType> 
 
 // ES6 Section 9.4.3.4: StringCreate (value, prototype)
 
-export function StringCreate(value: any, prototype: any): Completion<UnknownType> {
+export function StringCreate(realm: Realm, value: any, prototype: any): Completion<UnknownType> {
     throw new Error("StringCreate not implemented");
 }
 
@@ -380,13 +377,13 @@ export function StringCreate(value: any, prototype: any): Completion<UnknownType
 
 // ES6 Section 9.4.4.6: CreateUnmappedArgumentsObject (argumentsList)
 
-export function CreateUnmappedArgumentsObject(argumentsList: any): Completion<UnknownType> {
+export function CreateUnmappedArgumentsObject(realm: Realm, argumentsList: any): Completion<UnknownType> {
     throw new Error("CreateUnmappedArgumentsObject not implemented");
 }
 
 // ES6 Section 9.4.4.7: CreateMappedArgumentsObject (func, formals, argumentsList, env)
 
-export function CreateMappedArgumentsObject(func: any, formals: any, argumentsList: any, env: any): Completion<UnknownType> {
+export function CreateMappedArgumentsObject(realm: Realm, func: any, formals: any, argumentsList: any, env: any): Completion<UnknownType> {
     throw new Error("CreateMappedArgumentsObject not implemented");
 }
 
@@ -438,19 +435,19 @@ export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord
 
 // ES6 Section 9.4.5.7: IntegerIndexedObjectCreate (prototype, internalSlotsList)
 
-export function IntegerIndexedObjectCreate(prototype: any, internalSlotsList: any): Completion<UnknownType> {
+export function IntegerIndexedObjectCreate(realm: Realm, prototype: any, internalSlotsList: any): Completion<UnknownType> {
     throw new Error("IntegerIndexedObjectCreate not implemented");
 }
 
 // ES6 Section 9.4.5.8: IntegerIndexedElementGet (O, index)
 
-export function IntegerIndexedElementGet(O: any, index: any): Completion<UnknownType> {
+export function IntegerIndexedElementGet(realm: Realm, O: any, index: any): Completion<UnknownType> {
     throw new Error("IntegerIndexedElementGet not implemented");
 }
 
 // ES6 Section 9.4.5.9: IntegerIndexedElementSet (O, index, value)
 
-export function IntegerIndexedElementSet(O: any, index: any, value: any): Completion<UnknownType> {
+export function IntegerIndexedElementSet(realm: Realm, O: any, index: any, value: any): Completion<UnknownType> {
     throw new Error("IntegerIndexedElementGet not implemented");
 }
 
@@ -506,7 +503,7 @@ export function IntegerIndexedElementSet(O: any, index: any, value: any): Comple
 
 // ES6 Section 9.4.6.13: ModuleNamespaceCreate (module, exports)
 
-export function ModuleNamespaceCreate(module: any, exports: any): Completion<UnknownType> {
+export function ModuleNamespaceCreate(realm: Realm, module: any, exports: any): Completion<UnknownType> {
     throw new Error("ModuleNamespaceCreate not implemented");
 }
 

@@ -15,6 +15,8 @@
 import {
     UnknownType,
     Empty,
+    LexicalEnvironment,
+    Realm,
     EnvironmentRecord,
     ValueType,
     JSValue,
@@ -55,10 +57,10 @@ import {
 import {
     JSOrdinaryObject,
 } from "./datatypes";
-// import {
-//     ExecutionContext,
-//     Realm,
-// } from "./context";
+import {
+    ExecutionContext,
+    RealmImpl,
+} from "./context";
 import {
     ASTNode,
     ListNode,
@@ -101,7 +103,7 @@ import {
 // }
 
 export function evalModule(node: ASTNode): void {
-    // const realm = new Realm();
-    const obj = new JSOrdinaryObject();
+    const realm = new RealmImpl();
+    const obj = new JSOrdinaryObject(realm);
     console.log("evalModule");
 }

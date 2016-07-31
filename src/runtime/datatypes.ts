@@ -15,6 +15,8 @@
 import {
     UnknownType,
     Empty,
+    LexicalEnvironment,
+    Realm,
     EnvironmentRecord,
     ValueType,
     JSValue,
@@ -138,13 +140,13 @@ export class JSOrdinaryObject extends JSObject {
     public __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
         if (copy === undefined)
             copy = true;
-        return new NormalCompletion(OrdinaryGetOwnProperty(this,P,copy));
+        return new NormalCompletion(OrdinaryGetOwnProperty(this.realm,this,P,copy));
     }
 
     // ES6 Section 9.1.7: [[HasProperty]](P)
 
     public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
-        return OrdinaryHasProperty(this,P);
+        return OrdinaryHasProperty(this.realm,this,P);
     }
 
     // ES6 Section 9.1.8: [[Get]] (P, Receiver)
@@ -170,7 +172,7 @@ export class JSOrdinaryObject extends JSObject {
             const getter = desc.__get__;
             if (getter instanceof JSUndefined)
                 return new NormalCompletion(new JSUndefined());
-            return Call(getter,Receiver,[]);
+            return Call(this.realm,getter,Receiver,[]);
         }
     }
 
@@ -218,14 +220,14 @@ export class JSOrdinaryObject extends JSObject {
                 return Receiver.__DefineOwnProperty__(P,valueDesc);
             }
             else {
-                return CreateDataProperty(Receiver,P,V);
+                return CreateDataProperty(this.realm,Receiver,P,V);
             }
         }
         else {
             const setter = ownDesc.__set__;
             if (setter instanceof JSUndefined)
                 return new NormalCompletion(false);
-            const setterResultComp = Call(setter,Receiver,[V]);
+            const setterResultComp = Call(this.realm,setter,Receiver,[V]);
             if (!(setterResultComp instanceof NormalCompletion))
                 return setterResultComp;
             return new NormalCompletion(true);
@@ -277,7 +279,7 @@ export class JSOrdinaryObject extends JSObject {
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
-export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey, copy: boolean = true): JSUndefined | PropertyDescriptor {
+export function OrdinaryGetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey, copy: boolean = true): JSUndefined | PropertyDescriptor {
     // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
     // where we can avoid doing so.
     const stringKey = P.stringRep;
@@ -308,8 +310,8 @@ export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey, copy: bool
 
 // ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
 
-export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const hasOwn = OrdinaryGetOwnProperty(O,P);
+export function OrdinaryHasProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
+    const hasOwn = OrdinaryGetOwnProperty(realm,O,P);
     if (!(hasOwn instanceof JSUndefined))
         return new NormalCompletion(true);
     const parentComp = O.__GetPrototypeOf__();
@@ -321,58 +323,58 @@ export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<b
     return new NormalCompletion(false);
 }
 
-export function GetBase(V: Reference): ReferenceBase {
+export function GetBase(realm: Realm, V: Reference): ReferenceBase {
     return V.base;
 }
 
-export function GetReferencedName(V: Reference): JSPropertyKey {
+export function GetReferencedName(realm: Realm, V: Reference): JSPropertyKey {
     return V.name;
 }
 
-export function IsStrictReference(V: Reference): boolean {
+export function IsStrictReference(realm: Realm, V: Reference): boolean {
     return V.strict.booleanValue;
 }
 
-export function HasPrimitiveBase(V: Reference): boolean {
+export function HasPrimitiveBase(realm: Realm, V: Reference): boolean {
     return ((V.base instanceof JSBoolean) ||
             (V.base instanceof JSString) ||
             (V.base instanceof JSSymbol) ||
             (V.base instanceof JSNumber));
 }
 
-export function IsPropertyReference(V: Reference): boolean {
-    return ((V.base instanceof JSObject) || HasPrimitiveBase(V));
+export function IsPropertyReference(realm: Realm, V: Reference): boolean {
+    return ((V.base instanceof JSObject) || HasPrimitiveBase(realm,V));
 }
 
-export function IsUnresolvableReference(V: Reference): boolean {
+export function IsUnresolvableReference(realm: Realm, V: Reference): boolean {
     return (V.base instanceof JSUndefined);
 }
 
-export function IsSuperReference(V: Reference): boolean {
+export function IsSuperReference(realm: Realm, V: Reference): boolean {
     return (V instanceof SuperReference);
 }
 
 // ES6 Section 6.2.3.1: GetValue (V)
 
-export function GetValue(V: any): Completion<UnknownType> {
+export function GetValue(realm: Realm, V: any): Completion<UnknownType> {
     throw new Error("GetValue not implemented");
 }
 
 // ES6 Section 6.2.3.2: PutValue (V, W)
 
-export function PutValue(V: any, W: any): Completion<UnknownType> {
+export function PutValue(realm: Realm, V: any, W: any): Completion<UnknownType> {
     throw new Error("PutValue not implemented");
 }
 
 // ES6 Section 6.2.3.3: GetThisValue (V)
 
-export function GetThisValue(V: any): Completion<UnknownType> {
+export function GetThisValue(realm: Realm, V: any): Completion<UnknownType> {
     throw new Error("GetThisValue not implemented");
 }
 
 // ES6 Section 6.2.3.4: InitializeReferencedBinding (V, W)
 
-export function InitializeReferencedBinding(V: any): Completion<UnknownType> {
+export function InitializeReferencedBinding(realm: Realm, V: any): Completion<UnknownType> {
     throw new Error("InitializeReferencedBinding not implemented");
 }
 
@@ -380,19 +382,19 @@ export function InitializeReferencedBinding(V: any): Completion<UnknownType> {
 
 // ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
 
-export function IsAccessorDescriptor(Desc: PropertyDescriptor): Desc is AccessorDescriptor {
+export function IsAccessorDescriptor(realm: Realm, Desc: PropertyDescriptor): Desc is AccessorDescriptor {
     return (Desc instanceof AccessorDescriptor);
 }
 
 // ES6 Section 6.2.4.2: IsDataDescriptor (Desc)
 
-export function IsDataDescriptor(Desc: PropertyDescriptor): Desc is DataDescriptor {
+export function IsDataDescriptor(realm: Realm, Desc: PropertyDescriptor): Desc is DataDescriptor {
     return (Desc instanceof DataDescriptor);
 }
 
 // ES6 Section 6.2.4.3: IsGenericDescriptor (Desc)
 
-export function IsGenericDescriptor(Desc: BaseDescriptor | JSUndefined): boolean {
+export function IsGenericDescriptor(realm: Realm, Desc: BaseDescriptor | JSUndefined): boolean {
     if (Desc instanceof JSUndefined)
         return false;
     if (!(Desc instanceof AccessorDescriptor) && !(Desc instanceof DataDescriptor))
@@ -402,31 +404,31 @@ export function IsGenericDescriptor(Desc: BaseDescriptor | JSUndefined): boolean
 
 // ES6 Section 6.2.4.4: FromPropertyDescriptor (Desc)
 
-export function FromPropertyDescriptor(Desc: PropertyDescriptor): Completion<UnknownType> {
+export function FromPropertyDescriptor(realm: Realm, Desc: PropertyDescriptor): Completion<UnknownType> {
     throw new Error("FromPropertyDescriptor not implemented");
 }
 
 // ES6 Section 6.2.4.5: ToPropertyDescriptor (Obj)
 
-export function ToPropertyDescriptor(Obj: any): Completion<UnknownType> {
+export function ToPropertyDescriptor(realm: Realm, Obj: any): Completion<UnknownType> {
     throw new Error("ToPropertyDescriptor not implemented");
 }
 
 // ES6 Section 6.2.4.6: CompletePropertyDescriptor (Desc)
 
-export function CompletePropertyDescriptor(Desc: any): Completion<UnknownType> {
+export function CompletePropertyDescriptor(realm: Realm, Desc: any): Completion<UnknownType> {
     throw new Error("CompletePropertyDescriptor not implemented");
 }
 
 // ES6 Section 6.2.6.1: CreateByteDataBlock (size)
 
-export function CreateByteDataBlock(size: number): DataBlock {
+export function CreateByteDataBlock(realm: Realm, size: number): DataBlock {
     throw new Error("CreateByteDataBlock not implemented");
 }
 
 // ES6 Section 6.2.6.2: CopyDataBlockBytes (toBlock, toIndex, fromBlock, fromIndex, count)
 
-export function CopyDataBlockBytes(toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<UnknownType> {
+export function CopyDataBlockBytes(realm: Realm, toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<UnknownType> {
     throw new Error("CopyDataBlockBytes not implemented");
 }
 
@@ -531,7 +533,7 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
 
 // ES6 Section 7.3.12: Call(F, V, [argumentsList])
 
-export function Call(F: JSValue, V: JSValue, argumentList: JSValue[]): Completion<JSValue> {
+export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue[]): Completion<JSValue> {
     if (!(F instanceof JSObject) || !F.implementsCall)
         throw new Error("Object is not callable"); // FIXME: temp
     // if (!IsCallable(F))
@@ -544,7 +546,7 @@ export function Call(F: JSValue, V: JSValue, argumentList: JSValue[]): Completio
 
 // ES6 Section 7.3.4: CreateDataProperty (O, P, V)
 
-export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
+export function CreateDataProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
     const newDesc = new DataDescriptor({ value: V, writable: true });
     newDesc.enumerable = true;
     newDesc.configurable = true;
@@ -553,7 +555,7 @@ export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): C
 
 // ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
 
-export function CreateMethodProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
+export function CreateMethodProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
     const newDesc = new DataDescriptor({ value: V, writable: true });
     newDesc.enumerable = false;
     newDesc.configurable = true;

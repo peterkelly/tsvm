@@ -49,6 +49,8 @@ import {
     ContinueCompletion,
     ReturnCompletion,
     ThrowCompletion,
+    ReferenceBase,
+    SuperReferenceBase,
     Reference,
     SuperReference,
     DataBlock,
@@ -193,7 +195,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
 
         if (!(N in envRec.bindings)) {
             if (S)
-                return intrinsic_ThrowReferenceError();
+                return intrinsic_ThrowReferenceError(this.realm);
             envRec.CreateMutableBinding(N,true);
             envRec.InitializeBinding(N,V);
             return new NormalCompletion(undefined);
@@ -203,11 +205,11 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
         if (binding.strict)
             S = true;
         if (!binding.initialized)
-            return intrinsic_ThrowReferenceError();
+            return intrinsic_ThrowReferenceError(this.realm);
         else if (binding.mutable)
             binding.value = V;
         else if (S)
-            return intrinsic_ThrowTypeError();
+            return intrinsic_ThrowTypeError(this.realm);
         return new NormalCompletion(undefined);
     }
 
@@ -219,7 +221,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
             throw new Error("Binding for "+N+" does not exist");
         const binding = this.bindings[N];
         if (!binding.initialized)
-            return intrinsic_ThrowReferenceError();
+            return intrinsic_ThrowReferenceError(this.realm);
         return new NormalCompletion(binding.value);
     }
 
@@ -257,10 +259,12 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
 export class ObjectEnvironmentRecord extends AbstractEnvironmentRecord {
     _nominal_type_ObjectEnvironmentRecord: any;
     public bindingObject: JSObject;
+    public realm: Realm;
     // public withEnvironment: boolean;
 
-    public constructor(bindingObject: JSObject) {
+    public constructor(realm: Realm, bindingObject: JSObject) {
         super();
+        this.realm = realm;
         this.bindingObject = bindingObject;
         // this.withEnvironment = false;
     }
@@ -270,7 +274,7 @@ export class ObjectEnvironmentRecord extends AbstractEnvironmentRecord {
     public HasBinding(N: string): Completion<boolean> {
         const envRec = this;
         const bindings = envRec.bindingObject;
-        const foundBindingComp = HasProperty(bindings,new JSString(N));
+        const foundBindingComp = HasProperty(this.realm,bindings,new JSString(N));
         if (!(foundBindingComp instanceof NormalCompletion))
             return foundBindingComp;
         const foundBinding = foundBindingComp.value;
@@ -372,7 +376,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         if (envRec.thisBindingStatus == BindingStatus.Lexical)
             throw new Error("FunctionEnvironmentRecord.BindThisValue: thisBindingStatus is Lexical");
         if (envRec.thisBindingStatus == BindingStatus.Initialized)
-            return intrinsic_ThrowReferenceError();
+            return intrinsic_ThrowReferenceError(this.realm);
         envRec.thisValue = V;
         envRec.thisBindingStatus = BindingStatus.Initialized;
         return new NormalCompletion(V);
@@ -401,7 +405,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         if (envRec.thisBindingStatus == BindingStatus.Lexical)
             throw new Error("FunctionEnvironmentRecord.GetThisBinding: thisBindingStatus is Lexical");
         if (envRec.thisBindingStatus == BindingStatus.Uninitialized)
-            return intrinsic_ThrowReferenceError();
+            return intrinsic_ThrowReferenceError(this.realm);
         return new NormalCompletion(envRec.thisValue);
     }
 
@@ -428,7 +432,7 @@ export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
     public constructor(realm: Realm, G: JSObject) {
         super();
         this.realm = realm;
-        this.objectRecord = new ObjectEnvironmentRecord(G);
+        this.objectRecord = new ObjectEnvironmentRecord(realm,G);
         this.declarativeRecord = new DeclarativeEnvironmentRecord(realm);
         this.varNames = [];
     }
@@ -586,7 +590,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 // ES6 Section 8.1.2.1: GetIdentifierReference (lex, name, strict)
 
-export function GetIdentifierReference(lex: LexicalEnvironment, name: string, strict: boolean): Completion<UnknownType> {
+export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment, name: string, strict: boolean): Completion<UnknownType> {
     throw new Error("GetIdentifierReference not implemented");
 }
 
@@ -599,8 +603,8 @@ export function NewDeclarativeEnvironment(realm: Realm, E: LexicalEnvironment | 
 
 // ES6 Section 8.1.2.3: NewObjectEnvironment (O, E)
 
-export function NewObjectEnvironment(O: JSObject, E: LexicalEnvironment | null): LexicalEnvironment {
-    const envRec = new ObjectEnvironmentRecord(O);
+export function NewObjectEnvironment(realm: Realm, O: JSObject, E: LexicalEnvironment | null): LexicalEnvironment {
+    const envRec = new ObjectEnvironmentRecord(realm,O);
     return { record: envRec, outer: E };
 }
 
@@ -662,7 +666,7 @@ export function CreateRealm(): Realm {
 // ES6 Section 8.2.2: CreateIntrinsics (realmRec)
 
 export function CreateIntrinsics(realm: Realm): Intrinsics {
-    const objProto = new JSOrdinaryObject();
+    const objProto = new JSOrdinaryObject(realm);
     const thrower = new bi.ThrowTypeErrorFunction(realm,new JSNull());
     const funcProto = new bi.BuiltinFunctionPrototype(realm,new JSNull());
 
@@ -857,13 +861,13 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
 
 // ES6 Section 8.2.3: SetRealmGlobalObject (realmRec, globalObj)
 
-export function SetRealmGlobalObject(realmRec: Realm, globalObj: JSObject | JSUndefined): Realm {
+export function SetRealmGlobalObject(realm: Realm, globalObj: JSObject | JSUndefined): Realm {
     throw new Error("SetRealmGlobalObject not implemented");
 }
 
 // ES6 Section 8.2.4: SetDefaultGlobalBindings (realmRec)
 
-export function SetDefaultGlobalBindings(realmRec: Realm): Completion<UnknownType> {
+export function SetDefaultGlobalBindings(realm: Realm): Completion<UnknownType> {
     throw new Error("SetDefaultGlobalBindings not implemented");
 }
 
