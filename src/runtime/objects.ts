@@ -148,8 +148,6 @@ export class JSFunctionObject extends JSObject {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
         throw new Error("JSFunctionObject.__Construct__ Not implemented");
     }
-
-
 }
 
 // ES6 Section 9.2.1.1: PrepareForOrdinaryCall (F, newTarget)

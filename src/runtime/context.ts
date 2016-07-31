@@ -636,7 +636,7 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
 
 
 
-    return {
+    const intrinsics = {
         Array: new bi.BuiltinArrayConstructor(realm),
         ArrayBuffer: new bi.BuiltinArrayBufferConstructor(realm),
         ArrayBufferPrototype: new bi.BuiltinArrayBufferPrototype(),
@@ -728,6 +728,90 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
         ObjectPrototype: objProto,
         ThrowTypeError: thrower,
     };
+
+    const globals = {
+        Array: intrinsics.Array,
+        ArrayBuffer: intrinsics.ArrayBuffer,
+        Boolean: intrinsics.Boolean,
+        DataView: intrinsics.DataView,
+        Date: intrinsics.Date,
+        decodeURI: intrinsics.decodeURI,
+        decodeURIComponent: intrinsics.decodeURIComponent,
+        encodeURI: intrinsics.encodeURI,
+        encodeURIComponent: intrinsics.encodeURIComponent,
+        Error: intrinsics.Error,
+        eval: intrinsics.eval,
+        EvalError: intrinsics.EvalError,
+        Float32Array: intrinsics.Float32Array,
+        Float64Array: intrinsics.Float64Array,
+        Function: intrinsics.Function,
+        Int8Array: intrinsics.Int8Array,
+        Int16Array: intrinsics.Int16Array,
+        Int32Array: intrinsics.Int32Array,
+        isFinite: intrinsics.isFinite,
+        isNaN: intrinsics.isNaN,
+        JSON: intrinsics.JSON,
+        Map: intrinsics.Map,
+        Math: intrinsics.Math,
+        Number: intrinsics.Number,
+        Object: intrinsics.Object,
+        parseFloat: intrinsics.parseFloat,
+        parseInt: intrinsics.parseInt,
+        Promise: intrinsics.Promise,
+        Proxy: intrinsics.Proxy,
+        RangeError: intrinsics.RangeError,
+        ReferenceError: intrinsics.ReferenceError,
+        Reflect: intrinsics.Reflect,
+        RegExp: intrinsics.RegExp,
+        Set: intrinsics.Set,
+        String: intrinsics.String,
+        Symbol: intrinsics.Symbol,
+        SyntaxError: intrinsics.SyntaxError,
+        TypeError: intrinsics.TypeError,
+        Uint8Array: intrinsics.Uint8Array,
+        Uint8ClampedArray: intrinsics.Uint8ClampedArray,
+        Uint16Array: intrinsics.Uint16Array,
+        Uint32Array: intrinsics.Uint32Array,
+        URIError: intrinsics.URIError,
+        WeakMap: intrinsics.WeakMap,
+        WeakSet: intrinsics.WeakSet,
+    };
+
+    intrinsics.Array.__prototype__ = intrinsics.ArrayPrototype;
+    intrinsics.ArrayBuffer.__prototype__ = intrinsics.ArrayBufferPrototype;
+    intrinsics.Boolean.__prototype__ = intrinsics.BooleanPrototype;
+    intrinsics.DataView.__prototype__ = intrinsics.DataViewPrototype;
+    intrinsics.Date.__prototype__ = intrinsics.DatePrototype;
+    intrinsics.Error.__prototype__ = intrinsics.ErrorPrototype;
+    intrinsics.EvalError.__prototype__ = intrinsics.EvalErrorPrototype;
+    intrinsics.Float32Array.__prototype__ = intrinsics.Float32ArrayPrototype;
+    intrinsics.Float64Array.__prototype__ = intrinsics.Float64ArrayPrototype;
+    intrinsics.Function.__prototype__ = intrinsics.FunctionPrototype;
+    intrinsics.Int8Array.__prototype__ = intrinsics.Int8ArrayPrototype;
+    intrinsics.Int16Array.__prototype__ = intrinsics.Int16ArrayPrototype;
+    intrinsics.Int32Array.__prototype__ = intrinsics.Int32ArrayPrototype;
+    intrinsics.Map.__prototype__ = intrinsics.MapPrototype;
+    intrinsics.Number.__prototype__ = intrinsics.NumberPrototype;
+    intrinsics.Object.__prototype__ = intrinsics.ObjectPrototype;
+    // FIXME: ObjProto_toString
+    intrinsics.Promise.__prototype__ = intrinsics.PromisePrototype;
+    intrinsics.RangeError.__prototype__ = intrinsics.RangeErrorPrototype;
+    intrinsics.ReferenceError.__prototype__ = intrinsics.ReferenceErrorPrototype;
+    intrinsics.RegExp.__prototype__ = intrinsics.RegExpPrototype;
+    intrinsics.Set.__prototype__ = intrinsics.SetPrototype;
+    intrinsics.String.__prototype__ = intrinsics.StringPrototype;
+    intrinsics.Symbol.__prototype__ = intrinsics.SymbolPrototype;
+    intrinsics.SyntaxError.__prototype__ = intrinsics.SyntaxErrorPrototype;
+    intrinsics.TypeError.__prototype__ = intrinsics.TypeErrorPrototype;
+    intrinsics.Uint8Array.__prototype__ = intrinsics.Uint8ArrayPrototype;
+    intrinsics.Uint8ClampedArray.__prototype__ = intrinsics.Uint8ClampedArrayPrototype;
+    intrinsics.Uint16Array.__prototype__ = intrinsics.Uint16ArrayPrototype;
+    intrinsics.Uint32Array.__prototype__ = intrinsics.Uint32ArrayPrototype;
+    intrinsics.URIError.__prototype__ = intrinsics.URIErrorPrototype;
+    intrinsics.WeakMap.__prototype__ = intrinsics.WeakMapPrototype;
+    intrinsics.WeakSet.__prototype__ = intrinsics.WeakSetPrototype;
+
+    return intrinsics;
 
     // throw new Error("CreateIntrinsics not implemented");
 }

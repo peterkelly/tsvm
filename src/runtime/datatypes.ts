@@ -360,6 +360,27 @@ export class JSObject extends JSValue {
     }
 }
 
+export interface Callable {
+    __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+}
+
+export interface Constructable {
+    __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
+}
+
+export abstract class JSCallableObject extends JSObject implements Callable {
+    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+}
+
+export abstract class JSConstructableObject extends JSObject implements Constructable {
+    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
+}
+
+export abstract class JSCallAndConstructableObject extends JSObject implements Callable, Constructable {
+    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
+}
+
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
 export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey, copy: boolean = true): JSUndefined | PropertyDescriptor {
