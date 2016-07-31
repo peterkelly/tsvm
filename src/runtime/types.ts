@@ -39,16 +39,17 @@ export interface Realm {
 }
 
 export interface EnvironmentRecord {
-    HasBinding(N: string): Completion<boolean>;
-    CreateMutableBinding(N: string, D: boolean): void;
-    CreateImmutableBinding(N: string, S: boolean): void;
-    InitializeBinding(N: string, V: JSValue): void;
-    SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
-    GetBindingValue(N: string, S: boolean): Completion<JSValue>;
-    DeleteBinding(N: string): Completion<boolean>;
-    HasThisBinding(): Completion<boolean>;
-    HasSuperBinding(): Completion<boolean>;
-    WithBaseObject(): Completion<JSObject | JSUndefined>;
+    // FIXME: I believe this can just return a boolean, not a completion
+     HasBinding(N: string): Completion<boolean>;
+     CreateMutableBinding(N: string, D: boolean): void;
+     CreateImmutableBinding(N: string, S: boolean): void;
+     InitializeBinding(N: string, V: JSValue): void;
+     SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
+     GetBindingValue(N: string, S: boolean): Completion<JSValue>;
+     DeleteBinding(N: string): Completion<boolean>;
+     HasThisBinding(): Completion<boolean>;
+     HasSuperBinding(): Completion<boolean>;
+     WithBaseObject(): Completion<JSObject | JSUndefined>;
 }
 
 // ES6 Section 6.1: ECMAScript Language Types

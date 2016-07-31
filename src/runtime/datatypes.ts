@@ -64,9 +64,7 @@ import {
     ASTNode
 } from "../parser/ast";
 // import {
-//     SameValue,
-//     Call,
-//     CreateDataProperty,
+//     ToObject,
 // } from "./operations";
 // import {
 //     intrinsic_ThrowTypeError
@@ -85,6 +83,10 @@ import {
     rt_string_to_double,
     rt_string_lessThan,
 } from "./runtime";
+// import {
+//     intrinsic_ThrowTypeError,
+//     intrinsic_ThrowReferenceError,
+// } from "./objects";
 
 export class JSOrdinaryObject extends JSObject {
 
@@ -356,8 +358,34 @@ export function IsSuperReference(realm: Realm, V: Reference): boolean {
 
 // ES6 Section 6.2.3.1: GetValue (V)
 
-export function GetValue(realm: Realm, V: any): Completion<UnknownType> {
-    throw new Error("GetValue not implemented");
+export function GetValue(realm: Realm, V: Reference): Completion<JSValue> {
+    let base = GetBase(realm,V);
+    if (base instanceof JSUndefined)
+        throw new Error("FIXME: Should throw ReferenceError here, but can't import it");
+    if ((base instanceof JSUndefined) ||
+        (base instanceof JSObject) ||
+        (base instanceof JSBoolean) ||
+        (base instanceof JSPropertyKey) ||
+        (base instanceof JSNumber)) {
+        if (!(base instanceof JSObject)) {
+            // const baseComp = ToObject(realm,base);
+            // if (!(baseComp instanceof NormalCompletion))
+            //     return baseComp;
+            // base = baseComp.value;
+            base = realm.intrinsics.Object;
+        }
+        const name = GetReferencedName(realm,V);
+        const thisValueComp = GetThisValue(realm,V);
+        if (!(thisValueComp instanceof NormalCompletion))
+            return thisValueComp;
+        const thisValue = thisValueComp.value;
+        return base.__Get__(name,thisValue);
+    }
+    else {
+        const name: string = GetReferencedName(realm,V).stringRep;
+        const strict: boolean = IsStrictReference(realm,V);
+        return base.GetBindingValue(name,strict);
+    }
 }
 
 // ES6 Section 6.2.3.2: PutValue (V, W)
@@ -368,8 +396,15 @@ export function PutValue(realm: Realm, V: any, W: any): Completion<UnknownType> 
 
 // ES6 Section 6.2.3.3: GetThisValue (V)
 
-export function GetThisValue(realm: Realm, V: any): Completion<UnknownType> {
-    throw new Error("GetThisValue not implemented");
+export function GetThisValue(realm: Realm, V: Reference): Completion<JSValue> {
+    if (V instanceof SuperReference)
+        return new NormalCompletion(V.thisValue);
+    else {
+        const result = GetBase(realm,V);
+        if (!(result instanceof JSValue))
+            throw new Error("base is not a value"); // FIXME: What to do here?
+        return new NormalCompletion(result);
+    }
 }
 
 // ES6 Section 6.2.3.4: InitializeReferencedBinding (V, W)
