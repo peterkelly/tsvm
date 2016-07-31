@@ -15,6 +15,7 @@
 // ES6 Chapter 8: Executable Code and Execution Contexts
 
 import {
+    EnvironmentRecord,
     JSValue,
     JSUndefined,
     JSNull,
@@ -65,7 +66,7 @@ export class LexicalEnvironment {
 
 // ES6 Section 8.1.1: Environment Records
 
-export abstract class EnvironmentRecord {
+export abstract class AbstractEnvironmentRecord implements EnvironmentRecord {
     _nominal_type_EnvironmentRecord: any;
 
     public constructor() {
@@ -103,7 +104,7 @@ interface DeclarativeBinding {
     strict: boolean;
 }
 
-export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
+export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
     _nominal_type_DeclarativeEnvironmentRecord: any;
 
     public readonly bindings: { [name: string]: DeclarativeBinding } = {};
@@ -227,7 +228,7 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     }
 }
 
-export class ObjectEnvironmentRecord extends EnvironmentRecord {
+export class ObjectEnvironmentRecord extends AbstractEnvironmentRecord {
     _nominal_type_ObjectEnvironmentRecord: any;
     public bindingObject: JSObject;
     // public withEnvironment: boolean;
@@ -391,7 +392,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 // ES6 Section 8.1.1.4: Global Environment Records
 
-export class GlobalEnvironmentRecord extends EnvironmentRecord {
+export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
     _nominal_type_GlobalEnvironmentRecord: any;
     public objectRecord: ObjectEnvironmentRecord;
     public declarativeRecord: DeclarativeEnvironmentRecord;

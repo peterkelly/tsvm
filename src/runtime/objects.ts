@@ -15,6 +15,7 @@
 // ES6 Chapter 9: Ordinary and Exotic Objects Behaviours
 
 import {
+    EnvironmentRecord,
     JSValue,
     JSUndefined,
     JSNull,
@@ -33,7 +34,6 @@ import {
 } from "./datatypes";
 import {
     LexicalEnvironment,
-    EnvironmentRecord,
     ExecutionContext,
     Realm,
 } from "./context";

@@ -23,6 +23,9 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSCallableObject,
+    JSConstructableObject,
+    JSCallAndConstructableObject,
     JSPrimitiveValue,
     JSPropertyKey,
     JSInteger,
@@ -33,9 +36,9 @@ import {
     JSInt8,
     JSUInt8,
     PropertyDescriptor,
+    BaseDescriptor,
     DataDescriptor,
     AccessorDescriptor,
-    Intrinsics,
     Completion,
     NormalCompletion,
     BreakCompletion,
@@ -46,10 +49,10 @@ import {
     SuperReference,
     DataBlock,
 } from "./datatypes";
-import {
-    ExecutionContext,
-    Realm,
-} from "./context";
+// import {
+//     ExecutionContext,
+//     Realm,
+// } from "./context";
 import {
     ASTNode,
     ListNode,
@@ -57,35 +60,42 @@ import {
     GenericNumberNode,
 } from "../parser/ast";
 
-function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValue> {
-    switch (node.kind) {
-        case "NullLiteral":
-            return new NormalCompletion(new JSNull());
-        case "True":
-            return new NormalCompletion(new JSBoolean(true));
-        case "False":
-            return new NormalCompletion(new JSBoolean(false));
-        case "StringLiteral": {
-            if (!(node instanceof GenericStringNode))
-                throw new Error("StringLiteral: node is not a GenericStringNode");
-            return new NormalCompletion(new JSString(node.value));
-        }
-        case "NumericLiteral":
-            if (!(node instanceof GenericNumberNode))
-                throw new Error("NumericLiteral: node is not a GenericNumberNode");
-            return new NormalCompletion(new JSNumber(node.value));
-        case "IdentifierReference":
-            if (!(node instanceof GenericStringNode))
-                throw new Error("IdentifierReference: node is not a GenericStringNode");
-            return ctx.ResolveBinding(new JSString(node.value));
-        case "This":
-            return ctx.ResolveThisBinding();
-    }
+// function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValue> {
+//     switch (node.kind) {
+//         case "NullLiteral":
+//             return new NormalCompletion(new JSNull());
+//         case "True":
+//             return new NormalCompletion(new JSBoolean(true));
+//         case "False":
+//             return new NormalCompletion(new JSBoolean(false));
+//         case "StringLiteral": {
+//             if (!(node instanceof GenericStringNode))
+//                 throw new Error("StringLiteral: node is not a GenericStringNode");
+//             return new NormalCompletion(new JSString(node.value));
+//         }
+//         case "NumericLiteral":
+//             if (!(node instanceof GenericNumberNode))
+//                 throw new Error("NumericLiteral: node is not a GenericNumberNode");
+//             return new NormalCompletion(new JSNumber(node.value));
+//         case "IdentifierReference":
+//             if (!(node instanceof GenericStringNode))
+//                 throw new Error("IdentifierReference: node is not a GenericStringNode");
+//             return ctx.ResolveBinding(new JSString(node.value));
+//         case "This":
+//             return ctx.ResolveThisBinding();
+//     }
+//
+//     throw new Error("Unsupported expression node: "+node.kind);
+// }
 
-    throw new Error("Unsupported expression node: "+node.kind);
-}
+// class Foo extends BuiltinFunction {
+//     public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+//         return new NormalCompletion(new JSUndefined());
+//     }
+// }
 
 export function evalModule(node: ASTNode): void {
     // const realm = new Realm();
+    const obj = new JSObject();
     console.log("evalModule");
 }

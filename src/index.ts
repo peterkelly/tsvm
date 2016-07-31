@@ -316,6 +316,7 @@ function main(): void {
         printGrammar();
     }
     else if ((i < argc) && (argv[i] == "execute")) {
+        i++;
         execute(argv[i]);
     }
     else if ((i < argc) && (argv[i] == "gentest")) {

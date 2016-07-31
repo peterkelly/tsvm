@@ -14,22 +14,38 @@
 
 // ES6 Chapter 6: ECMAScript Data Types and Values
 
-import {
-    LexicalEnvironment,
-    EnvironmentRecord,
-    Realm,
-} from "./context";
+// import {
+//     LexicalEnvironment,
+//     EnvironmentRecord,
+//     Realm,
+// } from "./context";
+// import * as context from "./context";
 import {
     ASTNode
 } from "../parser/ast";
-import {
-    SameValue,
-    Call,
-    CreateDataProperty,
-} from "./operations";
+// import {
+//     SameValue,
+//     Call,
+//     CreateDataProperty,
+// } from "./operations";
 // import {
 //     intrinsic_ThrowTypeError
 // } from "./objects";
+import {
+    rt_isSameNumberValue,
+    rt_double_abstractRelationalComparison,
+    rt_double_strictEqualityComparison,
+    rt_double_equalsExact,
+    rt_double_isNaN,
+    rt_double_isPositiveZero,
+    rt_double_isNegativeZero,
+    rt_double_isPositiveInfinity,
+    rt_double_isNegativeInfinity,
+    rt_double_isInteger,
+    rt_double_to_string,
+    rt_string_to_double,
+    rt_string_lessThan,
+} from "./runtime";
 
 export class UnknownType {
     _nominal_type_UnknownType: any;
@@ -40,6 +56,28 @@ export class Empty {
 }
 
 // ES6 Section 6.1: ECMAScript Language Types
+
+export interface EnvironmentRecord {
+    HasBinding(N: string): Completion<boolean>;
+
+    CreateMutableBinding(N: string, D: boolean): void;
+
+    CreateImmutableBinding(N: string, S: boolean): void;
+
+    InitializeBinding(N: string, V: JSValue): void;
+
+    SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
+
+    GetBindingValue(N: string, S: boolean): Completion<JSValue>;
+
+    DeleteBinding(N: string): Completion<boolean>;
+
+    HasThisBinding(): Completion<boolean>;
+
+    HasSuperBinding(): Completion<boolean>;
+
+    WithBaseObject(): Completion<JSObject | JSUndefined>;
+}
 
 export enum ValueType {
     Undefined,
@@ -56,6 +94,15 @@ export abstract class JSValue {
     public constructor() {
     }
     public abstract get type(): ValueType;
+}
+
+export abstract class JSPrimitiveValue extends JSValue {
+    _nominal_type_JSPrimitiveValue: any;
+}
+
+export abstract class JSPropertyKey extends JSPrimitiveValue {
+    _nominal_type_PropertyKey: any;
+    public abstract get stringRep(): string;
 }
 
 // ES6 Section 6.1.1: The Undefined Type
@@ -381,25 +428,6 @@ export abstract class JSCallAndConstructableObject extends JSObject implements C
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
 
-export abstract class BuiltinFunction extends JSCallableObject {
-    public realm: Realm;
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
-        super();
-        this.realm = realm;
-    }
-    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-}
-
-export abstract class BuiltinConstructor extends JSConstructableObject {
-    public realm: Realm;
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
-        super();
-        this.realm = realm;
-        this.__prototype__ = proto;
-    }
-    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
-}
-
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
 
 export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey, copy: boolean = true): JSUndefined | PropertyDescriptor {
@@ -443,15 +471,6 @@ export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<b
 }
 
 // Additional implementation types
-
-export abstract class JSPrimitiveValue extends JSValue {
-    _nominal_type_JSPrimitiveValue: any;
-}
-
-export abstract class JSPropertyKey extends JSPrimitiveValue {
-    _nominal_type_PropertyKey: any;
-    public abstract get stringRep(): string;
-}
 
 export class JSInteger extends JSNumber {
     public readonly integerValue: number;
@@ -871,4 +890,134 @@ export function CreateByteDataBlock(size: number): DataBlock {
 
 export function CopyDataBlockBytes(toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<UnknownType> {
     throw new Error("CopyDataBlockBytes not implemented");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ES6 Section 7.2.9: SameValue (x, y)
+
+export function SameValue(x: JSValue, y: JSValue): boolean {
+    return SameValue2(x,y,false);
+}
+
+// ES6 Section 7.2.10: SameValueZero (x, y)
+
+export function SameValueZero(x: any, y: any): boolean {
+    return SameValue2(x,y,true);
+}
+
+function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
+    if (x.type != y.type)
+        return false;
+
+    switch (x.type) {
+        case ValueType.Undefined:
+            return true;
+        case ValueType.Null:
+            return true;
+        case ValueType.Number:
+            if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
+                if (rt_double_isNaN(x.numberValue) && rt_double_isNaN(y.numberValue))
+                    return true;
+                if (!zero) {
+                    // Logic for the SameValue operation
+                    if (rt_double_isPositiveZero(x.numberValue) && rt_double_isNegativeZero(y.numberValue))
+                        return false;
+                    if (rt_double_isNegativeZero(x.numberValue) && rt_double_isPositiveZero(y.numberValue))
+                        return false;
+                }
+                else {
+                    // Logic for the SameValueZero operation
+                    if (rt_double_isPositiveZero(x.numberValue) && rt_double_isNegativeZero(y.numberValue))
+                        return true;
+                    if (rt_double_isNegativeZero(x.numberValue) && rt_double_isPositiveZero(y.numberValue))
+                        return true;
+                }
+                if (rt_double_equalsExact(x.numberValue,y.numberValue))
+                    return true;
+                return false;
+            }
+            else {
+                throw new Error("Incorrect JSValue.type (Number); should never get here");
+            }
+        case ValueType.String:
+            if ((x instanceof JSString) && (y instanceof JSString))
+                return (x.stringValue === y.stringValue);
+            else
+                throw new Error("Incorrect JSValue.type (String); should never get here");
+        case ValueType.Boolean:
+            if ((x instanceof JSBoolean) && (y instanceof JSBoolean))
+                return (x.booleanValue == y.booleanValue);
+            else
+                throw new Error("Incorrect JSValue.type (Boolean); should never get here");
+        case ValueType.Object:
+            if ((x instanceof JSObject) && (y instanceof JSObject))
+                return (x === y);
+            else
+                throw new Error("Incorrect JSValue.type (Object); should never get here");
+    }
+
+    throw new Error("Unhandled case; should never get here");
+}
+
+
+
+
+
+
+// ES6 Section 7.3.12: Call(F, V, [argumentsList])
+
+export function Call(F: JSValue, V: JSValue, argumentList: JSValue[]): Completion<JSValue> {
+    if (!(F instanceof JSCallableObject))
+        throw new Error("Object is not callable"); // FIXME: temp
+    // if (!IsCallable(F))
+        // return intrinsic_ThrowTypeError();
+    return F.__Call__(V,argumentList);
+}
+
+
+
+
+// ES6 Section 7.3.4: CreateDataProperty (O, P, V)
+
+export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
+    const newDesc = new DataDescriptor(V,true);
+    newDesc.enumerable = true;
+    newDesc.configurable = true;
+    return O.__DefineOwnProperty__(P,newDesc);
+}
+
+// ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
+
+export function CreateMethodProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
+    const newDesc = new DataDescriptor(V,true);
+    newDesc.enumerable = false;
+    newDesc.configurable = true;
+    return O.__DefineOwnProperty__(P,newDesc);
 }
