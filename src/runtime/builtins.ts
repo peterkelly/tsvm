@@ -128,16 +128,17 @@ export class ThrowTypeErrorFunction extends BuiltinFunction {
 
     public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         const message = (args.length > 0) ? args[0] : new JSUndefined();
+        const proto = this.realm.intrinsics.TypeErrorPrototype;
         if (message instanceof JSString)
-            return new ThrowCompletion(new TypeErrorObject(message));
+            return new ThrowCompletion(new TypeErrorObject(proto,message));
         else
-            return new ThrowCompletion(new TypeErrorObject(new JSUndefined()));
+            return new ThrowCompletion(new TypeErrorObject(proto,new JSUndefined()));
     }
 }
 
 export class TypeErrorObject extends JSOrdinaryObject {
-    public constructor(message: JSString | JSUndefined) {
-        super();
+    public constructor(prototype: JSObject | JSNull, message: JSString | JSUndefined) {
+        super(prototype);
         this.properties["message"] = new DataDescriptor({
             enumerable: true,
             configurable: false,

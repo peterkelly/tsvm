@@ -187,11 +187,19 @@ export class JSNumber extends JSPrimitiveValue {
 
 export abstract class JSObject extends JSValue {
     _nominal_type_JSObject: any;
-    public __prototype__: JSObject | JSNull = new JSNull();
-    public __extensible__: boolean = true;
-    public readonly properties: { [key: string]: PropertyDescriptor } = {};
-    public constructor() {
+
+    public __prototype__: JSObject | JSNull;
+    public __extensible__: boolean;
+    public readonly properties: { [key: string]: PropertyDescriptor };
+
+    public constructor(prototype?: JSObject | JSNull) {
         super();
+        if (prototype !== undefined)
+            this.__prototype__ = prototype;
+        else
+            this.__prototype__ = new JSNull();
+        this.__extensible__ = true;
+        this.properties = {};
     }
 
     public get type(): ValueType {

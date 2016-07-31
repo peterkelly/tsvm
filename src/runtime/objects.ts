@@ -234,8 +234,16 @@ export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Real
 
 // ES6 Section 9.2.7.1: %ThrowTypeError% ()
 
-export function intrinsic_ThrowTypeError(): ThrowCompletion {
+export function intrinsic_ThrowTypeError(message?: string): ThrowCompletion {
     throw new Error("intrinsic_ThrowTypeError Not implemented");
+}
+
+export function intrinsic_ThrowTypeErr2(realm: Realm, message?: string): ThrowCompletion {
+    const proto = realm.intrinsics.TypeErrorPrototype;
+    if (message !== undefined)
+        return new ThrowCompletion(new bi.TypeErrorObject(proto,new JSString(message)));
+    else
+        return new ThrowCompletion(new bi.TypeErrorObject(proto,new JSUndefined()));
 }
 
 export function intrinsic_ThrowReferenceError(): ThrowCompletion {
