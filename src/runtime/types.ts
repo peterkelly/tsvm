@@ -40,23 +40,14 @@ export interface Realm {
 
 export interface EnvironmentRecord {
     HasBinding(N: string): Completion<boolean>;
-
     CreateMutableBinding(N: string, D: boolean): void;
-
     CreateImmutableBinding(N: string, S: boolean): void;
-
     InitializeBinding(N: string, V: JSValue): void;
-
     SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
-
     GetBindingValue(N: string, S: boolean): Completion<JSValue>;
-
     DeleteBinding(N: string): Completion<boolean>;
-
     HasThisBinding(): Completion<boolean>;
-
     HasSuperBinding(): Completion<boolean>;
-
     WithBaseObject(): Completion<JSObject | JSUndefined>;
 }
 
@@ -196,14 +187,11 @@ export class JSNumber extends JSPrimitiveValue {
 
 export abstract class JSObject extends JSValue {
     _nominal_type_JSObject: any;
-    public __prototype__: JSObject | JSNull;
-    public __extensible__: boolean;
-    public readonly properties: { [key: string]: PropertyDescriptor };
+    public __prototype__: JSObject | JSNull = new JSNull();
+    public __extensible__: boolean = true;
+    public readonly properties: { [key: string]: PropertyDescriptor } = {};
     public constructor() {
         super();
-        this.__prototype__ = new JSNull();
-        this.__extensible__ = true;
-        this.properties = {};
     }
 
     public get type(): ValueType {
@@ -223,31 +211,18 @@ export abstract class JSObject extends JSValue {
     }
 
     public abstract __GetPrototypeOf__(): Completion<JSObject | JSNull>;
-
     public abstract __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean>;
-
     public abstract __IsExtensible__(): Completion<boolean>;
-
     public abstract __PreventExtensions__(): Completion<boolean>;
-
     public abstract __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
-
     public abstract __HasProperty__(P: JSPropertyKey): Completion<boolean>;
-
     public abstract __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
-
     public abstract __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
-
     public abstract __Delete__(P: JSPropertyKey): Completion<boolean>;
-
     public abstract __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
-
     public abstract __Enumerate__(): Completion<JSObject>;
-
     public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
-
     public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
 
