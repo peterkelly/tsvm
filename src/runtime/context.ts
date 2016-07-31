@@ -563,14 +563,14 @@ export function GetIdentifierReference(lex: LexicalEnvironment, name: string, st
 
 // ES6 Section 8.1.2.2: NewDeclarativeEnvironment (E)
 
-export function NewDeclarativeEnvironment(E: LexicalEnvironment): LexicalEnvironment {
+export function NewDeclarativeEnvironment(E: LexicalEnvironment | null): LexicalEnvironment {
     const envRec = new DeclarativeEnvironmentRecord();
     return new LexicalEnvironment(envRec,E);
 }
 
 // ES6 Section 8.1.2.3: NewObjectEnvironment (O, E)
 
-export function NewObjectEnvironment(O: JSObject, E: LexicalEnvironment): LexicalEnvironment {
+export function NewObjectEnvironment(O: JSObject, E: LexicalEnvironment | null): LexicalEnvironment {
     const envRec = new ObjectEnvironmentRecord(O);
     return new LexicalEnvironment(envRec,E);
 }
@@ -595,7 +595,7 @@ export function NewGlobalEnvironment(G: JSObject): LexicalEnvironment {
 
 // ES6 Section 8.1.2.6: NewModuleEnvironment (E)
 
-export function NewModuleEnvironment(E: LexicalEnvironment): LexicalEnvironment {
+export function NewModuleEnvironment(E: LexicalEnvironment | null): LexicalEnvironment {
     const envRec = new ModuleEnvironmentRecord();
     return new LexicalEnvironment(envRec,E);
 }
@@ -604,15 +604,22 @@ export function NewModuleEnvironment(E: LexicalEnvironment): LexicalEnvironment 
 
 export class Realm {
     _nominal_type_Realm: any;
-    public intrinsics: Intrinsics | undefined;
+    public _intrinsics: Intrinsics | undefined;
     public globalThis: JSObject | JSUndefined;
     public globalEnv: LexicalEnvironment | JSUndefined;
     public templateMap: any[]; // FIXME
 
+    public get intrinsics(): Intrinsics {
+        const intrinsics = this._intrinsics;
+        if (intrinsics === undefined)
+            throw new Error("Attempt to access intrinsics before it has been initialized");
+        return intrinsics;
+    }
+
     public constructor() {
-        // this.intrinsics = new Intrinsics();
+        this._intrinsics = CreateIntrinsics(this);
         this.globalThis = new JSUndefined();
-        this.globalEnv = new JSUndefined;
+        this.globalEnv = NewDeclarativeEnvironment(null); // FIXME
         this.templateMap = [];
     }
 }

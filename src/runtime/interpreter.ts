@@ -48,6 +48,7 @@ import {
 } from "./datatypes";
 import {
     ExecutionContext,
+    Realm,
 } from "./context";
 import {
     ASTNode,
@@ -82,4 +83,9 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
     }
 
     throw new Error("Unsupported expression node: "+node.kind);
+}
+
+export function evalModule(node: ASTNode): void {
+    // const realm = new Realm();
+    console.log("evalModule");
 }

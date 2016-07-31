@@ -18,6 +18,7 @@ import { grm, parseModule } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
 // import { compileModule } from "./parser/compiler";
+import { evalModule } from "./runtime/interpreter";
 
 type CommandFunction = (input: string) => string;
 type CommandSet = { [name: string]: CommandFunction };
@@ -276,7 +277,7 @@ function showUsageAndExit(): void {
     process.exit(1);
 }
 
-function compile(relFilename: string) {
+function execute(relFilename: string) {
     const absFilename = path.resolve(process.cwd(),relFilename);
     try {
         const content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
@@ -289,7 +290,7 @@ function compile(relFilename: string) {
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
 
-        // compileModule(root);
+        evalModule(root);
     }
     catch (e) {
         console.error(absFilename+": "+e);
@@ -314,8 +315,8 @@ function main(): void {
     else if ((i < argc) && (argv[i] == "grammar")) {
         printGrammar();
     }
-    else if ((i < argc) && (argv[i] == "compile")) {
-        compile(argv[i]);
+    else if ((i < argc) && (argv[i] == "execute")) {
+        execute(argv[i]);
     }
     else if ((i < argc) && (argv[i] == "gentest")) {
         i++;
