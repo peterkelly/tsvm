@@ -78,7 +78,7 @@ import {
 import {
     intrinsic_ThrowTypeError,
     intrinsic_ThrowReferenceError,
-    JSFunctionObject,
+    // JSFunctionObject,
 } from "./objects";
 
 // ES6 Section 7.1: Type Conversion
@@ -343,13 +343,13 @@ export function RequireObjectCoercible(realm: Realm, argument: JSValue): Complet
 
 // ES6 Section 7.2.3: IsCallable (argument)
 
-export function IsCallable(realm: Realm, argument: JSValue): argument is JSFunctionObject {
+export function IsCallable(realm: Realm, argument: JSValue): boolean {
     return ((argument instanceof JSObject) && argument.implementsCall);
 }
 
 // ES6 Section 7.2.4: IsConstructor (argument)
 
-export function IsConstructor(realm: Realm, argument: any): argument is JSFunctionObject {
+export function IsConstructor(realm: Realm, argument: any): boolean {
     return ((argument instanceof JSObject) && argument.implementsConstruct);
 }
 
@@ -615,7 +615,9 @@ export function HasOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Com
 
 // ES6 Section 7.3.13: Construct (F, [argumentsList], [newTarget])
 
-export function Construct(realm: Realm, F: JSFunctionObject, argumentList: JSValue[], newTarget: JSObject): Completion<JSObject> {
+export function Construct(realm: Realm, F: JSObject, argumentList: JSValue[], newTarget: JSObject): Completion<JSObject> {
+    if (!F.implementsConstruct)
+        throw new Error("Attempt to call Construct ot an object that is not a constructor");
     return F.__Construct__(argumentList,newTarget);
 }
 
