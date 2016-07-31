@@ -227,6 +227,14 @@ export abstract class JSObject extends JSValue {
         return ValueType.Object;
     }
 
+    public get implementsCall(): boolean {
+        return false;
+    }
+
+    public get implementsConstruct(): boolean {
+        return false;
+    }
+
     public get overridesGetPrototypeOf(): boolean {
         return (this.__GetPrototypeOf__ !== JSObject.prototype.__GetPrototypeOf__);
     }
@@ -254,6 +262,10 @@ export abstract class JSObject extends JSValue {
     public abstract __Enumerate__(): Completion<JSObject>;
 
     public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
+
+    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+
+    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
 
 export class JSOrdinaryObject extends JSObject {
@@ -363,9 +375,12 @@ export class JSOrdinaryObject extends JSObject {
                 return parent.__Set__(P,V,Receiver);
             }
             else {
-                ownDesc = new DataDescriptor(new JSUndefined(),true);
-                ownDesc.enumerable = true;
-                ownDesc.configurable = true;
+                ownDesc = new DataDescriptor({
+                    enumerable: true,
+                    configurable: true,
+                    value: new JSUndefined(),
+                    writable: true
+                });
             }
         }
 
@@ -383,7 +398,7 @@ export class JSOrdinaryObject extends JSObject {
                     return new NormalCompletion(false);
                 if (!(existingDescriptor.writable))
                     return new NormalCompletion(false);
-                const valueDesc = new DataDescriptor(V,true);
+                const valueDesc = new DataDescriptor({value: V, writable: true });
                 return Receiver.__DefineOwnProperty__(P,valueDesc);
             }
             else {
@@ -435,27 +450,13 @@ export class JSOrdinaryObject extends JSObject {
         throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
     }
 
-}
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        throw new Error("Not a callable object; check implementsCall first");
+    }
 
-export interface Callable {
-    __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-}
-
-export interface Constructable {
-    __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
-}
-
-export abstract class JSCallableObject extends JSOrdinaryObject implements Callable {
-    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-}
-
-export abstract class JSConstructableObject extends JSOrdinaryObject implements Constructable {
-    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
-}
-
-export abstract class JSCallAndConstructableObject extends JSOrdinaryObject implements Callable, Constructable {
-    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
+    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
+        throw new Error("Not a constructor object; check implementsConstruct first");
+    }
 }
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
@@ -470,17 +471,21 @@ export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey, copy: bool
     if (!copy)
         return X;
     if (X instanceof DataDescriptor) {
-        const D = new DataDescriptor(X.value,X.writable);
-        D.enumerable = X.enumerable;
-        D.configurable = X.configurable;
+        const D = new DataDescriptor({
+            enumerable: X.enumerable,
+            configurable: X.configurable,
+            value: X.value,
+            writable: X.writable
+        });
         return D;
     }
     else {
-        const D = new AccessorDescriptor();
-        D.__get__ = X.__get__;
-        D.__set__ = X.__set__;
-        D.enumerable = X.enumerable;
-        D.configurable = X.configurable;
+        const D = new AccessorDescriptor({
+            enumerable: X.enumerable,
+            configurable: X.configurable,
+            __get__: X.__get__,
+            __set__: X.__set__,
+        });
         return D;
     }
 }
@@ -574,46 +579,44 @@ export class DataDescriptor extends BaseDescriptor {
     _nominal_type_DataDescriptor: any;
     public value: JSValue;
     public writable: boolean;
-    public constructor(value: JSValue, writable: boolean) {
+    public constructor(options: {
+        enumerable?: boolean,
+        configurable?: boolean,
+        value: JSValue,
+        writable: boolean,
+    }) {
         super();
-        this.value = value;
-        this.writable = writable;
+        if (options.enumerable !== undefined)
+            this.enumerable = options.enumerable;
+        if (options.configurable !== undefined)
+            this.configurable = options.configurable;
+        this.value = options.value;
+        this.writable = options.writable;
     }
-}
-
-export function newDataDescriptor(options: {
-    enumerable: boolean,
-    configurable: boolean,
-    value: JSValue,
-    writable: boolean
-}): DataDescriptor {
-    const desc = new DataDescriptor(options.value,options.writable);
-    desc.enumerable = options.enumerable;
-    desc.configurable = options.configurable;
-    return desc;
 }
 
 export class AccessorDescriptor extends BaseDescriptor {
     _nominal_type_AccessorDescriptor: any;
     public __get__: JSObject | JSUndefined = new JSUndefined;
     public __set__: JSObject | JSUndefined = new JSUndefined;
-    public constructor() {
+    public constructor(options?: {
+        enumerable?: boolean,
+        configurable?: boolean,
+        __get__?: JSObject | JSUndefined;
+        __set__?: JSObject | JSUndefined;
+    }) {
         super();
+        if (options !== undefined) {
+            if (options.enumerable !== undefined)
+                this.enumerable = options.enumerable;
+            if (options.configurable !== undefined)
+                this.configurable = options.configurable;
+            if (options.__get__ !== undefined) // Note that JSUndefined is distinct from undefined
+                this.__get__ = options.__get__;
+            if (options.__set__ !== undefined)
+                this.__set__ = options.__set__;
+        }
     }
-}
-
-export function newAccessorDescriptor(options: {
-    enumerable: boolean,
-    configurable: boolean,
-    __get__: JSObject | JSUndefined,
-    __set__: JSObject | JSUndefined,
-}): AccessorDescriptor {
-    const desc = new AccessorDescriptor();
-    desc.__get__ = options.__get__;
-    desc.__set__ = options.__set__;
-    desc.enumerable = options.enumerable;
-    desc.configurable = options.configurable;
-    return desc;
 }
 
 // ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
@@ -1024,7 +1027,7 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
 // ES6 Section 7.3.12: Call(F, V, [argumentsList])
 
 export function Call(F: JSValue, V: JSValue, argumentList: JSValue[]): Completion<JSValue> {
-    if (!(F instanceof JSCallableObject))
+    if (!(F instanceof JSObject) || !F.implementsCall)
         throw new Error("Object is not callable"); // FIXME: temp
     // if (!IsCallable(F))
         // return intrinsic_ThrowTypeError();
@@ -1037,7 +1040,7 @@ export function Call(F: JSValue, V: JSValue, argumentList: JSValue[]): Completio
 // ES6 Section 7.3.4: CreateDataProperty (O, P, V)
 
 export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const newDesc = new DataDescriptor(V,true);
+    const newDesc = new DataDescriptor({ value: V, writable: true });
     newDesc.enumerable = true;
     newDesc.configurable = true;
     return O.__DefineOwnProperty__(P,newDesc);
@@ -1046,7 +1049,7 @@ export function CreateDataProperty(O: JSObject, P: JSPropertyKey, V: JSValue): C
 // ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
 
 export function CreateMethodProperty(O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const newDesc = new DataDescriptor(V,true);
+    const newDesc = new DataDescriptor({ value: V, writable: true });
     newDesc.enumerable = false;
     newDesc.configurable = true;
     return O.__DefineOwnProperty__(P,newDesc);

@@ -325,13 +325,13 @@ export function RequireObjectCoercible(argument: JSValue): Completion<JSValue> {
 // ES6 Section 7.2.3: IsCallable (argument)
 
 export function IsCallable(argument: JSValue): argument is JSFunctionObject {
-    return (argument instanceof JSFunctionObject);
+    return ((argument instanceof JSObject) && argument.implementsCall);
 }
 
 // ES6 Section 7.2.4: IsConstructor (argument)
 
 export function IsConstructor(argument: any): argument is JSFunctionObject {
-    return (argument instanceof JSFunctionObject);
+    return ((argument instanceof JSObject) && argument.implementsConstruct);
 }
 
 // ES6 Section 7.2.5: IsExtensible (O)

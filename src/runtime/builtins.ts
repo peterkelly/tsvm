@@ -25,9 +25,6 @@ import {
     JSNumber,
     JSObject,
     JSOrdinaryObject,
-    JSCallableObject,
-    JSConstructableObject,
-    JSCallAndConstructableObject,
     JSPrimitiveValue,
     JSPropertyKey,
     JSInteger,
@@ -40,9 +37,7 @@ import {
     PropertyDescriptor,
     BaseDescriptor,
     DataDescriptor,
-    newDataDescriptor,
     AccessorDescriptor,
-    newAccessorDescriptor,
     Intrinsics,
     Completion,
     NormalCompletion,
@@ -59,21 +54,27 @@ import {
 } from "./context";
 
 
-export abstract class BuiltinFunction extends JSCallableObject {
+export abstract class BuiltinFunction extends JSOrdinaryObject {
     public realm: Realm;
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
         this.realm = realm;
     }
+    public get implementsCall(): boolean {
+        return true;
+    }
     public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
 }
 
-export abstract class BuiltinConstructor extends JSConstructableObject {
+export abstract class BuiltinConstructor extends JSOrdinaryObject {
     public realm: Realm;
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
         this.realm = realm;
         this.__prototype__ = proto;
+    }
+    public get implementsConstruct(): boolean {
+        return true;
     }
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
@@ -114,7 +115,7 @@ export class ThrowTypeErrorFunction extends BuiltinFunction {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super(realm,proto);
         this.__extensible__ = false;
-        this.properties["length"] = newDataDescriptor({
+        this.properties["length"] = new DataDescriptor({
             enumerable: false,
             configurable: false,
             value: new JSNumber(1),
@@ -134,7 +135,7 @@ export class ThrowTypeErrorFunction extends BuiltinFunction {
 export class TypeErrorObject extends JSOrdinaryObject {
     public constructor(message: JSString | JSUndefined) {
         super();
-        this.properties["message"] = newDataDescriptor({
+        this.properties["message"] = new DataDescriptor({
             enumerable: true,
             configurable: false,
             value: message,

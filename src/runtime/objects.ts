@@ -47,12 +47,6 @@ export abstract class JSExoticObject extends JSOrdinaryObject {
     _nominal_type_JSExoticObject: any;
 }
 
-// ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
-
-export function OrdinaryGetOwnProperty(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
-    throw new Error("OrdinaryGetOwnProperty Not implemented");
-}
-
 // ES6 Section 9.1.6.1: OrdinaryDefineOwnProperty (O, P, Desc)
 
 export function OrdinaryDefineOwnProperty(O: JSObject, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<UnknownType> {
@@ -74,12 +68,6 @@ export function ValidateAndApplyPropertyDescriptor(
     Desc: PropertyDescriptor,
     current: PropertyDescriptor): Completion<UnknownType> {
     throw new Error("ValidateAndApplyPropertyDescriptor Not implemented");
-}
-
-// ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
-
-export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<UnknownType> {
-    throw new Error("OrdinaryHasProperty Not implemented");
 }
 
 // ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
