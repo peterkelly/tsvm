@@ -55,6 +55,10 @@ import {
     SuperReference,
     DataBlock,
 } from "./types";
+import {
+    rt_Infinity,
+    rt_NaN,
+} from "./runtime";
 
 import {
     JSOrdinaryObject,
@@ -590,8 +594,26 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 // ES6 Section 8.1.2.1: GetIdentifierReference (lex, name, strict)
 
-export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment, name: string, strict: boolean): Completion<UnknownType> {
-    throw new Error("GetIdentifierReference not implemented");
+export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | null, name: string, strict: boolean): Completion<Reference> {
+    if (lex === null) {
+        const ref = new Reference(new JSUndefined(),new JSString(name),new JSBoolean(strict));
+        return new NormalCompletion(ref);
+    }
+
+    const envRec = lex.record;
+    const existsComp = envRec.HasBinding(name);
+    if (!(existsComp instanceof NormalCompletion))
+        return existsComp;
+    const exists = existsComp.value;
+
+    if (exists) {
+        const ref = new Reference(envRec,new JSString(name),new JSBoolean(strict));
+        return new NormalCompletion(ref);
+    }
+    else {
+        const outer = lex.outer;
+        return GetIdentifierReference(realm,outer,name,strict);
+    }
 }
 
 // ES6 Section 8.1.2.2: NewDeclarativeEnvironment (E)
@@ -637,23 +659,17 @@ export function NewModuleEnvironment(realm: Realm, E: LexicalEnvironment | null)
 
 export class RealmImpl implements Realm {
     _nominal_type_RealmImpl: any;
-    private _intrinsics: Intrinsics | undefined;
-    public globalThis: JSObject | JSUndefined;
-    public globalEnv: LexicalEnvironment | JSUndefined;
+    public intrinsics: Intrinsics;
+    public globalThis: JSObject;
+    public globalEnv: LexicalEnvironment;
     public templateMap: any[]; // FIXME
 
-    public get intrinsics(): Intrinsics {
-        const intrinsics = this._intrinsics;
-        if (intrinsics === undefined)
-            throw new Error("Attempt to access intrinsics before it has been initialized");
-        return intrinsics;
-    }
-
     public constructor() {
-        this._intrinsics = CreateIntrinsics(this);
-        this.globalThis = new JSUndefined();
+        this.intrinsics = CreateIntrinsics(this);
+        this.globalThis = new JSOrdinaryObject(this,this.intrinsics.ObjectPrototype);
         this.globalEnv = NewDeclarativeEnvironment(this,null); // FIXME
         this.templateMap = [];
+        SetDefaultGlobalBindings(this);
     }
 }
 
@@ -867,37 +883,163 @@ export function SetRealmGlobalObject(realm: Realm, globalObj: JSObject | JSUndef
 
 // ES6 Section 8.2.4: SetDefaultGlobalBindings (realmRec)
 
-export function SetDefaultGlobalBindings(realm: Realm): Completion<UnknownType> {
-    throw new Error("SetDefaultGlobalBindings not implemented");
+function SetDefaultGlobalBindings(realm: Realm): void {
+
+    function prop(value: JSValue): PropertyDescriptor {
+        // FIXME: Check that the configurable, enumerable, and writable settings are correct
+        return new DataDescriptor({
+            configurable: true,
+            enumerable: true,
+            value: value,
+            writable: true,
+        });
+    }
+
+    const global = realm.globalThis;
+
+    // ES6 Section 18.1: Value Properties of the Global Object
+
+    // Infinity
+    global.properties["Infinity"] = new DataDescriptor({
+        value: new JSNumber(rt_Infinity()),
+        writable: false,
+        enumerable: false,
+        configurable: false,
+    });
+
+    // NaN
+    global.properties["NaN"] = new DataDescriptor({
+        value: new JSNumber(rt_NaN()),
+        writable: false,
+        enumerable: false,
+        configurable: false,
+    });
+
+    // undefined
+    global.properties["undefined"] = new DataDescriptor({
+        value: new JSUndefined(),
+        writable: false,
+        enumerable: false,
+        configurable: false,
+    });
+
+    // ES6 Section 18.2: Function Properties of the Global Object
+
+    // eval
+    global.properties["eval"] = prop(realm.intrinsics.eval);
+    global.properties["isFinite"] = prop(realm.intrinsics.isFinite);
+    global.properties["isNaN"] = prop(realm.intrinsics.isNaN);
+    global.properties["parseFloat"] = prop(realm.intrinsics.parseFloat);
+    global.properties["parseInt"] = prop(realm.intrinsics.parseInt);
+    global.properties["decodeURI"] = prop(realm.intrinsics.decodeURI);
+    global.properties["decodeURIComponent"] = prop(realm.intrinsics.decodeURIComponent);
+    global.properties["encodeURI"] = prop(realm.intrinsics.encodeURI);
+    global.properties["encodeURIComponent"] = prop(realm.intrinsics.encodeURIComponent);
+
+    // ES6 Section 18.3: Constructor Properties of the Global Object
+
+    global.properties["Array"] = prop(realm.intrinsics.Array);
+    global.properties["ArrayBuffer"] = prop(realm.intrinsics.ArrayBuffer);
+    global.properties["Boolean"] = prop(realm.intrinsics.Boolean);
+    global.properties["DataView"] = prop(realm.intrinsics.DataView);
+    global.properties["Date"] = prop(realm.intrinsics.Date);
+    global.properties["Error"] = prop(realm.intrinsics.Error);
+    global.properties["EvalError"] = prop(realm.intrinsics.EvalError);
+    global.properties["Float32Array"] = prop(realm.intrinsics.Float32Array);
+    global.properties["Float64Array"] = prop(realm.intrinsics.Float64Array);
+    global.properties["Function"] = prop(realm.intrinsics.Function);
+    global.properties["Int8Array"] = prop(realm.intrinsics.Int8Array);
+    global.properties["Int16Array"] = prop(realm.intrinsics.Int16Array);
+    global.properties["Int32Array"] = prop(realm.intrinsics.Int32Array);
+    global.properties["Map"] = prop(realm.intrinsics.Map);
+    global.properties["Number"] = prop(realm.intrinsics.Number);
+    global.properties["Object"] = prop(realm.intrinsics.Object);
+    global.properties["Proxy"] = prop(realm.intrinsics.Proxy);
+    global.properties["Promise"] = prop(realm.intrinsics.Promise);
+    global.properties["RangeError"] = prop(realm.intrinsics.RangeError);
+    global.properties["ReferenceError"] = prop(realm.intrinsics.ReferenceError);
+    global.properties["RegExp"] = prop(realm.intrinsics.RegExp);
+    global.properties["Set"] = prop(realm.intrinsics.Set);
+    global.properties["String"] = prop(realm.intrinsics.String);
+    global.properties["Symbol"] = prop(realm.intrinsics.Symbol);
+    global.properties["SyntaxError"] = prop(realm.intrinsics.SyntaxError);
+    global.properties["TypeError"] = prop(realm.intrinsics.TypeError);
+    global.properties["Uint8Array"] = prop(realm.intrinsics.Uint8Array);
+    global.properties["Uint8ClampedArray"] = prop(realm.intrinsics.Uint8ClampedArray);
+    global.properties["Uint16Array"] = prop(realm.intrinsics.Uint16Array);
+    global.properties["Uint32Array"] = prop(realm.intrinsics.Uint32Array);
+    global.properties["URIError"] = prop(realm.intrinsics.URIError);
+    global.properties["WeakMap"] = prop(realm.intrinsics.WeakMap);
+    global.properties["WeakSet"] = prop(realm.intrinsics.WeakSet);
+
+    // ES6 Section 18.4: Other Properties of the Global Object
+
+    global.properties["JSON"] = prop(realm.intrinsics.JSON);
+    global.properties["Math"] = prop(realm.intrinsics.Math);
+    global.properties["Reflect"] = prop(realm.intrinsics.Reflect);
 }
 
 // ES6 Section 8.3: Execution Contexts
 
 export class ExecutionContext {
     _nominal_type_ExecutionContext: any;
-    public state: any; // Implementation-specific
+    // public state: any; // Implementation-specific
     public fun: JSFunctionObject | JSNull;
     public realm: Realm;
     public lexicalEnvironment: LexicalEnvironment;
     public variableEnvironment: LexicalEnvironment;
-    public generator: any;
+    public strict: boolean = true; // FIXME: This should come from the code being executed
+    // public generator: any;
+
+    public constructor(realm: Realm, fun: JSFunctionObject | JSNull, env: LexicalEnvironment) {
+        this.realm = realm;
+        this.fun = fun;
+        this.lexicalEnvironment = env;
+        this.variableEnvironment = env;
+    }
 
     // ES6 Section 8.3.1: ResolveBinding (name, [env])
 
-    public ResolveBinding(name: JSString, env?: LexicalEnvironment | undefined ): Completion<JSValue> {
-        throw new Error("ExecutionContext.ResolveBinding not implemented");
+    public ResolveBinding(name: string, env?: LexicalEnvironment): Completion<Reference> {
+        if (env === undefined)
+            env = this.lexicalEnvironment;
+        return GetIdentifierReference(this.realm,env,name,this.strict);
     }
 
     // ES6 Section 8.3.2: GetThisEnvironment ()
 
-    public GetThisEnvironment(): Completion<UnknownType> {
-        throw new Error("ExecutionContext.GetThisEnvironment not implemented");
+    public GetThisEnvironment(): Completion<EnvironmentRecord> {
+        let lex = this.lexicalEnvironment;
+        while (true) {
+            const envRec = lex.record;
+            const existsComp = envRec.HasThisBinding();
+            if (!(existsComp instanceof NormalCompletion))
+                return existsComp;
+            const exists = existsComp.value;
+            if (exists)
+                return new NormalCompletion(envRec);
+            const outer = lex.outer;
+            if (outer === null)
+                throw new Error("GetThisEnvironment: Did not find a global environment");
+            lex = outer;
+        }
     }
 
     // ES6 Section 8.3.3: ResolveThisBinding ()
 
     public ResolveThisBinding(): Completion<JSValue> {
-        throw new Error("ExecutionContext.ResolveThisBinding not implemented");
+        const envRecComp = this.GetThisEnvironment();
+        if (!(envRecComp instanceof NormalCompletion))
+            return envRecComp;
+        const envRec = envRecComp.value;
+        if (envRec instanceof FunctionEnvironmentRecord)
+            return envRec.GetThisBinding();
+        else if (envRec instanceof GlobalEnvironmentRecord)
+            return envRec.GetThisBinding();
+        else if (envRec instanceof ModuleEnvironmentRecord)
+            return envRec.GetThisBinding();
+        else // should never happen
+            throw new Error("ResolveThisBinding: Environment record does not implement GetThisBinding");
     }
 
     // ES6 Section 8.3.4: GetNewTarget ()

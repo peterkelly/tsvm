@@ -96,3 +96,11 @@ export function rt_string_to_double(value: string): number {
 export function rt_string_lessThan(x: string, y: string): boolean {
     return (x < y);
 }
+
+export function rt_Infinity(): number {
+    return Infinity;
+}
+
+export function rt_NaN(): number {
+    return NaN;
+}

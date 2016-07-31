@@ -32,8 +32,8 @@ export interface LexicalEnvironment {
 }
 
 export interface Realm {
-    globalThis: JSObject | JSUndefined;
-    globalEnv: LexicalEnvironment | JSUndefined;
+    globalThis: JSObject;
+    globalEnv: LexicalEnvironment;
     templateMap: any[]; // FIXME
     intrinsics: Intrinsics;
 }
