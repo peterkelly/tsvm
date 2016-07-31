@@ -26,6 +26,8 @@ import {
     JSCallableObject,
     JSConstructableObject,
     JSCallAndConstructableObject,
+    BuiltinFunction,
+    BuiltinConstructor,
     JSPrimitiveValue,
     JSPropertyKey,
     JSInteger,
@@ -58,25 +60,6 @@ import {
 import {
     Realm,
 } from "./context";
-
-export abstract class BuiltinFunction extends JSCallableObject {
-    public realm: Realm;
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
-        super();
-        this.realm = realm;
-    }
-    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-}
-
-export abstract class BuiltinConstructor extends JSConstructableObject {
-    public realm: Realm;
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
-        super();
-        this.realm = realm;
-        this.__prototype__ = proto;
-    }
-    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
-}
 
 export class ArgGetterFunction extends BuiltinFunction {
     public name: string;
