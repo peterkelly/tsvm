@@ -132,9 +132,11 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
     _nominal_type_DeclarativeEnvironmentRecord: any;
 
     public readonly bindings: { [name: string]: DeclarativeBinding } = {};
+    public realm: Realm;
 
-    public constructor() {
+    public constructor(realm: Realm) {
         super();
+        this.realm = realm;
     }
 
     // ES6 Section 8.1.1.1.1: HasBinding(N)
@@ -351,8 +353,8 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
     public homeObject: JSObject | JSUndefined;
     public newTarget: JSObject | JSUndefined;
 
-    public constructor(F: JSFunctionObject, newTarget: JSUndefined | JSObject) {
-        super();
+    public constructor(realm: Realm, F: JSFunctionObject, newTarget: JSUndefined | JSObject) {
+        super(realm);
         this.functionObject = F;
         if (F.thisMode == ThisMode.Lexical)
             this.thisBindingStatus = BindingStatus.Lexical;
@@ -418,14 +420,16 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
     _nominal_type_GlobalEnvironmentRecord: any;
+    public realm: Realm;
     public objectRecord: ObjectEnvironmentRecord;
     public declarativeRecord: DeclarativeEnvironmentRecord;
     public varNames: string[];
 
-    public constructor(G: JSObject) {
+    public constructor(realm: Realm, G: JSObject) {
         super();
+        this.realm = realm;
         this.objectRecord = new ObjectEnvironmentRecord(G);
-        this.declarativeRecord = new DeclarativeEnvironmentRecord();
+        this.declarativeRecord = new DeclarativeEnvironmentRecord(realm);
         this.varNames = [];
     }
 
@@ -543,8 +547,8 @@ export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
 export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
     _nominal_type_ModuleEnvironmentRecord: any;
 
-    public constructor() {
-        super();
+    public constructor(realm: Realm) {
+        super(realm);
     }
 
     // ES6 Section 8.1.1.5.1: GetBindingValue (N,S)
@@ -588,8 +592,8 @@ export function GetIdentifierReference(lex: LexicalEnvironment, name: string, st
 
 // ES6 Section 8.1.2.2: NewDeclarativeEnvironment (E)
 
-export function NewDeclarativeEnvironment(E: LexicalEnvironment | null): LexicalEnvironment {
-    const envRec = new DeclarativeEnvironmentRecord();
+export function NewDeclarativeEnvironment(realm: Realm, E: LexicalEnvironment | null): LexicalEnvironment {
+    const envRec = new DeclarativeEnvironmentRecord(realm);
     return { record: envRec, outer: E };
 }
 
@@ -602,26 +606,26 @@ export function NewObjectEnvironment(O: JSObject, E: LexicalEnvironment | null):
 
 // ES6 Section 8.1.2.4: NewFunctionEnvironment (F, newTarget)
 
-export function NewFunctionEnvironment(F: JSFunctionObject, newTarget: JSUndefined | JSObject): LexicalEnvironment {
+export function NewFunctionEnvironment(realm: Realm, F: JSFunctionObject, newTarget: JSUndefined | JSObject): LexicalEnvironment {
     // FIXME: Assert: F is an ECMAScript function
     const bindingStatus = (F.thisMode == ThisMode.Lexical) ?
         BindingStatus.Lexical :
         BindingStatus.Uninitialized;
-    const envRec = new FunctionEnvironmentRecord(F,newTarget);
+    const envRec = new FunctionEnvironmentRecord(realm,F,newTarget);
     return { record: envRec, outer: F.environment };
 }
 
 // ES6 Section 8.1.2.5: NewGlobalEnvironment (G)
 
-export function NewGlobalEnvironment(G: JSObject): LexicalEnvironment {
-    const globalRec = new GlobalEnvironmentRecord(G);
+export function NewGlobalEnvironment(realm: Realm, G: JSObject): LexicalEnvironment {
+    const globalRec = new GlobalEnvironmentRecord(realm,G);
     return { record: globalRec, outer: null };
 }
 
 // ES6 Section 8.1.2.6: NewModuleEnvironment (E)
 
-export function NewModuleEnvironment(E: LexicalEnvironment | null): LexicalEnvironment {
-    const envRec = new ModuleEnvironmentRecord();
+export function NewModuleEnvironment(realm: Realm, E: LexicalEnvironment | null): LexicalEnvironment {
+    const envRec = new ModuleEnvironmentRecord(realm);
     return { record: envRec, outer: E };
 }
 
@@ -644,7 +648,7 @@ export class RealmImpl implements Realm {
     public constructor() {
         this._intrinsics = CreateIntrinsics(this);
         this.globalThis = new JSUndefined();
-        this.globalEnv = NewDeclarativeEnvironment(null); // FIXME
+        this.globalEnv = NewDeclarativeEnvironment(this,null); // FIXME
         this.templateMap = [];
     }
 }
