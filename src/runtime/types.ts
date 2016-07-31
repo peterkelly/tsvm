@@ -26,6 +26,18 @@ export class Empty {
     _nominal_type_EmptyType: any;
 }
 
+export interface LexicalEnvironment {
+    record: EnvironmentRecord;
+    outer: LexicalEnvironment | null;
+}
+
+export interface Realm {
+    globalThis: JSObject | JSUndefined;
+    globalEnv: LexicalEnvironment | JSUndefined;
+    templateMap: any[]; // FIXME
+    intrinsics: Intrinsics;
+}
+
 export interface EnvironmentRecord {
     HasBinding(N: string): Completion<boolean>;
 

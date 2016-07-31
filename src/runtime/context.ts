@@ -17,6 +17,8 @@
 import {
     UnknownType,
     Empty,
+    LexicalEnvironment,
+    Realm,
     EnvironmentRecord,
     ValueType,
     JSValue,
@@ -74,16 +76,17 @@ import * as bi from "./builtins";
 
 // ES6 Section 8.1: Lexical Environments
 
-export class LexicalEnvironment {
-    _nominal_type_LexicalEnvironment: any;
-    public record: EnvironmentRecord;
-    public outer: LexicalEnvironment | null;
 
-    public constructor(record: EnvironmentRecord, outer: LexicalEnvironment | null) {
-        this.record = record;
-        this.outer = outer;
-    }
-}
+// export class LexicalEnvironment {
+//     _nominal_type_LexicalEnvironment: any;
+//     public record: EnvironmentRecord;
+//     public outer: LexicalEnvironment | null;
+//
+//     public constructor(record: EnvironmentRecord, outer: LexicalEnvironment | null) {
+//         this.record = record;
+//         this.outer = outer;
+//     }
+// }
 
 // ES6 Section 8.1.1: Environment Records
 
@@ -587,14 +590,14 @@ export function GetIdentifierReference(lex: LexicalEnvironment, name: string, st
 
 export function NewDeclarativeEnvironment(E: LexicalEnvironment | null): LexicalEnvironment {
     const envRec = new DeclarativeEnvironmentRecord();
-    return new LexicalEnvironment(envRec,E);
+    return { record: envRec, outer: E };
 }
 
 // ES6 Section 8.1.2.3: NewObjectEnvironment (O, E)
 
 export function NewObjectEnvironment(O: JSObject, E: LexicalEnvironment | null): LexicalEnvironment {
     const envRec = new ObjectEnvironmentRecord(O);
-    return new LexicalEnvironment(envRec,E);
+    return { record: envRec, outer: E };
 }
 
 // ES6 Section 8.1.2.4: NewFunctionEnvironment (F, newTarget)
@@ -605,28 +608,28 @@ export function NewFunctionEnvironment(F: JSFunctionObject, newTarget: JSUndefin
         BindingStatus.Lexical :
         BindingStatus.Uninitialized;
     const envRec = new FunctionEnvironmentRecord(F,newTarget);
-    return new LexicalEnvironment(envRec,F.environment);
+    return { record: envRec, outer: F.environment };
 }
 
 // ES6 Section 8.1.2.5: NewGlobalEnvironment (G)
 
 export function NewGlobalEnvironment(G: JSObject): LexicalEnvironment {
     const globalRec = new GlobalEnvironmentRecord(G);
-    return new LexicalEnvironment(globalRec,null);
+    return { record: globalRec, outer: null };
 }
 
 // ES6 Section 8.1.2.6: NewModuleEnvironment (E)
 
 export function NewModuleEnvironment(E: LexicalEnvironment | null): LexicalEnvironment {
     const envRec = new ModuleEnvironmentRecord();
-    return new LexicalEnvironment(envRec,E);
+    return { record: envRec, outer: E };
 }
 
 // ES6 Section 8.2: Code Realms
 
-export class Realm {
-    _nominal_type_Realm: any;
-    public _intrinsics: Intrinsics | undefined;
+export class RealmImpl implements Realm {
+    _nominal_type_RealmImpl: any;
+    private _intrinsics: Intrinsics | undefined;
     public globalThis: JSObject | JSUndefined;
     public globalEnv: LexicalEnvironment | JSUndefined;
     public templateMap: any[]; // FIXME
@@ -649,7 +652,7 @@ export class Realm {
 // ES6 Section 8.2.1: CreateRealm ()
 
 export function CreateRealm(): Realm {
-    return new Realm();
+    return new RealmImpl();
 }
 
 // ES6 Section 8.2.2: CreateIntrinsics (realmRec)

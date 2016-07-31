@@ -15,6 +15,8 @@
 import {
     UnknownType,
     Empty,
+    LexicalEnvironment,
+    Realm,
     EnvironmentRecord,
     ValueType,
     JSValue,
@@ -53,9 +55,6 @@ import {
 import {
     JSOrdinaryObject,
 } from "./datatypes";
-import {
-    Realm,
-} from "./context";
 
 
 export abstract class BuiltinFunction extends JSOrdinaryObject {

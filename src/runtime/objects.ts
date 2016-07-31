@@ -17,6 +17,8 @@
 import {
     UnknownType,
     Empty,
+    LexicalEnvironment,
+    Realm,
     EnvironmentRecord,
     ValueType,
     JSValue,
@@ -58,9 +60,7 @@ import {
     JSOrdinaryObject,
 } from "./datatypes";
 import {
-    LexicalEnvironment,
     ExecutionContext,
-    Realm,
 } from "./context";
 import {
     ASTNode,
