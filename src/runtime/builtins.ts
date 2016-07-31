@@ -13,10 +13,13 @@
 // limitations under the License.
 
 import {
-    EnvironmentRecord,
     UnknownType,
     Empty,
+    EnvironmentRecord,
+    ValueType,
     JSValue,
+    JSPrimitiveValue,
+    JSPropertyKey,
     JSUndefined,
     JSNull,
     JSBoolean,
@@ -24,9 +27,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
-    JSPrimitiveValue,
-    JSPropertyKey,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -48,6 +48,10 @@ import {
     Reference,
     SuperReference,
     DataBlock,
+} from "./types";
+
+import {
+    JSOrdinaryObject,
 } from "./datatypes";
 import {
     Realm,

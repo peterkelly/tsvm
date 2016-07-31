@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-    JSNumber,
-} from "./datatypes";
-
-export function rt_isSameNumberValue(x: JSNumber, y: JSNumber) {
-    return rt_double_equalsExact(x.numberValue,y.numberValue);
-}
-
 export function rt_double_strictEqualityComparison(x: number, y: number): boolean {
     if (rt_double_isNaN(x))
         return false;

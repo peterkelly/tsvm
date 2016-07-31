@@ -15,7 +15,11 @@
 import {
     UnknownType,
     Empty,
+    EnvironmentRecord,
+    ValueType,
     JSValue,
+    JSPrimitiveValue,
+    JSPropertyKey,
     JSUndefined,
     JSNull,
     JSBoolean,
@@ -23,9 +27,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
-    JSPrimitiveValue,
-    JSPropertyKey,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -37,15 +38,22 @@ import {
     BaseDescriptor,
     DataDescriptor,
     AccessorDescriptor,
+    Intrinsics,
     Completion,
     NormalCompletion,
     BreakCompletion,
     ContinueCompletion,
     ReturnCompletion,
     ThrowCompletion,
+    ReferenceBase,
+    SuperReferenceBase,
     Reference,
     SuperReference,
     DataBlock,
+} from "./types";
+
+import {
+    JSOrdinaryObject,
 } from "./datatypes";
 // import {
 //     ExecutionContext,
