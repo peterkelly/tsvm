@@ -61,7 +61,7 @@ import {
 
 export abstract class BuiltinFunction extends JSCallableObject {
     public realm: Realm;
-    public constructor(realm: Realm) {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
         this.realm = realm;
     }
@@ -70,9 +70,10 @@ export abstract class BuiltinFunction extends JSCallableObject {
 
 export abstract class BuiltinConstructor extends JSConstructableObject {
     public realm: Realm;
-    public constructor(realm: Realm) {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
         this.realm = realm;
+        this.__prototype__ = proto;
     }
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
@@ -81,8 +82,8 @@ export class ArgGetterFunction extends BuiltinFunction {
     public name: string;
     public env: EnvironmentRecord;
 
-    public constructor(realm: Realm, name: string, env: EnvironmentRecord) {
-        super(realm);
+    public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
+        super(realm,proto);
         this.name = name;
         this.env = env;
     }
@@ -96,8 +97,8 @@ export class ArgSetterFunction extends BuiltinFunction {
     public name: string;
     public env: EnvironmentRecord;
 
-    public constructor(realm: Realm, name: string, env: EnvironmentRecord) {
-        super(realm);
+    public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
+        super(realm,proto);
         this.name = name;
         this.env = env;
     }
@@ -110,8 +111,8 @@ export class ArgSetterFunction extends BuiltinFunction {
 }
 
 export class ThrowTypeErrorFunction extends BuiltinFunction {
-    public constructor(realm: Realm) {
-        super(realm);
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super(realm,proto);
         this.__extensible__ = false;
         this.properties["length"] = newDataDescriptor({
             enumerable: false,
@@ -142,7 +143,7 @@ export class TypeErrorObject extends JSObject {
     }
 }
 
-export class FunctionPrototypeFunction extends BuiltinFunction {
+export class BuiltinFunctionPrototype extends BuiltinFunction {
     public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         return new NormalCompletion(new JSUndefined());
     }
@@ -161,15 +162,27 @@ export class BuiltinArrayBufferConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinArrayBufferPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinArrayIteratorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinArrayProto_values extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinBooleanConstructor extends BuiltinConstructor {
@@ -179,6 +192,9 @@ export class BuiltinBooleanConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinBooleanPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinDataViewConstructor extends BuiltinConstructor {
@@ -188,6 +204,9 @@ export class BuiltinDataViewConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinDataViewPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinDateConstructor extends BuiltinConstructor {
@@ -197,6 +216,9 @@ export class BuiltinDateConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinDatePrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltindecodeURIFunction extends BuiltinFunction {
@@ -230,6 +252,9 @@ export class BuiltinErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinevalFunction extends BuiltinFunction {
@@ -245,6 +270,9 @@ export class BuiltinEvalErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinEvalErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinFloat32ArrayConstructor extends BuiltinConstructor {
@@ -254,6 +282,9 @@ export class BuiltinFloat32ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinFloat32ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinFloat64ArrayConstructor extends BuiltinConstructor {
@@ -263,6 +294,9 @@ export class BuiltinFloat64ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinFloat64ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinFunctionConstructor extends BuiltinConstructor {
@@ -272,6 +306,9 @@ export class BuiltinFunctionConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinGenerator extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinGeneratorFunctionConstructor extends BuiltinConstructor {
@@ -281,6 +318,9 @@ export class BuiltinGeneratorFunctionConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinGeneratorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinInt8ArrayConstructor extends BuiltinConstructor {
@@ -290,6 +330,9 @@ export class BuiltinInt8ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinInt8ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinInt16ArrayConstructor extends BuiltinConstructor {
@@ -299,6 +342,9 @@ export class BuiltinInt16ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinInt16ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinInt32ArrayConstructor extends BuiltinConstructor {
@@ -308,6 +354,9 @@ export class BuiltinInt32ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinInt32ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinisFiniteFunction extends BuiltinFunction {
@@ -323,9 +372,15 @@ export class BuiltinisNaNFunction extends BuiltinFunction {
 }
 
 export class BuiltinIteratorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinJSONObject extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinMapConstructor extends BuiltinConstructor {
@@ -335,12 +390,21 @@ export class BuiltinMapConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinMapIteratorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinMapPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinMathObject extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinNumberConstructor extends BuiltinConstructor {
@@ -350,6 +414,9 @@ export class BuiltinNumberConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinNumberPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinObjectConstructor extends BuiltinConstructor {
@@ -360,6 +427,9 @@ export class BuiltinObjectConstructor extends BuiltinConstructor {
 
 // FIXME: I don't think this is actually used
 export class BuiltinObjectPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinObjProto_toStringFunction extends BuiltinFunction {
@@ -387,6 +457,9 @@ export class BuiltinPromiseConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinPromisePrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinProxyConstructor extends BuiltinConstructor {
@@ -402,6 +475,9 @@ export class BuiltinRangeErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinRangeErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinReferenceErrorConstructor extends BuiltinConstructor {
@@ -411,9 +487,15 @@ export class BuiltinReferenceErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinReferenceErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinReflectObject extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinRegExpConstructor extends BuiltinConstructor {
@@ -423,6 +505,9 @@ export class BuiltinRegExpConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinRegExpPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinSetConstructor extends BuiltinConstructor {
@@ -432,9 +517,15 @@ export class BuiltinSetConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinSetIteratorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinSetPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinStringConstructor extends BuiltinConstructor {
@@ -444,9 +535,15 @@ export class BuiltinStringConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinStringIteratorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinStringPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinSymbolConstructor extends BuiltinConstructor {
@@ -456,6 +553,9 @@ export class BuiltinSymbolConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinSymbolPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinSyntaxErrorConstructor extends BuiltinConstructor {
@@ -465,12 +565,18 @@ export class BuiltinSyntaxErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinSyntaxErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export abstract class BuiltinTypedArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinTypedArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinTypeErrorConstructor extends BuiltinConstructor {
@@ -480,6 +586,9 @@ export class BuiltinTypeErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinTypeErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinUint8ArrayConstructor extends BuiltinConstructor {
@@ -489,6 +598,9 @@ export class BuiltinUint8ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinUint8ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinUint8ClampedArrayConstructor extends BuiltinConstructor {
@@ -498,6 +610,9 @@ export class BuiltinUint8ClampedArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinUint8ClampedArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinUint16ArrayConstructor extends BuiltinConstructor {
@@ -507,6 +622,9 @@ export class BuiltinUint16ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinUint16ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinUint32ArrayConstructor extends BuiltinConstructor {
@@ -516,6 +634,9 @@ export class BuiltinUint32ArrayConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinUint32ArrayPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinURIErrorConstructor extends BuiltinConstructor {
@@ -525,6 +646,9 @@ export class BuiltinURIErrorConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinURIErrorPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinWeakMapConstructor extends BuiltinConstructor {
@@ -534,6 +658,9 @@ export class BuiltinWeakMapConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinWeakMapPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }
 
 export class BuiltinWeakSetConstructor extends BuiltinConstructor {
@@ -543,4 +670,7 @@ export class BuiltinWeakSetConstructor extends BuiltinConstructor {
 }
 
 export class BuiltinWeakSetPrototype extends JSObject {
+    public constructor(realm: Realm, proto: JSObject | JSNull) {
+        super();
+    }
 }

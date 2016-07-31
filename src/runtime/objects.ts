@@ -351,14 +351,20 @@ export function CreateMappedArgumentsObject(func: any, formals: any, argumentsLi
 // ES6 Section 9.4.4.7.1: MakeArgGetter (name, env)
 
 export function MakeArgGetter(realm: Realm, name: string, env: EnvironmentRecord): Completion<JSValue> {
-    const fun = new bi.ArgGetterFunction(realm,name,env);
+    const intrinsics = realm.intrinsics;
+    if (intrinsics === undefined)
+        throw new Error("intrinsics is undefined"); // FIXME: temp: we'll remove undefiend from the type of intrinsics soon
+    const fun = new bi.ArgGetterFunction(realm,intrinsics.FunctionPrototype,name,env);
     return new NormalCompletion(fun);
 }
 
 // ES6 Section 9.4.4.7.2: MakeArgSetter (name, env)
 
 export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord): Completion<JSValue> {
-    const fun = new bi.ArgSetterFunction(realm,name,env);
+    const intrinsics = realm.intrinsics;
+    if (intrinsics === undefined)
+        throw new Error("intrinsics is undefined"); // FIXME: temp: we'll remove undefiend from the type of intrinsics soon
+    const fun = new bi.ArgSetterFunction(realm,intrinsics.FunctionPrototype,name,env);
     return new NormalCompletion(fun);
 }
 
