@@ -23,6 +23,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     JSCallableObject,
     JSConstructableObject,
     JSCallAndConstructableObject,
@@ -96,6 +97,6 @@ import {
 
 export function evalModule(node: ASTNode): void {
     // const realm = new Realm();
-    const obj = new JSObject();
+    const obj = new JSOrdinaryObject();
     console.log("evalModule");
 }

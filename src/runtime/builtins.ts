@@ -24,6 +24,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     JSCallableObject,
     JSConstructableObject,
     JSCallAndConstructableObject,
@@ -130,7 +131,7 @@ export class ThrowTypeErrorFunction extends BuiltinFunction {
     }
 }
 
-export class TypeErrorObject extends JSObject {
+export class TypeErrorObject extends JSOrdinaryObject {
     public constructor(message: JSString | JSUndefined) {
         super();
         this.properties["message"] = newDataDescriptor({
@@ -150,35 +151,35 @@ export class BuiltinFunctionPrototype extends BuiltinFunction {
 
 export class BuiltinArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
 export class BuiltinArrayBufferConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinArrayBufferPrototype extends JSObject {
+export class BuiltinArrayBufferPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinArrayIteratorPrototype extends JSObject {
+export class BuiltinArrayIteratorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinArrayPrototype extends JSObject {
+export class BuiltinArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinArrayProto_values extends JSObject {
+export class BuiltinArrayProto_values extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -186,11 +187,11 @@ export class BuiltinArrayProto_values extends JSObject {
 
 export class BuiltinBooleanConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinBooleanPrototype extends JSObject {
+export class BuiltinBooleanPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -198,11 +199,11 @@ export class BuiltinBooleanPrototype extends JSObject {
 
 export class BuiltinDataViewConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinDataViewPrototype extends JSObject {
+export class BuiltinDataViewPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -210,11 +211,11 @@ export class BuiltinDataViewPrototype extends JSObject {
 
 export class BuiltinDateConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinDatePrototype extends JSObject {
+export class BuiltinDatePrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -246,11 +247,11 @@ export class BuiltinencodeURIComponentFunction extends BuiltinFunction {
 
 export class BuiltinErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinErrorPrototype extends JSObject {
+export class BuiltinErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -264,11 +265,11 @@ export class BuiltinevalFunction extends BuiltinFunction {
 
 export class BuiltinEvalErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinEvalErrorPrototype extends JSObject {
+export class BuiltinEvalErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -276,11 +277,11 @@ export class BuiltinEvalErrorPrototype extends JSObject {
 
 export class BuiltinFloat32ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinFloat32ArrayPrototype extends JSObject {
+export class BuiltinFloat32ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -288,11 +289,11 @@ export class BuiltinFloat32ArrayPrototype extends JSObject {
 
 export class BuiltinFloat64ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinFloat64ArrayPrototype extends JSObject {
+export class BuiltinFloat64ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -300,11 +301,11 @@ export class BuiltinFloat64ArrayPrototype extends JSObject {
 
 export class BuiltinFunctionConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinGenerator extends JSObject {
+export class BuiltinGenerator extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -312,11 +313,11 @@ export class BuiltinGenerator extends JSObject {
 
 export class BuiltinGeneratorFunctionConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinGeneratorPrototype extends JSObject {
+export class BuiltinGeneratorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -324,11 +325,11 @@ export class BuiltinGeneratorPrototype extends JSObject {
 
 export class BuiltinInt8ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinInt8ArrayPrototype extends JSObject {
+export class BuiltinInt8ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -336,11 +337,11 @@ export class BuiltinInt8ArrayPrototype extends JSObject {
 
 export class BuiltinInt16ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinInt16ArrayPrototype extends JSObject {
+export class BuiltinInt16ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -348,11 +349,11 @@ export class BuiltinInt16ArrayPrototype extends JSObject {
 
 export class BuiltinInt32ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinInt32ArrayPrototype extends JSObject {
+export class BuiltinInt32ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -370,13 +371,13 @@ export class BuiltinisNaNFunction extends BuiltinFunction {
     }
 }
 
-export class BuiltinIteratorPrototype extends JSObject {
+export class BuiltinIteratorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinJSONObject extends JSObject {
+export class BuiltinJSONObject extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -384,23 +385,23 @@ export class BuiltinJSONObject extends JSObject {
 
 export class BuiltinMapConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinMapIteratorPrototype extends JSObject {
+export class BuiltinMapIteratorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinMapPrototype extends JSObject {
+export class BuiltinMapPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinMathObject extends JSObject {
+export class BuiltinMathObject extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -408,11 +409,11 @@ export class BuiltinMathObject extends JSObject {
 
 export class BuiltinNumberConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinNumberPrototype extends JSObject {
+export class BuiltinNumberPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -420,12 +421,12 @@ export class BuiltinNumberPrototype extends JSObject {
 
 export class BuiltinObjectConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
 // FIXME: I don't think this is actually used
-export class BuiltinObjectPrototype extends JSObject {
+export class BuiltinObjectPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -451,11 +452,11 @@ export class BuiltinparseIntFunction extends BuiltinFunction {
 
 export class BuiltinPromiseConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinPromisePrototype extends JSObject {
+export class BuiltinPromisePrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -463,17 +464,17 @@ export class BuiltinPromisePrototype extends JSObject {
 
 export class BuiltinProxyConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
 export class BuiltinRangeErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinRangeErrorPrototype extends JSObject {
+export class BuiltinRangeErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -481,17 +482,17 @@ export class BuiltinRangeErrorPrototype extends JSObject {
 
 export class BuiltinReferenceErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinReferenceErrorPrototype extends JSObject {
+export class BuiltinReferenceErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinReflectObject extends JSObject {
+export class BuiltinReflectObject extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -499,11 +500,11 @@ export class BuiltinReflectObject extends JSObject {
 
 export class BuiltinRegExpConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinRegExpPrototype extends JSObject {
+export class BuiltinRegExpPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -511,17 +512,17 @@ export class BuiltinRegExpPrototype extends JSObject {
 
 export class BuiltinSetConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinSetIteratorPrototype extends JSObject {
+export class BuiltinSetIteratorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinSetPrototype extends JSObject {
+export class BuiltinSetPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -529,17 +530,17 @@ export class BuiltinSetPrototype extends JSObject {
 
 export class BuiltinStringConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinStringIteratorPrototype extends JSObject {
+export class BuiltinStringIteratorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
 }
 
-export class BuiltinStringPrototype extends JSObject {
+export class BuiltinStringPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -547,11 +548,11 @@ export class BuiltinStringPrototype extends JSObject {
 
 export class BuiltinSymbolConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinSymbolPrototype extends JSObject {
+export class BuiltinSymbolPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -559,11 +560,11 @@ export class BuiltinSymbolPrototype extends JSObject {
 
 export class BuiltinSyntaxErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinSyntaxErrorPrototype extends JSObject {
+export class BuiltinSyntaxErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -572,7 +573,7 @@ export class BuiltinSyntaxErrorPrototype extends JSObject {
 export abstract class BuiltinTypedArrayConstructor extends BuiltinConstructor {
 }
 
-export class BuiltinTypedArrayPrototype extends JSObject {
+export class BuiltinTypedArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -580,11 +581,11 @@ export class BuiltinTypedArrayPrototype extends JSObject {
 
 export class BuiltinTypeErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinTypeErrorPrototype extends JSObject {
+export class BuiltinTypeErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -592,11 +593,11 @@ export class BuiltinTypeErrorPrototype extends JSObject {
 
 export class BuiltinUint8ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinUint8ArrayPrototype extends JSObject {
+export class BuiltinUint8ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -604,11 +605,11 @@ export class BuiltinUint8ArrayPrototype extends JSObject {
 
 export class BuiltinUint8ClampedArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinUint8ClampedArrayPrototype extends JSObject {
+export class BuiltinUint8ClampedArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -616,11 +617,11 @@ export class BuiltinUint8ClampedArrayPrototype extends JSObject {
 
 export class BuiltinUint16ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinUint16ArrayPrototype extends JSObject {
+export class BuiltinUint16ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -628,11 +629,11 @@ export class BuiltinUint16ArrayPrototype extends JSObject {
 
 export class BuiltinUint32ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinUint32ArrayPrototype extends JSObject {
+export class BuiltinUint32ArrayPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -640,11 +641,11 @@ export class BuiltinUint32ArrayPrototype extends JSObject {
 
 export class BuiltinURIErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinURIErrorPrototype extends JSObject {
+export class BuiltinURIErrorPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -652,11 +653,11 @@ export class BuiltinURIErrorPrototype extends JSObject {
 
 export class BuiltinWeakMapConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinWeakMapPrototype extends JSObject {
+export class BuiltinWeakMapPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }
@@ -664,11 +665,11 @@ export class BuiltinWeakMapPrototype extends JSObject {
 
 export class BuiltinWeakSetConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSObject());
+        return new NormalCompletion(new JSOrdinaryObject());
     }
 }
 
-export class BuiltinWeakSetPrototype extends JSObject {
+export class BuiltinWeakSetPrototype extends JSOrdinaryObject {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super();
     }

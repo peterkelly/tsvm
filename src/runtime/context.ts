@@ -25,6 +25,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     Completion,
     NormalCompletion,
     BreakCompletion,
@@ -634,7 +635,7 @@ export function CreateRealm(): Realm {
 // ES6 Section 8.2.2: CreateIntrinsics (realmRec)
 
 export function CreateIntrinsics(realm: Realm): Intrinsics {
-    const objProto = new JSObject();
+    const objProto = new JSOrdinaryObject();
     const thrower = new bi.ThrowTypeErrorFunction(realm,new JSNull());
     const funcProto = new bi.BuiltinFunctionPrototype(realm,new JSNull());
 

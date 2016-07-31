@@ -211,7 +211,7 @@ export class JSNumber extends JSPrimitiveValue {
 
 // ES6 Section 6.1.7: The Object Type
 
-export class JSObject extends JSValue {
+export abstract class JSObject extends JSValue {
     _nominal_type_JSObject: any;
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
@@ -230,6 +230,33 @@ export class JSObject extends JSValue {
     public get overridesGetPrototypeOf(): boolean {
         return (this.__GetPrototypeOf__ !== JSObject.prototype.__GetPrototypeOf__);
     }
+
+    public abstract __GetPrototypeOf__(): Completion<JSObject | JSNull>;
+
+    public abstract __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean>;
+
+    public abstract __IsExtensible__(): Completion<boolean>;
+
+    public abstract __PreventExtensions__(): Completion<boolean>;
+
+    public abstract __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
+
+    public abstract __HasProperty__(P: JSPropertyKey): Completion<boolean>;
+
+    public abstract __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
+
+    public abstract __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
+
+    public abstract __Delete__(P: JSPropertyKey): Completion<boolean>;
+
+    public abstract __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
+
+    public abstract __Enumerate__(): Completion<JSObject>;
+
+    public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
+}
+
+export class JSOrdinaryObject extends JSObject {
 
     // ES6 Section 6.1.7.2: Object Internal Methods and Internal Slots
     // ES6 Section 9.1: Ordinary Object Internal Methods and Internal Slots
@@ -280,7 +307,9 @@ export class JSObject extends JSValue {
 
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(P: JSPropertyKey, copy: boolean = true): Completion<JSUndefined | PropertyDescriptor> {
+    public __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
+        if (copy === undefined)
+            copy = true;
         return new NormalCompletion(OrdinaryGetOwnProperty(this,P,copy));
     }
 
@@ -405,6 +434,7 @@ export class JSObject extends JSValue {
     public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
         throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
     }
+
 }
 
 export interface Callable {
@@ -415,15 +445,15 @@ export interface Constructable {
     __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
 
-export abstract class JSCallableObject extends JSObject implements Callable {
+export abstract class JSCallableObject extends JSOrdinaryObject implements Callable {
     public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
 }
 
-export abstract class JSConstructableObject extends JSObject implements Constructable {
+export abstract class JSConstructableObject extends JSOrdinaryObject implements Constructable {
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
 
-export abstract class JSCallAndConstructableObject extends JSObject implements Callable, Constructable {
+export abstract class JSCallAndConstructableObject extends JSOrdinaryObject implements Callable, Constructable {
     public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }

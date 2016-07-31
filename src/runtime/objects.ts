@@ -25,6 +25,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     Completion,
     NormalCompletion,
     ThrowCompletion,
@@ -42,7 +43,7 @@ import {
 } from "../parser/ast";
 import * as bi from "./builtins";
 
-export abstract class JSExoticObject extends JSObject {
+export abstract class JSExoticObject extends JSOrdinaryObject {
     _nominal_type_JSExoticObject: any;
 }
 
@@ -84,7 +85,7 @@ export function OrdinaryHasProperty(O: JSObject, P: JSPropertyKey): Completion<U
 // ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
 
 export function ObjectCreate(proto: JSObject | JSNull/*, internalSlotsList: string[]*/): JSObject {
-    const obj = new JSObject();
+    const obj = new JSOrdinaryObject();
     obj.__prototype__ = proto;
     obj.__extensible__ = true; // not really necessary; JSObjects are extensible by default
     return obj;
@@ -121,7 +122,7 @@ export enum ConstructorKind {
     Derived,
 }
 
-export class JSFunctionObject extends JSObject {
+export class JSFunctionObject extends JSOrdinaryObject {
     _nominal_type_JSFunctionObject: any;
     public environment: LexicalEnvironment;
     public formalParameters: ASTNode;
