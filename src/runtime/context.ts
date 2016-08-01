@@ -856,40 +856,6 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
         WeakSet: intrinsics.WeakSet,
     };
 
-    intrinsics.Array.__prototype__ = intrinsics.ArrayPrototype;
-    intrinsics.ArrayBuffer.__prototype__ = intrinsics.ArrayBufferPrototype;
-    intrinsics.Boolean.__prototype__ = intrinsics.BooleanPrototype;
-    intrinsics.DataView.__prototype__ = intrinsics.DataViewPrototype;
-    intrinsics.Date.__prototype__ = intrinsics.DatePrototype;
-    intrinsics.Error.__prototype__ = intrinsics.ErrorPrototype;
-    intrinsics.EvalError.__prototype__ = intrinsics.EvalErrorPrototype;
-    intrinsics.Float32Array.__prototype__ = intrinsics.Float32ArrayPrototype;
-    intrinsics.Float64Array.__prototype__ = intrinsics.Float64ArrayPrototype;
-    intrinsics.Function.__prototype__ = intrinsics.FunctionPrototype;
-    intrinsics.Int8Array.__prototype__ = intrinsics.Int8ArrayPrototype;
-    intrinsics.Int16Array.__prototype__ = intrinsics.Int16ArrayPrototype;
-    intrinsics.Int32Array.__prototype__ = intrinsics.Int32ArrayPrototype;
-    intrinsics.Map.__prototype__ = intrinsics.MapPrototype;
-    intrinsics.Number.__prototype__ = intrinsics.NumberPrototype;
-    intrinsics.Object.__prototype__ = intrinsics.ObjectPrototype;
-    // FIXME: ObjProto_toString
-    intrinsics.Promise.__prototype__ = intrinsics.PromisePrototype;
-    intrinsics.RangeError.__prototype__ = intrinsics.RangeErrorPrototype;
-    intrinsics.ReferenceError.__prototype__ = intrinsics.ReferenceErrorPrototype;
-    intrinsics.RegExp.__prototype__ = intrinsics.RegExpPrototype;
-    intrinsics.Set.__prototype__ = intrinsics.SetPrototype;
-    intrinsics.String.__prototype__ = intrinsics.StringPrototype;
-    intrinsics.Symbol.__prototype__ = intrinsics.SymbolPrototype;
-    intrinsics.SyntaxError.__prototype__ = intrinsics.SyntaxErrorPrototype;
-    intrinsics.TypeError.__prototype__ = intrinsics.TypeErrorPrototype;
-    intrinsics.Uint8Array.__prototype__ = intrinsics.Uint8ArrayPrototype;
-    intrinsics.Uint8ClampedArray.__prototype__ = intrinsics.Uint8ClampedArrayPrototype;
-    intrinsics.Uint16Array.__prototype__ = intrinsics.Uint16ArrayPrototype;
-    intrinsics.Uint32Array.__prototype__ = intrinsics.Uint32ArrayPrototype;
-    intrinsics.URIError.__prototype__ = intrinsics.URIErrorPrototype;
-    intrinsics.WeakMap.__prototype__ = intrinsics.WeakMapPrototype;
-    intrinsics.WeakSet.__prototype__ = intrinsics.WeakSetPrototype;
-
     function immutableProperty(value: JSValue): PropertyDescriptor {
         return new DataDescriptor({
             value: value,
