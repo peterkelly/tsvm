@@ -870,6 +870,49 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
     intrinsics.WeakMap.__prototype__ = intrinsics.WeakMapPrototype;
     intrinsics.WeakSet.__prototype__ = intrinsics.WeakSetPrototype;
 
+    function immutableProperty(value: JSValue): PropertyDescriptor {
+        return new DataDescriptor({
+            value: value,
+            writable: false,
+            enumerable: false,
+            configurable: false,
+        });
+    }
+
+    intrinsics.Array.properties["prototype"] = immutableProperty(intrinsics.ArrayPrototype);
+    intrinsics.ArrayBuffer.properties["prototype"] = immutableProperty(intrinsics.ArrayBufferPrototype);
+    intrinsics.Boolean.properties["prototype"] = immutableProperty(intrinsics.BooleanPrototype);
+    intrinsics.DataView.properties["prototype"] = immutableProperty(intrinsics.DataViewPrototype);
+    intrinsics.Date.properties["prototype"] = immutableProperty(intrinsics.DatePrototype);
+    intrinsics.Error.properties["prototype"] = immutableProperty(intrinsics.ErrorPrototype);
+    intrinsics.EvalError.properties["prototype"] = immutableProperty(intrinsics.EvalErrorPrototype);
+    intrinsics.Float32Array.properties["prototype"] = immutableProperty(intrinsics.Float32ArrayPrototype);
+    intrinsics.Float64Array.properties["prototype"] = immutableProperty(intrinsics.Float64ArrayPrototype);
+    intrinsics.Function.properties["prototype"] = immutableProperty(intrinsics.FunctionPrototype);
+    intrinsics.GeneratorFunction.properties["prototype"] = immutableProperty(intrinsics.Generator);
+    intrinsics.Int8Array.properties["prototype"] = immutableProperty(intrinsics.Int8ArrayPrototype);
+    intrinsics.Int16Array.properties["prototype"] = immutableProperty(intrinsics.Int16ArrayPrototype);
+    intrinsics.Int32Array.properties["prototype"] = immutableProperty(intrinsics.Int32ArrayPrototype);
+    intrinsics.Map.properties["prototype"] = immutableProperty(intrinsics.MapPrototype);
+    intrinsics.Number.properties["prototype"] = immutableProperty(intrinsics.NumberPrototype);
+    intrinsics.Object.properties["prototype"] = immutableProperty(intrinsics.ObjectPrototype);
+    intrinsics.Promise.properties["prototype"] = immutableProperty(intrinsics.PromisePrototype);
+    intrinsics.RangeError.properties["prototype"] = immutableProperty(intrinsics.RangeErrorPrototype);
+    intrinsics.ReferenceError.properties["prototype"] = immutableProperty(intrinsics.ReferenceErrorPrototype);
+    intrinsics.RegExp.properties["prototype"] = immutableProperty(intrinsics.RegExpPrototype);
+    intrinsics.Set.properties["prototype"] = immutableProperty(intrinsics.SetPrototype);
+    intrinsics.String.properties["prototype"] = immutableProperty(intrinsics.StringPrototype);
+    intrinsics.Symbol.properties["prototype"] = immutableProperty(intrinsics.SymbolPrototype);
+    intrinsics.SyntaxError.properties["prototype"] = immutableProperty(intrinsics.SyntaxErrorPrototype);
+    intrinsics.TypeError.properties["prototype"] = immutableProperty(intrinsics.TypeErrorPrototype);
+    intrinsics.Uint8Array.properties["prototype"] = immutableProperty(intrinsics.Uint8ArrayPrototype);
+    intrinsics.Uint8ClampedArray.properties["prototype"] = immutableProperty(intrinsics.Uint8ClampedArrayPrototype);
+    intrinsics.Uint16Array.properties["prototype"] = immutableProperty(intrinsics.Uint16ArrayPrototype);
+    intrinsics.Uint32Array.properties["prototype"] = immutableProperty(intrinsics.Uint32ArrayPrototype);
+    intrinsics.URIError.properties["prototype"] = immutableProperty(intrinsics.URIErrorPrototype);
+    intrinsics.WeakMap.properties["prototype"] = immutableProperty(intrinsics.WeakMapPrototype);
+    intrinsics.WeakSet.properties["prototype"] = immutableProperty(intrinsics.WeakSetPrototype);
+
     return intrinsics;
 
     // throw new Error("CreateIntrinsics not implemented");
