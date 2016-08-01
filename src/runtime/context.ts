@@ -899,6 +899,51 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
     intrinsics.WeakMap.properties["prototype"] = immutableProperty(intrinsics.WeakMapPrototype);
     intrinsics.WeakSet.properties["prototype"] = immutableProperty(intrinsics.WeakSetPrototype);
 
+    const _constructor = "constructor"; // Avoid TypeScript warnings about setting constructor property
+
+    function cprop(value: JSValue): PropertyDescriptor {
+        return new DataDescriptor({
+            value: value,
+            writable: false,
+            enumerable: false,
+            configurable: true,
+        });
+    }
+
+    intrinsics.ArrayPrototype.properties[_constructor] = cprop(intrinsics.Array);
+    intrinsics.ArrayBufferPrototype.properties[_constructor] = cprop(intrinsics.ArrayBuffer);
+    intrinsics.BooleanPrototype.properties[_constructor] = cprop(intrinsics.Boolean);
+    intrinsics.DataViewPrototype.properties[_constructor] = cprop(intrinsics.DataView);
+    intrinsics.DatePrototype.properties[_constructor] = cprop(intrinsics.Date);
+    intrinsics.ErrorPrototype.properties[_constructor] = cprop(intrinsics.Error);
+    intrinsics.EvalErrorPrototype.properties[_constructor] = cprop(intrinsics.EvalError);
+    intrinsics.Float32ArrayPrototype.properties[_constructor] = cprop(intrinsics.Float32Array);
+    intrinsics.Float64ArrayPrototype.properties[_constructor] = cprop(intrinsics.Float64Array);
+    intrinsics.FunctionPrototype.properties[_constructor] = cprop(intrinsics.Function);
+    intrinsics.Generator.properties[_constructor] = cprop(intrinsics.GeneratorFunction); // mentions descriptor attributes
+    intrinsics.Int8ArrayPrototype.properties[_constructor] = cprop(intrinsics.Int8Array);
+    intrinsics.Int16ArrayPrototype.properties[_constructor] = cprop(intrinsics.Int16Array);
+    intrinsics.Int32ArrayPrototype.properties[_constructor] = cprop(intrinsics.Int32Array);
+    intrinsics.MapPrototype.properties[_constructor] = cprop(intrinsics.Map);
+    intrinsics.NumberPrototype.properties[_constructor] = cprop(intrinsics.Number);
+    intrinsics.ObjectPrototype.properties[_constructor] = cprop(intrinsics.Object);
+    intrinsics.PromisePrototype.properties[_constructor] = cprop(intrinsics.Promise);
+    intrinsics.RangeErrorPrototype.properties[_constructor] = cprop(intrinsics.RangeError);
+    intrinsics.ReferenceErrorPrototype.properties[_constructor] = cprop(intrinsics.ReferenceError);
+    intrinsics.RegExpPrototype.properties[_constructor] = cprop(intrinsics.RegExp);
+    intrinsics.SetPrototype.properties[_constructor] = cprop(intrinsics.Set);
+    intrinsics.StringPrototype.properties[_constructor] = cprop(intrinsics.String);
+    intrinsics.SymbolPrototype.properties[_constructor] = cprop(intrinsics.Symbol);
+    intrinsics.SyntaxErrorPrototype.properties[_constructor] = cprop(intrinsics.SyntaxError);
+    intrinsics.TypeErrorPrototype.properties[_constructor] = cprop(intrinsics.TypeError);
+    intrinsics.Uint8ArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint8Array);
+    intrinsics.Uint8ClampedArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint8ClampedArray);
+    intrinsics.Uint16ArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint16Array);
+    intrinsics.Uint32ArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint32Array);
+    intrinsics.URIErrorPrototype.properties[_constructor] = cprop(intrinsics.URIError);
+    intrinsics.WeakMapPrototype.properties[_constructor] = cprop(intrinsics.WeakMap);
+    intrinsics.WeakSetPrototype.properties[_constructor] = cprop(intrinsics.WeakSet);
+
     return intrinsics;
 
     // throw new Error("CreateIntrinsics not implemented");
