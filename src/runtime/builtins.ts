@@ -58,10 +58,8 @@ import {
 
 
 export abstract class BuiltinFunction extends JSOrdinaryObject {
-    public realm: Realm;
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super(realm);
-        this.realm = realm;
     }
     public get implementsCall(): boolean {
         return true;
@@ -70,11 +68,8 @@ export abstract class BuiltinFunction extends JSOrdinaryObject {
 }
 
 export abstract class BuiltinConstructor extends JSOrdinaryObject {
-    public realm: Realm;
     public constructor(realm: Realm, proto: JSObject | JSNull) {
-        super(realm);
-        this.realm = realm;
-        this.__prototype__ = proto;
+        super(realm,proto);
     }
     public get implementsConstruct(): boolean {
         return true;
