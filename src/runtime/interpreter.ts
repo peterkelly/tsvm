@@ -59,9 +59,11 @@ import {
 } from "./09-01-ordinary";
 import {
     ExecutionContext,
-    DeclarativeEnvironmentRecord,
     RealmImpl,
 } from "./context";
+import {
+    DeclarativeEnvironmentRecord,
+} from "./08-01-environment";
 import {
     ASTNode,
     ListNode,
