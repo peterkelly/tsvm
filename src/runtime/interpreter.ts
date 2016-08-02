@@ -70,7 +70,7 @@ import {
 } from "../parser/ast";
 import {
     ToString,
-} from "./operations";
+} from "./07-01-conversion";
 import {
     GetValue,
 } from "./datatypes";
