@@ -73,7 +73,7 @@ import {
 } from "./07-01-conversion";
 import {
     GetValue,
-} from "./datatypes";
+} from "./06-02-03-reference";
 
 function checkNode(node: ASTNode | null, kind: string, arity: number): ASTNode {
     if (node === null)
