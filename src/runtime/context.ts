@@ -66,7 +66,7 @@ import {
 import {
     JSFunctionObject,
     ThisMode,
-} from "./09-objbehaviour";
+} from "./09-02-exotic";
 import {
     intrinsic_ThrowTypeError,
     intrinsic_ThrowReferenceError,
