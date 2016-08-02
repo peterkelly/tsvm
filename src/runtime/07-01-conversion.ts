@@ -45,16 +45,16 @@ import {
     rt_string_to_double,
 } from "./runtime";
 import {
-    Get,
-    GetMethod,
     intrinsic_ThrowTypeError,
 } from "./operations";
 import {
     IsCallable,
 } from "./07-02-testcompare";
 import {
+    Get,
+    GetMethod,
     Call,
-} from "./datatypes";
+} from "./07-03-objects";
 
 // ES6 Section 7.1.1: ToPrimitive (input [, PreferredType])
 

@@ -53,13 +53,6 @@ import {
     SuperReference,
     DataBlock,
 } from "./types";
-
-// import {
-//     LexicalEnvironment,
-//     EnvironmentRecord,
-//     Realm,
-// } from "./context";
-// import * as context from "./context";
 import {
     ASTNode
 } from "../parser/ast";
@@ -70,9 +63,10 @@ import {
     SameValue,
     SameValueZero,
 } from "./07-02-testcompare";
-// import {
-//     intrinsic_ThrowTypeError
-// } from "./objects";
+import {
+    CreateDataProperty,
+    Call,
+} from "./07-03-objects";
 import {
     rt_double_abstractRelationalComparison,
     rt_double_strictEqualityComparison,
@@ -469,69 +463,4 @@ export function CreateByteDataBlock(realm: Realm, size: number): DataBlock {
 
 export function CopyDataBlockBytes(realm: Realm, toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<UnknownType> {
     throw new Error("CopyDataBlockBytes not implemented");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ES6 Section 7.3.12: Call(F, V, [argumentsList])
-
-export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue[]): Completion<JSValue> {
-    if (!(F instanceof JSObject) || !F.implementsCall)
-        throw new Error("Object is not callable"); // FIXME: temp
-    // if (!IsCallable(F))
-        // return intrinsic_ThrowTypeError();
-    return F.__Call__(V,argumentList);
-}
-
-
-
-
-// ES6 Section 7.3.4: CreateDataProperty (O, P, V)
-
-export function CreateDataProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const newDesc = new DataDescriptor({ value: V, writable: true });
-    newDesc.enumerable = true;
-    newDesc.configurable = true;
-    return O.__DefineOwnProperty__(P,newDesc);
-}
-
-// ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
-
-export function CreateMethodProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const newDesc = new DataDescriptor({ value: V, writable: true });
-    newDesc.enumerable = false;
-    newDesc.configurable = true;
-    return O.__DefineOwnProperty__(P,newDesc);
 }

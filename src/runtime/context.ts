@@ -71,8 +71,10 @@ import {
 import {
     intrinsic_ThrowTypeError,
     intrinsic_ThrowReferenceError,
-    HasProperty,
 } from "./operations";
+import {
+    HasProperty,
+} from "./07-03-objects";
 // import {
 //     ThrowTypeErrorFunction,
 //     FunctionPrototypeFunction,
