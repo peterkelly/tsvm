@@ -47,9 +47,11 @@ import {
 import {
     Get,
     GetMethod,
-    IsCallable,
     intrinsic_ThrowTypeError,
 } from "./operations";
+import {
+    IsCallable,
+} from "./07-02-testcompare";
 import {
     Call,
 } from "./datatypes";

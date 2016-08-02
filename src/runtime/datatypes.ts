@@ -66,6 +66,10 @@ import {
 import {
     ToObject,
 } from "./07-01-conversion";
+import {
+    SameValue,
+    SameValueZero,
+} from "./07-02-testcompare";
 // import {
 //     intrinsic_ThrowTypeError
 // } from "./objects";
@@ -495,71 +499,6 @@ export function CopyDataBlockBytes(realm: Realm, toBlock: DataBlock, toIndex: nu
 
 
 
-// ES6 Section 7.2.9: SameValue (x, y)
-
-export function SameValue(x: JSValue, y: JSValue): boolean {
-    return SameValue2(x,y,false);
-}
-
-// ES6 Section 7.2.10: SameValueZero (x, y)
-
-export function SameValueZero(x: any, y: any): boolean {
-    return SameValue2(x,y,true);
-}
-
-function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
-    if (x.type != y.type)
-        return false;
-
-    switch (x.type) {
-        case ValueType.Undefined:
-            return true;
-        case ValueType.Null:
-            return true;
-        case ValueType.Number:
-            if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
-                if (rt_double_isNaN(x.numberValue) && rt_double_isNaN(y.numberValue))
-                    return true;
-                if (!zero) {
-                    // Logic for the SameValue operation
-                    if (rt_double_isPositiveZero(x.numberValue) && rt_double_isNegativeZero(y.numberValue))
-                        return false;
-                    if (rt_double_isNegativeZero(x.numberValue) && rt_double_isPositiveZero(y.numberValue))
-                        return false;
-                }
-                else {
-                    // Logic for the SameValueZero operation
-                    if (rt_double_isPositiveZero(x.numberValue) && rt_double_isNegativeZero(y.numberValue))
-                        return true;
-                    if (rt_double_isNegativeZero(x.numberValue) && rt_double_isPositiveZero(y.numberValue))
-                        return true;
-                }
-                if (rt_double_equalsExact(x.numberValue,y.numberValue))
-                    return true;
-                return false;
-            }
-            else {
-                throw new Error("Incorrect JSValue.type (Number); should never get here");
-            }
-        case ValueType.String:
-            if ((x instanceof JSString) && (y instanceof JSString))
-                return (x.stringValue === y.stringValue);
-            else
-                throw new Error("Incorrect JSValue.type (String); should never get here");
-        case ValueType.Boolean:
-            if ((x instanceof JSBoolean) && (y instanceof JSBoolean))
-                return (x.booleanValue == y.booleanValue);
-            else
-                throw new Error("Incorrect JSValue.type (Boolean); should never get here");
-        case ValueType.Object:
-            if ((x instanceof JSObject) && (y instanceof JSObject))
-                return (x === y);
-            else
-                throw new Error("Incorrect JSValue.type (Object); should never get here");
-    }
-
-    throw new Error("Unhandled case; should never get here");
-}
 
 
 

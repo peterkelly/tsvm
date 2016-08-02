@@ -1,0 +1,5 @@
+#!/bin/bash
+cat "$1" | \
+    grep -E '^export *(function) *' |\
+    sed -E 's/^export *(function) *//g' |\
+    sed -E 's/^([A-Za-z0-9_]+).*$/    \1,/g'
