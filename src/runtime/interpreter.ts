@@ -56,7 +56,7 @@ import {
 
 import {
     JSOrdinaryObject,
-} from "./datatypes";
+} from "./09-01-ordinary";
 import {
     ExecutionContext,
     DeclarativeEnvironmentRecord,

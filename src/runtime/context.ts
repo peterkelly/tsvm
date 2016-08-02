@@ -59,15 +59,14 @@ import {
     rt_Infinity,
     rt_NaN,
 } from "./runtime";
-
 import {
     JSOrdinaryObject,
-} from "./datatypes";
+    ObjectCreate,
+} from "./09-01-ordinary";
 import {
     JSFunctionObject,
     ThisMode,
-    ObjectCreate,
-} from "./objects";
+} from "./09-objbehaviour";
 import {
     intrinsic_ThrowTypeError,
     intrinsic_ThrowReferenceError,

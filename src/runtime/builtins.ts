@@ -54,7 +54,7 @@ import {
 
 import {
     JSOrdinaryObject,
-} from "./datatypes";
+} from "./09-01-ordinary";
 
 
 export abstract class BuiltinFunction extends JSOrdinaryObject {
