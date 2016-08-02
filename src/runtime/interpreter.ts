@@ -59,8 +59,10 @@ import {
 } from "./09-01-ordinary";
 import {
     ExecutionContext,
-    RealmImpl,
 } from "./context";
+import {
+    RealmImpl,
+} from "./08-02-realm";
 import {
     DeclarativeEnvironmentRecord,
 } from "./08-01-environment";
