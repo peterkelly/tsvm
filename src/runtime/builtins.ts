@@ -77,38 +77,6 @@ export abstract class BuiltinConstructor extends JSOrdinaryObject {
     public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
 }
 
-export class ArgGetterFunction extends BuiltinFunction {
-    public name: string;
-    public env: EnvironmentRecord;
-
-    public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
-        super(realm,proto);
-        this.name = name;
-        this.env = env;
-    }
-
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        return this.env.GetBindingValue(this.name,false);
-    }
-}
-
-export class ArgSetterFunction extends BuiltinFunction {
-    public name: string;
-    public env: EnvironmentRecord;
-
-    public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
-        super(realm,proto);
-        this.name = name;
-        this.env = env;
-    }
-
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        const value = (args.length > 0) ? args[0] : new JSUndefined();
-        this.env.SetMutableBinding(this.name,value,false);
-        return new NormalCompletion(new JSUndefined());
-    }
-}
-
 export class ThrowTypeErrorFunction extends BuiltinFunction {
     public constructor(realm: Realm, proto: JSObject | JSNull) {
         super(realm,proto);

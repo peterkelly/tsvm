@@ -61,7 +61,6 @@ import {
 import {
     ASTNode,
 } from "../parser/ast";
-import * as bi from "./builtins";
 import {
     SameValue,
 } from "./07-02-testcompare";
@@ -361,8 +360,27 @@ export function MakeArgGetter(realm: Realm, name: string, env: EnvironmentRecord
     const intrinsics = realm.intrinsics;
     if (intrinsics === undefined)
         throw new Error("intrinsics is undefined"); // FIXME: temp: we'll remove undefiend from the type of intrinsics soon
-    const fun = new bi.ArgGetterFunction(realm,intrinsics.FunctionPrototype,name,env);
+    const fun = new ArgGetterFunction(realm,intrinsics.FunctionPrototype,name,env);
     return new NormalCompletion(fun);
+}
+
+class ArgGetterFunction extends JSOrdinaryObject {
+    public name: string;
+    public env: EnvironmentRecord;
+
+    public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
+        super(realm,proto);
+        this.name = name;
+        this.env = env;
+    }
+
+    public get implementsCall(): boolean {
+        return true;
+    }
+
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        return this.env.GetBindingValue(this.name,false);
+    }
 }
 
 // ES6 Section 9.4.4.7.2: MakeArgSetter (name, env)
@@ -371,8 +389,29 @@ export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord
     const intrinsics = realm.intrinsics;
     if (intrinsics === undefined)
         throw new Error("intrinsics is undefined"); // FIXME: temp: we'll remove undefiend from the type of intrinsics soon
-    const fun = new bi.ArgSetterFunction(realm,intrinsics.FunctionPrototype,name,env);
+    const fun = new ArgSetterFunction(realm,intrinsics.FunctionPrototype,name,env);
     return new NormalCompletion(fun);
+}
+
+class ArgSetterFunction extends JSOrdinaryObject {
+    public name: string;
+    public env: EnvironmentRecord;
+
+    public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
+        super(realm,proto);
+        this.name = name;
+        this.env = env;
+    }
+
+    public get implementsCall(): boolean {
+        return true;
+    }
+
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        const value = (args.length > 0) ? args[0] : new JSUndefined();
+        this.env.SetMutableBinding(this.name,value,false);
+        return new NormalCompletion(new JSUndefined());
+    }
 }
 
 // ES6 Section 9.4.5: Integer Indexed Exotic Objects
