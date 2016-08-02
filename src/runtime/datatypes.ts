@@ -86,48 +86,6 @@ import {
 //     intrinsic_ThrowReferenceError,
 // } from "./objects";
 
-// ES6 Section 6.2.4: The Property Descriptor Specification Type
-
-// ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
-
-export function IsAccessorDescriptor(realm: Realm, Desc: PropertyDescriptor): Desc is AccessorDescriptor {
-    return (Desc instanceof AccessorDescriptor);
-}
-
-// ES6 Section 6.2.4.2: IsDataDescriptor (Desc)
-
-export function IsDataDescriptor(realm: Realm, Desc: PropertyDescriptor): Desc is DataDescriptor {
-    return (Desc instanceof DataDescriptor);
-}
-
-// ES6 Section 6.2.4.3: IsGenericDescriptor (Desc)
-
-export function IsGenericDescriptor(realm: Realm, Desc: BaseDescriptor | JSUndefined): boolean {
-    if (Desc instanceof JSUndefined)
-        return false;
-    if (!(Desc instanceof AccessorDescriptor) && !(Desc instanceof DataDescriptor))
-        return true;
-    return false;
-}
-
-// ES6 Section 6.2.4.4: FromPropertyDescriptor (Desc)
-
-export function FromPropertyDescriptor(realm: Realm, Desc: PropertyDescriptor): Completion<UnknownType> {
-    throw new Error("FromPropertyDescriptor not implemented");
-}
-
-// ES6 Section 6.2.4.5: ToPropertyDescriptor (Obj)
-
-export function ToPropertyDescriptor(realm: Realm, Obj: any): Completion<UnknownType> {
-    throw new Error("ToPropertyDescriptor not implemented");
-}
-
-// ES6 Section 6.2.4.6: CompletePropertyDescriptor (Desc)
-
-export function CompletePropertyDescriptor(realm: Realm, Desc: any): Completion<UnknownType> {
-    throw new Error("CompletePropertyDescriptor not implemented");
-}
-
 // ES6 Section 6.2.6.1: CreateByteDataBlock (size)
 
 export function CreateByteDataBlock(realm: Realm, size: number): DataBlock {
