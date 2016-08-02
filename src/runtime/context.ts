@@ -68,10 +68,6 @@ import {
     ThisMode,
 } from "./09-02-exotic";
 import {
-    intrinsic_ThrowTypeError,
-    intrinsic_ThrowReferenceError,
-} from "./operations";
-import {
     HasProperty,
 } from "./07-03-objects";
 // import {
@@ -200,7 +196,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
 
         if (!(N in envRec.bindings)) {
             if (S)
-                return intrinsic_ThrowReferenceError(this.realm);
+                return this.realm.throwReferenceError();
             envRec.CreateMutableBinding(N,true);
             envRec.InitializeBinding(N,V);
             return new NormalCompletion(undefined);
@@ -210,11 +206,11 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
         if (binding.strict)
             S = true;
         if (!binding.initialized)
-            return intrinsic_ThrowReferenceError(this.realm);
+            return this.realm.throwReferenceError();
         else if (binding.mutable)
             binding.value = V;
         else if (S)
-            return intrinsic_ThrowTypeError(this.realm);
+            return this.realm.throwTypeError();
         return new NormalCompletion(undefined);
     }
 
@@ -226,7 +222,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
             throw new Error("Binding for "+N+" does not exist");
         const binding = this.bindings[N];
         if (!binding.initialized)
-            return intrinsic_ThrowReferenceError(this.realm);
+            return this.realm.throwReferenceError();
         return new NormalCompletion(binding.value);
     }
 
@@ -381,7 +377,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         if (envRec.thisBindingStatus == BindingStatus.Lexical)
             throw new Error("FunctionEnvironmentRecord.BindThisValue: thisBindingStatus is Lexical");
         if (envRec.thisBindingStatus == BindingStatus.Initialized)
-            return intrinsic_ThrowReferenceError(this.realm);
+            return this.realm.throwReferenceError();
         envRec.thisValue = V;
         envRec.thisBindingStatus = BindingStatus.Initialized;
         return new NormalCompletion(V);
@@ -410,7 +406,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         if (envRec.thisBindingStatus == BindingStatus.Lexical)
             throw new Error("FunctionEnvironmentRecord.GetThisBinding: thisBindingStatus is Lexical");
         if (envRec.thisBindingStatus == BindingStatus.Uninitialized)
-            return intrinsic_ThrowReferenceError(this.realm);
+            return this.realm.throwReferenceError();
         return new NormalCompletion(envRec.thisValue);
     }
 
@@ -671,6 +667,29 @@ export class RealmImpl implements Realm {
         this.globalEnv = NewDeclarativeEnvironment(this,null); // FIXME
         this.templateMap = [];
         SetDefaultGlobalBindings(this);
+    }
+
+    public throwEvalError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwEvalError not implemented");
+    }
+
+    public throwRangeError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwRangeError not implemented");
+    }
+    public throwReferenceError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwReferenceError not implemented");
+    }
+
+    public throwSyntaxError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwSyntaxError not implemented");
+    }
+
+    public throwTypeError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwTypeError not implemented");
+    }
+
+    public throwURIError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwURIError not implemented");
     }
 }
 

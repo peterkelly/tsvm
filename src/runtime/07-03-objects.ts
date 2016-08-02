@@ -40,9 +40,6 @@ import {
 import {
     IsCallable,
 } from "./07-02-testcompare";
-import {
-    intrinsic_ThrowTypeError,
-} from "./operations";
 
 // ES6 Section 7.3.1: Get (O, P)
 
@@ -68,7 +65,7 @@ export function Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Thr
         return successComp;
     const success = successComp.value;
     if (!success && Throw)
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     return new NormalCompletion(success);
 }
 
@@ -98,7 +95,7 @@ export function CreateDataPropertyOrThrow(realm: Realm, O: JSObject, P: JSProper
         return successComp;
     const success = successComp.value;
     if (!success)
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     return new NormalCompletion(success);
 }
 
@@ -110,7 +107,7 @@ export function DefinePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKe
         return successComp;
     const success = successComp.value;
     if (!success)
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     return new NormalCompletion(success);
 }
 
@@ -122,7 +119,7 @@ export function DeletePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKe
         return successComp;
     const success = successComp.value;
     if (!success)
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     return new NormalCompletion(success);
 }
 
@@ -136,7 +133,7 @@ export function GetMethod(realm: Realm, O: JSValue, P: JSPropertyKey): Completio
     if ((func instanceof JSUndefined) || (func instanceof JSNull))
         return new NormalCompletion(new JSUndefined());
     if (!IsCallable(realm,func))
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     return new NormalCompletion(func);
 }
 
@@ -164,7 +161,7 @@ export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue
     if (!(F instanceof JSObject) || !F.implementsCall)
         throw new Error("Object is not callable"); // FIXME: temp
     // if (!IsCallable(F))
-        // return intrinsic_ThrowTypeError();
+        // return realm.throwTypeError();
     return F.__Call__(V,argumentList);
 }
 

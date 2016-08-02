@@ -31,9 +31,6 @@ import {
     NormalCompletion,
 } from "./types";
 import {
-    intrinsic_ThrowTypeError,
-} from "./operations";
-import {
     rt_double_strictEqualityComparison,
     rt_double_abstractRelationalComparison,
     rt_double_equalsExact,
@@ -77,7 +74,7 @@ export function RequireObjectCoercible(realm: Realm, argument: JSValue): Complet
     switch (argument.type) {
         case ValueType.Undefined:
         case ValueType.Null:
-            return intrinsic_ThrowTypeError(realm);
+            return realm.throwTypeError();
         default:
             return new NormalCompletion(argument);
     }

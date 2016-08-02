@@ -36,6 +36,13 @@ export interface Realm {
     globalEnv: LexicalEnvironment;
     templateMap: any[]; // FIXME
     intrinsics: Intrinsics;
+
+    throwEvalError(message?: string): ThrowCompletion;
+    throwRangeError(message?: string): ThrowCompletion;
+    throwReferenceError(message?: string): ThrowCompletion;
+    throwSyntaxError(message?: string): ThrowCompletion;
+    throwTypeError(message?: string): ThrowCompletion;
+    throwURIError(message?: string): ThrowCompletion;
 }
 
 export interface EnvironmentRecord {

@@ -81,10 +81,6 @@ import {
     rt_string_to_double,
     rt_string_lessThan,
 } from "./runtime";
-// import {
-//     intrinsic_ThrowTypeError,
-//     intrinsic_ThrowReferenceError,
-// } from "./objects";
 
 // ES6 Section 6.2.6.1: CreateByteDataBlock (size)
 

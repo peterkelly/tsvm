@@ -45,9 +45,6 @@ import {
     rt_string_to_double,
 } from "./runtime";
 import {
-    intrinsic_ThrowTypeError,
-} from "./operations";
-import {
     IsCallable,
 } from "./07-02-testcompare";
 import {
@@ -84,7 +81,7 @@ export function ToPrimitive(realm: Realm, input: JSValue, preferredType?: ValueT
         const result = resultComp.value;
         if (result instanceof JSPrimitiveValue)
             return new NormalCompletion(result);
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     }
     if (hint.stringValue === "default")
         hint = new JSString("number");
@@ -115,7 +112,7 @@ export function OrdinaryToPrimitive(realm: Realm, O: JSObject, hint: "string" | 
                 return new NormalCompletion(result);
         }
     }
-    return intrinsic_ThrowTypeError(realm);
+    return realm.throwTypeError();
 }
 
 // ES6 Section 7.1.2: ToBoolean (argument)
@@ -161,7 +158,7 @@ export function ToNumber(realm: Realm, argument: JSValue): Completion<JSNumber> 
     if (argument instanceof JSString)
         return new NormalCompletion(ToNumber_string(realm,argument));
     if (argument instanceof JSSymbol)
-        return intrinsic_ThrowTypeError(realm);
+        return realm.throwTypeError();
     if (argument instanceof JSObject) {
         const primValueComp = ToPrimitive(realm,argument,ValueType.Number);
         if (!(primValueComp instanceof NormalCompletion))
@@ -251,7 +248,7 @@ export function ToString(realm: Realm, argument: JSValue): Completion<JSString> 
     if (argument instanceof JSString)
         return new NormalCompletion(argument);
     if (argument instanceof JSSymbol)
-        return intrinsic_ThrowTypeError(realm,);
+        return realm.throwTypeError();
     if (argument instanceof JSObject) {
         const primValueComp = ToPrimitive(realm,argument,ValueType.String);
         if (!(primValueComp instanceof NormalCompletion))
