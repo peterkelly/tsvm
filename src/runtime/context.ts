@@ -856,124 +856,59 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
         WeakSet: intrinsics.WeakSet,
     };
 
-    function immutableProperty(value: JSValue): PropertyDescriptor {
-        return new DataDescriptor({
-            value: value,
+    // Note: Generator prototype section in spec seems to be the only place that mentions the attributes
+    // of the prototype's constructor property descriptor
+
+    function setupConstructorPrototype(constructor: JSObject, prototype: JSObject): void {
+        const constructorStr = "constructor"; // Avoid TypeScript warnings about setting constructor property
+        constructor.properties["prototype"] = new DataDescriptor({
+            value: prototype,
             writable: false,
             enumerable: false,
             configurable: false,
         });
-    }
-
-    const _constructor = "constructor"; // Avoid TypeScript warnings about setting constructor property
-
-    function cprop(value: JSValue): PropertyDescriptor {
-        return new DataDescriptor({
-            value: value,
+        prototype.properties[constructorStr] = new DataDescriptor({
+            value: constructor,
             writable: false,
             enumerable: false,
             configurable: true,
         });
+
     }
 
-    intrinsics.Array.properties["prototype"] = immutableProperty(intrinsics.ArrayPrototype);
-    intrinsics.ArrayPrototype.properties[_constructor] = cprop(intrinsics.Array);
-
-    intrinsics.ArrayBuffer.properties["prototype"] = immutableProperty(intrinsics.ArrayBufferPrototype);
-    intrinsics.ArrayBufferPrototype.properties[_constructor] = cprop(intrinsics.ArrayBuffer);
-
-    intrinsics.Boolean.properties["prototype"] = immutableProperty(intrinsics.BooleanPrototype);
-    intrinsics.BooleanPrototype.properties[_constructor] = cprop(intrinsics.Boolean);
-
-    intrinsics.DataView.properties["prototype"] = immutableProperty(intrinsics.DataViewPrototype);
-    intrinsics.DataViewPrototype.properties[_constructor] = cprop(intrinsics.DataView);
-
-    intrinsics.Date.properties["prototype"] = immutableProperty(intrinsics.DatePrototype);
-    intrinsics.DatePrototype.properties[_constructor] = cprop(intrinsics.Date);
-
-    intrinsics.Error.properties["prototype"] = immutableProperty(intrinsics.ErrorPrototype);
-    intrinsics.ErrorPrototype.properties[_constructor] = cprop(intrinsics.Error);
-
-    intrinsics.EvalError.properties["prototype"] = immutableProperty(intrinsics.EvalErrorPrototype);
-    intrinsics.EvalErrorPrototype.properties[_constructor] = cprop(intrinsics.EvalError);
-
-    intrinsics.Float32Array.properties["prototype"] = immutableProperty(intrinsics.Float32ArrayPrototype);
-    intrinsics.Float32ArrayPrototype.properties[_constructor] = cprop(intrinsics.Float32Array);
-
-    intrinsics.Float64Array.properties["prototype"] = immutableProperty(intrinsics.Float64ArrayPrototype);
-    intrinsics.Float64ArrayPrototype.properties[_constructor] = cprop(intrinsics.Float64Array);
-
-    intrinsics.Function.properties["prototype"] = immutableProperty(intrinsics.FunctionPrototype);
-    intrinsics.FunctionPrototype.properties[_constructor] = cprop(intrinsics.Function);
-
-    intrinsics.GeneratorFunction.properties["prototype"] = immutableProperty(intrinsics.Generator);
-    intrinsics.Generator.properties[_constructor] = cprop(intrinsics.GeneratorFunction); // mentions descriptor attributes
-
-    intrinsics.Int8Array.properties["prototype"] = immutableProperty(intrinsics.Int8ArrayPrototype);
-    intrinsics.Int8ArrayPrototype.properties[_constructor] = cprop(intrinsics.Int8Array);
-
-    intrinsics.Int16Array.properties["prototype"] = immutableProperty(intrinsics.Int16ArrayPrototype);
-    intrinsics.Int16ArrayPrototype.properties[_constructor] = cprop(intrinsics.Int16Array);
-
-    intrinsics.Int32Array.properties["prototype"] = immutableProperty(intrinsics.Int32ArrayPrototype);
-    intrinsics.Int32ArrayPrototype.properties[_constructor] = cprop(intrinsics.Int32Array);
-
-    intrinsics.Map.properties["prototype"] = immutableProperty(intrinsics.MapPrototype);
-    intrinsics.MapPrototype.properties[_constructor] = cprop(intrinsics.Map);
-
-    intrinsics.Number.properties["prototype"] = immutableProperty(intrinsics.NumberPrototype);
-    intrinsics.NumberPrototype.properties[_constructor] = cprop(intrinsics.Number);
-
-    intrinsics.Object.properties["prototype"] = immutableProperty(intrinsics.ObjectPrototype);
-    intrinsics.ObjectPrototype.properties[_constructor] = cprop(intrinsics.Object);
-
-    intrinsics.Promise.properties["prototype"] = immutableProperty(intrinsics.PromisePrototype);
-    intrinsics.PromisePrototype.properties[_constructor] = cprop(intrinsics.Promise);
-
-    intrinsics.RangeError.properties["prototype"] = immutableProperty(intrinsics.RangeErrorPrototype);
-    intrinsics.RangeErrorPrototype.properties[_constructor] = cprop(intrinsics.RangeError);
-
-    intrinsics.ReferenceError.properties["prototype"] = immutableProperty(intrinsics.ReferenceErrorPrototype);
-    intrinsics.ReferenceErrorPrototype.properties[_constructor] = cprop(intrinsics.ReferenceError);
-
-    intrinsics.RegExp.properties["prototype"] = immutableProperty(intrinsics.RegExpPrototype);
-    intrinsics.RegExpPrototype.properties[_constructor] = cprop(intrinsics.RegExp);
-
-    intrinsics.Set.properties["prototype"] = immutableProperty(intrinsics.SetPrototype);
-    intrinsics.SetPrototype.properties[_constructor] = cprop(intrinsics.Set);
-
-    intrinsics.String.properties["prototype"] = immutableProperty(intrinsics.StringPrototype);
-    intrinsics.StringPrototype.properties[_constructor] = cprop(intrinsics.String);
-
-    intrinsics.Symbol.properties["prototype"] = immutableProperty(intrinsics.SymbolPrototype);
-    intrinsics.SymbolPrototype.properties[_constructor] = cprop(intrinsics.Symbol);
-
-    intrinsics.SyntaxError.properties["prototype"] = immutableProperty(intrinsics.SyntaxErrorPrototype);
-    intrinsics.SyntaxErrorPrototype.properties[_constructor] = cprop(intrinsics.SyntaxError);
-
-    intrinsics.TypeError.properties["prototype"] = immutableProperty(intrinsics.TypeErrorPrototype);
-    intrinsics.TypeErrorPrototype.properties[_constructor] = cprop(intrinsics.TypeError);
-
-    intrinsics.Uint8Array.properties["prototype"] = immutableProperty(intrinsics.Uint8ArrayPrototype);
-    intrinsics.Uint8ArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint8Array);
-
-    intrinsics.Uint8ClampedArray.properties["prototype"] = immutableProperty(intrinsics.Uint8ClampedArrayPrototype);
-    intrinsics.Uint8ClampedArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint8ClampedArray);
-
-    intrinsics.Uint16Array.properties["prototype"] = immutableProperty(intrinsics.Uint16ArrayPrototype);
-    intrinsics.Uint16ArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint16Array);
-
-    intrinsics.Uint32Array.properties["prototype"] = immutableProperty(intrinsics.Uint32ArrayPrototype);
-    intrinsics.Uint32ArrayPrototype.properties[_constructor] = cprop(intrinsics.Uint32Array);
-
-    intrinsics.URIError.properties["prototype"] = immutableProperty(intrinsics.URIErrorPrototype);
-    intrinsics.URIErrorPrototype.properties[_constructor] = cprop(intrinsics.URIError);
-
-    intrinsics.WeakMap.properties["prototype"] = immutableProperty(intrinsics.WeakMapPrototype);
-    intrinsics.WeakMapPrototype.properties[_constructor] = cprop(intrinsics.WeakMap);
-
-    intrinsics.WeakSet.properties["prototype"] = immutableProperty(intrinsics.WeakSetPrototype);
-    intrinsics.WeakSetPrototype.properties[_constructor] = cprop(intrinsics.WeakSet);
+    setupConstructorPrototype(intrinsics.Array,intrinsics.ArrayPrototype);
+    setupConstructorPrototype(intrinsics.ArrayBuffer,intrinsics.ArrayBufferPrototype);
+    setupConstructorPrototype(intrinsics.Boolean,intrinsics.BooleanPrototype);
+    setupConstructorPrototype(intrinsics.DataView,intrinsics.DataViewPrototype);
+    setupConstructorPrototype(intrinsics.Date,intrinsics.DatePrototype);
+    setupConstructorPrototype(intrinsics.Error,intrinsics.ErrorPrototype);
+    setupConstructorPrototype(intrinsics.EvalError,intrinsics.EvalErrorPrototype);
+    setupConstructorPrototype(intrinsics.Float32Array,intrinsics.Float32ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Float64Array,intrinsics.Float64ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Function,intrinsics.FunctionPrototype);
+    setupConstructorPrototype(intrinsics.GeneratorFunction,intrinsics.Generator);
+    setupConstructorPrototype(intrinsics.Int8Array,intrinsics.Int8ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Int8Array,intrinsics.Int8ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Int32Array,intrinsics.Int32ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Map,intrinsics.MapPrototype);
+    setupConstructorPrototype(intrinsics.Number,intrinsics.NumberPrototype);
+    setupConstructorPrototype(intrinsics.Object,intrinsics.ObjectPrototype);
+    setupConstructorPrototype(intrinsics.Promise,intrinsics.PromisePrototype);
+    setupConstructorPrototype(intrinsics.RangeError,intrinsics.RangeErrorPrototype);
+    setupConstructorPrototype(intrinsics.ReferenceError,intrinsics.ReferenceErrorPrototype);
+    setupConstructorPrototype(intrinsics.RegExp,intrinsics.RegExpPrototype);
+    setupConstructorPrototype(intrinsics.Set,intrinsics.SetPrototype);
+    setupConstructorPrototype(intrinsics.String,intrinsics.StringPrototype);
+    setupConstructorPrototype(intrinsics.Symbol,intrinsics.SymbolPrototype);
+    setupConstructorPrototype(intrinsics.SyntaxError,intrinsics.SyntaxErrorPrototype);
+    setupConstructorPrototype(intrinsics.TypeError,intrinsics.TypeErrorPrototype);
+    setupConstructorPrototype(intrinsics.Uint8Array,intrinsics.Uint8ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Uint8ClampedArray,intrinsics.Uint8ClampedArrayPrototype);
+    setupConstructorPrototype(intrinsics.Uint16Array,intrinsics.Uint16ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Uint32Array,intrinsics.Uint32ArrayPrototype);
+    setupConstructorPrototype(intrinsics.URIError,intrinsics.URIErrorPrototype);
+    setupConstructorPrototype(intrinsics.WeakMap,intrinsics.WeakMapPrototype);
+    setupConstructorPrototype(intrinsics.WeakSet,intrinsics.WeakSetPrototype);
 
     return intrinsics;
 
