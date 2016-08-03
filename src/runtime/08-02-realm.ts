@@ -131,129 +131,129 @@ export function CreateRealm(): Realm {
 
 export function CreateIntrinsics(realm: Realm): Intrinsics {
     const ObjectPrototype = new JSOrdinaryObject(realm);
-    const FunctionPrototype = new bi.BuiltinFunctionPrototype(realm,ObjectPrototype);
-    const ThrowTypeError = new bi.ThrowTypeErrorFunction(realm,FunctionPrototype);
+    const FunctionPrototype = bi.createFunctionPrototype(realm,ObjectPrototype);
+    const ThrowTypeError = bi.createThrowTypeErrorFunction(realm,FunctionPrototype);
 
-    const IteratorPrototype = new bi.BuiltinIteratorPrototype(realm,ObjectPrototype)
-    const ErrorPrototype = new bi.BuiltinErrorPrototype(realm,ObjectPrototype);
-    const TypedArrayPrototype = new bi.BuiltinTypedArrayPrototype(realm,ObjectPrototype);
+    const IteratorPrototype = bi.createIteratorPrototype(realm,ObjectPrototype)
+    const ErrorPrototype = bi.createErrorPrototype(realm,ObjectPrototype);
+    const TypedArrayPrototype = bi.createTypedArrayPrototype(realm,ObjectPrototype);
 
     const intrinsics: Intrinsics = {
 
         // Functions
-        decodeURI: new bi.BuiltindecodeURIFunction(realm,FunctionPrototype),
-        decodeURIComponent: new bi.BuiltindecodeURIComponentFunction(realm,FunctionPrototype),
-        encodeURI: new bi.BuiltinencodeURIFunction(realm,FunctionPrototype),
-        encodeURIComponent: new bi.BuiltinencodeURIComponentFunction(realm,FunctionPrototype),
-        eval: new bi.BuiltinevalFunction(realm,FunctionPrototype),
-        isFinite: new bi.BuiltinisFiniteFunction(realm,FunctionPrototype),
-        isNaN: new bi.BuiltinisNaNFunction(realm,FunctionPrototype),
-        parseFloat: new bi.BuiltinparseFloatFunction(realm,FunctionPrototype),
-        parseInt: new bi.BuiltinparseIntFunction(realm,FunctionPrototype),
-        ArrayProto_values: new bi.BuiltinArrayProto_values(realm,FunctionPrototype),
-        ObjProto_toString: new bi.BuiltinObjProto_toStringFunction(realm,FunctionPrototype),
+        decodeURI: bi.createDecodeURIFunction(realm,FunctionPrototype),
+        decodeURIComponent: bi.createDecodeURIComponentFunction(realm,FunctionPrototype),
+        encodeURI: bi.createEncodeURIFunction(realm,FunctionPrototype),
+        encodeURIComponent: bi.createEncodeURIComponentFunction(realm,FunctionPrototype),
+        eval: bi.createEvalFunction(realm,FunctionPrototype),
+        isFinite: bi.createIsFiniteFunction(realm,FunctionPrototype),
+        isNaN: bi.createIsNaNFunction(realm,FunctionPrototype),
+        parseFloat: bi.createParseFloatFunction(realm,FunctionPrototype),
+        parseInt: bi.createParseIntFunction(realm,FunctionPrototype),
+        ArrayProto_values: bi.createArrayProto_values(realm,FunctionPrototype),
+        ObjProto_toString: bi.createObjProto_toStringFunction(realm,FunctionPrototype),
         ThrowTypeError: ThrowTypeError,
 
         // Collections of functions (sort of like modules)
-        JSON: new bi.BuiltinJSONObject(realm,ObjectPrototype),
-        Reflect: new bi.BuiltinReflectObject(realm,ObjectPrototype),
-        Math: new bi.BuiltinMathObject(realm,ObjectPrototype),
+        JSON: bi.createJSONObject(realm,ObjectPrototype),
+        Reflect: bi.createReflectObject(realm,ObjectPrototype),
+        Math: bi.createMathObject(realm,ObjectPrototype),
 
         // Constructors
-        ArrayBuffer: new bi.BuiltinArrayBufferConstructor(realm,FunctionPrototype),
-        DataView: new bi.BuiltinDataViewConstructor(realm,FunctionPrototype),
-        Date: new bi.BuiltinDateConstructor(realm,FunctionPrototype),
-        Function: new bi.BuiltinFunctionConstructor(realm,FunctionPrototype),
-        GeneratorFunction: new bi.BuiltinGeneratorFunctionConstructor(realm,FunctionPrototype),
-        Object: new bi.BuiltinObjectConstructor(realm,FunctionPrototype),
-        Promise: new bi.BuiltinPromiseConstructor(realm,FunctionPrototype),
-        Proxy: new bi.BuiltinProxyConstructor(realm,FunctionPrototype),
-        RegExp: new bi.BuiltinRegExpConstructor(realm,FunctionPrototype),
+        ArrayBuffer: bi.createArrayBufferConstructor(realm,FunctionPrototype),
+        DataView: bi.createDataViewConstructor(realm,FunctionPrototype),
+        Date: bi.createDateConstructor(realm,FunctionPrototype),
+        Function: bi.createFunctionConstructor(realm,FunctionPrototype),
+        GeneratorFunction: bi.createGeneratorFunctionConstructor(realm,FunctionPrototype),
+        Object: bi.createObjectConstructor(realm,FunctionPrototype),
+        Promise: bi.createPromiseConstructor(realm,FunctionPrototype),
+        Proxy: bi.createProxyConstructor(realm,FunctionPrototype),
+        RegExp: bi.createRegExpConstructor(realm,FunctionPrototype),
 
         // Constructors - value wrappers
-        Boolean: new bi.BuiltinBooleanConstructor(realm,FunctionPrototype),
-        Number: new bi.BuiltinNumberConstructor(realm,FunctionPrototype),
-        String: new bi.BuiltinStringConstructor(realm,FunctionPrototype),
-        Symbol: new bi.BuiltinSymbolConstructor(realm,FunctionPrototype),
+        Boolean: bi.createBooleanConstructor(realm,FunctionPrototype),
+        Number: bi.createNumberConstructor(realm,FunctionPrototype),
+        String: bi.createStringConstructor(realm,FunctionPrototype),
+        Symbol: bi.createSymbolConstructor(realm,FunctionPrototype),
 
         // Constructors - collections
-        Array: new bi.BuiltinArrayConstructor(realm,FunctionPrototype),
-        Map: new bi.BuiltinMapConstructor(realm,FunctionPrototype),
-        Set: new bi.BuiltinSetConstructor(realm,FunctionPrototype),
-        WeakMap: new bi.BuiltinWeakMapConstructor(realm,FunctionPrototype),
-        WeakSet: new bi.BuiltinWeakSetConstructor(realm,FunctionPrototype),
+        Array: bi.createArrayConstructor(realm,FunctionPrototype),
+        Map: bi.createMapConstructor(realm,FunctionPrototype),
+        Set: bi.createSetConstructor(realm,FunctionPrototype),
+        WeakMap: bi.createWeakMapConstructor(realm,FunctionPrototype),
+        WeakSet: bi.createWeakSetConstructor(realm,FunctionPrototype),
 
         // Constructors - errors
-        Error: new bi.BuiltinErrorConstructor(realm,FunctionPrototype),
-        EvalError: new bi.BuiltinEvalErrorConstructor(realm,FunctionPrototype),
-        RangeError: new bi.BuiltinRangeErrorConstructor(realm,FunctionPrototype),
-        ReferenceError: new bi.BuiltinReferenceErrorConstructor(realm,FunctionPrototype),
-        SyntaxError: new bi.BuiltinSyntaxErrorConstructor(realm,FunctionPrototype),
-        TypeError: new bi.BuiltinTypeErrorConstructor(realm,FunctionPrototype),
-        URIError: new bi.BuiltinURIErrorConstructor(realm,FunctionPrototype),
+        Error: bi.createErrorConstructor(realm,FunctionPrototype),
+        EvalError: bi.createEvalErrorConstructor(realm,FunctionPrototype),
+        RangeError: bi.createRangeErrorConstructor(realm,FunctionPrototype),
+        ReferenceError: bi.createReferenceErrorConstructor(realm,FunctionPrototype),
+        SyntaxError: bi.createSyntaxErrorConstructor(realm,FunctionPrototype),
+        TypeError: bi.createTypeErrorConstructor(realm,FunctionPrototype),
+        URIError: bi.createURIErrorConstructor(realm,FunctionPrototype),
 
         // Constructors - typed arrays
-        Float32Array: new bi.BuiltinFloat32ArrayConstructor(realm,FunctionPrototype),
-        Float64Array: new bi.BuiltinFloat64ArrayConstructor(realm,FunctionPrototype),
-        Int8Array: new bi.BuiltinInt8ArrayConstructor(realm,FunctionPrototype),
-        Int16Array: new bi.BuiltinInt16ArrayConstructor(realm,FunctionPrototype),
-        Int32Array: new bi.BuiltinInt32ArrayConstructor(realm,FunctionPrototype),
-        Uint8Array: new bi.BuiltinUint8ArrayConstructor(realm,FunctionPrototype),
-        Uint8ClampedArray: new bi.BuiltinUint8ClampedArrayConstructor(realm,FunctionPrototype),
-        Uint16Array: new bi.BuiltinUint16ArrayConstructor(realm,FunctionPrototype),
-        Uint32Array: new bi.BuiltinUint32ArrayConstructor(realm,FunctionPrototype),
+        Float32Array: bi.createFloat32ArrayConstructor(realm,FunctionPrototype),
+        Float64Array: bi.createFloat64ArrayConstructor(realm,FunctionPrototype),
+        Int8Array: bi.createInt8ArrayConstructor(realm,FunctionPrototype),
+        Int16Array: bi.createInt16ArrayConstructor(realm,FunctionPrototype),
+        Int32Array: bi.createInt32ArrayConstructor(realm,FunctionPrototype),
+        Uint8Array: bi.createUint8ArrayConstructor(realm,FunctionPrototype),
+        Uint8ClampedArray: bi.createUint8ClampedArrayConstructor(realm,FunctionPrototype),
+        Uint16Array: bi.createUint16ArrayConstructor(realm,FunctionPrototype),
+        Uint32Array: bi.createUint32ArrayConstructor(realm,FunctionPrototype),
 
         // Prototypes
         ObjectPrototype: ObjectPrototype,
         FunctionPrototype: FunctionPrototype,
-        ArrayBufferPrototype: new bi.BuiltinArrayBufferPrototype(realm,ObjectPrototype),
-        DataViewPrototype: new bi.BuiltinDataViewPrototype(realm,ObjectPrototype),
-        DatePrototype: new bi.BuiltinDatePrototype(realm,ObjectPrototype),
-        Generator: new bi.BuiltinGenerator(realm,ObjectPrototype),
-        PromisePrototype: new bi.BuiltinPromisePrototype(realm,ObjectPrototype),
-        RegExpPrototype: new bi.BuiltinRegExpPrototype(realm,ObjectPrototype),
+        ArrayBufferPrototype: bi.createArrayBufferPrototype(realm,ObjectPrototype),
+        DataViewPrototype: bi.createDataViewPrototype(realm,ObjectPrototype),
+        DatePrototype: bi.createDatePrototype(realm,ObjectPrototype),
+        Generator: bi.createGenerator(realm,ObjectPrototype),
+        PromisePrototype: bi.createPromisePrototype(realm,ObjectPrototype),
+        RegExpPrototype: bi.createRegExpPrototype(realm,ObjectPrototype),
 
         // Prototypes - value wrappers
-        BooleanPrototype: new bi.BuiltinBooleanPrototype(realm,ObjectPrototype),
-        NumberPrototype: new bi.BuiltinNumberPrototype(realm,ObjectPrototype),
-        StringPrototype: new bi.BuiltinStringPrototype(realm,ObjectPrototype),
-        SymbolPrototype: new bi.BuiltinSymbolPrototype(realm,ObjectPrototype),
+        BooleanPrototype: bi.createBooleanPrototype(realm,ObjectPrototype),
+        NumberPrototype: bi.createNumberPrototype(realm,ObjectPrototype),
+        StringPrototype: bi.createStringPrototype(realm,ObjectPrototype),
+        SymbolPrototype: bi.createSymbolPrototype(realm,ObjectPrototype),
 
         // Prototypes - collections
-        ArrayPrototype: new bi.BuiltinArrayPrototype(realm,ObjectPrototype),
-        MapPrototype: new bi.BuiltinMapPrototype(realm,ObjectPrototype),
-        SetPrototype: new bi.BuiltinSetPrototype(realm,ObjectPrototype),
-        WeakMapPrototype: new bi.BuiltinWeakMapPrototype(realm,ObjectPrototype),
-        WeakSetPrototype: new bi.BuiltinWeakSetPrototype(realm,ObjectPrototype),
+        ArrayPrototype: bi.createArrayPrototype(realm,ObjectPrototype),
+        MapPrototype: bi.createMapPrototype(realm,ObjectPrototype),
+        SetPrototype: bi.createSetPrototype(realm,ObjectPrototype),
+        WeakMapPrototype: bi.createWeakMapPrototype(realm,ObjectPrototype),
+        WeakSetPrototype: bi.createWeakSetPrototype(realm,ObjectPrototype),
 
         // Prototypes - errors
         ErrorPrototype: ErrorPrototype,
-        EvalErrorPrototype: new bi.BuiltinEvalErrorPrototype(realm,ErrorPrototype),
-        RangeErrorPrototype: new bi.BuiltinRangeErrorPrototype(realm,ErrorPrototype),
-        ReferenceErrorPrototype: new bi.BuiltinReferenceErrorPrototype(realm,ErrorPrototype),
-        SyntaxErrorPrototype: new bi.BuiltinSyntaxErrorPrototype(realm,ErrorPrototype),
-        TypeErrorPrototype: new bi.BuiltinTypeErrorPrototype(realm,ErrorPrototype),
-        URIErrorPrototype: new bi.BuiltinURIErrorPrototype(realm,ErrorPrototype),
+        EvalErrorPrototype: bi.createEvalErrorPrototype(realm,ErrorPrototype),
+        RangeErrorPrototype: bi.createRangeErrorPrototype(realm,ErrorPrototype),
+        ReferenceErrorPrototype: bi.createReferenceErrorPrototype(realm,ErrorPrototype),
+        SyntaxErrorPrototype: bi.createSyntaxErrorPrototype(realm,ErrorPrototype),
+        TypeErrorPrototype: bi.createTypeErrorPrototype(realm,ErrorPrototype),
+        URIErrorPrototype: bi.createURIErrorPrototype(realm,ErrorPrototype),
 
         // Prototypes - iterators
         IteratorPrototype: IteratorPrototype,
-        ArrayIteratorPrototype: new bi.BuiltinArrayBufferPrototype(realm,IteratorPrototype),
-        GeneratorPrototype: new bi.BuiltinGeneratorPrototype(realm,IteratorPrototype),
-        MapIteratorPrototype: new bi.BuiltinMapIteratorPrototype(realm,IteratorPrototype),
-        SetIteratorPrototype: new bi.BuiltinSetIteratorPrototype(realm,IteratorPrototype),
-        StringIteratorPrototype: new bi.BuiltinStringIteratorPrototype(realm,IteratorPrototype),
+        ArrayIteratorPrototype: bi.createArrayBufferPrototype(realm,IteratorPrototype),
+        GeneratorPrototype: bi.createGeneratorPrototype(realm,IteratorPrototype),
+        MapIteratorPrototype: bi.createMapIteratorPrototype(realm,IteratorPrototype),
+        SetIteratorPrototype: bi.createSetIteratorPrototype(realm,IteratorPrototype),
+        StringIteratorPrototype: bi.createStringIteratorPrototype(realm,IteratorPrototype),
 
         // Prototypes - typed arrays
         TypedArrayPrototype: TypedArrayPrototype,
-        Float32ArrayPrototype: new bi.BuiltinFloat32ArrayPrototype(realm,TypedArrayPrototype),
-        Float64ArrayPrototype: new bi.BuiltinFloat64ArrayPrototype(realm,TypedArrayPrototype),
-        Int8ArrayPrototype: new bi.BuiltinInt8ArrayPrototype(realm,TypedArrayPrototype),
-        Int16ArrayPrototype: new bi.BuiltinInt16ArrayPrototype(realm,TypedArrayPrototype),
-        Int32ArrayPrototype: new bi.BuiltinInt32ArrayPrototype(realm,TypedArrayPrototype),
-        Uint8ArrayPrototype: new bi.BuiltinUint8ArrayPrototype(realm,TypedArrayPrototype),
-        Uint8ClampedArrayPrototype: new bi.BuiltinUint8ClampedArrayPrototype(realm,TypedArrayPrototype),
-        Uint16ArrayPrototype: new bi.BuiltinUint16ArrayPrototype(realm,TypedArrayPrototype),
-        Uint32ArrayPrototype: new bi.BuiltinUint32ArrayPrototype(realm,TypedArrayPrototype),
+        Float32ArrayPrototype: bi.createFloat32ArrayPrototype(realm,TypedArrayPrototype),
+        Float64ArrayPrototype: bi.createFloat64ArrayPrototype(realm,TypedArrayPrototype),
+        Int8ArrayPrototype: bi.createInt8ArrayPrototype(realm,TypedArrayPrototype),
+        Int16ArrayPrototype: bi.createInt16ArrayPrototype(realm,TypedArrayPrototype),
+        Int32ArrayPrototype: bi.createInt32ArrayPrototype(realm,TypedArrayPrototype),
+        Uint8ArrayPrototype: bi.createUint8ArrayPrototype(realm,TypedArrayPrototype),
+        Uint8ClampedArrayPrototype: bi.createUint8ClampedArrayPrototype(realm,TypedArrayPrototype),
+        Uint16ArrayPrototype: bi.createUint16ArrayPrototype(realm,TypedArrayPrototype),
+        Uint32ArrayPrototype: bi.createUint32ArrayPrototype(realm,TypedArrayPrototype),
     };
 
     const globals = {
