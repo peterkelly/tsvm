@@ -52,6 +52,12 @@ import {
     GetMethod,
     Call,
 } from "./07-03-objects";
+import {
+    BooleanObject,
+    NumberObject,
+    StringObject,
+    SymbolObject,
+} from "./builtins";
 
 // ES6 Section 7.1.1: ToPrimitive (input [, PreferredType])
 
@@ -262,7 +268,49 @@ export function ToString(realm: Realm, argument: JSValue): Completion<JSString> 
 // ES6 Section 7.1.13: ToObject (argument)
 
 export function ToObject(realm: Realm, argument: JSValue): Completion<JSObject> {
-    throw new Error("ToObject not implemented");
+    switch (argument.type) {
+        case ValueType.Undefined:
+            if (argument instanceof JSUndefined)
+                return realm.throwTypeError();
+            break;
+        case ValueType.Null:
+            if (argument instanceof JSNull)
+                return realm.throwTypeError();
+            break;
+        case ValueType.Boolean:
+            if (argument instanceof JSBoolean) {
+                const proto = realm.intrinsics.BooleanPrototype;
+                const obj = new BooleanObject(realm,proto,argument);
+                return new NormalCompletion(obj);
+            }
+            break;
+        case ValueType.Number:
+            if (argument instanceof JSNumber) {
+                const proto = realm.intrinsics.NumberPrototype;
+                const obj = new NumberObject(realm,proto,argument);
+                return new NormalCompletion(obj);
+            }
+            break;
+        case ValueType.String:
+            if (argument instanceof JSString) {
+                const proto = realm.intrinsics.StringPrototype;
+                const obj = new StringObject(realm,proto,argument);
+                return new NormalCompletion(obj);
+            }
+            break;
+        case ValueType.Symbol:
+            if (argument instanceof JSSymbol) {
+                const proto = realm.intrinsics.SymbolPrototype;
+                const obj = new SymbolObject(realm,proto,argument);
+                return new NormalCompletion(obj);
+            }
+            break;
+        case ValueType.Object:
+            if (argument instanceof JSObject)
+                return new NormalCompletion(argument);
+            break;
+    }
+    throw new Error("Incorrect argument.type: "+argument.type);
 }
 
 // ES6 Section 7.1.14: ToPropertyKey (argument)

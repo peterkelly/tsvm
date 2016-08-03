@@ -204,6 +204,14 @@ export function createArrayProto_values(realm: Realm, proto: JSObject): JSObject
 // BooleanConstructor
 // BooleanPrototype
 
+export class BooleanObject extends JSOrdinaryObject {
+    public booleanData: JSBoolean;
+    public constructor(realm: Realm, prototype: JSObject | JSNull, booleanData: JSBoolean) {
+        super(realm,prototype);
+        this.booleanData = booleanData;
+    }
+}
+
 class BuiltinBooleanConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
         const proto = this.realm.intrinsics.BooleanPrototype;
@@ -575,6 +583,14 @@ export function createMathObject(realm: Realm, proto: JSObject): JSObject {
 // NumberConstructor
 // NumberPrototype
 
+export class NumberObject extends JSOrdinaryObject {
+    public numberData: JSNumber;
+    public constructor(realm: Realm, prototype: JSObject | JSNull, numberData: JSNumber) {
+        super(realm,prototype);
+        this.numberData = numberData;
+    }
+}
+
 class BuiltinNumberConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
         const proto = this.realm.intrinsics.NumberPrototype;
@@ -763,6 +779,14 @@ export function createSetIteratorPrototype(realm: Realm, proto: JSObject): JSObj
 // StringConstructor
 // StringPrototype
 
+export class StringObject extends JSOrdinaryObject {
+    public stringData: JSString;
+    public constructor(realm: Realm, prototype: JSObject | JSNull, stringData: JSString) {
+        super(realm,prototype);
+        this.stringData = stringData;
+    }
+}
+
 class BuiltinStringConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
         const proto = this.realm.intrinsics.StringPrototype;
@@ -787,6 +811,14 @@ export function createStringIteratorPrototype(realm: Realm, proto: JSObject): JS
 
 // SymbolConstructor
 // SymbolPrototype
+
+export class SymbolObject extends JSOrdinaryObject {
+    public symbolData: JSSymbol;
+    public constructor(realm: Realm, prototype: JSObject | JSNull, symbolData: JSSymbol) {
+        super(realm,prototype);
+        this.symbolData = symbolData;
+    }
+}
 
 class BuiltinSymbolConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
