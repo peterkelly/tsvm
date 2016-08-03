@@ -29,7 +29,7 @@ import {
     JSObject,
     Completion,
     NormalCompletion,
-} from "./types";
+} from "./datatypes";
 import {
     rt_double_strictEqualityComparison,
     rt_double_abstractRelationalComparison,

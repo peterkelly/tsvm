@@ -54,7 +54,7 @@ import {
     Reference,
     SuperReference,
     DataBlock,
-} from "./types";
+} from "./datatypes";
 import {
     rt_Infinity,
     rt_NaN,

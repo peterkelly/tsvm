@@ -24,7 +24,7 @@ import {
     AccessorDescriptor,
     Completion,
     NormalCompletion,
-} from "./types";
+} from "./datatypes";
 
 // ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
 

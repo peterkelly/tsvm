@@ -30,7 +30,7 @@ import {
     JSObject,
     Completion,
     NormalCompletion,
-} from "./types";
+} from "./datatypes";
 
 // ES6 Section 7.4.1: GetIterator (obj, method)
 

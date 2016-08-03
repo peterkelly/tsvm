@@ -32,7 +32,7 @@ import {
     SuperReferenceBase,
     Reference,
     SuperReference,
-} from "./types";
+} from "./datatypes";
 import {
     ToObject,
 } from "./07-01-conversion";

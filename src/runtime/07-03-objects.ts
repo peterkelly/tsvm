@@ -33,7 +33,7 @@ import {
     AccessorDescriptor,
     Completion,
     NormalCompletion,
-} from "./types";
+} from "./datatypes";
 import {
     ToObject,
 } from "./07-01-conversion";

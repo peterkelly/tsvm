@@ -50,7 +50,7 @@ import {
     Reference,
     SuperReference,
     DataBlock,
-} from "./types";
+} from "./datatypes";
 
 import {
     JSOrdinaryObject,

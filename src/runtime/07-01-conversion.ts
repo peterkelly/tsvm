@@ -36,7 +36,7 @@ import {
     JSUInt8,
     Completion,
     NormalCompletion,
-} from "./types";
+} from "./datatypes";
 import {
     rt_double_isPositiveZero,
     rt_double_isNegativeZero,

@@ -19,7 +19,7 @@ import {
     Realm,
     Completion,
     DataBlock,
-} from "./types";
+} from "./datatypes";
 
 export function CreateByteDataBlock(realm: Realm, size: number): DataBlock {
     throw new Error("CreateByteDataBlock not implemented");

@@ -52,8 +52,7 @@ import {
     Reference,
     SuperReference,
     DataBlock,
-} from "./types";
-
+} from "./datatypes";
 import {
     JSOrdinaryObject,
 } from "./09-01-ordinary";
