@@ -58,7 +58,7 @@ import {
 
 
 export abstract class BuiltinFunction extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
     public get implementsCall(): boolean {
@@ -68,7 +68,7 @@ export abstract class BuiltinFunction extends JSOrdinaryObject {
 }
 
 export abstract class BuiltinConstructor extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm,proto);
     }
     public get implementsConstruct(): boolean {
@@ -78,7 +78,7 @@ export abstract class BuiltinConstructor extends JSOrdinaryObject {
 }
 
 class ThrowTypeErrorFunction extends BuiltinFunction {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm,proto);
         this.__extensible__ = false;
         this.properties["length"] = new DataDescriptor({
@@ -99,7 +99,7 @@ class ThrowTypeErrorFunction extends BuiltinFunction {
     }
 }
 
-export function createThrowTypeErrorFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createThrowTypeErrorFunction(realm: Realm, proto: JSObject): JSObject {
     return new ThrowTypeErrorFunction(realm,proto);
 }
 
@@ -117,7 +117,7 @@ class TypeErrorObject extends JSOrdinaryObject {
 }
 
 // FIXME: This is not currently used
-export function createTypeErrorObject(realm: Realm, proto: JSObject | JSNull, message: JSString | JSUndefined): JSObject {
+export function createTypeErrorObject(realm: Realm, proto: JSObject, message: JSString | JSUndefined): JSObject {
     return new TypeErrorObject(realm,proto,message);
 }
 
@@ -127,7 +127,7 @@ class BuiltinFunctionPrototype extends BuiltinFunction {
     }
 }
 
-export function createFunctionPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createFunctionPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinFunctionPrototype(realm,proto);
 }
 
@@ -137,7 +137,7 @@ class BuiltinArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinArrayConstructor(realm,proto);
 }
 
@@ -147,47 +147,47 @@ class BuiltinArrayBufferConstructor extends BuiltinConstructor {
     }
 }
 
-export function createArrayBufferConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createArrayBufferConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinArrayBufferConstructor(realm,proto);
 }
 
 class BuiltinArrayBufferPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createArrayBufferPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createArrayBufferPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinArrayBufferPrototype(realm,proto);
 }
 
 class BuiltinArrayIteratorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createArrayIteratorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createArrayIteratorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinArrayIteratorPrototype(realm,proto);
 }
 
 class BuiltinArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinArrayPrototype(realm,proto);
 }
 
 class BuiltinArrayProto_values extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createArrayProto_values(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createArrayProto_values(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinArrayProto_values(realm,proto);
 }
 
@@ -197,17 +197,17 @@ class BuiltinBooleanConstructor extends BuiltinConstructor {
     }
 }
 
-export function createBooleanConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createBooleanConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinBooleanConstructor(realm,proto);
 }
 
 class BuiltinBooleanPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createBooleanPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createBooleanPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinBooleanPrototype(realm,proto);
 }
 
@@ -217,17 +217,17 @@ class BuiltinDataViewConstructor extends BuiltinConstructor {
     }
 }
 
-export function createDataViewConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createDataViewConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinDataViewConstructor(realm,proto);
 }
 
 class BuiltinDataViewPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createDataViewPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createDataViewPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinDataViewPrototype(realm,proto);
 }
 
@@ -237,17 +237,17 @@ class BuiltinDateConstructor extends BuiltinConstructor {
     }
 }
 
-export function createDateConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createDateConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinDateConstructor(realm,proto);
 }
 
 class BuiltinDatePrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createDatePrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createDatePrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinDatePrototype(realm,proto);
 }
 
@@ -257,7 +257,7 @@ class BuiltindecodeURIFunction extends BuiltinFunction {
     }
 }
 
-export function createDecodeURIFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createDecodeURIFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltindecodeURIFunction(realm,proto);
 }
 
@@ -267,7 +267,7 @@ class BuiltindecodeURIComponentFunction extends BuiltinFunction {
     }
 }
 
-export function createDecodeURIComponentFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createDecodeURIComponentFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltindecodeURIComponentFunction(realm,proto);
 }
 
@@ -277,7 +277,7 @@ class BuiltinencodeURIFunction extends BuiltinFunction {
     }
 }
 
-export function createEncodeURIFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createEncodeURIFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinencodeURIFunction(realm,proto);
 }
 
@@ -287,7 +287,7 @@ class BuiltinencodeURIComponentFunction extends BuiltinFunction {
     }
 }
 
-export function createEncodeURIComponentFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createEncodeURIComponentFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinencodeURIComponentFunction(realm,proto);
 }
 
@@ -297,17 +297,17 @@ class BuiltinErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinErrorConstructor(realm,proto);
 }
 
 class BuiltinErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinErrorPrototype(realm,proto);
 }
 
@@ -317,7 +317,7 @@ class BuiltinevalFunction extends BuiltinFunction {
     }
 }
 
-export function createEvalFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createEvalFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinevalFunction(realm,proto);
 }
 
@@ -327,17 +327,17 @@ class BuiltinEvalErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createEvalErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createEvalErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinEvalErrorConstructor(realm,proto);
 }
 
 class BuiltinEvalErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createEvalErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createEvalErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinEvalErrorPrototype(realm,proto);
 }
 
@@ -347,17 +347,17 @@ class BuiltinFloat32ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createFloat32ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createFloat32ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinFloat32ArrayConstructor(realm,proto);
 }
 
 class BuiltinFloat32ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createFloat32ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createFloat32ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinFloat32ArrayPrototype(realm,proto);
 }
 
@@ -367,17 +367,17 @@ class BuiltinFloat64ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createFloat64ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createFloat64ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinFloat64ArrayConstructor(realm,proto);
 }
 
 class BuiltinFloat64ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createFloat64ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createFloat64ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinFloat64ArrayPrototype(realm,proto);
 }
 
@@ -387,17 +387,17 @@ class BuiltinFunctionConstructor extends BuiltinConstructor {
     }
 }
 
-export function createFunctionConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createFunctionConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinFunctionConstructor(realm,proto);
 }
 
 class BuiltinGenerator extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createGenerator(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createGenerator(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinGenerator(realm,proto);
 }
 
@@ -407,17 +407,17 @@ class BuiltinGeneratorFunctionConstructor extends BuiltinConstructor {
     }
 }
 
-export function createGeneratorFunctionConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createGeneratorFunctionConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinGeneratorFunctionConstructor(realm,proto);
 }
 
 class BuiltinGeneratorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createGeneratorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createGeneratorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinGeneratorPrototype(realm,proto);
 }
 
@@ -427,17 +427,17 @@ class BuiltinInt8ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createInt8ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createInt8ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinInt8ArrayConstructor(realm,proto);
 }
 
 class BuiltinInt8ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createInt8ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createInt8ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinInt8ArrayPrototype(realm,proto);
 }
 
@@ -447,17 +447,17 @@ class BuiltinInt16ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createInt16ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createInt16ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinInt16ArrayConstructor(realm,proto);
 }
 
 class BuiltinInt16ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createInt16ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createInt16ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinInt16ArrayPrototype(realm,proto);
 }
 
@@ -467,17 +467,17 @@ class BuiltinInt32ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createInt32ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createInt32ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinInt32ArrayConstructor(realm,proto);
 }
 
 class BuiltinInt32ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createInt32ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createInt32ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinInt32ArrayPrototype(realm,proto);
 }
 
@@ -487,7 +487,7 @@ class BuiltinisFiniteFunction extends BuiltinFunction {
     }
 }
 
-export function createIsFiniteFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createIsFiniteFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinisFiniteFunction(realm,proto);
 }
 
@@ -497,27 +497,27 @@ class BuiltinisNaNFunction extends BuiltinFunction {
     }
 }
 
-export function createIsNaNFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createIsNaNFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinisNaNFunction(realm,proto);
 }
 
 class BuiltinIteratorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createIteratorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createIteratorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinIteratorPrototype(realm,proto);
 }
 
 class BuiltinJSONObject extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createJSONObject(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createJSONObject(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinJSONObject(realm,proto);
 }
 
@@ -527,37 +527,37 @@ class BuiltinMapConstructor extends BuiltinConstructor {
     }
 }
 
-export function createMapConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createMapConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinMapConstructor(realm,proto);
 }
 
 class BuiltinMapIteratorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createMapIteratorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createMapIteratorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinMapIteratorPrototype(realm,proto);
 }
 
 class BuiltinMapPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createMapPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createMapPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinMapPrototype(realm,proto);
 }
 
 class BuiltinMathObject extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createMathObject(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createMathObject(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinMathObject(realm,proto);
 }
 
@@ -567,17 +567,17 @@ class BuiltinNumberConstructor extends BuiltinConstructor {
     }
 }
 
-export function createNumberConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createNumberConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinNumberConstructor(realm,proto);
 }
 
 class BuiltinNumberPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createNumberPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createNumberPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinNumberPrototype(realm,proto);
 }
 
@@ -587,7 +587,7 @@ class BuiltinObjectConstructor extends BuiltinConstructor {
     }
 }
 
-export function createObjectConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createObjectConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinObjectConstructor(realm,proto);
 }
 
@@ -597,7 +597,7 @@ class BuiltinObjProto_toStringFunction extends BuiltinFunction {
     }
 }
 
-export function createObjProto_toStringFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createObjProto_toStringFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinObjProto_toStringFunction(realm,proto);
 }
 
@@ -607,7 +607,7 @@ class BuiltinparseFloatFunction extends BuiltinFunction {
     }
 }
 
-export function createParseFloatFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createParseFloatFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinparseFloatFunction(realm,proto);
 }
 
@@ -617,7 +617,7 @@ class BuiltinparseIntFunction extends BuiltinFunction {
     }
 }
 
-export function createParseIntFunction(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createParseIntFunction(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinparseIntFunction(realm,proto);
 }
 
@@ -627,17 +627,17 @@ class BuiltinPromiseConstructor extends BuiltinConstructor {
     }
 }
 
-export function createPromiseConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createPromiseConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinPromiseConstructor(realm,proto);
 }
 
 class BuiltinPromisePrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createPromisePrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createPromisePrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinPromisePrototype(realm,proto);
 }
 
@@ -647,7 +647,7 @@ class BuiltinProxyConstructor extends BuiltinConstructor {
     }
 }
 
-export function createProxyConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createProxyConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinProxyConstructor(realm,proto);
 }
 
@@ -657,17 +657,17 @@ class BuiltinRangeErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createRangeErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createRangeErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinRangeErrorConstructor(realm,proto);
 }
 
 class BuiltinRangeErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createRangeErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createRangeErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinRangeErrorPrototype(realm,proto);
 }
 
@@ -677,27 +677,27 @@ class BuiltinReferenceErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createReferenceErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createReferenceErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinReferenceErrorConstructor(realm,proto);
 }
 
 class BuiltinReferenceErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createReferenceErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createReferenceErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinReferenceErrorPrototype(realm,proto);
 }
 
 class BuiltinReflectObject extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createReflectObject(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createReflectObject(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinReflectObject(realm,proto);
 }
 
@@ -707,17 +707,17 @@ class BuiltinRegExpConstructor extends BuiltinConstructor {
     }
 }
 
-export function createRegExpConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createRegExpConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinRegExpConstructor(realm,proto);
 }
 
 class BuiltinRegExpPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createRegExpPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createRegExpPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinRegExpPrototype(realm,proto);
 }
 
@@ -727,27 +727,27 @@ class BuiltinSetConstructor extends BuiltinConstructor {
     }
 }
 
-export function createSetConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSetConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSetConstructor(realm,proto);
 }
 
 class BuiltinSetIteratorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createSetIteratorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSetIteratorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSetIteratorPrototype(realm,proto);
 }
 
 class BuiltinSetPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createSetPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSetPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSetPrototype(realm,proto);
 }
 
@@ -757,27 +757,27 @@ class BuiltinStringConstructor extends BuiltinConstructor {
     }
 }
 
-export function createStringConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createStringConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinStringConstructor(realm,proto);
 }
 
 class BuiltinStringIteratorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createStringIteratorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createStringIteratorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinStringIteratorPrototype(realm,proto);
 }
 
 class BuiltinStringPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createStringPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createStringPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinStringPrototype(realm,proto);
 }
 
@@ -787,17 +787,17 @@ class BuiltinSymbolConstructor extends BuiltinConstructor {
     }
 }
 
-export function createSymbolConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSymbolConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSymbolConstructor(realm,proto);
 }
 
 class BuiltinSymbolPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createSymbolPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSymbolPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSymbolPrototype(realm,proto);
 }
 
@@ -807,17 +807,17 @@ class BuiltinSyntaxErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createSyntaxErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSyntaxErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSyntaxErrorConstructor(realm,proto);
 }
 
 class BuiltinSyntaxErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createSyntaxErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createSyntaxErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinSyntaxErrorPrototype(realm,proto);
 }
 
@@ -825,12 +825,12 @@ export abstract class BuiltinTypedArrayConstructor extends BuiltinConstructor {
 }
 
 class BuiltinTypedArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createTypedArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createTypedArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinTypedArrayPrototype(realm,proto);
 }
 
@@ -840,17 +840,17 @@ class BuiltinTypeErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createTypeErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createTypeErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinTypeErrorConstructor(realm,proto);
 }
 
 class BuiltinTypeErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createTypeErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createTypeErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinTypeErrorPrototype(realm,proto);
 }
 
@@ -860,17 +860,17 @@ class BuiltinUint8ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createUint8ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint8ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint8ArrayConstructor(realm,proto);
 }
 
 class BuiltinUint8ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createUint8ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint8ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint8ArrayPrototype(realm,proto);
 }
 
@@ -880,17 +880,17 @@ class BuiltinUint8ClampedArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createUint8ClampedArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint8ClampedArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint8ClampedArrayConstructor(realm,proto);
 }
 
 class BuiltinUint8ClampedArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createUint8ClampedArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint8ClampedArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint8ClampedArrayPrototype(realm,proto);
 }
 
@@ -900,17 +900,17 @@ class BuiltinUint16ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createUint16ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint16ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint16ArrayConstructor(realm,proto);
 }
 
 class BuiltinUint16ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createUint16ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint16ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint16ArrayPrototype(realm,proto);
 }
 
@@ -920,17 +920,17 @@ class BuiltinUint32ArrayConstructor extends BuiltinConstructor {
     }
 }
 
-export function createUint32ArrayConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint32ArrayConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint32ArrayConstructor(realm,proto);
 }
 
 class BuiltinUint32ArrayPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createUint32ArrayPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createUint32ArrayPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinUint32ArrayPrototype(realm,proto);
 }
 
@@ -940,17 +940,17 @@ class BuiltinURIErrorConstructor extends BuiltinConstructor {
     }
 }
 
-export function createURIErrorConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createURIErrorConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinURIErrorConstructor(realm,proto);
 }
 
 class BuiltinURIErrorPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createURIErrorPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createURIErrorPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinURIErrorPrototype(realm,proto);
 }
 
@@ -960,17 +960,17 @@ class BuiltinWeakMapConstructor extends BuiltinConstructor {
     }
 }
 
-export function createWeakMapConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createWeakMapConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinWeakMapConstructor(realm,proto);
 }
 
 class BuiltinWeakMapPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createWeakMapPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createWeakMapPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinWeakMapPrototype(realm,proto);
 }
 
@@ -980,16 +980,16 @@ class BuiltinWeakSetConstructor extends BuiltinConstructor {
     }
 }
 
-export function createWeakSetConstructor(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createWeakSetConstructor(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinWeakSetConstructor(realm,proto);
 }
 
 class BuiltinWeakSetPrototype extends JSOrdinaryObject {
-    public constructor(realm: Realm, proto: JSObject | JSNull) {
+    public constructor(realm: Realm, proto: JSObject) {
         super(realm);
     }
 }
 
-export function createWeakSetPrototype(realm: Realm, proto: JSObject | JSNull): JSObject {
+export function createWeakSetPrototype(realm: Realm, proto: JSObject): JSObject {
     return new BuiltinWeakSetPrototype(realm,proto);
 }
