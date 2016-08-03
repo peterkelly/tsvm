@@ -164,7 +164,7 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
         DataView: bi.createDataViewConstructor(realm,FunctionPrototype),
         Date: bi.createDateConstructor(realm,FunctionPrototype),
         Function: bi.createFunctionConstructor(realm,FunctionPrototype),
-        GeneratorFunction: bi.createGeneratorFunctionConstructor(realm,FunctionPrototype),
+        GeneratorFunction: bi.createGeneratorFunctionConstructor(realm,FunctionPrototype), // FIXME: Generator?
         Object: bi.createObjectConstructor(realm,FunctionPrototype),
         Promise: bi.createPromiseConstructor(realm,FunctionPrototype),
         Proxy: bi.createProxyConstructor(realm,FunctionPrototype),
