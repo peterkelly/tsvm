@@ -81,15 +81,3 @@ import {
     rt_string_to_double,
     rt_string_lessThan,
 } from "./runtime";
-
-// ES6 Section 6.2.6.1: CreateByteDataBlock (size)
-
-export function CreateByteDataBlock(realm: Realm, size: number): DataBlock {
-    throw new Error("CreateByteDataBlock not implemented");
-}
-
-// ES6 Section 6.2.6.2: CopyDataBlockBytes (toBlock, toIndex, fromBlock, fromIndex, count)
-
-export function CopyDataBlockBytes(realm: Realm, toBlock: DataBlock, toIndex: number, fromBlock: DataBlock, fromIndex: number, count: number): Completion<UnknownType> {
-    throw new Error("CopyDataBlockBytes not implemented");
-}
