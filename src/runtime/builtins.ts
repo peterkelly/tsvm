@@ -144,7 +144,9 @@ export function createFunctionPrototype(realm: Realm, proto: JSObject): JSObject
 
 class BuiltinArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -161,7 +163,9 @@ export function createArrayPrototype(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinArrayBufferConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.ArrayBufferPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -202,7 +206,9 @@ export function createArrayProto_values(realm: Realm, proto: JSObject): JSObject
 
 class BuiltinBooleanConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.BooleanPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -219,7 +225,9 @@ export function createBooleanPrototype(realm: Realm, proto: JSObject): JSObject 
 
 class BuiltinDataViewConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.DataViewPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -236,7 +244,9 @@ export function createDataViewPrototype(realm: Realm, proto: JSObject): JSObject
 
 class BuiltinDateConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.DatePrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -301,7 +311,9 @@ export function createEncodeURIComponentFunction(realm: Realm, proto: JSObject):
 
 class BuiltinErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.ErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -330,7 +342,9 @@ export function createEvalFunction(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinEvalErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.EvalErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -347,7 +361,9 @@ export function createEvalErrorPrototype(realm: Realm, proto: JSObject): JSObjec
 
 class BuiltinFloat32ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Float32ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -364,7 +380,9 @@ export function createFloat32ArrayPrototype(realm: Realm, proto: JSObject): JSOb
 
 class BuiltinFloat64ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Float64ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -380,7 +398,9 @@ export function createFloat64ArrayPrototype(realm: Realm, proto: JSObject): JSOb
 
 class BuiltinFunctionConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.FunctionPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -398,7 +418,7 @@ export function createGenerator(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinGeneratorFunctionConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        throw new Error("BuiltinGeneratorFunctionConstructor: Not sure what prototype should be used");
     }
 }
 
@@ -415,7 +435,9 @@ export function createGeneratorPrototype(realm: Realm, proto: JSObject): JSObjec
 
 class BuiltinInt8ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Int8ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -432,7 +454,9 @@ export function createInt8ArrayPrototype(realm: Realm, proto: JSObject): JSObjec
 
 class BuiltinInt16ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Int16ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -449,7 +473,9 @@ export function createInt16ArrayPrototype(realm: Realm, proto: JSObject): JSObje
 
 class BuiltinInt32ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Int32ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -508,7 +534,9 @@ export function createJSONObject(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinMapConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.MapPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -549,7 +577,9 @@ export function createMathObject(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinNumberConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.NumberPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -565,7 +595,9 @@ export function createNumberPrototype(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinObjectConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.ObjectPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -614,7 +646,9 @@ export function createParseIntFunction(realm: Realm, proto: JSObject): JSObject 
 
 class BuiltinPromiseConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.PromisePrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -630,7 +664,7 @@ export function createPromisePrototype(realm: Realm, proto: JSObject): JSObject 
 
 class BuiltinProxyConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        throw new Error("BuiltinProxyConstructor: Not sure what prototype should be used");
     }
 }
 
@@ -643,7 +677,9 @@ export function createProxyConstructor(realm: Realm, proto: JSObject): JSObject 
 
 class BuiltinRangeErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.RangeErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -660,7 +696,9 @@ export function createRangeErrorPrototype(realm: Realm, proto: JSObject): JSObje
 
 class BuiltinReferenceErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.ReferenceErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -683,7 +721,9 @@ export function createReflectObject(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinRegExpConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.RegExpPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -700,7 +740,9 @@ export function createRegExpPrototype(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinSetConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.SetPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -723,7 +765,9 @@ export function createSetIteratorPrototype(realm: Realm, proto: JSObject): JSObj
 
 class BuiltinStringConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.StringPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -746,7 +790,9 @@ export function createStringIteratorPrototype(realm: Realm, proto: JSObject): JS
 
 class BuiltinSymbolConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.SymbolPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -763,7 +809,9 @@ export function createSymbolPrototype(realm: Realm, proto: JSObject): JSObject {
 
 class BuiltinSyntaxErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.SyntaxErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -790,7 +838,9 @@ export function createTypedArrayPrototype(realm: Realm, proto: JSObject): JSObje
 
 class BuiltinTypeErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.TypeErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -807,7 +857,9 @@ export function createTypeErrorPrototype(realm: Realm, proto: JSObject): JSObjec
 
 class BuiltinUint8ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Uint8ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -824,7 +876,9 @@ export function createUint8ArrayPrototype(realm: Realm, proto: JSObject): JSObje
 
 class BuiltinUint8ClampedArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Uint8ClampedArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -841,7 +895,9 @@ export function createUint8ClampedArrayPrototype(realm: Realm, proto: JSObject):
 
 class BuiltinUint16ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Uint16ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -858,7 +914,9 @@ export function createUint16ArrayPrototype(realm: Realm, proto: JSObject): JSObj
 
 class BuiltinUint32ArrayConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.Uint32ArrayPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -875,7 +933,9 @@ export function createUint32ArrayPrototype(realm: Realm, proto: JSObject): JSObj
 
 class BuiltinURIErrorConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.URIErrorPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -892,7 +952,9 @@ export function createURIErrorPrototype(realm: Realm, proto: JSObject): JSObject
 
 class BuiltinWeakMapConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.WeakMapPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
@@ -909,7 +971,9 @@ export function createWeakMapPrototype(realm: Realm, proto: JSObject): JSObject 
 
 class BuiltinWeakSetConstructor extends BuiltinConstructor {
     public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
-        return new NormalCompletion(new JSOrdinaryObject(this.realm));
+        const proto = this.realm.intrinsics.WeakSetPrototype;
+        const result = new JSOrdinaryObject(this.realm,proto);
+        return new NormalCompletion(result);
     }
 }
 
