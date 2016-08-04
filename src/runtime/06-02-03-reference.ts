@@ -70,7 +70,9 @@ export function IsSuperReference(realm: Realm, V: Reference): boolean {
 
 // ES6 Section 6.2.3.1: GetValue (V)
 
-export function GetValue(realm: Realm, V: Reference): Completion<JSValue> {
+export function GetValue(realm: Realm, V: Reference | JSValue): Completion<JSValue> {
+    if (!(V instanceof Reference))
+        return new NormalCompletion(V);
     let base = GetBase(realm,V);
     if (base instanceof JSUndefined)
         throw new Error("FIXME: Should throw ReferenceError here, but can't import it");

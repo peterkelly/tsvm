@@ -104,3 +104,11 @@ export function rt_Infinity(): number {
 export function rt_NaN(): number {
     return NaN;
 }
+
+export function rt_double_add(a: number, b: number) {
+    return a + b;
+}
+
+export function rt_string_concat(s1: string, s2: string): string {
+    return s1 + s2;
+}

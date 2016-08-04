@@ -71,10 +71,18 @@ import {
 } from "../parser/ast";
 import {
     ToString,
+    ToNumber,
 } from "./07-01-conversion";
 import {
     GetValue,
 } from "./06-02-03-reference";
+import {
+    ToPrimitive,
+} from "./07-01-conversion";
+import {
+    rt_double_add,
+    rt_string_concat,
+} from "./runtime";
 
 function checkNode(node: ASTNode | null, kind: string, arity: number): ASTNode {
     if (node === null)
@@ -94,7 +102,7 @@ function checkNodeNotNull(node: ASTNode | null): ASTNode {
 
 function checkListNode(node: ASTNode | null): ListNode {
     if (node == null)
-        throw new Error("Expected list node, got null");
+        throw new Error("Expected list node, got null/undefined");
     if (!(node instanceof ListNode))
         throw new Error("Expected list node, got "+node.kind);
     return node;
@@ -123,6 +131,70 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
             return ctx.ResolveBinding(node.value);
         case "This":
             return ctx.ResolveThisBinding();
+        case "Add": {
+            const left = checkNodeNotNull(node.children[0]);
+            const right = checkNodeNotNull(node.children[1]);
+
+            const lrefComp = evalExpression(ctx,left);
+            if (!(lrefComp instanceof NormalCompletion))
+                return lrefComp;
+            const lref = lrefComp.value;
+            const lvalComp = GetValue(ctx.realm,lref);
+            if (!(lvalComp instanceof NormalCompletion))
+                return lvalComp;
+            const lval = lvalComp.value;
+
+            const rrefComp = evalExpression(ctx,right);
+            if (!(rrefComp instanceof NormalCompletion))
+                return rrefComp;
+            const rref = rrefComp.value;
+            const rvalComp = GetValue(ctx.realm,rref);
+            if (!(rvalComp instanceof NormalCompletion))
+                return rvalComp;
+            const rval = rvalComp.value;
+
+            const lprimComp = ToPrimitive(ctx.realm,lval);
+            if (!(lprimComp instanceof NormalCompletion))
+                return lprimComp;
+            const lprim = lprimComp.value;
+
+            const rprimComp = ToPrimitive(ctx.realm,rval);
+            if (!(rprimComp instanceof NormalCompletion))
+                return rprimComp;
+            const rprim = rprimComp.value;
+
+            if ((lprim instanceof JSString) || (rprim instanceof JSString)) {
+                const lstrComp = ToString(ctx.realm,lprim);
+                if (!(lstrComp instanceof NormalCompletion))
+                    return lstrComp;
+                const lstr = lstrComp.value;
+
+                const rstrComp = ToString(ctx.realm,rprim);
+                if (!(rstrComp instanceof NormalCompletion))
+                    return rstrComp;
+                const rstr = rstrComp.value;
+
+                const resultStr = rt_string_concat(lstr.stringValue,rstr.stringValue);
+                const result = new JSString(resultStr);
+                return new NormalCompletion(result);
+            }
+            else {
+                const lnumComp = ToNumber(ctx.realm,lprim);
+                if (!(lnumComp instanceof NormalCompletion))
+                    return lnumComp;
+                const lnum = lnumComp.value;
+
+                const rnumComp = ToNumber(ctx.realm,rprim);
+                if (!(rnumComp instanceof NormalCompletion))
+                    return rnumComp;
+                const rnum = rnumComp.value;
+
+                const resultNum = rt_double_add(lnum.numberValue,rnum.numberValue);
+                const result = new JSNumber(resultNum);
+                return new NormalCompletion(result);
+            }
+
+        }
     }
 
     throw new Error("Unsupported expression node: "+node.kind);
