@@ -81,6 +81,7 @@ import {
 } from "./07-01-conversion";
 import {
     rt_double_add,
+    rt_double_sub,
     rt_string_concat,
 } from "./runtime";
 
@@ -136,19 +137,13 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
             const right = checkNodeNotNull(node.children[1]);
 
             const lrefComp = evalExpression(ctx,left);
-            if (!(lrefComp instanceof NormalCompletion))
-                return lrefComp;
-            const lref = lrefComp.value;
-            const lvalComp = GetValue(ctx.realm,lref);
+            const lvalComp = GetValue(ctx.realm,lrefComp);
             if (!(lvalComp instanceof NormalCompletion))
                 return lvalComp;
             const lval = lvalComp.value;
 
             const rrefComp = evalExpression(ctx,right);
-            if (!(rrefComp instanceof NormalCompletion))
-                return rrefComp;
-            const rref = rrefComp.value;
-            const rvalComp = GetValue(ctx.realm,rref);
+            const rvalComp = GetValue(ctx.realm,rrefComp);
             if (!(rvalComp instanceof NormalCompletion))
                 return rvalComp;
             const rval = rvalComp.value;
@@ -178,22 +173,50 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
                 const result = new JSString(resultStr);
                 return new NormalCompletion(result);
             }
-            else {
-                const lnumComp = ToNumber(ctx.realm,lprim);
-                if (!(lnumComp instanceof NormalCompletion))
-                    return lnumComp;
-                const lnum = lnumComp.value;
 
-                const rnumComp = ToNumber(ctx.realm,rprim);
-                if (!(rnumComp instanceof NormalCompletion))
-                    return rnumComp;
-                const rnum = rnumComp.value;
+            const lnumComp = ToNumber(ctx.realm,lprim);
+            if (!(lnumComp instanceof NormalCompletion))
+                return lnumComp;
+            const lnum = lnumComp.value;
 
-                const resultNum = rt_double_add(lnum.numberValue,rnum.numberValue);
-                const result = new JSNumber(resultNum);
-                return new NormalCompletion(result);
-            }
+            const rnumComp = ToNumber(ctx.realm,rprim);
+            if (!(rnumComp instanceof NormalCompletion))
+                return rnumComp;
+            const rnum = rnumComp.value;
 
+            const resultNum = rt_double_add(lnum.numberValue,rnum.numberValue);
+            const result = new JSNumber(resultNum);
+            return new NormalCompletion(result);
+        }
+        case "Subtract": {
+            const left = checkNodeNotNull(node.children[0]);
+            const right = checkNodeNotNull(node.children[1]);
+
+            const lrefComp = evalExpression(ctx,left);
+            const lvalComp = GetValue(ctx.realm,lrefComp);
+            if (!(lvalComp instanceof NormalCompletion))
+                return lvalComp;
+            const lval = lvalComp.value;
+
+            const rrefComp = evalExpression(ctx,right);
+            const rvalComp = GetValue(ctx.realm,rrefComp);
+            if (!(rvalComp instanceof NormalCompletion))
+                return rvalComp;
+            const rval = rvalComp.value;
+
+            const lnumComp = ToNumber(ctx.realm,lval);
+            if (!(lnumComp instanceof NormalCompletion))
+                return lnumComp;
+            const lnum = lnumComp.value;
+
+            const rnumComp = ToNumber(ctx.realm,rval);
+            if (!(rnumComp instanceof NormalCompletion))
+                return rnumComp;
+            const rnum = rnumComp.value;
+
+            const resultNum = rt_double_sub(lnum.numberValue,rnum.numberValue);
+            const result = new JSNumber(resultNum);
+            return new NormalCompletion(result);
         }
     }
 

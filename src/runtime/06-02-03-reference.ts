@@ -70,7 +70,15 @@ export function IsSuperReference(realm: Realm, V: Reference): boolean {
 
 // ES6 Section 6.2.3.1: GetValue (V)
 
-export function GetValue(realm: Realm, V: Reference | JSValue): Completion<JSValue> {
+export function GetValue(realm: Realm, VComp: Reference | JSValue | Completion<Reference | JSValue>): Completion<JSValue> {
+    let V: Reference | JSValue;
+    if ((VComp instanceof Reference) || (VComp instanceof JSValue))
+        V = VComp;
+    else if (VComp instanceof NormalCompletion)
+        V = VComp.value;
+    else
+        return VComp;
+
     if (!(V instanceof Reference))
         return new NormalCompletion(V);
     let base = GetBase(realm,V);
