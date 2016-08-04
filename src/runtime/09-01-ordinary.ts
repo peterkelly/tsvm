@@ -29,6 +29,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -69,19 +70,19 @@ import {
 
 // ES6 Section 9.1: Ordinary Object Internal Methods and Internal Slots
 
-export class JSOrdinaryObject extends JSObject {
+export class JSOrdinaryObjectOperations {
 
     // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
 
-    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
-        return new NormalCompletion(this.__prototype__);
+    public __GetPrototypeOf__(obj: JSObject): Completion<JSObject | JSNull> {
+        return new NormalCompletion(obj.__prototype__);
     }
 
     // ES6 Section 9.1.2: [[SetPrototypeOf]] (V)
 
-    public __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean> {
-        const extensible = this.__extensible__;
-        const current = this.__prototype__;
+    public __SetPrototypeOf__(obj: JSObject, V: JSObject | JSNull): Completion<boolean> {
+        const extensible = obj.__extensible__;
+        const current = obj.__prototype__;
         if (SameValue(V,current))
             return new NormalCompletion(true);
         if (!extensible)
@@ -91,59 +92,59 @@ export class JSOrdinaryObject extends JSObject {
         while (!done) {
             if (p instanceof JSNull)
                 done = true;
-            else if (SameValue(p,this))
+            else if (SameValue(p,obj))
                 return new NormalCompletion(false);
             else if (p.overridesGetPrototypeOf)
                 done = true;
             else
                 p = p.__prototype__;
         }
-        this.__prototype__ = V;
+        obj.__prototype__ = V;
         return new NormalCompletion(true);
     }
 
     // ES6 Section 9.1.3: [[IsExtensible]] ()
 
-    public __IsExtensible__(): Completion<boolean> {
-        return new NormalCompletion(this.__extensible__);
+    public __IsExtensible__(obj: JSObject): Completion<boolean> {
+        return new NormalCompletion(obj.__extensible__);
     }
 
     // ES6 Section 9.1.4: [[PreventExtensions]] ()
 
-    public __PreventExtensions__(): Completion<boolean> {
-        this.__extensible__ = false;
+    public __PreventExtensions__(obj: JSObject): Completion<boolean> {
+        obj.__extensible__ = false;
         return new NormalCompletion(true);
     }
 
     // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
-    public __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
+    public __GetOwnProperty__(obj: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
         if (copy === undefined)
             copy = true;
-        return new NormalCompletion(OrdinaryGetOwnProperty(this.realm,this,P,copy));
+        return new NormalCompletion(OrdinaryGetOwnProperty(obj.realm,obj,P,copy));
     }
 
     // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
-    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
+    public __DefineOwnProperty__(obj: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
         throw new Error("JSObject.__DefineOwnProperty__ not implemented");
     }
 
     // ES6 Section 9.1.7: [[HasProperty]](P)
 
-    public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
-        return OrdinaryHasProperty(this.realm,this,P);
+    public __HasProperty__(obj: JSObject, P: JSPropertyKey): Completion<boolean> {
+        return OrdinaryHasProperty(obj.realm,obj,P);
     }
 
     // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
-    public __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
-        const descComp = this.__GetOwnProperty__(P,false);
+    public __Get__(obj: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
+        const descComp = obj.__GetOwnProperty__(P,false);
         if (!(descComp instanceof NormalCompletion))
             return descComp;
         const desc = descComp.value;
         if (desc instanceof JSUndefined) {
-            const parentComp = this.__GetPrototypeOf__();
+            const parentComp = obj.__GetPrototypeOf__();
             if (!(parentComp instanceof NormalCompletion))
                 return parentComp;
             const parent = parentComp.value;
@@ -158,14 +159,14 @@ export class JSOrdinaryObject extends JSObject {
             const getter = desc.__get__;
             if (getter instanceof JSUndefined)
                 return new NormalCompletion(new JSUndefined());
-            return Call(this.realm,getter,Receiver,[]);
+            return Call(obj.realm,getter,Receiver,[]);
         }
     }
 
     // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
-    public __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
-        const O = this;
+    public __Set__(obj: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
+        const O = obj;
         const ownDescComp = O.__GetOwnProperty__(P,false);
         if (!(ownDescComp instanceof NormalCompletion))
             return ownDescComp;
@@ -206,14 +207,14 @@ export class JSOrdinaryObject extends JSObject {
                 return Receiver.__DefineOwnProperty__(P,valueDesc);
             }
             else {
-                return CreateDataProperty(this.realm,Receiver,P,V);
+                return CreateDataProperty(obj.realm,Receiver,P,V);
             }
         }
         else {
             const setter = ownDesc.__set__;
             if (setter instanceof JSUndefined)
                 return new NormalCompletion(false);
-            const setterResultComp = Call(this.realm,setter,Receiver,[V]);
+            const setterResultComp = Call(obj.realm,setter,Receiver,[V]);
             if (!(setterResultComp instanceof NormalCompletion))
                 return setterResultComp;
             return new NormalCompletion(true);
@@ -222,15 +223,15 @@ export class JSOrdinaryObject extends JSObject {
 
     // ES6 Section 9.1.10: [[Delete]] (P)
 
-    public __Delete__(P: JSPropertyKey): Completion<boolean> {
-        const descComp = this.__GetOwnProperty__(P);
+    public __Delete__(obj: JSObject, P: JSPropertyKey): Completion<boolean> {
+        const descComp = obj.__GetOwnProperty__(P);
         if (!(descComp instanceof NormalCompletion))
             return descComp;
         const desc = descComp.value;
         if (desc instanceof JSUndefined)
             return new NormalCompletion(true);
         if (desc.configurable) {
-            delete this.properties[P.stringRep];
+            delete obj.properties[P.stringRep];
             return new NormalCompletion(true);
         }
         return new NormalCompletion(false);
@@ -238,23 +239,20 @@ export class JSOrdinaryObject extends JSObject {
 
     // ES6 Section 9.1.11: [[Enumerate]] ()
 
-    public __Enumerate__(): Completion<JSObject> {
+    public __Enumerate__(obj: JSObject, ): Completion<JSObject> {
         throw new Error("JSObject.__Enumerate__ not implemented");
     }
 
     // ES6 Section 9.1.12: [[OwnPropertyKeys]] ()
 
-    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
+    public __OwnPropertyKeys__(obj: JSObject): Completion<JSPropertyKey[]> {
         throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
     }
 
-    // FIXME: Should this be here?
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(obj: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("Not a callable object; check implementsCall first");
     }
-
-    // FIXME: Should this be here?
-    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
+    public __Construct__(obj: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
         throw new Error("Not a constructor object; check implementsConstruct first");
     }
 }

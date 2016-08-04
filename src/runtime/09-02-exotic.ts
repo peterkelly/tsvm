@@ -31,6 +31,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -68,9 +69,6 @@ import {
     Call,
     CreateDataProperty,
 } from "./07-03-objects";
-import {
-    JSOrdinaryObject
-} from "./09-01-ordinary";
 
 // ES6 Section 9.2: ECMAScript Function Objects
 

@@ -31,6 +31,8 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
+    ObjectOperations,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -60,7 +62,7 @@ import {
     rt_NaN,
 } from "./runtime";
 import {
-    JSOrdinaryObject,
+    JSOrdinaryObjectOperations,
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
@@ -88,6 +90,7 @@ export class RealmImpl implements Realm {
     public globalThis: JSObject;
     public globalEnv: LexicalEnvironment;
     public templateMap: any[]; // FIXME
+    public ordinaryOps: ObjectOperations = new JSOrdinaryObjectOperations();
 
     public constructor() {
         this.intrinsics = CreateIntrinsics(this);

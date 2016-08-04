@@ -29,6 +29,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -51,10 +52,6 @@ import {
     SuperReference,
     DataBlock,
 } from "./datatypes";
-
-import {
-    JSOrdinaryObject,
-} from "./09-01-ordinary";
 
 // Function
 

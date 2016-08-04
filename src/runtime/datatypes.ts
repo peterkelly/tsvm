@@ -36,6 +36,7 @@ export interface Realm {
     globalEnv: LexicalEnvironment;
     templateMap: any[]; // FIXME
     intrinsics: Intrinsics;
+    ordinaryOps: ObjectOperations;
 
     throwEvalError(message?: string): ThrowCompletion;
     throwRangeError(message?: string): ThrowCompletion;
@@ -241,7 +242,82 @@ export abstract class JSObject extends JSValue {
     public abstract __Enumerate__(): Completion<JSObject>;
     public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
     public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-    public abstract __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject>;
+    public abstract __Construct__(args: JSValue[], newTarget: JSObject): Completion<JSObject>;
+}
+
+export class JSOrdinaryObject extends JSObject {
+    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
+        return this.realm.ordinaryOps.__GetPrototypeOf__(this);
+    }
+
+    public __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean> {
+        return this.realm.ordinaryOps.__SetPrototypeOf__(this,V);
+    }
+
+    public __IsExtensible__(): Completion<boolean> {
+        return this.realm.ordinaryOps.__IsExtensible__(this);
+    }
+
+    public __PreventExtensions__(): Completion<boolean> {
+        return this.realm.ordinaryOps.__PreventExtensions__(this);
+    }
+
+    public __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
+        return this.realm.ordinaryOps.__GetOwnProperty__(this,P,copy);
+    }
+
+    public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
+        return this.realm.ordinaryOps.__HasProperty__(this,P);
+    }
+
+    public __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
+        return this.realm.ordinaryOps.__Get__(this,P,Receiver);
+    }
+
+    public __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
+        return this.realm.ordinaryOps.__Set__(this,P,V,Receiver);
+    }
+
+    public __Delete__(P: JSPropertyKey): Completion<boolean> {
+        return this.realm.ordinaryOps.__Delete__(this,P);
+    }
+
+    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
+        return this.realm.ordinaryOps.__DefineOwnProperty__(this,propertyKey,property);
+    }
+
+    public __Enumerate__(): Completion<JSObject> {
+        return this.realm.ordinaryOps.__Enumerate__(this);
+    }
+
+    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
+        return this.realm.ordinaryOps.__OwnPropertyKeys__(this);
+    }
+
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        return this.realm.ordinaryOps.__Call__(this,thisArg,args);
+    }
+
+    public __Construct__(args: JSValue[], newTarget: JSObject): Completion<JSObject> {
+        return this.realm.ordinaryOps.__Construct__(this,args,newTarget);
+    }
+}
+
+export interface ObjectOperations {
+    __GetPrototypeOf__(obj: JSObject): Completion<JSObject | JSNull>;
+    __SetPrototypeOf__(obj: JSObject, V: JSObject | JSNull): Completion<boolean>;
+    __IsExtensible__(obj: JSObject): Completion<boolean>;
+    __PreventExtensions__(obj: JSObject): Completion<boolean>;
+    __GetOwnProperty__(obj: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
+    __HasProperty__(obj: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __Get__(obj: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
+    __Set__(obj: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
+    __Delete__(obj: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __DefineOwnProperty__(obj: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
+    __Enumerate__(obj: JSObject, ): Completion<JSObject>;
+    __OwnPropertyKeys__(obj: JSObject): Completion<JSPropertyKey[]>;
+    __Call__(obj: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+    __Construct__(obj: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
 }
 
 // Additional implementation types

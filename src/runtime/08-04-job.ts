@@ -31,6 +31,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -60,7 +61,6 @@ import {
     rt_NaN,
 } from "./runtime";
 import {
-    JSOrdinaryObject,
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
