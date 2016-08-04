@@ -1,0 +1,1146 @@
+file:///Users/peter/experiments/tsvm/es6.css Failed to load resource: net::ERR_FILE_NOT_FOUND
+file:///Users/peter/experiments/tsvm/Ecma_RVB-003.jpg Failed to load resource: net::ERR_FILE_NOT_FOUND
+file:///Users/peter/experiments/tsvm/figure-1.png Failed to load resource: net::ERR_FILE_NOT_FOUND
+file:///Users/peter/experiments/tsvm/figure-1.svg Failed to load resource: net::ERR_FILE_NOT_FOUND
+data:text/html,chromewebdata:1 Not allowed to load local resource: file:///Users/peter/experiments/tsvm/figure-1.svg
+ES6.html:51996 GET file:///Users/peter/experiments/tsvm/figure-2.png net::ERR_FILE_NOT_FOUND
+htmlextract.ts:291 HTMLExtract
+htmlextract.ts:370 SKIPPING DecimalDigit: one of
+htmlextract.ts:370 SKIPPING ExponentIndicator: one of
+htmlextract.ts:483 Error: SourceCharacter alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: MultiLineNotAsteriskChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: MultiLineNotForwardSlashOrAsteriskChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: SingleLineCommentChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: UnicodeIDStart alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: UnicodeIDContinue alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: DecimalDigits: Duplicate definition
+htmlextract.ts:370 SKIPPING DecimalDigit: one of
+htmlextract.ts:370 SKIPPING NonZeroDigit: one of
+htmlextract.ts:483 Error: ExponentPart: Duplicate definition
+htmlextract.ts:370 SKIPPING ExponentIndicator: one of
+htmlextract.ts:483 Error: SignedInteger: Duplicate definition
+htmlextract.ts:370 SKIPPING BinaryDigit: one of
+htmlextract.ts:370 SKIPPING OctalDigit: one of
+htmlextract.ts:370 SKIPPING HexDigit: one of
+htmlextract.ts:483 Error: DoubleStringCharacter alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: SingleStringCharacter alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: EscapeSequence alternative 2: Error: Invalid annotation: "[lookahead ∉ DecimalDigit]"
+htmlextract.ts:483 Error: RegularExpressionFirstChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: RegularExpressionChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: RegularExpressionNonTerminator alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: RegularExpressionClassChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: TemplateCharacter alternative 5: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: Identifier alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:370 SKIPPING MultiplicativeOperator: one of
+htmlextract.ts:370 SKIPPING AssignmentOperator: one of
+htmlextract.ts:483 Error: ExpressionStatement alternative 1: Error: Invalid annotation: "[lookahead ∉ {{, function, class, let [}]"
+htmlextract.ts:483 Error: IterationStatement alternative 3: Error: Invalid annotation: "[lookahead ∉ {let [}]"
+htmlextract.ts:370 SKIPPING uriReserved: one of
+htmlextract.ts:370 SKIPPING uriAlpha: one of
+htmlextract.ts:370 SKIPPING uriMark: one of
+htmlextract.ts:370 SKIPPING SyntaxCharacter: one of
+htmlextract.ts:483 Error: PatternCharacter alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:370 SKIPPING ControlEscape: one of
+htmlextract.ts:370 SKIPPING ControlLetter: one of
+htmlextract.ts:483 Error: NumericLiteral: Duplicate definition
+htmlextract.ts:483 Error: DecimalIntegerLiteral: Duplicate definition
+htmlextract.ts:370 SKIPPING NonOctalDigit: one of
+htmlextract.ts:483 Error: EscapeSequence: Duplicate definition
+htmlextract.ts:483 Error: LegacyOctalEscapeSequence alternative 1: Error: Invalid annotation: "[lookahead ∉ OctalDigit]"
+htmlextract.ts:370 SKIPPING ZeroToThree: one of
+htmlextract.ts:370 SKIPPING FourToSeven: one of
+htmlextract.ts:483 Error: Comment: Duplicate definition
+htmlextract.ts:483 Error: MultiLineComment: Duplicate definition
+htmlextract.ts:483 Error: SingleLineNotAsteriskChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: SingleLineNotForwardSlashOrAsteriskChar alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: Term: Duplicate definition
+htmlextract.ts:483 Error: Atom: Duplicate definition
+htmlextract.ts:483 Error: PatternCharacterNoBrace alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: PatternCharacter: Duplicate definition
+htmlextract.ts:483 Error: Assertion: Duplicate definition
+htmlextract.ts:483 Error: AtomEscape: Duplicate definition
+htmlextract.ts:483 Error: CharacterEscape: Duplicate definition
+htmlextract.ts:483 Error: IdentityEscape alternative 3: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: ClassAtomNoDash alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:483 Error: ClassAtomNoDashInRange alternative 1: Error: Unsupported sequence element: grhsmod
+htmlextract.ts:293 ================================================================================
+htmlextract.ts:294 StringNumericLiteral:
+    StrWhiteSpace#opt
+    StrWhiteSpace#opt StrNumericLiteral StrWhiteSpace#opt
+
+StrWhiteSpace:
+    StrWhiteSpaceChar StrWhiteSpace#opt
+
+StrWhiteSpaceChar:
+    WhiteSpace
+    LineTerminator
+
+StrNumericLiteral:
+    StrDecimalLiteral
+    BinaryIntegerLiteral
+    OctalIntegerLiteral
+    HexIntegerLiteral
+
+StrDecimalLiteral:
+    StrUnsignedDecimalLiteral
+    "+" StrUnsignedDecimalLiteral
+    "-" StrUnsignedDecimalLiteral
+
+StrUnsignedDecimalLiteral:
+    Infinity
+    DecimalDigits "." DecimalDigits#opt ExponentPart#opt
+    "." DecimalDigits ExponentPart#opt
+    DecimalDigits ExponentPart#opt
+
+DecimalDigits:
+    DecimalDigit
+    DecimalDigits DecimalDigit
+
+ExponentPart:
+    ExponentIndicator SignedInteger
+
+SignedInteger:
+    DecimalDigits
+    "+" DecimalDigits
+    "-" DecimalDigits
+
+SourceCharacter:
+
+InputElementDiv:
+    WhiteSpace
+    LineTerminator
+    Comment
+    CommonToken
+    DivPunctuator
+    RightBracePunctuator
+
+InputElementRegExp:
+    WhiteSpace
+    LineTerminator
+    Comment
+    CommonToken
+    RightBracePunctuator
+    RegularExpressionLiteral
+
+InputElementRegExpOrTemplateTail:
+    WhiteSpace
+    LineTerminator
+    Comment
+    CommonToken
+    RegularExpressionLiteral
+    TemplateSubstitutionTail
+
+InputElementTemplateTail:
+    WhiteSpace
+    LineTerminator
+    Comment
+    CommonToken
+    DivPunctuator
+    TemplateSubstitutionTail
+
+WhiteSpace:
+    Char(TAB)
+    Char(VT)
+    Char(FF)
+    Char(SP)
+    Char(NBSP)
+    Char(ZWNBSP)
+    Char(USP)
+
+LineTerminator:
+    Char(LF)
+    Char(CR)
+    Char(LS)
+    Char(PS)
+
+LineTerminatorSequence:
+    Char(LF)
+    LookaheadNotIn(["<LF>"])
+    Char(LS)
+    Char(PS)
+    Char(CR) Char(LF)
+
+Comment:
+    MultiLineComment
+    SingleLineComment
+
+MultiLineComment:
+    "/*" MultiLineCommentChars#opt "*/"
+
+MultiLineCommentChars:
+    MultiLineNotAsteriskChar MultiLineCommentChars#opt
+    "*" PostAsteriskCommentChars#opt
+
+PostAsteriskCommentChars:
+    MultiLineNotForwardSlashOrAsteriskChar MultiLineCommentChars#opt
+    "*" PostAsteriskCommentChars#opt
+
+MultiLineNotAsteriskChar:
+
+MultiLineNotForwardSlashOrAsteriskChar:
+
+SingleLineComment:
+    "//" SingleLineCommentChars#opt
+
+SingleLineCommentChars:
+    SingleLineCommentChar SingleLineCommentChars#opt
+
+SingleLineCommentChar:
+
+CommonToken:
+    IdentifierName
+    Punctuator
+    NumericLiteral
+    StringLiteral
+    Template
+
+IdentifierName:
+    IdentifierStart
+    IdentifierName IdentifierPart
+
+IdentifierStart:
+    UnicodeIDStart
+    "$"
+    "_"
+    "\\" UnicodeEscapeSequence
+
+IdentifierPart:
+    UnicodeIDContinue
+    "$"
+    "_"
+    "\\" UnicodeEscapeSequence
+    Char(ZWNJ)
+    Char(ZWJ)
+
+UnicodeIDStart:
+
+UnicodeIDContinue:
+
+ReservedWord:
+    Keyword
+    FutureReservedWord
+    NullLiteral
+    BooleanLiteral
+
+FutureReservedWord:
+    "enum"
+    "await"
+
+NullLiteral:
+    "null"
+
+BooleanLiteral:
+    "true"
+    "false"
+
+NumericLiteral:
+    DecimalLiteral
+    BinaryIntegerLiteral
+    OctalIntegerLiteral
+    HexIntegerLiteral
+
+DecimalLiteral:
+    DecimalIntegerLiteral "." DecimalDigits#opt ExponentPart#opt
+    "." DecimalDigits ExponentPart#opt
+    DecimalIntegerLiteral ExponentPart#opt
+
+DecimalIntegerLiteral:
+    "0"
+    NonZeroDigit DecimalDigits#opt
+
+BinaryIntegerLiteral:
+    "0b" BinaryDigits
+    "0B" BinaryDigits
+
+BinaryDigits:
+    BinaryDigit
+    BinaryDigits BinaryDigit
+
+OctalIntegerLiteral:
+    "0o" OctalDigits
+    "0O" OctalDigits
+
+OctalDigits:
+    OctalDigit
+    OctalDigits OctalDigit
+
+HexIntegerLiteral:
+    "0x" HexDigits
+    "0X" HexDigits
+
+HexDigits:
+    HexDigit
+    HexDigits HexDigit
+
+StringLiteral:
+    "\"" DoubleStringCharacters#opt "\""
+    "'" SingleStringCharacters#opt "'"
+
+DoubleStringCharacters:
+    DoubleStringCharacter DoubleStringCharacters#opt
+
+SingleStringCharacters:
+    SingleStringCharacter SingleStringCharacters#opt
+
+DoubleStringCharacter:
+
+SingleStringCharacter:
+
+LineContinuation:
+    "\\" LineTerminatorSequence
+
+EscapeSequence:
+    CharacterEscapeSequence
+
+RegularExpressionLiteral:
+    "/" RegularExpressionBody "/" RegularExpressionFlags
+
+RegularExpressionBody:
+    RegularExpressionFirstChar RegularExpressionChars
+
+RegularExpressionChars:
+    Empty()
+    RegularExpressionChars RegularExpressionChar
+
+RegularExpressionFirstChar:
+
+RegularExpressionChar:
+
+RegularExpressionBackslashSequence:
+    "\\" RegularExpressionNonTerminator
+
+RegularExpressionNonTerminator:
+
+RegularExpressionClass:
+    "[" RegularExpressionClassChars "]"
+
+RegularExpressionClassChars:
+    Empty()
+    RegularExpressionClassChars RegularExpressionClassChar
+
+RegularExpressionClassChar:
+
+RegularExpressionFlags:
+    Empty()
+    RegularExpressionFlags IdentifierPart
+
+Template:
+    NoSubstitutionTemplate
+    TemplateHead
+
+NoSubstitutionTemplate:
+    "`" TemplateCharacters#opt "`"
+
+TemplateHead:
+    "`" TemplateCharacters#opt "${"
+
+TemplateSubstitutionTail:
+    TemplateMiddle
+    TemplateTail
+
+TemplateMiddle:
+    "}" TemplateCharacters#opt "${"
+
+TemplateTail:
+    "}" TemplateCharacters#opt "`"
+
+TemplateCharacters:
+    TemplateCharacter TemplateCharacters#opt
+
+TemplateCharacter:
+    "$" LookaheadNotIn(["{"])
+    "\\" EscapeSequence
+    LineContinuation
+    LineTerminatorSequence
+
+IdentifierReference[Yield]:
+    Identifier
+    ParamNotSet(Yield) "yield"
+
+BindingIdentifier[Yield]:
+    Identifier
+    ParamNotSet(Yield) "yield"
+
+LabelIdentifier[Yield]:
+    Identifier
+    ParamNotSet(Yield) "yield"
+
+Identifier:
+
+PrimaryExpression[Yield]:
+    "this"
+    IdentifierReference[?Yield]
+    Literal
+    ArrayLiteral[?Yield]
+    ObjectLiteral[?Yield]
+    FunctionExpression
+    ClassExpression[?Yield]
+    GeneratorExpression
+    RegularExpressionLiteral
+    TemplateLiteral[?Yield]
+    CoverParenthesizedExpressionAndArrowParameterList[?Yield]
+
+CoverParenthesizedExpressionAndArrowParameterList[Yield]:
+    "(" Expression[In, ?Yield] ")"
+    "(" ")"
+    "(" "..." BindingIdentifier[?Yield] ")"
+    "(" Expression[In, ?Yield] "," "..." BindingIdentifier[?Yield] ")"
+
+Literal:
+    NullLiteral
+    BooleanLiteral
+    NumericLiteral
+    StringLiteral
+
+ArrayLiteral[Yield]:
+    "[" Elision#opt "]"
+    "[" ElementList[?Yield] "]"
+    "[" ElementList[?Yield] "," Elision#opt "]"
+
+ElementList[Yield]:
+    Elision#opt AssignmentExpression[In, ?Yield]
+    Elision#opt SpreadElement[?Yield]
+    ElementList[?Yield] "," Elision#opt AssignmentExpression[In, ?Yield]
+    ElementList[?Yield] "," Elision#opt SpreadElement[?Yield]
+
+Elision:
+    ","
+    Elision ","
+
+SpreadElement[Yield]:
+    "..." AssignmentExpression[In, ?Yield]
+
+ObjectLiteral[Yield]:
+    "{" "}"
+    "{" PropertyDefinitionList[?Yield] "}"
+    "{" PropertyDefinitionList[?Yield] "," "}"
+
+PropertyDefinitionList[Yield]:
+    PropertyDefinition[?Yield]
+    PropertyDefinitionList[?Yield] "," PropertyDefinition[?Yield]
+
+PropertyDefinition[Yield]:
+    IdentifierReference[?Yield]
+    CoverInitializedName[?Yield]
+    PropertyName[?Yield] ":" AssignmentExpression[In, ?Yield]
+    MethodDefinition[?Yield]
+
+PropertyName[Yield]:
+    LiteralPropertyName
+    ComputedPropertyName[?Yield]
+
+LiteralPropertyName:
+    IdentifierName
+    StringLiteral
+    NumericLiteral
+
+ComputedPropertyName[Yield]:
+    "[" AssignmentExpression[In, ?Yield] "]"
+
+CoverInitializedName[Yield]:
+    IdentifierReference[?Yield] Initializer[In, ?Yield]
+
+Initializer[In, Yield]:
+    "=" AssignmentExpression[?In, ?Yield]
+
+TemplateLiteral[Yield]:
+    NoSubstitutionTemplate
+    TemplateHead Expression[In, ?Yield] TemplateSpans[?Yield]
+
+TemplateSpans[Yield]:
+    TemplateTail
+    TemplateMiddleList[?Yield] TemplateTail
+
+TemplateMiddleList[Yield]:
+    TemplateMiddle Expression[In, ?Yield]
+    TemplateMiddleList[?Yield] TemplateMiddle Expression[In, ?Yield]
+
+MemberExpression[Yield]:
+    PrimaryExpression[?Yield]
+    MemberExpression[?Yield] "[" Expression[In, ?Yield] "]"
+    MemberExpression[?Yield] "." IdentifierName
+    MemberExpression[?Yield] TemplateLiteral[?Yield]
+    SuperProperty[?Yield]
+    MetaProperty
+    "new" MemberExpression[?Yield] Arguments[?Yield]
+
+SuperProperty[Yield]:
+    "super" "[" Expression[In, ?Yield] "]"
+    "super" "." IdentifierName
+
+MetaProperty:
+    NewTarget
+
+NewTarget:
+    "new" "." "target"
+
+NewExpression[Yield]:
+    MemberExpression[?Yield]
+    "new" NewExpression[?Yield]
+
+CallExpression[Yield]:
+    MemberExpression[?Yield] Arguments[?Yield]
+    SuperCall[?Yield]
+    CallExpression[?Yield] Arguments[?Yield]
+    CallExpression[?Yield] "[" Expression[In, ?Yield] "]"
+    CallExpression[?Yield] "." IdentifierName
+    CallExpression[?Yield] TemplateLiteral[?Yield]
+
+SuperCall[Yield]:
+    "super" Arguments[?Yield]
+
+Arguments[Yield]:
+    "(" ")"
+    "(" ArgumentList[?Yield] ")"
+
+ArgumentList[Yield]:
+    AssignmentExpression[In, ?Yield]
+    "..." AssignmentExpression[In, ?Yield]
+    ArgumentList[?Yield] "," AssignmentExpression[In, ?Yield]
+    ArgumentList[?Yield] "," "..." AssignmentExpression[In, ?Yield]
+
+LeftHandSideExpression[Yield]:
+    NewExpression[?Yield]
+    CallExpression[?Yield]
+
+PostfixExpression[Yield]:
+    LeftHandSideExpression[?Yield]
+    LeftHandSideExpression[?Yield] NoLineTerminator() "++"
+    LeftHandSideExpression[?Yield] NoLineTerminator() "--"
+
+UnaryExpression[Yield]:
+    PostfixExpression[?Yield]
+    "delete" UnaryExpression[?Yield]
+    "void" UnaryExpression[?Yield]
+    "typeof" UnaryExpression[?Yield]
+    "++" UnaryExpression[?Yield]
+    "--" UnaryExpression[?Yield]
+    "+" UnaryExpression[?Yield]
+    "-" UnaryExpression[?Yield]
+    "~" UnaryExpression[?Yield]
+    "!" UnaryExpression[?Yield]
+
+MultiplicativeExpression[Yield]:
+    UnaryExpression[?Yield]
+    MultiplicativeExpression[?Yield] MultiplicativeOperator UnaryExpression[?Yield]
+
+AdditiveExpression[Yield]:
+    MultiplicativeExpression[?Yield]
+    AdditiveExpression[?Yield] "+" MultiplicativeExpression[?Yield]
+    AdditiveExpression[?Yield] "-" MultiplicativeExpression[?Yield]
+
+ShiftExpression[Yield]:
+    AdditiveExpression[?Yield]
+    ShiftExpression[?Yield] "<<" AdditiveExpression[?Yield]
+    ShiftExpression[?Yield] ">>" AdditiveExpression[?Yield]
+    ShiftExpression[?Yield] ">>>" AdditiveExpression[?Yield]
+
+RelationalExpression[In, Yield]:
+    ShiftExpression[?Yield]
+    RelationalExpression[?In, ?Yield] "<" ShiftExpression[?Yield]
+    RelationalExpression[?In, ?Yield] ">" ShiftExpression[?Yield]
+    RelationalExpression[?In, ?Yield] "<=" ShiftExpression[? Yield]
+    RelationalExpression[?In, ?Yield] ">=" ShiftExpression[?Yield]
+    RelationalExpression[?In, ?Yield] "instanceof" ShiftExpression[?Yield]
+    ParamSet(In) RelationalExpression[In, ?Yield] "in" ShiftExpression[?Yield]
+
+EqualityExpression[In, Yield]:
+    RelationalExpression[?In, ?Yield]
+    EqualityExpression[?In, ?Yield] "==" RelationalExpression[?In, ?Yield]
+    EqualityExpression[?In, ?Yield] "!=" RelationalExpression[?In, ?Yield]
+    EqualityExpression[?In, ?Yield] "===" RelationalExpression[?In, ?Yield]
+    EqualityExpression[?In, ?Yield] "!==" RelationalExpression[?In, ?Yield]
+
+BitwiseANDExpression[In, Yield]:
+    EqualityExpression[?In, ?Yield]
+    BitwiseANDExpression[?In, ?Yield] "&" EqualityExpression[?In, ?Yield]
+
+BitwiseXORExpression[In, Yield]:
+    BitwiseANDExpression[?In, ?Yield]
+    BitwiseXORExpression[?In, ?Yield] "^" BitwiseANDExpression[?In, ?Yield]
+
+BitwiseORExpression[In, Yield]:
+    BitwiseXORExpression[?In, ?Yield]
+    BitwiseORExpression[?In, ?Yield] "|" BitwiseXORExpression[?In, ?Yield]
+
+LogicalANDExpression[In, Yield]:
+    BitwiseORExpression[?In, ?Yield]
+    LogicalANDExpression[?In, ?Yield] "&&" BitwiseORExpression[?In, ?Yield]
+
+LogicalORExpression[In, Yield]:
+    LogicalANDExpression[?In, ?Yield]
+    LogicalORExpression[?In, ?Yield] "||" LogicalANDExpression[?In, ?Yield]
+
+ConditionalExpression[In, Yield]:
+    LogicalORExpression[?In, ?Yield]
+    LogicalORExpression[?In, ?Yield] "?" AssignmentExpression[In, ?Yield] ":" AssignmentExpression[?In, ?Yield]
+
+AssignmentExpression[In, Yield]:
+    ConditionalExpression[?In, ?Yield]
+    ParamSet(Yield) YieldExpression[?In]
+    ArrowFunction[?In, ?Yield]
+    LeftHandSideExpression[?Yield] "=" AssignmentExpression[?In, ?Yield]
+    LeftHandSideExpression[?Yield] AssignmentOperator AssignmentExpression[?In, ?Yield]
+
+Expression[In, Yield]:
+    AssignmentExpression[?In, ?Yield]
+    Expression[?In, ?Yield] "," AssignmentExpression[?In, ?Yield]
+
+Statement[Yield, Return]:
+    BlockStatement[?Yield, ?Return]
+    VariableStatement[?Yield]
+    EmptyStatement
+    ExpressionStatement[?Yield]
+    IfStatement[?Yield, ?Return]
+    BreakableStatement[?Yield, ?Return]
+    ContinueStatement[?Yield]
+    BreakStatement[?Yield]
+    ParamSet(Return) ReturnStatement[?Yield]
+    WithStatement[?Yield, ?Return]
+    LabelledStatement[?Yield, ?Return]
+    ThrowStatement[?Yield]
+    TryStatement[?Yield, ?Return]
+    DebuggerStatement
+
+Declaration[Yield]:
+    HoistableDeclaration[?Yield]
+    ClassDeclaration[?Yield]
+    LexicalDeclaration[In, ?Yield]
+
+HoistableDeclaration[Yield, Default]:
+    FunctionDeclaration[?Yield, ?Default]
+    GeneratorDeclaration[?Yield, ?Default]
+
+BreakableStatement[Yield, Return]:
+    IterationStatement[?Yield, ?Return]
+    SwitchStatement[?Yield, ?Return]
+
+BlockStatement[Yield, Return]:
+    Block[?Yield, ?Return]
+
+Block[Yield, Return]:
+    "{" StatementList[?Yield, ?Return]#opt "}"
+
+StatementList[Yield, Return]:
+    StatementListItem[?Yield, ?Return]
+    StatementList[?Yield, ?Return] StatementListItem[?Yield, ?Return]
+
+StatementListItem[Yield, Return]:
+    Statement[?Yield, ?Return]
+    Declaration[?Yield]
+
+LexicalDeclaration[In, Yield]:
+    LetOrConst BindingList[?In, ?Yield] ";"
+
+LetOrConst:
+    "let"
+    "const"
+
+BindingList[In, Yield]:
+    LexicalBinding[?In, ?Yield]
+    BindingList[?In, ?Yield] "," LexicalBinding[?In, ?Yield]
+
+LexicalBinding[In, Yield]:
+    BindingIdentifier[?Yield] Initializer[?In, ?Yield]#opt
+    BindingPattern[?Yield] Initializer[?In, ?Yield]
+
+VariableStatement[Yield]:
+    "var" VariableDeclarationList[In, ?Yield] ";"
+
+VariableDeclarationList[In, Yield]:
+    VariableDeclaration[?In, ?Yield]
+    VariableDeclarationList[?In, ?Yield] "," VariableDeclaration[?In, ?Yield]
+
+VariableDeclaration[In, Yield]:
+    BindingIdentifier[?Yield] Initializer[?In, ?Yield]#opt
+    BindingPattern[?Yield] Initializer[?In, ?Yield]
+
+BindingPattern[Yield]:
+    ObjectBindingPattern[?Yield]
+    ArrayBindingPattern[?Yield]
+
+ObjectBindingPattern[Yield]:
+    "{" "}"
+    "{" BindingPropertyList[?Yield] "}"
+    "{" BindingPropertyList[?Yield] "," "}"
+
+ArrayBindingPattern[Yield]:
+    "[" Elision#opt BindingRestElement[?Yield]#opt "]"
+    "[" BindingElementList[?Yield] "]"
+    "[" BindingElementList[?Yield] "," Elision#opt BindingRestElement[?Yield]#opt "]"
+
+BindingPropertyList[Yield]:
+    BindingProperty[?Yield]
+    BindingPropertyList[?Yield] "," BindingProperty[?Yield]
+
+BindingElementList[Yield]:
+    BindingElisionElement[?Yield]
+    BindingElementList[?Yield] "," BindingElisionElement[?Yield]
+
+BindingElisionElement[Yield]:
+    Elision#opt BindingElement[?Yield]
+
+BindingProperty[Yield]:
+    SingleNameBinding[?Yield]
+    PropertyName[?Yield] ":" BindingElement[?Yield]
+
+BindingElement[Yield]:
+    SingleNameBinding[?Yield]
+    BindingPattern[?Yield] Initializer[In, ?Yield]#opt
+
+SingleNameBinding[Yield]:
+    BindingIdentifier[?Yield] Initializer[In, ?Yield]#opt
+
+BindingRestElement[Yield]:
+    "..." BindingIdentifier[?Yield]
+
+EmptyStatement:
+    ";"
+
+ExpressionStatement[Yield]:
+
+IfStatement[Yield, Return]:
+    "if" "(" Expression[In, ?Yield] ")" Statement[?Yield, ?Return] "else" Statement[?Yield, ?Return]
+    "if" "(" Expression[In, ?Yield] ")" Statement[?Yield, ?Return]
+
+IterationStatement[Yield, Return]:
+    "do" Statement[?Yield, ?Return] "while" "(" Expression[In, ?Yield] ")" ";"
+    "while" "(" Expression[In, ?Yield] ")" Statement[?Yield, ?Return]
+
+ForDeclaration[Yield]:
+    LetOrConst ForBinding[?Yield]
+
+ForBinding[Yield]:
+    BindingIdentifier[?Yield]
+    BindingPattern[?Yield]
+
+ContinueStatement[Yield]:
+    "continue" ";"
+    "continue" NoLineTerminator() LabelIdentifier[?Yield] ";"
+
+BreakStatement[Yield]:
+    "break" ";"
+    "break" NoLineTerminator() LabelIdentifier[?Yield] ";"
+
+ReturnStatement[Yield]:
+    "return" ";"
+    "return" NoLineTerminator() Expression[In, ?Yield] ";"
+
+WithStatement[Yield, Return]:
+    "with" "(" Expression[In, ?Yield] ")" Statement[?Yield, ?Return]
+
+SwitchStatement[Yield, Return]:
+    "switch" "(" Expression[In, ?Yield] ")" CaseBlock[?Yield, ?Return]
+
+CaseBlock[Yield, Return]:
+    "{" CaseClauses[?Yield, ?Return]#opt "}"
+    "{" CaseClauses[?Yield, ?Return]#opt DefaultClause[?Yield, ?Return] CaseClauses[?Yield, ?Return]#opt "}"
+
+CaseClauses[Yield, Return]:
+    CaseClause[?Yield, ?Return]
+    CaseClauses[?Yield, ?Return] CaseClause[?Yield, ?Return]
+
+CaseClause[Yield, Return]:
+    "case" Expression[In, ?Yield] ":" StatementList[?Yield, ?Return]#opt
+
+DefaultClause[Yield, Return]:
+    "default" ":" StatementList[?Yield, ?Return]#opt
+
+LabelledStatement[Yield, Return]:
+    LabelIdentifier[?Yield] ":" LabelledItem[?Yield, ?Return]
+
+LabelledItem[Yield, Return]:
+    Statement[?Yield, ?Return]
+    FunctionDeclaration[?Yield]
+
+ThrowStatement[Yield]:
+    "throw" NoLineTerminator() Expression[In, ?Yield] ";"
+
+TryStatement[Yield, Return]:
+    "try" Block[?Yield, ?Return] Catch[?Yield, ?Return]
+    "try" Block[?Yield, ?Return] Finally[?Yield, ?Return]
+    "try" Block[?Yield, ?Return] Catch[?Yield, ?Return] Finally[?Yield, ?Return]
+
+Catch[Yield, Return]:
+    "catch" "(" CatchParameter[?Yield] ")" Block[?Yield, ?Return]
+
+Finally[Yield, Return]:
+    "finally" Block[?Yield, ?Return]
+
+CatchParameter[Yield]:
+    BindingIdentifier[?Yield]
+    BindingPattern[?Yield]
+
+DebuggerStatement:
+    "debugger" ";"
+
+FunctionDeclaration[Yield, Default]:
+    "function" BindingIdentifier[?Yield] "(" FormalParameters ")" "{" FunctionBody "}"
+    ParamSet(Default) "function" "(" FormalParameters ")" "{" FunctionBody "}"
+
+FunctionExpression:
+    "function" BindingIdentifier#opt "(" FormalParameters ")" "{" FunctionBody "}"
+
+StrictFormalParameters[Yield]:
+    FormalParameters[?Yield]
+
+FormalParameters[Yield]:
+    Empty()
+    FormalParameterList[?Yield]
+
+FormalParameterList[Yield]:
+    FunctionRestParameter[?Yield]
+    FormalsList[?Yield]
+    FormalsList[?Yield] "," FunctionRestParameter[?Yield]
+
+FormalsList[Yield]:
+    FormalParameter[?Yield]
+    FormalsList[?Yield] "," FormalParameter[?Yield]
+
+FunctionRestParameter[Yield]:
+    BindingRestElement[?Yield]
+
+FormalParameter[Yield]:
+    BindingElement[?Yield]
+
+FunctionBody[Yield]:
+    FunctionStatementList[?Yield]
+
+FunctionStatementList[Yield]:
+    StatementList[?Yield, Return]#opt
+
+ArrowFunction[In, Yield]:
+    ArrowParameters[?Yield] NoLineTerminator() "=>" ConciseBody[?In]
+
+ArrowParameters[Yield]:
+    BindingIdentifier[?Yield]
+    CoverParenthesizedExpressionAndArrowParameterList[?Yield]
+
+ConciseBody[In]:
+    LookaheadNotIn(["{"]) AssignmentExpression[?In]
+    "{" FunctionBody "}"
+
+MethodDefinition[Yield]:
+    PropertyName[?Yield] "(" StrictFormalParameters ")" "{" FunctionBody "}"
+    GeneratorMethod[?Yield]
+    "get" PropertyName[?Yield] "(" ")" "{" FunctionBody "}"
+    "set" PropertyName[?Yield] "(" PropertySetParameterList ")" "{" FunctionBody "}"
+
+PropertySetParameterList:
+    FormalParameter
+
+GeneratorMethod[Yield]:
+    "*" PropertyName[?Yield] "(" StrictFormalParameters[Yield] ")" "{" GeneratorBody "}"
+
+GeneratorDeclaration[Yield, Default]:
+    "function" "*" BindingIdentifier[?Yield] "(" FormalParameters[Yield] ")" "{" GeneratorBody "}"
+    ParamSet(Default) "function" "*" "(" FormalParameters[Yield] ")" "{" GeneratorBody "}"
+
+GeneratorExpression:
+    "function" "*" BindingIdentifier[Yield]#opt "(" FormalParameters[Yield] ")" "{" GeneratorBody "}"
+
+GeneratorBody:
+    FunctionBody[Yield]
+
+YieldExpression[In]:
+    "yield"
+    "yield" NoLineTerminator() AssignmentExpression[?In, Yield]
+    "yield" NoLineTerminator() "*" AssignmentExpression[?In, Yield]
+
+ClassDeclaration[Yield, Default]:
+    "class" BindingIdentifier[?Yield] ClassTail[?Yield]
+    ParamSet(Default) "class" ClassTail[?Yield]
+
+ClassExpression[Yield]:
+    "class" BindingIdentifier[?Yield]#opt ClassTail[?Yield]
+
+ClassTail[Yield]:
+    ClassHeritage[?Yield]#opt "{" ClassBody[?Yield]#opt "}"
+
+ClassHeritage[Yield]:
+    "extends" LeftHandSideExpression[?Yield]
+
+ClassBody[Yield]:
+    ClassElementList[?Yield]
+
+ClassElementList[Yield]:
+    ClassElement[?Yield]
+    ClassElementList[?Yield] ClassElement[?Yield]
+
+ClassElement[Yield]:
+    MethodDefinition[?Yield]
+    "static" MethodDefinition[?Yield]
+    ";"
+
+Script:
+    ScriptBody#opt
+
+ScriptBody:
+    StatementList
+
+Module:
+    ModuleBody#opt
+
+ModuleBody:
+    ModuleItemList
+
+ModuleItemList:
+    ModuleItem
+    ModuleItemList ModuleItem
+
+ModuleItem:
+    ImportDeclaration
+    ExportDeclaration
+    StatementListItem
+
+ImportDeclaration:
+    "import" ImportClause FromClause ";"
+    "import" ModuleSpecifier ";"
+
+ImportClause:
+    ImportedDefaultBinding
+    NameSpaceImport
+    NamedImports
+    ImportedDefaultBinding "," NameSpaceImport
+    ImportedDefaultBinding "," NamedImports
+
+ImportedDefaultBinding:
+    ImportedBinding
+
+NameSpaceImport:
+    "*" "as" ImportedBinding
+
+NamedImports:
+    "{" "}"
+    "{" ImportsList "}"
+    "{" ImportsList "," "}"
+
+FromClause:
+    "from" ModuleSpecifier
+
+ImportsList:
+    ImportSpecifier
+    ImportsList "," ImportSpecifier
+
+ImportSpecifier:
+    ImportedBinding
+    IdentifierName "as" ImportedBinding
+
+ModuleSpecifier:
+    StringLiteral
+
+ImportedBinding:
+    BindingIdentifier
+
+ExportDeclaration:
+    "export" "*" FromClause ";"
+    "export" ExportClause FromClause ";"
+    "export" ExportClause ";"
+    "export" VariableStatement
+    "export" Declaration
+    "export" "default" HoistableDeclaration[Default]
+    "export" "default" ClassDeclaration[Default]
+    "export" "default" LookaheadNotIn(["function","class"]) AssignmentExpression[In] ";"
+
+ExportClause:
+    "{" "}"
+    "{" ExportsList "}"
+    "{" ExportsList "," "}"
+
+ExportsList:
+    ExportSpecifier
+    ExportsList "," ExportSpecifier
+
+ExportSpecifier:
+    IdentifierName
+    IdentifierName "as" IdentifierName
+
+uri:
+    uriCharacters#opt
+
+uriCharacters:
+    uriCharacter uriCharacters#opt
+
+uriCharacter:
+    uriReserved
+    uriUnescaped
+    uriEscaped
+
+uriUnescaped:
+    uriAlpha
+    DecimalDigit
+    uriMark
+
+uriEscaped:
+    "%" HexDigit HexDigit
+
+Pattern[U]:
+    Disjunction[?U]
+
+Disjunction[U]:
+    Alternative[?U]
+    Alternative[?U] "|" Disjunction[?U]
+
+Alternative[U]:
+    Empty()
+    Alternative[?U] Term[?U]
+
+Term[U]:
+    Assertion[?U]
+    Atom[?U]
+    Atom[?U] Quantifier
+
+Assertion[U]:
+    "^"
+    "$"
+    "\\" "b"
+    "\\" "B"
+    "(" "?" "=" Disjunction[?U] ")"
+    "(" "?" "!" Disjunction[?U] ")"
+
+Quantifier:
+    QuantifierPrefix
+    QuantifierPrefix "?"
+
+QuantifierPrefix:
+    "*"
+    "+"
+    "?"
+    "{" DecimalDigits "}"
+    "{" DecimalDigits "," "}"
+    "{" DecimalDigits "," DecimalDigits "}"
+
+Atom[U]:
+    PatternCharacter
+    "."
+    "\\" AtomEscape[?U]
+    CharacterClass[?U]
+    "(" Disjunction[?U] ")"
+    "(" "?" ":" Disjunction[?U] ")"
+
+PatternCharacter:
+
+AtomEscape[U]:
+    DecimalEscape
+    CharacterEscape[?U]
+    CharacterClassEscape
+
+CharacterEscape[U]:
+    ControlEscape
+    "c" ControlLetter
+    HexEscapeSequence
+    RegExpUnicodeEscapeSequence[?U]
+    IdentityEscape[?U]
+
+RegExpUnicodeEscapeSequence[U]:
+    ParamSet(U) "u" LeadSurrogate "\\u" TrailSurrogate
+    ParamSet(U) "u" LeadSurrogate
+    ParamSet(U) "u" TrailSurrogate
+    ParamSet(U) "u" NonSurrogate
+    ParamNotSet(U) "u" Hex4Digits
+    ParamSet(U) "u{" HexDigits "}"
+
+LegacyOctalIntegerLiteral:
+    "0" OctalDigit
+    LegacyOctalIntegerLiteral OctalDigit
+
+NonOctalDecimalIntegerLiteral:
+    "0" NonOctalDigit
+    LegacyOctalLikeDecimalIntegerLiteral NonOctalDigit
+    NonOctalDecimalIntegerLiteral DecimalDigit
+
+LegacyOctalLikeDecimalIntegerLiteral:
+    "0" OctalDigit
+    LegacyOctalLikeDecimalIntegerLiteral OctalDigit
+
+LegacyOctalEscapeSequence:
+
+FirstCommentLine:
+    SingleLineDelimitedCommentChars
+
+SingleLineHTMLOpenComment:
+    "<!--" SingleLineCommentChars#opt
+
+SingleLineHTMLCloseComment:
+    LineTerminatorSequence HTMLCloseComment
+
+SingleLineDelimitedComment:
+    "/*" SingleLineDelimitedCommentChars#opt "*/"
+
+HTMLCloseComment:
+    WhiteSpaceSequence#opt SingleLineDelimitedCommentSequence#opt "-->" SingleLineCommentChars#opt
+
+SingleLineDelimitedCommentChars:
+    SingleLineNotAsteriskChar SingleLineDelimitedCommentChars#opt
+    "*" SingleLinePostAsteriskCommentChars#opt
+
+SingleLineNotAsteriskChar:
+
+SingleLinePostAsteriskCommentChars:
+    SingleLineNotForwardSlashOrAsteriskChar SingleLineDelimitedCommentChars#opt
+    "*" SingleLinePostAsteriskCommentChars#opt
+
+SingleLineNotForwardSlashOrAsteriskChar:
+
+WhiteSpaceSequence:
+    WhiteSpace WhiteSpaceSequence#opt
+
+SingleLineDelimitedCommentSequence:
+    SingleLineDelimitedComment WhiteSpaceSequence#opt SingleLineDelimitedCommentSequence#opt
+
+ExtendedTerm:
+    Assertion
+    AtomNoBrace Quantifier
+    Atom
+    QuantifiableAssertion Quantifier
+
+AtomNoBrace:
+    PatternCharacterNoBrace
+    "."
+    "\\" AtomEscape
+    CharacterClass
+    "(" Disjunction ")"
+    "(" "?" ":" Disjunction ")"
+
+PatternCharacterNoBrace:
+
+QuantifiableAssertion:
+    "(" "?" "=" Disjunction ")"
+    "(" "?" "!" Disjunction ")"
+
+IdentityEscape[U]:
+    ParamSet(U) SyntaxCharacter
+    ParamSet(U) "/"
+
+NonemptyClassRanges[U]:
+    ClassAtom[?U]
+    ClassAtom[?U] NonemptyClassRangesNoDash[?U]
+    ParamSet(U) ClassAtom[U] "-" ClassAtom[U] ClassRanges[U]
+    ParamNotSet(U) ClassAtomInRange "-" ClassAtomInRange ClassRanges
+
+NonemptyClassRangesNoDash[U]:
+    ClassAtom[?U]
+    ClassAtomNoDash[?U] NonemptyClassRangesNoDash[?U]
+    ParamSet(U) ClassAtomNoDash[U] "-" ClassAtom[U] ClassRanges[U]
+    ParamNotSet(U) ClassAtomNoDashInRange "-" ClassAtomInRange ClassRanges
+
+ClassAtom[U]:
+    "-"
+    ClassAtomNoDash[?U]
+
+ClassAtomNoDash[U]:
+
+ClassAtomInRange:
+    "-"
+    ClassAtomNoDashInRange
+
+ClassAtomNoDashInRange:
+
+ClassEscape[U]:
+    ParamSet(U) DecimalEscape
+    ParamSet(U) CharacterEscape[U]
+    ParamSet(U) CharacterClassEscape
+    ParamNotSet(U) DecimalEscape
+    "b"
+    ParamNotSet(U) CharacterClassEscape
+    ParamNotSet(U) CharacterEscape

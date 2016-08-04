@@ -1,0 +1,65 @@
+StatementListItem can produce the following node types:
+
+ref("Statement"),
+    ref("ExpressionStatement"),
+        Node "ExpressionStatement"
+    ref("BlockStatement"),
+        ref("Block"));
+            Node "Block"
+    ref("VariableStatement"),
+        Node "Var"
+    ref("EmptyStatement"),
+        Node "EmptyStatement"
+    ref("IfStatement"),
+        Node "IfStatement"
+    ref("BreakableStatement"),
+        ref("IterationStatement"),
+            ref("IterationStatement_do"),
+                Node "DoStatement"
+            ref("IterationStatement_while"),
+                Node "WhileStatement"
+            ref("IterationStatement_for"),
+                ref("IterationStatement_for_c"),
+                    Node "ForC"
+                ref("IterationStatement_for_in"),
+                    Node "ForIn"
+                ref("IterationStatement_for_of"),
+                    Node "ForOf"
+        ref("SwitchStatement"),
+            Node "SwitchStatement"
+    ref("ContinueStatement"),
+        Node "ContinueStatement"
+    ref("BreakStatement"),
+        Node "BreakStatement"
+    ref("ReturnStatement"),
+        Node "ReturnStatement"
+    ref("WithStatement"),
+        Node "WithStatement"
+    ref("LabelledStatement"),
+        Node "LabelledStatement"
+    ref("ThrowStatement"),
+        Node "ThrowStatement"
+    ref("TryStatement"),
+        Node "TryStatement"
+    ref("DebuggerStatement"),
+        Node "DebuggerStatement"
+ref("Declaration"),
+    ref("HoistableDeclaration"),
+        ref("FunctionDeclaration"),
+            ref("FunctionDeclaration_named"),
+                Node "FunctionDeclaration"
+            ref("FunctionDeclaration_unnamed"),
+                Node "FunctionDeclaration"
+        ref("GeneratorDeclaration"),
+            ref("GeneratorDeclaration_1"),
+                Node "GeneratorDeclaration"
+            ref("GeneratorDeclaration_2"),
+                Node "DefaultGeneratorDeclaration"
+    ref("ClassDeclaration"),
+        ref("ClassDeclaration_1"),
+            Node "ClassDeclaration"
+        ref("ClassDeclaration_2"),
+            Node "ClassDeclaration"
+    ref("LexicalDeclaration"),
+        Node "Let"
+        Node "Const"

@@ -1,0 +1,2722 @@
+grm.define("IdentifierReference",
+    sequence([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"IdentifierReference",2,0,1),
+    ]));
+
+grm.define("BindingIdentifier",
+    sequence([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"BindingIdentifier",2,0,1),
+    ]));
+
+grm.define("LabelIdentifier",
+    sequence([
+        pos,
+        ref("Identifier"),
+        pos,
+        spliceStringNode(2,"LabelIdentifier",2,0,1),
+    ]));
+
+grm.define("IdentifierName",
+    ref("Identifier"));
+
+grm.define("Identifier",
+    identifier_token);
+
+grm.define("This",
+    sequence([
+        pos,
+        keyword("this"),
+        pos,
+        spliceNode(2,"This",2,0,[]),
+    ]));
+
+grm.define("PrimaryExpression",
+    choice([
+        ref("This"),
+        ref("Literal"),
+        ref("IdentifierReference"),
+        ref("ArrayLiteral"),
+        ref("ObjectLiteral"),
+        ref("FunctionExpression"),
+        ref("ClassExpression"),
+        ref("GeneratorExpression"),
+        ref("ParenthesizedExpression"),
+    ]));
+
+grm.define("ParenthesizedExpression",
+    sequence([
+        keyword("("),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        spliceReplace(4,2),
+    ]));
+
+grm.define("Literal",
+    choice([
+        ref("NullLiteral"),
+        ref("BooleanLiteral"),
+        ref("NumericLiteral"),
+        ref("StringLiteral"),
+    ]));
+
+grm.define("NullLiteral",
+    sequence([
+        pos,
+        identifier("null"),
+        pos,
+        spliceNode(2,"NullLiteral",2,0,[]),
+    ]));
+
+grm.define("BooleanLiteral",
+    choice([
+        sequence([
+            pos,
+            identifier("true"),
+            pos,
+            spliceNode(2,"True",2,0,[]),
+        ]),
+        sequence([
+            pos,
+            identifier("false"),
+            pos,
+            spliceNode(2,"False",2,0,[]),
+        ]),
+    ]));
+
+grm.define("NumericLiteral",
+    numeric_literal_token);
+
+grm.define("StringLiteral",
+    string_literal_token);
+
+grm.define("ArrayLiteral",
+    sequence([
+        pos,
+        keyword("["),
+        whitespace,
+        list(
+            value(null),
+            choice([
+                sequence([
+                    pos,
+                    keyword(","),
+                    pos,
+                    whitespace,
+                    spliceNode(3,"Elision",3,1,[]),
+                ]),
+                sequence([
+                    ref("AssignmentExpression"),
+                    whitespace,
+                    opt(sequence([
+                        keyword(","),
+                        whitespace,
+                        pop,
+                    ])),
+                    spliceReplace(2,2),
+                ]),
+                sequence([
+                    ref("SpreadElement"),
+                    whitespace,
+                    opt(sequence([
+                        keyword(","),
+                        whitespace,
+                        pop,
+                    ])),
+                    spliceReplace(2,2),
+                ]),
+            ])
+        ),
+        keyword("]"),
+        pos,
+        spliceNode(5,"ArrayLiteral",5,0,[2]),
+    ]));
+
+grm.define("SpreadElement",
+    sequence([
+        pos,
+        keyword("..."),
+        whitespace,
+        ref("AssignmentExpression"),
+        pos,
+        spliceNode(4,"SpreadElement",4,0,[1]),
+    ]));
+
+grm.define("ObjectLiteral",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        choice([
+            sequence([
+                ref("PropertyDefinitionList"),
+                whitespace,
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    spliceNull(1),
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        keyword("}"),
+        pos,
+        spliceNode(5,"ObjectLiteral",5,0,[2]),
+    ]));
+
+grm.define("PropertyDefinitionList",
+    list(
+        ref("PropertyDefinition"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("PropertyDefinition"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("PropertyDefinition_colon",
+    sequence([
+        pos,
+        ref("PropertyName"),
+        whitespace,
+        keyword(":"),
+        whitespace,
+        ref("AssignmentExpression"),
+        pos,
+        spliceNode(6,"ColonPropertyDefinition",6,0,[5,1]),
+    ]));
+
+grm.define("PropertyDefinition",
+    choice([
+        ref("PropertyDefinition_colon"),
+        ref("CoverInitializedName"),
+        ref("MethodDefinition"),
+        ref("IdentifierReference"),
+    ]));
+
+grm.define("PropertyName",
+    choice([
+        ref("LiteralPropertyName"),
+        ref("ComputedPropertyName"),
+    ]));
+
+grm.define("LiteralPropertyName",
+    choice([
+        ref("IdentifierName"),
+        ref("StringLiteral"),
+        ref("NumericLiteral"),
+    ]));
+
+grm.define("ComputedPropertyName",
+    sequence([
+        pos,
+        keyword("["),
+        whitespace,
+        ref("AssignmentExpression"),
+        whitespace,
+        keyword("]"),
+        pos,
+        spliceNode(6,"ComputedPropertyName",6,0,[3]),
+    ]));
+
+grm.define("CoverInitializedName",
+    sequence([
+        pos,
+        ref("IdentifierReference"),
+        whitespace,
+        ref("Initializer"),
+        pos,
+        spliceNode(4,"CoverInitializedName",4,0,[3,1]),
+    ]));
+
+grm.define("Initializer",
+    sequence([
+        keyword("="),
+        whitespace,
+        ref("AssignmentExpression"),
+        spliceReplace(2,0),
+    ]));
+
+grm.define("MemberExpression_new",
+    sequence([
+        pos,
+        keyword("new"),
+        whitespace,
+        ref("MemberExpression"),
+        whitespace,
+        ref("Arguments"),
+        pos,
+        spliceNode(6,"NewExpression",6,0,[3,1]),
+    ]));
+
+grm.define("MemberExpression_start",
+    choice([
+        ref("PrimaryExpression"),
+        ref("SuperProperty"),
+        ref("MetaProperty"),
+        ref("MemberExpression_new"),
+    ]));
+
+grm.define("MemberExpression",
+    sequence([
+        pos,
+        ref("MemberExpression_start"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                keyword("["),
+                whitespace,
+                ref("Expression"),
+                whitespace,
+                keyword("]"),
+                pos,
+                spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("."),
+                whitespace,
+                ref("IdentifierName"),
+                pos,
+                whitespace,
+                spliceNode(6,"MemberAccessIdent",7,1,[6,2]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("SuperProperty",
+    choice([
+        sequence([
+            pos,
+            keyword("super"),
+            whitespace,
+            keyword("["),
+            whitespace,
+            ref("Expression"),
+            whitespace,
+            keyword("]"),
+            pos,
+            spliceNode(8,"SuperPropertyExpr",8,0,[3]),
+        ]),
+        sequence([
+            pos,
+            keyword("super"),
+            whitespace,
+            keyword("."),
+            whitespace,
+            ref("Identifier"),
+            pos,
+            spliceNode(6,"SuperPropertyIdent",6,0,[1]),
+        ]),
+    ]));
+
+grm.define("MetaProperty",
+    ref("NewTarget"));
+
+grm.define("NewTarget",
+    sequence([
+        pos,
+        keyword("new"),
+        whitespace,
+        keyword("."),
+        whitespace,
+        identifier("target"),
+        pos,
+        spliceNode(6,"NewTarget",6,0,[]),
+    ]));
+
+grm.define("NewExpression",
+    choice([
+        ref("MemberExpression"),
+        sequence([
+            pos,
+            keyword("new"),
+            whitespace,
+            ref("NewExpression"),
+            value(null),
+            pos,
+            spliceNode(5,"NewExpression",5,0,[2,1]),
+        ]),
+    ]));
+
+grm.define("CallExpression_start",
+    choice([
+        ref("SuperCall"),
+        sequence([
+            pos,
+            ref("MemberExpression"),
+            whitespace,
+            ref("Arguments"),
+            pos,
+            spliceNode(4,"Call",4,0,[3,1]),
+        ]),
+    ]));
+
+grm.define("CallExpression",
+    sequence([
+        pos,
+        ref("CallExpression_start"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                ref("Arguments"),
+                pos,
+                spliceNode(3,"Call",4,0,[3,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("["),
+                whitespace,
+                ref("Expression"),
+                whitespace,
+                keyword("]"),
+                pos,
+                spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("."),
+                whitespace,
+                ref("IdentifierName"),
+                pos,
+                spliceNode(5,"MemberAccessIdent",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("SuperCall",
+    sequence([
+        pos,
+        keyword("super"),
+        whitespace,
+        ref("Arguments"),
+        pos,
+        spliceNode(4,"SuperCall",4,0,[1]),
+    ]));
+
+grm.define("Arguments",
+    choice([
+        sequence([
+            pos,
+            keyword("("),
+            whitespace,
+            pos,
+            keyword(")"),
+            pos,
+            value(null),
+            spliceEmptyListNode(0,3,3),
+            spliceNode(6,"Arguments",6,1,[0]),
+        ]),
+        sequence([
+            pos,
+            keyword("("),
+            whitespace,
+            ref("ArgumentList"),
+            whitespace,
+            keyword(")"),
+            pos,
+            spliceNode(6,"Arguments",6,0,[3]),
+        ]),
+    ]));
+
+grm.define("ArgumentList_item",
+    choice([
+        sequence([
+            pos,
+            keyword("..."),
+            whitespace,
+            ref("AssignmentExpression"),
+            pos,
+            spliceNode(4,"SpreadElement",4,0,[1]),
+        ]),
+        ref("AssignmentExpression"),
+    ]));
+
+grm.define("ArgumentList",
+    list(
+        ref("ArgumentList_item"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("ArgumentList_item"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("LeftHandSideExpression",
+    choice([
+        ref("CallExpression"),
+        ref("NewExpression"),
+    ]));
+
+grm.define("PostfixExpression",
+    sequence([
+        pos,
+        ref("LeftHandSideExpression"),
+        choice([
+            sequence([
+                whitespaceNoNewline,
+                keyword("++"),
+                pos,
+                spliceNode(4,"PostIncrement",4,0,[3]),
+            ]),
+            sequence([
+                whitespaceNoNewline,
+                keyword("--"),
+                pos,
+                spliceNode(4,"PostDecrement",4,0,[3]),
+            ]),
+            spliceReplace(1,0),
+        ]),
+    ]));
+
+grm.define("UnaryExpression",
+    choice([
+        sequence([
+            pos,
+            keyword("delete"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"Delete",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("void"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"Void",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("typeof"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"TypeOf",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("++"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"PreIncrement",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("--"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"PreDecrement",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("+"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"UnaryPlus",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("-"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"UnaryMinus",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("~"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"UnaryBitwiseNot",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("!"),
+            whitespace,
+            ref("UnaryExpression"),
+            pos,
+            spliceNode(4,"UnaryLogicalNot",4,0,[1]),
+        ]),
+        ref("PostfixExpression"),
+    ]));
+
+grm.define("MultiplicativeExpression",
+    sequence([
+        pos,
+        ref("UnaryExpression"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                keyword("*"),
+                whitespace,
+                ref("UnaryExpression"),
+                pos,
+                spliceNode(5,"Multiply",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("/"),
+                whitespace,
+                ref("UnaryExpression"),
+                pos,
+                spliceNode(5,"Divide",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("%"),
+                whitespace,
+                ref("UnaryExpression"),
+                pos,
+                spliceNode(5,"Modulo",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("AdditiveExpression",
+    sequence([
+        pos,
+        ref("MultiplicativeExpression"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                keyword("+"),
+                whitespace,
+                ref("MultiplicativeExpression"),
+                pos,
+                spliceNode(5,"Add",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("-"),
+                whitespace,
+                ref("MultiplicativeExpression"),
+                pos,
+                spliceNode(5,"Subtract",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("ShiftExpression",
+    sequence([
+        pos,
+        ref("AdditiveExpression"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                keyword("<<"),
+                whitespace,
+                ref("AdditiveExpression"),
+                pos,
+                spliceNode(5,"LeftShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword(">>>"),
+                whitespace,
+                ref("AdditiveExpression"),
+                pos,
+                spliceNode(5,"UnsignedRightShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword(">>"),
+                whitespace,
+                ref("AdditiveExpression"),
+                pos,
+                spliceNode(5,"SignedRightShift",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("RelationalExpression",
+    sequence([
+        pos,
+        ref("ShiftExpression"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                keyword("<="),
+                whitespace,
+                ref("ShiftExpression"),
+                pos,
+                spliceNode(5,"LessEqual",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword(">="),
+                whitespace,
+                ref("ShiftExpression"),
+                pos,
+                spliceNode(5,"GreaterEqual",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("<"),
+                whitespace,
+                ref("ShiftExpression"),
+                pos,
+                spliceNode(5,"LessThan",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword(">"),
+                whitespace,
+                ref("ShiftExpression"),
+                pos,
+                spliceNode(5,"GreaterThan",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("instanceof"),
+                whitespace,
+                ref("ShiftExpression"),
+                pos,
+                spliceNode(5,"InstanceOf",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("in"),
+                whitespace,
+                ref("ShiftExpression"),
+                pos,
+                spliceNode(5,"In",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("EqualityExpression",
+    sequence([
+        pos,
+        ref("RelationalExpression"),
+        repeat(choice([
+            sequence([
+                whitespace,
+                keyword("==="),
+                whitespace,
+                ref("RelationalExpression"),
+                pos,
+                spliceNode(5,"StrictEquals",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("!=="),
+                whitespace,
+                ref("RelationalExpression"),
+                pos,
+                spliceNode(5,"StrictNotEquals",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("=="),
+                whitespace,
+                ref("RelationalExpression"),
+                pos,
+                spliceNode(5,"AbstractEquals",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("!="),
+                whitespace,
+                ref("RelationalExpression"),
+                pos,
+                spliceNode(5,"AbstractNotEquals",6,0,[5,1]),
+            ]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("BitwiseANDExpression",
+    sequence([
+        pos,
+        ref("EqualityExpression"),
+        repeat(sequence([
+            whitespace,
+            keyword("&"),
+            whitespace,
+            ref("EqualityExpression"),
+            pos,
+            spliceNode(5,"BitwiseAND",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("BitwiseXORExpression",
+    sequence([
+        pos,
+        ref("BitwiseANDExpression"),
+        repeat(sequence([
+            whitespace,
+            keyword("^"),
+            whitespace,
+            ref("BitwiseANDExpression"),
+            pos,
+            spliceNode(5,"BitwiseXOR",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("BitwiseORExpression",
+    sequence([
+        pos,
+        ref("BitwiseXORExpression"),
+        repeat(sequence([
+            whitespace,
+            keyword("|"),
+            whitespace,
+            ref("BitwiseXORExpression"),
+            pos,
+            spliceNode(5,"BitwiseOR",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("LogicalANDExpression",
+    sequence([
+        pos,
+        ref("BitwiseORExpression"),
+        repeat(sequence([
+            whitespace,
+            keyword("&&"),
+            whitespace,
+            ref("BitwiseORExpression"),
+            pos,
+            spliceNode(5,"LogicalAND",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("LogicalORExpression",
+    sequence([
+        pos,
+        ref("LogicalANDExpression"),
+        repeat(sequence([
+            whitespace,
+            keyword("||"),
+            whitespace,
+            ref("LogicalANDExpression"),
+            pos,
+            spliceNode(5,"LogicalOR",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("ConditionalExpression",
+    sequence([
+        pos,
+        ref("LogicalORExpression"),
+        choice([
+            sequence([
+                whitespace,
+                keyword("?"),
+                whitespace,
+                ref("AssignmentExpression"),
+                whitespace,
+                keyword(":"),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(9,"Conditional",10,0,[9,5,1]),
+            ]),
+            empty,
+        ]),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("AssignmentExpression_plain",
+    sequence([
+        pos,
+        ref("LeftHandSideExpression"),
+        choice([
+            sequence([
+                whitespace,
+                keyword("="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"Assign",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("*="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignMultiply",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("/="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignDivide",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("%="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignModulo",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("+="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignAdd",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("-="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignSubtract",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("<<="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignLeftShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword(">>="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignSignedRightShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword(">>>="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignUnsignedRightShift",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("&="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignBitwiseAND",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("^="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignBitwiseXOR",6,0,[5,1]),
+            ]),
+            sequence([
+                whitespace,
+                keyword("|="),
+                whitespace,
+                ref("AssignmentExpression"),
+                pos,
+                spliceNode(5,"AssignBitwiseOR",6,0,[5,1]),
+            ]),
+        ]),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("AssignmentExpression",
+    choice([
+        ref("ArrowFunction"),
+        ref("AssignmentExpression_plain"),
+        ref("ConditionalExpression"),
+        ref("YieldExpression"),
+    ]));
+
+grm.define("Expression",
+    sequence([
+        pos,
+        ref("AssignmentExpression"),
+        repeat(sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("AssignmentExpression"),
+            pos,
+            spliceNode(5,"Comma",6,0,[5,1]),
+        ])),
+        spliceReplace(1,0),
+    ]));
+
+grm.define("Statement",
+    choice([
+        ref("ExpressionStatement"),
+        ref("BlockStatement"),
+        ref("VariableStatement"),
+        ref("EmptyStatement"),
+        ref("IfStatement"),
+        ref("BreakableStatement"),
+        ref("ContinueStatement"),
+        ref("BreakStatement"),
+        ref("ReturnStatement"),
+        ref("WithStatement"),
+        ref("LabelledStatement"),
+        ref("ThrowStatement"),
+        ref("TryStatement"),
+        ref("DebuggerStatement"),
+    ]));
+
+grm.define("Declaration",
+    choice([
+        ref("HoistableDeclaration"),
+        ref("ClassDeclaration"),
+        ref("LexicalDeclaration"),
+    ]));
+
+grm.define("HoistableDeclaration",
+    choice([
+        ref("FunctionDeclaration"),
+        ref("GeneratorDeclaration"),
+    ]));
+
+grm.define("BreakableStatement",
+    choice([
+        ref("IterationStatement"),
+        ref("SwitchStatement"),
+    ]));
+
+grm.define("BlockStatement",
+    ref("Block"));
+
+grm.define("Block",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        choice([
+            sequence([
+                ref("StatementList"),
+                whitespace,
+                spliceReplace(1,1),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        keyword("}"),
+        pos,
+        spliceNode(5,"Block",5,0,[2]),
+    ]));
+
+grm.define("StatementList",
+    list(
+        ref("StatementListItem"),
+        sequence([
+            whitespace,
+            ref("StatementListItem"),
+            spliceReplace(1,0),
+        ])
+    ));
+
+grm.define("StatementListItem",
+    choice([
+        ref("Statement"),
+        ref("Declaration"),
+    ]));
+
+grm.define("LexicalDeclaration",
+    choice([
+        sequence([
+            pos,
+            keyword("let"),
+            whitespace,
+            ref("BindingList"),
+            whitespace,
+            keyword(";"),
+            pos,
+            spliceNode(6,"Let",6,0,[3]),
+        ]),
+        sequence([
+            pos,
+            keyword("const"),
+            whitespace,
+            ref("BindingList"),
+            whitespace,
+            keyword(";"),
+            pos,
+            spliceNode(6,"Const",6,0,[3]),
+        ]),
+    ]));
+
+grm.define("BindingList",
+    list(
+        ref("LexicalBinding"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("LexicalBinding"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("LexicalBinding_identifier",
+    sequence([
+        pos,
+        ref("BindingIdentifier"),
+        opt(sequence([
+            whitespace,
+            ref("Initializer"),
+            spliceReplace(1,0),
+        ])),
+        pos,
+        spliceNode(3,"LexicalIdentifierBinding",3,0,[2,1]),
+    ]));
+
+grm.define("LexicalBinding_pattern",
+    sequence([
+        pos,
+        ref("BindingPattern"),
+        whitespace,
+        ref("Initializer"),
+        pos,
+        spliceNode(4,"LexicalPatternBinding",4,0,[3,1]),
+    ]));
+
+grm.define("LexicalBinding",
+    choice([
+        ref("LexicalBinding_identifier"),
+        ref("LexicalBinding_pattern"),
+    ]));
+
+grm.define("VariableStatement",
+    sequence([
+        pos,
+        keyword("var"),
+        whitespace,
+        ref("VariableDeclarationList"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(6,"Var",6,0,[3]),
+    ]));
+
+grm.define("VariableDeclarationList",
+    list(
+        ref("VariableDeclaration"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("VariableDeclaration"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("VariableDeclaration_identifier",
+    sequence([
+        pos,
+        ref("BindingIdentifier"),
+        choice([
+            sequence([
+                whitespace,
+                ref("Initializer"),
+                pos,
+                spliceNode(4,"VarIdentifier",4,0,[3,1]),
+            ]),
+            sequence([
+                value(null),
+                pos,
+                spliceNode(3,"VarIdentifier",3,0,[2,1]),
+            ]),
+        ]),
+    ]));
+
+grm.define("VariableDeclaration_pattern",
+    sequence([
+        pos,
+        ref("BindingPattern"),
+        whitespace,
+        ref("Initializer"),
+        pos,
+        spliceNode(4,"VarPattern",4,0,[3,1]),
+    ]));
+
+grm.define("VariableDeclaration",
+    choice([
+        ref("VariableDeclaration_identifier"),
+        ref("VariableDeclaration_pattern"),
+    ]));
+
+grm.define("BindingPattern",
+    choice([
+        ref("ObjectBindingPattern"),
+        ref("ArrayBindingPattern"),
+    ]));
+
+grm.define("ObjectBindingPattern",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        pos,
+        choice([
+            sequence([
+                ref("BindingPropertyList"),
+                whitespace,
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    spliceNull(1),
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        keyword("}"),
+        pos,
+        spliceNode(6,"ObjectBindingPattern",6,0,[2]),
+    ]));
+
+grm.define("ArrayBindingPattern",
+    sequence([
+        pos,
+        keyword("["),
+        whitespace,
+        ref("BindingElementList"),
+        whitespace,
+        opt(sequence([
+            ref("BindingRestElement"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("]"),
+        pos,
+        spliceNode(7,"ArrayBindingPattern",7,0,[4,2]),
+    ]));
+
+grm.define("BindingPropertyList",
+    list(
+        ref("BindingProperty"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("BindingProperty"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("BindingElementList",
+    list(
+        opt(sequence([
+            pos,
+            keyword(","),
+            pos,
+            spliceNode(2,"Elision",2,0,[]),
+        ])),
+        choice([
+            sequence([
+                whitespace,
+                pos,
+                keyword(","),
+                pos,
+                spliceNode(3,"Elision",2,0,[]),
+            ]),
+            sequence([
+                whitespace,
+                ref("BindingElement"),
+                opt(sequence([
+                    whitespace,
+                    keyword(","),
+                    pop,
+                ])),
+                spliceReplace(2,1),
+            ]),
+        ])
+    ));
+
+grm.define("BindingProperty",
+    choice([
+        sequence([
+            pos,
+            ref("PropertyName"),
+            whitespace,
+            keyword(":"),
+            whitespace,
+            ref("BindingElement"),
+            pos,
+            spliceNode(6,"BindingProperty",6,0,[5,1]),
+        ]),
+        ref("SingleNameBinding"),
+    ]));
+
+grm.define("BindingElement",
+    choice([
+        ref("SingleNameBinding"),
+        sequence([
+            pos,
+            ref("BindingPattern"),
+            choice([
+                sequence([
+                    whitespace,
+                    ref("Initializer"),
+                    pos,
+                    spliceNode(4,"BindingPatternInit",4,0,[3,1]),
+                ]),
+                spliceReplace(1,0),
+            ]),
+        ]),
+    ]));
+
+grm.define("SingleNameBinding",
+    sequence([
+        pos,
+        ref("BindingIdentifier"),
+        choice([
+            sequence([
+                whitespace,
+                ref("Initializer"),
+                pos,
+                spliceNode(2,"SingleNameBinding",4,0,[3,1]),
+            ]),
+            sequence([
+                value(null),
+                spliceReplace(0,1),
+            ]),
+        ]),
+        spliceReplace(2,0),
+    ]));
+
+grm.define("BindingRestElement",
+    sequence([
+        pos,
+        keyword("..."),
+        whitespace,
+        ref("BindingIdentifier"),
+        pos,
+        spliceNode(4,"BindingRestElement",4,0,[1]),
+    ]));
+
+grm.define("EmptyStatement",
+    sequence([
+        pos,
+        keyword(";"),
+        pos,
+        spliceNode(2,"EmptyStatement",2,0,[]),
+    ]));
+
+grm.define("ExpressionStatement",
+    sequence([
+        not(keyword("{")),
+        not(keyword("function")),
+        not(keyword("class")),
+        not(sequence([
+            keyword("let"),
+            whitespace,
+            keyword("["),
+        ])),
+        pos,
+        ref("Expression"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(4,"ExpressionStatement",4,0,[3]),
+    ]));
+
+grm.define("IfStatement",
+    sequence([
+        pos,
+        keyword("if"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("Statement"),
+        opt(sequence([
+            whitespace,
+            keyword("else"),
+            whitespace,
+            ref("Statement"),
+            spliceReplace(3,0),
+        ])),
+        pos,
+        spliceNode(11,"IfStatement",11,0,[6,2,1]),
+    ]));
+
+grm.define("IterationStatement_do",
+    sequence([
+        pos,
+        keyword("do"),
+        whitespace,
+        ref("Statement"),
+        whitespace,
+        keyword("while"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(14,"DoStatement",14,0,[11,5]),
+    ]));
+
+grm.define("IterationStatement_while",
+    sequence([
+        pos,
+        keyword("while"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("Statement"),
+        pos,
+        spliceNode(10,"WhileStatement",10,0,[5,1]),
+    ]));
+
+grm.define("IterationStatement_for_c",
+    sequence([
+        pos,
+        keyword("for"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        choice([
+            sequence([
+                not(keyword("let")),
+                not(keyword("[")),
+                ref("Expression"),
+                whitespace,
+                keyword(";"),
+                whitespace,
+                spliceReplace(3,3),
+            ]),
+            sequence([
+                pos,
+                keyword("var"),
+                whitespace,
+                ref("VariableDeclarationList"),
+                pos,
+                whitespace,
+                keyword(";"),
+                whitespace,
+                spliceNode(7,"Var",7,3,[4]),
+            ]),
+            sequence([
+                ref("LexicalDeclaration"),
+                whitespace,
+                spliceReplace(1,1),
+            ]),
+            sequence([
+                keyword(";"),
+                spliceNull(0),
+            ]),
+        ]),
+        opt(ref("Expression")),
+        whitespace,
+        keyword(";"),
+        whitespace,
+        opt(sequence([
+            ref("Expression"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword(")"),
+        whitespace,
+        ref("Statement"),
+        pos,
+        spliceNode(14,"ForC",14,0,[9,8,4,1]),
+    ]));
+
+grm.define("IterationStatement_for_in",
+    sequence([
+        pos,
+        keyword("for"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        choice([
+            sequence([
+                not(keyword("let")),
+                not(keyword("[")),
+                ref("LeftHandSideExpression"),
+            ]),
+            sequence([
+                pos,
+                keyword("var"),
+                whitespace,
+                ref("ForBinding"),
+                pos,
+                spliceNode(4,"VarForDeclaration",4,0,[1]),
+            ]),
+            ref("ForDeclaration"),
+        ]),
+        whitespace,
+        keyword("in"),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("Statement"),
+        pos,
+        spliceNode(14,"ForIn",14,0,[9,5,1]),
+    ]));
+
+grm.define("IterationStatement_for_of",
+    sequence([
+        pos,
+        keyword("for"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        choice([
+            sequence([
+                not(keyword("let")),
+                not(keyword("[")),
+                ref("LeftHandSideExpression"),
+            ]),
+            sequence([
+                pos,
+                keyword("var"),
+                whitespace,
+                ref("ForBinding"),
+                pos,
+                spliceNode(4,"VarForDeclaration",4,0,[1]),
+            ]),
+            ref("ForDeclaration"),
+        ]),
+        whitespace,
+        identifier("of"),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("Statement"),
+        pos,
+        spliceNode(14,"ForOf",14,0,[9,5,1]),
+    ]));
+
+grm.define("IterationStatement_for",
+    choice([
+        ref("IterationStatement_for_c"),
+        ref("IterationStatement_for_in"),
+        ref("IterationStatement_for_of"),
+    ]));
+
+grm.define("IterationStatement",
+    choice([
+        ref("IterationStatement_do"),
+        ref("IterationStatement_while"),
+        ref("IterationStatement_for"),
+    ]));
+
+grm.define("ForDeclaration",
+    choice([
+        sequence([
+            pos,
+            keyword("let"),
+            whitespace,
+            ref("ForBinding"),
+            pos,
+            spliceNode(4,"LetForDeclaration",4,0,[1]),
+        ]),
+        sequence([
+            pos,
+            keyword("const"),
+            whitespace,
+            ref("ForBinding"),
+            pos,
+            spliceNode(4,"ConstForDeclaration",4,0,[1]),
+        ]),
+    ]));
+
+grm.define("ForBinding",
+    choice([
+        ref("BindingIdentifier"),
+        ref("BindingPattern"),
+    ]));
+
+grm.define("ContinueStatement",
+    choice([
+        sequence([
+            pos,
+            keyword("continue"),
+            whitespace,
+            value(null),
+            keyword(";"),
+            pos,
+            spliceNode(5,"ContinueStatement",5,0,[2]),
+        ]),
+        sequence([
+            pos,
+            keyword("continue"),
+            whitespaceNoNewline,
+            ref("LabelIdentifier"),
+            whitespace,
+            keyword(";"),
+            pos,
+            spliceNode(6,"ContinueStatement",6,0,[3]),
+        ]),
+    ]));
+
+grm.define("BreakStatement",
+    choice([
+        sequence([
+            pos,
+            keyword("break"),
+            whitespace,
+            value(null),
+            keyword(";"),
+            pos,
+            spliceNode(5,"BreakStatement",5,0,[2]),
+        ]),
+        sequence([
+            pos,
+            keyword("break"),
+            whitespaceNoNewline,
+            ref("LabelIdentifier"),
+            whitespace,
+            keyword(";"),
+            pos,
+            spliceNode(6,"BreakStatement",6,0,[3]),
+        ]),
+    ]));
+
+grm.define("ReturnStatement",
+    choice([
+        sequence([
+            pos,
+            keyword("return"),
+            whitespace,
+            value(null),
+            keyword(";"),
+            pos,
+            spliceNode(5,"ReturnStatement",5,0,[2]),
+        ]),
+        sequence([
+            pos,
+            keyword("return"),
+            whitespaceNoNewline,
+            ref("Expression"),
+            whitespace,
+            keyword(";"),
+            pos,
+            spliceNode(6,"ReturnStatement",6,0,[3]),
+        ]),
+    ]));
+
+grm.define("WithStatement",
+    sequence([
+        pos,
+        keyword("with"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("Statement"),
+        pos,
+        spliceNode(10,"WithStatement",10,0,[5,1]),
+    ]));
+
+grm.define("SwitchStatement",
+    sequence([
+        pos,
+        keyword("switch"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("CaseBlock"),
+        pos,
+        spliceNode(10,"SwitchStatement",10,0,[5,1]),
+    ]));
+
+grm.define("CaseBlock_1",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        pos,
+        choice([
+            ref("CaseClauses"),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(7,"CaseBlock1",7,0,[3]),
+    ]));
+
+grm.define("CaseBlock_2",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        opt(ref("CaseClauses")),
+        whitespace,
+        ref("DefaultClause"),
+        whitespace,
+        opt(ref("CaseClauses")),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(10,"CaseBlock2",10,0,[7,5,3]),
+    ]));
+
+grm.define("CaseBlock",
+    choice([
+        ref("CaseBlock_1"),
+        ref("CaseBlock_2"),
+    ]));
+
+grm.define("CaseClauses",
+    list(
+        ref("CaseClause"),
+        sequence([
+            whitespace,
+            ref("CaseClause"),
+            spliceReplace(1,0),
+        ])
+    ));
+
+grm.define("CaseClause",
+    sequence([
+        pos,
+        keyword("case"),
+        whitespace,
+        ref("Expression"),
+        whitespace,
+        keyword(":"),
+        whitespace,
+        ref("StatementList"),
+        pos,
+        spliceNode(8,"CaseClause",8,0,[5,1]),
+    ]));
+
+grm.define("DefaultClause",
+    sequence([
+        pos,
+        keyword("default"),
+        whitespace,
+        keyword(":"),
+        whitespace,
+        ref("StatementList"),
+        pos,
+        whitespace,
+        spliceNode(7,"DefaultClause",7,1,[2]),
+    ]));
+
+grm.define("LabelledStatement",
+    sequence([
+        pos,
+        ref("LabelIdentifier"),
+        whitespace,
+        keyword(":"),
+        whitespace,
+        ref("LabelledItem"),
+        pos,
+        spliceNode(6,"LabelledStatement",6,0,[5,1]),
+    ]));
+
+grm.define("LabelledItem",
+    choice([
+        ref("Statement"),
+        ref("FunctionDeclaration"),
+    ]));
+
+grm.define("ThrowStatement",
+    sequence([
+        pos,
+        keyword("throw"),
+        whitespaceNoNewline,
+        ref("Expression"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(6,"ThrowStatement",6,0,[3]),
+    ]));
+
+grm.define("TryStatement",
+    sequence([
+        pos,
+        keyword("try"),
+        whitespace,
+        ref("Block"),
+        choice([
+            sequence([
+                whitespace,
+                value(null),
+                ref("Finally"),
+            ]),
+            sequence([
+                whitespace,
+                ref("Catch"),
+                opt(sequence([
+                    whitespace,
+                    ref("Finally"),
+                    spliceReplace(1,0),
+                ])),
+            ]),
+        ]),
+        pos,
+        spliceNode(7,"TryStatement",7,0,[4,2,1]),
+    ]));
+
+grm.define("Catch",
+    sequence([
+        pos,
+        keyword("catch"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("CatchParameter"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        ref("Block"),
+        pos,
+        spliceNode(10,"Catch",10,0,[5,1]),
+    ]));
+
+grm.define("Finally",
+    sequence([
+        pos,
+        keyword("finally"),
+        whitespace,
+        ref("Block"),
+        pos,
+        spliceNode(4,"Finally",4,0,[1]),
+    ]));
+
+grm.define("CatchParameter",
+    choice([
+        ref("BindingIdentifier"),
+        ref("BindingPattern"),
+    ]));
+
+grm.define("DebuggerStatement",
+    sequence([
+        pos,
+        keyword("debugger"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(4,"DebuggerStatement",4,0,[]),
+    ]));
+
+grm.define("FunctionDeclaration_named",
+    sequence([
+        pos,
+        keyword("function"),
+        whitespace,
+        ref("BindingIdentifier"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("FormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(16,"FunctionDeclaration",16,0,[13,9,3]),
+    ]));
+
+grm.define("FunctionDeclaration_unnamed",
+    sequence([
+        pos,
+        keyword("function"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        value(null),
+        ref("FormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(15,"FunctionDeclaration",15,0,[10,9,3]),
+    ]));
+
+grm.define("FunctionDeclaration",
+    choice([
+        ref("FunctionDeclaration_named"),
+        ref("FunctionDeclaration_unnamed"),
+    ]));
+
+grm.define("FunctionExpression",
+    sequence([
+        pos,
+        keyword("function"),
+        whitespace,
+        opt(sequence([
+            ref("BindingIdentifier"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("("),
+        whitespace,
+        ref("FormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(15,"FunctionExpression",15,0,[12,9,3]),
+    ]));
+
+grm.define("StrictFormalParameters",
+    ref("FormalParameters"));
+
+grm.define("FormalParameters",
+    choice([
+        ref("FormalParameterList"),
+        sequence([
+            pos,
+            spliceNode(0,"FormalParameters1",0,0,[]),
+        ]),
+    ]));
+
+grm.define("FormalParameterList",
+    choice([
+        sequence([
+            pos,
+            ref("FunctionRestParameter"),
+            pos,
+            spliceNode(2,"FormalParameters2",2,0,[1]),
+        ]),
+        sequence([
+            pos,
+            ref("FormalsList"),
+            choice([
+                sequence([
+                    whitespace,
+                    keyword(","),
+                    whitespace,
+                    ref("FunctionRestParameter"),
+                    pos,
+                    spliceNode(6,"FormalParameters4",6,0,[5,1]),
+                ]),
+                sequence([
+                    pos,
+                    spliceNode(2,"FormalParameters3",2,0,[1]),
+                ]),
+            ]),
+        ]),
+    ]));
+
+grm.define("FormalsList",
+    list(
+        ref("FormalParameter"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("FormalParameter"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("FunctionRestParameter",
+    ref("BindingRestElement"));
+
+grm.define("FormalParameter",
+    ref("BindingElement"));
+
+grm.define("FunctionBody",
+    ref("FunctionStatementList"));
+
+grm.define("FunctionStatementList",
+    choice([
+        ref("StatementList"),
+        sequence([
+            pos,
+            spliceEmptyListNode(0,0,0),
+        ]),
+    ]));
+
+grm.define("ArrowFunction",
+    sequence([
+        pos,
+        ref("ArrowParameters"),
+        whitespaceNoNewline,
+        keyword("=>"),
+        whitespace,
+        ref("ConciseBody"),
+        pos,
+        spliceNode(6,"ArrowFunction",6,0,[5,1]),
+    ]));
+
+grm.define("ArrowParameters",
+    choice([
+        ref("BindingIdentifier"),
+        ref("ArrowFormalParameters"),
+    ]));
+
+grm.define("ConciseBody_1",
+    sequence([
+        not(keyword("{")),
+        ref("AssignmentExpression"),
+    ]));
+
+grm.define("ConciseBody_2",
+    sequence([
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        spliceReplace(4,2),
+    ]));
+
+grm.define("ConciseBody",
+    choice([
+        ref("ConciseBody_1"),
+        ref("ConciseBody_2"),
+    ]));
+
+grm.define("ArrowFormalParameters",
+    sequence([
+        keyword("("),
+        whitespace,
+        ref("StrictFormalParameters"),
+        whitespace,
+        keyword(")"),
+        spliceReplace(4,2),
+    ]));
+
+grm.define("MethodDefinition_1",
+    sequence([
+        pos,
+        ref("PropertyName"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("StrictFormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(14,"Method",14,0,[13,9,3]),
+    ]));
+
+grm.define("MethodDefinition_2",
+    ref("GeneratorMethod"));
+
+grm.define("MethodDefinition_3",
+    sequence([
+        pos,
+        identifier("get"),
+        whitespace,
+        ref("PropertyName"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(14,"Getter",14,0,[11,3]),
+    ]));
+
+grm.define("MethodDefinition_4",
+    sequence([
+        pos,
+        identifier("set"),
+        whitespace,
+        ref("PropertyName"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("PropertySetParameterList"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("FunctionBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(16,"Setter",16,0,[13,9,3]),
+    ]));
+
+grm.define("MethodDefinition",
+    choice([
+        ref("MethodDefinition_1"),
+        ref("MethodDefinition_2"),
+        ref("MethodDefinition_3"),
+        ref("MethodDefinition_4"),
+    ]));
+
+grm.define("PropertySetParameterList",
+    ref("FormalParameter"));
+
+grm.define("GeneratorMethod",
+    sequence([
+        pos,
+        keyword("*"),
+        whitespace,
+        ref("PropertyName"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("StrictFormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("GeneratorBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(16,"GeneratorMethod",16,0,[13,9,3]),
+    ]));
+
+grm.define("GeneratorDeclaration_1",
+    sequence([
+        pos,
+        keyword("function"),
+        whitespace,
+        keyword("*"),
+        whitespace,
+        ref("BindingIdentifier"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("FormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("GeneratorBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(18,"GeneratorDeclaration",18,0,[13,9,3]),
+    ]));
+
+grm.define("GeneratorDeclaration_2",
+    sequence([
+        pos,
+        keyword("function"),
+        whitespace,
+        keyword("*"),
+        whitespace,
+        keyword("("),
+        whitespace,
+        ref("FormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("GeneratorBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(16,"DefaultGeneratorDeclaration",16,0,[9,3]),
+    ]));
+
+grm.define("GeneratorDeclaration",
+    choice([
+        ref("GeneratorDeclaration_1"),
+        ref("GeneratorDeclaration_2"),
+    ]));
+
+grm.define("GeneratorExpression",
+    sequence([
+        pos,
+        keyword("function"),
+        whitespace,
+        keyword("*"),
+        whitespace,
+        opt(sequence([
+            ref("BindingIdentifier"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("("),
+        whitespace,
+        ref("FormalParameters"),
+        whitespace,
+        keyword(")"),
+        whitespace,
+        keyword("{"),
+        whitespace,
+        ref("GeneratorBody"),
+        whitespace,
+        keyword("}"),
+        pos,
+        spliceNode(17,"GeneratorExpression",17,0,[12,9,3]),
+    ]));
+
+grm.define("GeneratorBody",
+    ref("FunctionBody"));
+
+grm.define("YieldExpression_1",
+    sequence([
+        pos,
+        keyword("yield"),
+        whitespaceNoNewline,
+        keyword("*"),
+        whitespace,
+        ref("AssignmentExpression"),
+        pos,
+        spliceNode(6,"YieldStar",6,0,[1]),
+    ]));
+
+grm.define("YieldExpression_2",
+    sequence([
+        pos,
+        keyword("yield"),
+        whitespaceNoNewline,
+        ref("AssignmentExpression"),
+        pos,
+        spliceNode(4,"YieldExpr",4,0,[1]),
+    ]));
+
+grm.define("YieldExpression_3",
+    sequence([
+        pos,
+        keyword("yield"),
+        pos,
+        spliceNode(2,"YieldNothing",2,0,[]),
+    ]));
+
+grm.define("YieldExpression",
+    choice([
+        ref("YieldExpression_1"),
+        ref("YieldExpression_2"),
+        ref("YieldExpression_3"),
+    ]));
+
+grm.define("ClassDeclaration_1",
+    sequence([
+        pos,
+        keyword("class"),
+        whitespace,
+        ref("BindingIdentifier"),
+        whitespace,
+        ref("ClassTail"),
+        pos,
+        spliceNode(6,"ClassDeclaration",6,0,[3,1]),
+    ]));
+
+grm.define("ClassDeclaration_2",
+    sequence([
+        pos,
+        keyword("class"),
+        whitespace,
+        value(null),
+        ref("ClassTail"),
+        pos,
+        spliceNode(5,"ClassDeclaration",5,0,[2,1]),
+    ]));
+
+grm.define("ClassDeclaration",
+    choice([
+        ref("ClassDeclaration_1"),
+        ref("ClassDeclaration_2"),
+    ]));
+
+grm.define("ClassExpression",
+    sequence([
+        pos,
+        keyword("class"),
+        whitespace,
+        opt(sequence([
+            ref("BindingIdentifier"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        ref("ClassTail"),
+        pos,
+        spliceNode(5,"ClassExpression",5,0,[2,1]),
+    ]));
+
+grm.define("ClassTail",
+    sequence([
+        pos,
+        opt(sequence([
+            ref("ClassHeritage"),
+            whitespace,
+            spliceReplace(1,1),
+        ])),
+        keyword("{"),
+        whitespace,
+        choice([
+            sequence([
+                ref("ClassBody"),
+                whitespace,
+                spliceReplace(1,1),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        keyword("}"),
+        pos,
+        spliceNode(6,"ClassTail",6,0,[5,2]),
+    ]));
+
+grm.define("ClassHeritage",
+    sequence([
+        pos,
+        keyword("extends"),
+        whitespace,
+        ref("LeftHandSideExpression"),
+        pos,
+        spliceNode(4,"Extends",4,0,[1]),
+    ]));
+
+grm.define("ClassBody",
+    ref("ClassElementList"));
+
+grm.define("ClassElementList",
+    list(
+        ref("ClassElement"),
+        sequence([
+            whitespace,
+            ref("ClassElement"),
+            spliceReplace(1,0),
+        ])
+    ));
+
+grm.define("ClassElement_1",
+    ref("MethodDefinition"));
+
+grm.define("ClassElement_2",
+    sequence([
+        pos,
+        keyword("static"),
+        whitespace,
+        ref("MethodDefinition"),
+        pos,
+        spliceNode(4,"StaticMethodDefinition",4,0,[1]),
+    ]));
+
+grm.define("ClassElement_3",
+    sequence([
+        pos,
+        keyword(";"),
+        pos,
+        spliceNode(2,"EmptyClassElement",2,0,[]),
+    ]));
+
+grm.define("ClassElement",
+    choice([
+        ref("ClassElement_1"),
+        ref("ClassElement_2"),
+        ref("ClassElement_3"),
+    ]));
+
+grm.define("Script",
+    sequence([
+        pos,
+        choice([
+            ref("ScriptBody"),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        pos,
+        spliceNode(2,"Script",2,0,[1]),
+    ]));
+
+grm.define("ScriptBody",
+    ref("StatementList"));
+
+grm.define("Module",
+    sequence([
+        pos,
+        choice([
+            ref("ModuleBody"),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        pos,
+        spliceNode(2,"Module",2,0,[1]),
+    ]));
+
+grm.define("ModuleBody",
+    ref("ModuleItemList"));
+
+grm.define("ModuleItemList",
+    list(
+        ref("ModuleItem"),
+        sequence([
+            whitespace,
+            ref("ModuleItem"),
+            spliceReplace(1,0),
+        ])
+    ));
+
+grm.define("ModuleItem",
+    choice([
+        ref("ImportDeclaration"),
+        ref("ExportDeclaration"),
+        ref("StatementListItem"),
+    ]));
+
+grm.define("ImportDeclaration_from",
+    sequence([
+        pos,
+        keyword("import"),
+        whitespace,
+        ref("ImportClause"),
+        whitespace,
+        ref("FromClause"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(8,"ImportFrom",8,0,[5,3]),
+    ]));
+
+grm.define("ImportDeclaration_module",
+    sequence([
+        pos,
+        keyword("import"),
+        whitespace,
+        ref("ModuleSpecifier"),
+        whitespace,
+        keyword(";"),
+        pos,
+        spliceNode(6,"ImportModule",6,0,[3]),
+    ]));
+
+grm.define("ImportDeclaration",
+    choice([
+        ref("ImportDeclaration_from"),
+        ref("ImportDeclaration_module"),
+    ]));
+
+grm.define("ImportClause",
+    choice([
+        ref("NameSpaceImport"),
+        ref("NamedImports"),
+        sequence([
+            pos,
+            ref("ImportedDefaultBinding"),
+            choice([
+                sequence([
+                    whitespace,
+                    keyword(","),
+                    whitespace,
+                    ref("NameSpaceImport"),
+                    pos,
+                    spliceNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
+                ]),
+                sequence([
+                    whitespace,
+                    keyword(","),
+                    whitespace,
+                    ref("NamedImports"),
+                    pos,
+                    spliceNode(6,"DefaultAndNamedImports",6,0,[5,1]),
+                ]),
+                sequence([
+                    pos,
+                    spliceNode(2,"DefaultImport",2,0,[1]),
+                ]),
+            ]),
+        ]),
+    ]));
+
+grm.define("ImportedDefaultBinding",
+    ref("ImportedBinding"));
+
+grm.define("NameSpaceImport",
+    sequence([
+        pos,
+        keyword("*"),
+        whitespace,
+        identifier("as"),
+        whitespace,
+        ref("ImportedBinding"),
+        pos,
+        spliceNode(6,"NameSpaceImport",6,0,[1]),
+    ]));
+
+grm.define("NamedImports",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        choice([
+            sequence([
+                ref("ImportsList"),
+                whitespace,
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    pop,
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        keyword("}"),
+        pos,
+        spliceNode(5,"NamedImports",5,0,[2]),
+    ]));
+
+grm.define("FromClause",
+    sequence([
+        identifier("from"),
+        whitespace,
+        ref("ModuleSpecifier"),
+        spliceReplace(2,0),
+    ]));
+
+grm.define("ImportsList",
+    list(
+        ref("ImportSpecifier"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("ImportSpecifier"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("ImportSpecifier",
+    choice([
+        sequence([
+            pos,
+            ref("IdentifierName"),
+            whitespace,
+            identifier("as"),
+            whitespace,
+            ref("ImportedBinding"),
+            pos,
+            spliceNode(6,"ImportAsSpecifier",6,0,[5,1]),
+        ]),
+        sequence([
+            pos,
+            ref("ImportedBinding"),
+            pos,
+            spliceNode(2,"ImportSpecifier",2,0,[1]),
+        ]),
+    ]));
+
+grm.define("ModuleSpecifier",
+    ref("StringLiteral"));
+
+grm.define("ImportedBinding",
+    ref("BindingIdentifier"));
+
+grm.define("ExportDeclaration",
+    sequence([
+        pos,
+        keyword("export"),
+        whitespace,
+        choice([
+            sequence([
+                keyword("default"),
+                whitespace,
+                ref("HoistableDeclaration"),
+                pos,
+                spliceNode(6,"ExportDefault",6,0,[1]),
+            ]),
+            sequence([
+                keyword("default"),
+                whitespace,
+                ref("ClassDeclaration"),
+                pos,
+                spliceNode(6,"ExportDefault",6,0,[1]),
+            ]),
+            sequence([
+                keyword("default"),
+                whitespace,
+                not(keyword("function")),
+                not(keyword("class")),
+                ref("AssignmentExpression"),
+                whitespace,
+                keyword(";"),
+                pos,
+                spliceNode(8,"ExportDefault",8,0,[3]),
+            ]),
+            sequence([
+                keyword("*"),
+                whitespace,
+                ref("FromClause"),
+                whitespace,
+                keyword(";"),
+                pos,
+                spliceNode(8,"ExportStar",8,0,[3]),
+            ]),
+            sequence([
+                ref("ExportClause"),
+                whitespace,
+                ref("FromClause"),
+                whitespace,
+                keyword(";"),
+                pos,
+                spliceNode(8,"ExportFrom",8,0,[5,3]),
+            ]),
+            sequence([
+                ref("ExportClause"),
+                whitespace,
+                keyword(";"),
+                pos,
+                spliceNode(6,"ExportPlain",6,0,[3]),
+            ]),
+            sequence([
+                ref("VariableStatement"),
+                pos,
+                spliceNode(4,"ExportVariable",4,0,[1]),
+            ]),
+            sequence([
+                ref("Declaration"),
+                pos,
+                spliceNode(4,"ExportDeclaration",4,0,[1]),
+            ]),
+        ]),
+    ]));
+
+grm.define("ExportClause",
+    sequence([
+        pos,
+        keyword("{"),
+        whitespace,
+        choice([
+            sequence([
+                ref("ExportsList"),
+                whitespace,
+                opt(sequence([
+                    keyword(","),
+                    whitespace,
+                    pop,
+                ])),
+                spliceReplace(2,2),
+            ]),
+            sequence([
+                pos,
+                spliceEmptyListNode(0,0,0),
+            ]),
+        ]),
+        keyword("}"),
+        pos,
+        spliceNode(5,"ExportClause",5,0,[2]),
+    ]));
+
+grm.define("ExportsList",
+    list(
+        ref("ExportSpecifier"),
+        sequence([
+            whitespace,
+            keyword(","),
+            whitespace,
+            ref("ExportSpecifier"),
+            spliceReplace(3,0),
+        ])
+    ));
+
+grm.define("ExportSpecifier",
+    sequence([
+        pos,
+        ref("IdentifierName"),
+        choice([
+            sequence([
+                whitespace,
+                identifier("as"),
+                whitespace,
+                ref("IdentifierName"),
+                pos,
+                spliceNode(4,"ExportAsSpecifier",6,0,[5,1]),
+            ]),
+            sequence([
+                pos,
+                spliceNode(0,"ExportNormalSpecifier",2,0,[1]),
+            ]),
+        ]),
+        spliceReplace(2,0),
+    ]));
+
+
