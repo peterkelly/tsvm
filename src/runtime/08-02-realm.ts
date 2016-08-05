@@ -81,6 +81,29 @@ import {
     DeclarativeEnvironmentRecord,
 } from "./08-01-environment";
 import * as bi from "./builtins";
+import {
+    ErrorObject,
+    setupErrorPrototype,
+    setupEvalErrorPrototype,
+    setupRangeErrorPrototype,
+    setupReferenceErrorPrototype,
+    setupSyntaxErrorPrototype,
+    setupTypeErrorPrototype,
+    setupURIErrorPrototype,
+} from "./19-05-error";
+
+function setupIntrinsicObjects(realm: Realm): void {
+    // Note: We do this separately from *creating* the intrinsics, to ensure that these actions
+    // only occur after all intrinsic objects have actually been created. Prior to CreateIntrinsics
+    // returning, the realm is not initialized with any such objects.
+    setupErrorPrototype(realm.intrinsics.ErrorPrototype);
+    setupEvalErrorPrototype(realm.intrinsics.EvalErrorPrototype);
+    setupRangeErrorPrototype(realm.intrinsics.RangeErrorPrototype);
+    setupReferenceErrorPrototype(realm.intrinsics.ReferenceErrorPrototype);
+    setupSyntaxErrorPrototype(realm.intrinsics.SyntaxErrorPrototype);
+    setupTypeErrorPrototype(realm.intrinsics.TypeErrorPrototype);
+    setupURIErrorPrototype(realm.intrinsics.URIErrorPrototype);
+}
 
 // ES6 Section 8.2: Code Realms
 
@@ -98,29 +121,35 @@ export class RealmImpl implements Realm {
         this.globalEnv = NewDeclarativeEnvironment(this,null); // FIXME
         this.templateMap = [];
         SetDefaultGlobalBindings(this);
+        setupIntrinsicObjects(this);
     }
 
     public throwEvalError(message?: string): ThrowCompletion {
-        throw new Error("RealmImpl.throwEvalError not implemented");
+        return this.throwError(this.intrinsics.EvalErrorPrototype,message);
     }
 
     public throwRangeError(message?: string): ThrowCompletion {
-        throw new Error("RealmImpl.throwRangeError not implemented");
+        return this.throwError(this.intrinsics.RangeErrorPrototype,message);
     }
     public throwReferenceError(message?: string): ThrowCompletion {
-        throw new Error("RealmImpl.throwReferenceError not implemented");
+        return this.throwError(this.intrinsics.ReferenceErrorPrototype,message);
     }
 
     public throwSyntaxError(message?: string): ThrowCompletion {
-        throw new Error("RealmImpl.throwSyntaxError not implemented");
+        return this.throwError(this.intrinsics.SyntaxErrorPrototype,message);
     }
 
     public throwTypeError(message?: string): ThrowCompletion {
-        throw new Error("RealmImpl.throwTypeError not implemented");
+        return this.throwError(this.intrinsics.TypeErrorPrototype,message);
     }
 
     public throwURIError(message?: string): ThrowCompletion {
-        throw new Error("RealmImpl.throwURIError not implemented");
+        return this.throwError(this.intrinsics.URIErrorPrototype,message);
+    }
+
+    private throwError(proto: JSObject, message: string | undefined): ThrowCompletion {
+        const error = new ErrorObject(this,proto,message);
+        return new ThrowCompletion(error);
     }
 }
 

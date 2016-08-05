@@ -87,7 +87,7 @@ export function ToPrimitive(realm: Realm, input: JSValue, preferredType?: ValueT
         const result = resultComp.value;
         if (result instanceof JSPrimitiveValue)
             return new NormalCompletion(result);
-        return realm.throwTypeError();
+        return realm.throwTypeError("ToPrimitive: no $$toPrimitive method");
     }
     if (hint.stringValue === "default")
         hint = new JSString("number");
@@ -118,7 +118,7 @@ export function OrdinaryToPrimitive(realm: Realm, O: JSObject, hint: "string" | 
                 return new NormalCompletion(result);
         }
     }
-    return realm.throwTypeError();
+    return realm.throwTypeError("OrdinaryToPrimitive: No toString or valueOf method");
 }
 
 // ES6 Section 7.1.2: ToBoolean (argument)
@@ -164,7 +164,7 @@ export function ToNumber(realm: Realm, argument: JSValue): Completion<JSNumber> 
     if (argument instanceof JSString)
         return new NormalCompletion(ToNumber_string(realm,argument));
     if (argument instanceof JSSymbol)
-        return realm.throwTypeError();
+        return realm.throwTypeError("ToNumber applied to symbol");
     if (argument instanceof JSObject) {
         const primValueComp = ToPrimitive(realm,argument,ValueType.Number);
         if (!(primValueComp instanceof NormalCompletion))
@@ -254,7 +254,7 @@ export function ToString(realm: Realm, argument: JSValue): Completion<JSString> 
     if (argument instanceof JSString)
         return new NormalCompletion(argument);
     if (argument instanceof JSSymbol)
-        return realm.throwTypeError();
+        return realm.throwTypeError("ToString applied to symbol");
     if (argument instanceof JSObject) {
         const primValueComp = ToPrimitive(realm,argument,ValueType.String);
         if (!(primValueComp instanceof NormalCompletion))
@@ -271,11 +271,11 @@ export function ToObject(realm: Realm, argument: JSValue): Completion<JSObject> 
     switch (argument.type) {
         case ValueType.Undefined:
             if (argument instanceof JSUndefined)
-                return realm.throwTypeError();
+                return realm.throwTypeError("ToObject applied to undefined");
             break;
         case ValueType.Null:
             if (argument instanceof JSNull)
-                return realm.throwTypeError();
+                return realm.throwTypeError("ToObject applied to null");
             break;
         case ValueType.Boolean:
             if (argument instanceof JSBoolean) {

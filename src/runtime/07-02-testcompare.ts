@@ -73,8 +73,9 @@ import {
 export function RequireObjectCoercible(realm: Realm, argument: JSValue): Completion<JSValue> {
     switch (argument.type) {
         case ValueType.Undefined:
+            return realm.throwTypeError("undefined is not coercible");
         case ValueType.Null:
-            return realm.throwTypeError();
+            return realm.throwTypeError("null is not coercible");
         default:
             return new NormalCompletion(argument);
     }

@@ -315,7 +315,7 @@ export function evalModule(node: ASTNode): void {
     const ctx = new ExecutionContext(realm, new JSNull(),lexEnv);
 
     envRec.CreateImmutableBinding("console",true);
-    const consoleObject = new JSOrdinaryObject(realm);
+    const consoleObject = new JSOrdinaryObject(realm,realm.intrinsics.ObjectPrototype);
     envRec.InitializeBinding("console",consoleObject);
 
 
@@ -327,7 +327,22 @@ export function evalModule(node: ASTNode): void {
     const resultComp = evalStatementList(ctx,statements);
     if (!(resultComp instanceof NormalCompletion)) {
         if (resultComp instanceof ThrowCompletion) {
-            console.log("JS code threw exception : "+resultComp.exceptionValue);
+            console.log("JS code threw exception");
+            // try {
+                const strComp = ToString(realm,resultComp.exceptionValue);
+                if (!(strComp instanceof NormalCompletion)) {
+                    console.log("toString() on exception object failed");
+                }
+                else {
+                    // console.log(strComp.value);
+                    // console.log("Value: "+(<any>strComp.value).constructor.name);
+                    const str = strComp.value;
+                    console.log(str.stringValue);
+                }
+            // }
+            // catch (e) {
+            //     console.log(e);
+            // }
         }
         else {
             console.log("Got some other completion");

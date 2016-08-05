@@ -65,7 +65,7 @@ export function Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Thr
         return successComp;
     const success = successComp.value;
     if (!success && Throw)
-        return realm.throwTypeError();
+        return realm.throwTypeError("Set "+JSON.stringify(P.stringRep)+" failed");
     return new NormalCompletion(success);
 }
 
@@ -95,7 +95,7 @@ export function CreateDataPropertyOrThrow(realm: Realm, O: JSObject, P: JSProper
         return successComp;
     const success = successComp.value;
     if (!success)
-        return realm.throwTypeError();
+        return realm.throwTypeError("CreateDataPropertyOrThrow "+JSON.stringify(P.stringRep)+" failed");
     return new NormalCompletion(success);
 }
 
@@ -107,7 +107,7 @@ export function DefinePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKe
         return successComp;
     const success = successComp.value;
     if (!success)
-        return realm.throwTypeError();
+        return realm.throwTypeError("DefinePropertyOrThrow "+JSON.stringify(P.stringRep)+" failed");
     return new NormalCompletion(success);
 }
 
@@ -119,7 +119,7 @@ export function DeletePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKe
         return successComp;
     const success = successComp.value;
     if (!success)
-        return realm.throwTypeError();
+        return realm.throwTypeError("DeletePropertyOrThrow "+JSON.stringify(P.stringRep)+" failed");
     return new NormalCompletion(success);
 }
 
@@ -133,7 +133,7 @@ export function GetMethod(realm: Realm, O: JSValue, P: JSPropertyKey): Completio
     if ((func instanceof JSUndefined) || (func instanceof JSNull))
         return new NormalCompletion(new JSUndefined());
     if (!IsCallable(realm,func))
-        return realm.throwTypeError();
+        return realm.throwTypeError("GetMethod: "+JSON.stringify(P.stringRep)+" is not callable");
     return new NormalCompletion(func);
 }
 

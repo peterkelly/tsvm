@@ -180,7 +180,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
         else if (binding.mutable)
             binding.value = V;
         else if (S)
-            return this.realm.throwTypeError();
+            return this.realm.throwTypeError("DeclarativeEnvironmentRecord SetMutableBinding: "+JSON.stringify(N)+": immutable binding");
         return new NormalCompletion(undefined);
     }
 
