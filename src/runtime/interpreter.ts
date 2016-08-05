@@ -80,6 +80,13 @@ import {
     ToPrimitive,
 } from "./07-01-conversion";
 import {
+    RequireObjectCoercible,
+    IsCallable,
+} from "./07-02-testcompare";
+import {
+    Call,
+} from "./07-03-objects";
+import {
     rt_double_add,
     rt_double_sub,
     rt_double_mul,
@@ -110,6 +117,43 @@ function checkListNode(node: ASTNode | null): ListNode {
     if (!(node instanceof ListNode))
         throw new Error("Expected list node, got "+node.kind);
     return node;
+}
+
+// ES6 Section 12.3.6.1: Runtime Semantics: ArgumentListEvaluation
+
+function ArgumentListEvaluation(ctx: ExecutionContext, argNodes: ASTNode[]): Completion<JSValue[]> {
+    // FIXME: This is just a temporary implementation to get basic functionality... need to look
+    // closer at the spec to ensure we're doing it correctly, and add support for spread arguments
+    const result: JSValue[] = [];
+    for (let i = 0; i < argNodes.length; i++) {
+        const argNode = argNodes[i];
+        const refComp = evalExpression(ctx,argNode);
+        const argComp = GetValue(ctx.realm,refComp);
+        if (!(argComp instanceof NormalCompletion))
+            return argComp;
+        const arg = argComp.value;
+        result.push(arg);
+    }
+    return new NormalCompletion(result);
+}
+
+// ES6 Section 12.3.4.3: Runtime Semantics: EvaluateDirectCall (func, thisValue, arguments, tailPosition)
+
+function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSValue,
+                            args: ASTNode[], tailPosition: boolean): Completion<JSValue> {
+    const argListComp = ArgumentListEvaluation(ctx,args);
+    if (!(argListComp instanceof NormalCompletion))
+        return argListComp;
+    const argList = argListComp.value;
+
+    if (!(func instanceof JSValue))
+        return ctx.realm.throwTypeError("Attempt to call a value that is not an object");
+
+    if (!IsCallable(ctx.realm,func))
+        return ctx.realm.throwTypeError("Object is not callable");
+
+    // FIXME: support tail calls
+    return Call(ctx.realm,func,thisValue,argList);
 }
 
 function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
@@ -259,16 +303,54 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
             const result = new JSNumber(resultNum);
             return new NormalCompletion(result);
         }
+        case "MemberAccessIdent": {
+            const leftNode = checkNodeNotNull(node.children[0]);
+            const rightNode = checkNodeNotNull(node.children[1]);
+
+            const baseReferenceComp = evalExpression(ctx,leftNode);
+            if (!(baseReferenceComp instanceof NormalCompletion))
+                return baseReferenceComp;
+            // const baseReference = baseReferenceComp.value;
+            const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+            if (!(baseValueComp instanceof NormalCompletion))
+                return baseValueComp;
+            const baseValue = baseValueComp.value;
+
+            const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+            if (!(bvComp instanceof NormalCompletion))
+                return bvComp;
+            const bv = bvComp.value;
+            if (!(bv instanceof JSObject))
+                throw new Error("FIXME: Need to support non-objects for MemberAccessIdent");
+
+            if (!(rightNode instanceof GenericStringNode))
+                throw new Error("MemberAccessIdent: rightNode should be a GenericStringNode, kind is "+rightNode.kind);
+            const propertyNameString = rightNode.value;
+            const strict = true; // FIXME: This must be determined by the AST node
+
+            const ref = new Reference(bv,new JSString(propertyNameString),new JSBoolean(strict));
+            return new NormalCompletion(ref);
+        }
+        case "Call": {
+            checkNode(node,"Call",2);
+            const funNode = checkNodeNotNull(node.children[0]);
+            const argsNode = checkNode(node.children[1],"Arguments",1);
+            const argsListNode = checkListNode(argsNode.children[0]);
+
+            const refComp = evalExpression(ctx,funNode);
+            const funcComp = GetValue(ctx.realm,refComp);
+            if (!(funcComp instanceof NormalCompletion))
+                return funcComp;
+            const func = funcComp.value;
+
+            const thisValue = new JSUndefined(); // FIXME: temp
+
+            return EvaluateDirectCall(ctx,func,thisValue,argsListNode.elements,false);
+        }
     }
 
     throw new Error("Unsupported expression node: "+node.kind);
 }
-
-// class Foo extends BuiltinFunction {
-//     public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-//         return new NormalCompletion(new JSUndefined());
-//     }
-// }
 
 function evalStatementList(ctx: ExecutionContext, statements: ListNode): Completion<void> {
     for (const stmt of statements.elements) {
@@ -308,6 +390,28 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
     return new NormalCompletion(undefined);
 }
 
+class ConsoleLogFunction extends JSOrdinaryObject {
+    public constructor(realm: Realm, prototype: JSObject) {
+        super(realm,prototype);
+    }
+    public get implementsCall(): boolean {
+        return true;
+    }
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        console.log("ConsoleLogFunction.__Call__ begin");
+        const strings: string[] = [];
+        for (const arg of args) {
+            const strComp = ToString(this.realm,arg);
+            if (!(strComp instanceof NormalCompletion))
+                return strComp;
+            const str = strComp.value;
+            strings.push(str.stringValue);
+        }
+        console.log("==== "+strings.join(" "));
+        return new NormalCompletion(new JSUndefined());
+    }
+}
+
 export function evalModule(node: ASTNode): void {
     const realm = new RealmImpl();
     const envRec = new DeclarativeEnvironmentRecord(realm);
@@ -316,6 +420,12 @@ export function evalModule(node: ASTNode): void {
 
     envRec.CreateImmutableBinding("console",true);
     const consoleObject = new JSOrdinaryObject(realm,realm.intrinsics.ObjectPrototype);
+    consoleObject.properties.put("log",new DataDescriptor({
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: new ConsoleLogFunction(realm,realm.intrinsics.FunctionPrototype)
+    }));
     envRec.InitializeBinding("console",consoleObject);
 
 
