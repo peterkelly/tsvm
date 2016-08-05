@@ -82,6 +82,9 @@ import {
 import {
     rt_double_add,
     rt_double_sub,
+    rt_double_mul,
+    rt_double_div,
+    rt_double_mod,
     rt_string_concat,
 } from "./runtime";
 
@@ -215,6 +218,44 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
             const rnum = rnumComp.value;
 
             const resultNum = rt_double_sub(lnum.numberValue,rnum.numberValue);
+            const result = new JSNumber(resultNum);
+            return new NormalCompletion(result);
+        }
+        case "Multiply":
+        case "Divide":
+        case "Modulo": {
+            const leftNode = checkNodeNotNull(node.children[0]);
+            const rightNode = checkNodeNotNull(node.children[1]);
+
+            const leftComp = evalExpression(ctx,leftNode);
+            const leftValueComp = GetValue(ctx.realm,leftComp);
+            if (!(leftValueComp instanceof NormalCompletion))
+                return leftValueComp;
+            const leftValue = leftValueComp.value;
+
+            const rightComp = evalExpression(ctx,rightNode);
+            const rightValueComp = GetValue(ctx.realm,rightComp);
+            if (!(rightValueComp instanceof NormalCompletion))
+                return rightValueComp;
+            const rightValue = rightValueComp.value;
+
+            const lnumComp = ToNumber(ctx.realm,leftValue);
+            if (!(lnumComp instanceof NormalCompletion))
+                return lnumComp;
+            const lnum = lnumComp.value;
+
+            const rnumComp = ToNumber(ctx.realm,rightValue);
+            if (!(rnumComp instanceof NormalCompletion))
+                return rnumComp;
+            const rnum = rnumComp.value;
+
+            let resultNum: number;
+            if (node.kind === "Multiply")
+                resultNum = rt_double_mul(lnum.numberValue,rnum.numberValue);
+            else if (node.kind === "Divide")
+                resultNum = rt_double_div(lnum.numberValue,rnum.numberValue);
+            else
+                resultNum = rt_double_mod(lnum.numberValue,rnum.numberValue);
             const result = new JSNumber(resultNum);
             return new NormalCompletion(result);
         }
