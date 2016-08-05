@@ -231,7 +231,7 @@ export class JSOrdinaryObjectOperations {
         if (desc instanceof JSUndefined)
             return new NormalCompletion(true);
         if (desc.configurable) {
-            delete obj.properties[P.stringRep];
+            obj.properties.remove(P.stringRep);
             return new NormalCompletion(true);
         }
         return new NormalCompletion(false);
@@ -263,9 +263,9 @@ export function OrdinaryGetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyK
     // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
     // where we can avoid doing so.
     const stringKey = P.stringRep;
-    if (!(stringKey in O.properties))
+    const X = O.properties.get(stringKey);
+    if (X === undefined)
         return new JSUndefined();
-    const X = O.properties[stringKey];
     if (!copy)
         return X;
     if (X instanceof DataDescriptor) {

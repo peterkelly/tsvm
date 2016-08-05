@@ -83,12 +83,12 @@ class ThrowTypeErrorFunction extends BuiltinFunction {
     public constructor(realm: Realm, proto: JSObject) {
         super(realm,proto);
         this.__extensible__ = false;
-        this.properties["length"] = new DataDescriptor({
+        this.properties.put("length",new DataDescriptor({
             enumerable: false,
             configurable: false,
             value: new JSNumber(1),
             writable: false
-        });
+        }));
     }
 
     public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
@@ -111,12 +111,12 @@ export function createThrowTypeErrorFunction(realm: Realm, proto: JSObject): JSO
 class TypeErrorObject extends JSOrdinaryObject {
     public constructor(realm: Realm, prototype: JSObject | JSNull, message: JSString | JSUndefined) {
         super(realm,prototype);
-        this.properties["message"] = new DataDescriptor({
+        this.properties.put("message",new DataDescriptor({
             enumerable: true,
             configurable: false,
             value: message,
             writable: false,
-        });
+        }));
     }
 }
 

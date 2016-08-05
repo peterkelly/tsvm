@@ -60,6 +60,37 @@ export interface EnvironmentRecord {
      WithBaseObject(): Completion<JSObject | JSUndefined>;
 }
 
+export class PropertyMap {
+    private readonly contents: { [key: string]: PropertyDescriptor } = {};
+    public get(key: string): PropertyDescriptor | undefined {
+        const fullKey = "prop_"+key;
+        if (fullKey in this.contents)
+            return this.contents[fullKey];
+        else
+            return undefined;
+    }
+    public put(key: string, value: PropertyDescriptor): void {
+        const fullKey = "prop_"+key;
+        this.contents[fullKey] = value;
+    }
+    public contains(key: string): boolean {
+        const fullKey = "prop_"+key;
+        return (fullKey in this.contents);
+    }
+    public remove(key: string): void {
+        const fullKey = "prop_"+key;
+        delete this.contents[fullKey];
+    }
+    public keys(): string[] {
+        const result: string[] = [];
+        for (const key in this.contents) {
+            if (key.match(/^prop_/))
+                result.push(key.substring(5));
+        }
+        return result.sort();
+    }
+}
+
 // ES6 Section 6.1: ECMAScript Language Types
 
 export enum ValueType {
@@ -200,7 +231,7 @@ export abstract class JSObject extends JSValue {
     public realm: Realm;
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
-    public readonly properties: { [key: string]: PropertyDescriptor };
+    public readonly properties: PropertyMap;
 
     public constructor(realm: Realm, prototype?: JSObject | JSNull) {
         super();
@@ -210,7 +241,7 @@ export abstract class JSObject extends JSValue {
         else
             this.__prototype__ = new JSNull();
         this.__extensible__ = true;
-        this.properties = {};
+        this.properties = new PropertyMap();
     }
 
     public get type(): ValueType {

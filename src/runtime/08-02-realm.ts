@@ -311,19 +311,18 @@ export function CreateIntrinsics(realm: Realm): Intrinsics {
     // of the prototype's constructor property descriptor
 
     function setupConstructorPrototype(constructor: JSObject, prototype: JSObject): void {
-        const constructorStr = "constructor"; // Avoid TypeScript warnings about setting constructor property
-        constructor.properties["prototype"] = new DataDescriptor({
+        constructor.properties.put("prototype",new DataDescriptor({
             value: prototype,
             writable: false,
             enumerable: false,
             configurable: false,
-        });
-        prototype.properties[constructorStr] = new DataDescriptor({
+        }));
+        prototype.properties.put("constructor",new DataDescriptor({
             value: constructor,
             writable: false,
             enumerable: false,
             configurable: true,
-        });
+        }));
 
     }
 
@@ -391,81 +390,81 @@ function SetDefaultGlobalBindings(realm: Realm): void {
     // ES6 Section 18.1: Value Properties of the Global Object
 
     // Infinity
-    global.properties["Infinity"] = new DataDescriptor({
+    global.properties.put("Infinity",new DataDescriptor({
         value: new JSNumber(rt_Infinity()),
         writable: false,
         enumerable: false,
         configurable: false,
-    });
+    }));
 
     // NaN
-    global.properties["NaN"] = new DataDescriptor({
+    global.properties.put("NaN",new DataDescriptor({
         value: new JSNumber(rt_NaN()),
         writable: false,
         enumerable: false,
         configurable: false,
-    });
+    }));
 
     // undefined
-    global.properties["undefined"] = new DataDescriptor({
+    global.properties.put("undefined",new DataDescriptor({
         value: new JSUndefined(),
         writable: false,
         enumerable: false,
         configurable: false,
-    });
+    }));
 
     // ES6 Section 18.2: Function Properties of the Global Object
 
     // eval
-    global.properties["eval"] = prop(realm.intrinsics.eval);
-    global.properties["isFinite"] = prop(realm.intrinsics.isFinite);
-    global.properties["isNaN"] = prop(realm.intrinsics.isNaN);
-    global.properties["parseFloat"] = prop(realm.intrinsics.parseFloat);
-    global.properties["parseInt"] = prop(realm.intrinsics.parseInt);
-    global.properties["decodeURI"] = prop(realm.intrinsics.decodeURI);
-    global.properties["decodeURIComponent"] = prop(realm.intrinsics.decodeURIComponent);
-    global.properties["encodeURI"] = prop(realm.intrinsics.encodeURI);
-    global.properties["encodeURIComponent"] = prop(realm.intrinsics.encodeURIComponent);
+    global.properties.put("eval",prop(realm.intrinsics.eval));
+    global.properties.put("isFinite",prop(realm.intrinsics.isFinite));
+    global.properties.put("isNaN",prop(realm.intrinsics.isNaN));
+    global.properties.put("parseFloat",prop(realm.intrinsics.parseFloat));
+    global.properties.put("parseInt",prop(realm.intrinsics.parseInt));
+    global.properties.put("decodeURI",prop(realm.intrinsics.decodeURI));
+    global.properties.put("decodeURIComponent",prop(realm.intrinsics.decodeURIComponent));
+    global.properties.put("encodeURI",prop(realm.intrinsics.encodeURI));
+    global.properties.put("encodeURIComponent",prop(realm.intrinsics.encodeURIComponent));
 
     // ES6 Section 18.3: Constructor Properties of the Global Object
 
-    global.properties["Array"] = prop(realm.intrinsics.Array);
-    global.properties["ArrayBuffer"] = prop(realm.intrinsics.ArrayBuffer);
-    global.properties["Boolean"] = prop(realm.intrinsics.Boolean);
-    global.properties["DataView"] = prop(realm.intrinsics.DataView);
-    global.properties["Date"] = prop(realm.intrinsics.Date);
-    global.properties["Error"] = prop(realm.intrinsics.Error);
-    global.properties["EvalError"] = prop(realm.intrinsics.EvalError);
-    global.properties["Float32Array"] = prop(realm.intrinsics.Float32Array);
-    global.properties["Float64Array"] = prop(realm.intrinsics.Float64Array);
-    global.properties["Function"] = prop(realm.intrinsics.Function);
-    global.properties["Int8Array"] = prop(realm.intrinsics.Int8Array);
-    global.properties["Int16Array"] = prop(realm.intrinsics.Int16Array);
-    global.properties["Int32Array"] = prop(realm.intrinsics.Int32Array);
-    global.properties["Map"] = prop(realm.intrinsics.Map);
-    global.properties["Number"] = prop(realm.intrinsics.Number);
-    global.properties["Object"] = prop(realm.intrinsics.Object);
-    global.properties["Proxy"] = prop(realm.intrinsics.Proxy);
-    global.properties["Promise"] = prop(realm.intrinsics.Promise);
-    global.properties["RangeError"] = prop(realm.intrinsics.RangeError);
-    global.properties["ReferenceError"] = prop(realm.intrinsics.ReferenceError);
-    global.properties["RegExp"] = prop(realm.intrinsics.RegExp);
-    global.properties["Set"] = prop(realm.intrinsics.Set);
-    global.properties["String"] = prop(realm.intrinsics.String);
-    global.properties["Symbol"] = prop(realm.intrinsics.Symbol);
-    global.properties["SyntaxError"] = prop(realm.intrinsics.SyntaxError);
-    global.properties["TypeError"] = prop(realm.intrinsics.TypeError);
-    global.properties["Uint8Array"] = prop(realm.intrinsics.Uint8Array);
-    global.properties["Uint8ClampedArray"] = prop(realm.intrinsics.Uint8ClampedArray);
-    global.properties["Uint16Array"] = prop(realm.intrinsics.Uint16Array);
-    global.properties["Uint32Array"] = prop(realm.intrinsics.Uint32Array);
-    global.properties["URIError"] = prop(realm.intrinsics.URIError);
-    global.properties["WeakMap"] = prop(realm.intrinsics.WeakMap);
-    global.properties["WeakSet"] = prop(realm.intrinsics.WeakSet);
+    global.properties.put("Array",prop(realm.intrinsics.Array));
+    global.properties.put("ArrayBuffer",prop(realm.intrinsics.ArrayBuffer));
+    global.properties.put("Boolean",prop(realm.intrinsics.Boolean));
+    global.properties.put("DataView",prop(realm.intrinsics.DataView));
+    global.properties.put("Date",prop(realm.intrinsics.Date));
+    global.properties.put("Error",prop(realm.intrinsics.Error));
+    global.properties.put("EvalError",prop(realm.intrinsics.EvalError));
+    global.properties.put("Float32Array",prop(realm.intrinsics.Float32Array));
+    global.properties.put("Float64Array",prop(realm.intrinsics.Float64Array));
+    global.properties.put("Function",prop(realm.intrinsics.Function));
+    global.properties.put("Int8Array",prop(realm.intrinsics.Int8Array));
+    global.properties.put("Int16Array",prop(realm.intrinsics.Int16Array));
+    global.properties.put("Int32Array",prop(realm.intrinsics.Int32Array));
+    global.properties.put("Map",prop(realm.intrinsics.Map));
+    global.properties.put("Number",prop(realm.intrinsics.Number));
+    global.properties.put("Object",prop(realm.intrinsics.Object));
+    global.properties.put("Proxy",prop(realm.intrinsics.Proxy));
+    global.properties.put("Promise",prop(realm.intrinsics.Promise));
+    global.properties.put("RangeError",prop(realm.intrinsics.RangeError));
+    global.properties.put("ReferenceError",prop(realm.intrinsics.ReferenceError));
+    global.properties.put("RegExp",prop(realm.intrinsics.RegExp));
+    global.properties.put("Set",prop(realm.intrinsics.Set));
+    global.properties.put("String",prop(realm.intrinsics.String));
+    global.properties.put("Symbol",prop(realm.intrinsics.Symbol));
+    global.properties.put("SyntaxError",prop(realm.intrinsics.SyntaxError));
+    global.properties.put("TypeError",prop(realm.intrinsics.TypeError));
+    global.properties.put("Uint8Array",prop(realm.intrinsics.Uint8Array));
+    global.properties.put("Uint8ClampedArray",prop(realm.intrinsics.Uint8ClampedArray));
+    global.properties.put("Uint16Array",prop(realm.intrinsics.Uint16Array));
+    global.properties.put("Uint32Array",prop(realm.intrinsics.Uint32Array));
+    global.properties.put("URIError",prop(realm.intrinsics.URIError));
+    global.properties.put("WeakMap",prop(realm.intrinsics.WeakMap));
+    global.properties.put("WeakSet",prop(realm.intrinsics.WeakSet));
 
     // ES6 Section 18.4: Other Properties of the Global Object
 
-    global.properties["JSON"] = prop(realm.intrinsics.JSON);
-    global.properties["Math"] = prop(realm.intrinsics.Math);
-    global.properties["Reflect"] = prop(realm.intrinsics.Reflect);
+    global.properties.put("JSON",prop(realm.intrinsics.JSON));
+    global.properties.put("Math",prop(realm.intrinsics.Math));
+    global.properties.put("Reflect",prop(realm.intrinsics.Reflect));
 }
