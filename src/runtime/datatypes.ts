@@ -105,8 +105,6 @@ export enum ValueType {
 
 export abstract class JSValue {
     _nominal_type_JSValue: any;
-    public constructor() {
-    }
     public abstract get type(): ValueType;
 }
 
@@ -123,9 +121,6 @@ export abstract class JSPropertyKey extends JSPrimitiveValue {
 
 export class JSUndefined extends JSPrimitiveValue {
     _nominal_type_JSUndefined: any;
-    public constructor() {
-        super();
-    }
     public get type(): ValueType {
         return ValueType.Undefined;
     }
@@ -135,9 +130,6 @@ export class JSUndefined extends JSPrimitiveValue {
 
 export class JSNull extends JSPrimitiveValue {
     _nominal_type_JSNull: any;
-    public constructor() {
-        super();
-    }
     public get type(): ValueType {
         return ValueType.Null;
     }
