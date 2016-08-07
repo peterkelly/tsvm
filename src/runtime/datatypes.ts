@@ -37,6 +37,11 @@ export abstract class JSValue {
     public abstract get type(): ValueType;
 }
 
+export abstract class JSPropertyKey extends JSValue {
+    _nominal_type_PropertyKey: any;
+    public abstract get stringRep(): string;
+}
+
 // ES6 Section 6.1.1: The Undefined Type
 
 export class JSUndefined extends JSValue {
@@ -71,7 +76,7 @@ export class JSBoolean extends JSValue {
 
 // ES6 Section 6.1.4: The String Type
 
-export class JSString extends JSValue {
+export class JSString extends JSPropertyKey {
     _nominal_type_JSString: any;
     public readonly stringValue: string;
     public constructor(stringValue: string) {
@@ -81,11 +86,14 @@ export class JSString extends JSValue {
     public get type(): ValueType {
         return ValueType.String;
     }
+    public get stringRep(): string {
+        return "string:"+this.stringValue;
+    }
 }
 
 // ES6 Section 6.1.5: The Symbol Type
 
-export class JSSymbol extends JSValue {
+export class JSSymbol extends JSPropertyKey {
     _nominal_type_JSSymbol: any;
     public readonly description: JSString | JSUndefined;
     public readonly symbolId: number;
@@ -97,6 +105,9 @@ export class JSSymbol extends JSValue {
     }
     public get type(): ValueType {
         return ValueType.Symbol;
+    }
+    public get stringRep(): string {
+        return "symbol:"+this.symbolId;
     }
 }
 
@@ -121,7 +132,7 @@ export class JSObject extends JSValue {
 
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
-    public readonly properties: any;
+    public readonly properties: { [key: string]: PropertyDescriptor };
 
     public constructor(prototype?: JSObject | JSNull) {
         super();
@@ -153,27 +164,27 @@ export class JSObject extends JSValue {
         throw new Error("JSObject.__PreventExtensions__ not implemented");
     }
 
-    public __GetOwnProperty__(P: UnknownType): Completion<UnknownType> {
+    public __GetOwnProperty__(P: JSPropertyKey): Completion<UnknownType> {
         throw new Error("JSObject.__GetOwnProperty__ not implemented");
     }
 
-    public __HasProperty__(P: UnknownType): Completion<UnknownType> {
+    public __HasProperty__(P: JSPropertyKey): Completion<UnknownType> {
         throw new Error("JSObject.__HasProperty__ not implemented");
     }
 
-    public __Get__(P: UnknownType, Receiver: UnknownType): Completion<UnknownType> {
+    public __Get__(P: JSPropertyKey, Receiver: UnknownType): Completion<UnknownType> {
         throw new Error("JSObject.__Get__ not implemented");
     }
 
-    public __Set__(P: UnknownType, V: UnknownType, Receiver: UnknownType): Completion<UnknownType> {
+    public __Set__(P: JSPropertyKey, V: UnknownType, Receiver: UnknownType): Completion<UnknownType> {
         throw new Error("JSObject.__Set__ not implemented");
     }
 
-    public __Delete__(P: UnknownType): Completion<UnknownType> {
+    public __Delete__(P: JSPropertyKey): Completion<UnknownType> {
         throw new Error("JSObject.__Delete__ not implemented");
     }
 
-    public __DefineOwnProperty__(propertyKey: UnknownType, property: UnknownType): Completion<UnknownType> {
+    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: UnknownType): Completion<UnknownType> {
         throw new Error("JSObject.__DefineOwnProperty__ not implemented");
     }
 
@@ -181,7 +192,7 @@ export class JSObject extends JSValue {
         throw new Error("JSObject.__Enumerate__ not implemented");
     }
 
-    public __OwnPropertyKeys__(): Completion<UnknownType> {
+    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
         throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
     }
 
@@ -192,6 +203,26 @@ export class JSObject extends JSValue {
     public __Construct__(args: UnknownType, newTarget: UnknownType): Completion<UnknownType> {
         throw new Error("JSObject.__Construct__ not implemented");
     }
+}
+
+// ES6 Section 6.1.7.1: Property Attributes
+
+export abstract class PropertyDescriptor {
+    _nominal_type_PropertyDescriptor: any;
+    public enumerable: boolean = true;
+    public configurable: boolean = true;
+}
+
+export class DataDescriptor extends PropertyDescriptor {
+    _nominal_type_DataDescriptor: any;
+    public value: JSValue = new JSUndefined();
+    public writable: boolean = true;
+}
+
+export class AccessorDescriptor extends PropertyDescriptor {
+    _nominal_type_AccessorDescriptor: any;
+    public __get__: JSObject | JSUndefined = new JSUndefined();
+    public __set__: JSObject | JSUndefined = new JSUndefined();
 }
 
 // ES6 Section 6.2: ECMAScript Specification Types
