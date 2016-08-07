@@ -269,6 +269,13 @@ export class JSObject extends JSValue {
     }
 }
 
+// This interface exists solely for the purpose of achieving a form of dependency injection for the
+// default implementation of JSObject's methods. Many of these implementations rely on functions
+// from other modules, but we can't import those in datatypes.ts because some of those modules that
+// define classes that inherit from JSObject. Because of the way typescript handles inheritance in
+// the generated classes, it is necessary for a module defining a class to be fully loaded before
+// any module that defines inherited classes, which is why datatypes.ts does needs to be completely
+// independent of all other modules in the runtime system.
 export interface ObjectOperations {
     __GetPrototypeOf__(O: JSObject): Completion<JSObject | JSNull>;
     __SetPrototypeOf__(O: JSObject, V: JSObject | JSNull): Completion<boolean>;
