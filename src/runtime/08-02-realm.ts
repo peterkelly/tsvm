@@ -60,7 +60,7 @@ import {
     rt_NaN,
 } from "./runtime";
 import {
-    JSOrdinaryObjectOperations,
+    ordinaryObjectOperations,
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
@@ -111,7 +111,7 @@ export class RealmImpl implements Realm {
     public globalThis: JSObject;
     public globalEnv: LexicalEnvironment;
     public templateMap: any[]; // FIXME
-    public ordinaryOps: ObjectOperations = new JSOrdinaryObjectOperations();
+    public ordinaryOps: ObjectOperations = ordinaryObjectOperations();
 
     public constructor() {
         this.intrinsics = CreateIntrinsics(this);
