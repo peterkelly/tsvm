@@ -275,3 +275,30 @@ export class ThrowCompletion {
         this.exceptionValue = exceptionValue;
     }
 }
+
+// ES6 Section 8.1: Lexical Environments
+
+export class LexicalEnvironment {
+    record: EnvironmentRecord;
+    outer: LexicalEnvironment | null;
+
+    public constructor(record: EnvironmentRecord, outer: LexicalEnvironment | null) {
+        this.record = record;
+        this.outer = outer;
+    }
+}
+
+// ES6 Section 8.1.1.1: Declarative Environment Records
+
+export abstract class EnvironmentRecord {
+    public abstract HasBinding(N: string): Completion<boolean>;
+    public abstract CreateMutableBinding(N: string, D: boolean): void;
+    public abstract CreateImmutableBinding(N: string, S: boolean): void;
+    public abstract InitializeBinding(N: string, V: JSValue): void;
+    public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
+    public abstract GetBindingValue(N: string, S: boolean): Completion<JSValue>;
+    public abstract DeleteBinding(N: string): Completion<boolean>;
+    public abstract HasThisBinding(): Completion<boolean>;
+    public abstract HasSuperBinding(): Completion<boolean>;
+    public abstract WithBaseObject(): Completion<JSObject | JSUndefined>;
+}
