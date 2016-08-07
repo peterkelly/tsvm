@@ -112,7 +112,7 @@ export class JSFunctionObject extends JSObject {
     public homeObject: JSObject;
 
     public constructor(options: FunctionObjectOptions) {
-        super(options.realm);
+        super();
         this.environment = options.environment;
         this.formalParameters = options.formalParameters;
         this.functionKind = options.functionKind;
@@ -126,13 +126,13 @@ export class JSFunctionObject extends JSObject {
 
     // ES6 Section 9.2.1: [[Call]] (thisArgument, argumentsList)
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSFunctionObject.__Call__ Not implemented");
     }
 
     // ES6 Section 9.2.2: [[Construct]] (argumentsList, newTarget)
 
-    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
+    public __Construct__(realm: Realm, args: JSValue[], obj: JSObject): Completion<JSObject> {
         throw new Error("JSFunctionObject.__Construct__ Not implemented");
     }
 }
@@ -231,7 +231,7 @@ class JSBoundFunctionObject extends JSObject {
 
     public constructor(realm: Realm, boundFunctionObject: JSObject, boundThis: JSValue,
                        boundArguments: JSValue[]) {
-        super(realm);
+        super();
         if (this.boundFunctionObject === this)
             throw new Error("Function bound to itself");
         this.boundFunctionObject = boundFunctionObject;
@@ -249,13 +249,13 @@ class JSBoundFunctionObject extends JSObject {
 
     // ES6 Section 9.4.1.1: [[Call]] (thisArgument, argumentsList)
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSBoundFunctionObject.__Call__ not implemented");
     }
 
     // ES6 Section 9.4.1.2: [[Construct]] (argumentsList, newTarget)
 
-    public __Construct__(args: JSValue[], obj: JSObject): Completion<JSObject> {
+    public __Construct__(realm: Realm, args: JSValue[], obj: JSObject): Completion<JSObject> {
         throw new Error("JSBoundFunctionObject.__Construct__ not implemented");
     }
 }
@@ -365,7 +365,7 @@ class ArgGetterFunction extends JSObject {
     public env: EnvironmentRecord;
 
     public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
-        super(realm,proto);
+        super(proto);
         this.name = name;
         this.env = env;
     }
@@ -374,7 +374,7 @@ class ArgGetterFunction extends JSObject {
         return true;
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         return this.env.GetBindingValue(this.name,false);
     }
 }
@@ -394,7 +394,7 @@ class ArgSetterFunction extends JSObject {
     public env: EnvironmentRecord;
 
     public constructor(realm: Realm, proto: JSObject | JSNull, name: string, env: EnvironmentRecord) {
-        super(realm,proto);
+        super(proto);
         this.name = name;
         this.env = env;
     }
@@ -403,7 +403,7 @@ class ArgSetterFunction extends JSObject {
         return true;
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         const value = (args.length > 0) ? args[0] : new JSUndefined();
         this.env.SetMutableBinding(this.name,value,false);
         return new NormalCompletion(new JSUndefined());

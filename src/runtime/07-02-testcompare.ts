@@ -102,7 +102,7 @@ export function IsConstructor(realm: Realm, argument: any): boolean {
 // ES6 Section 7.2.5: IsExtensible (O)
 
 export function IsExtensible(realm: Realm, O: JSObject): Completion<boolean> {
-    return O.__IsExtensible__();
+    return O.__IsExtensible__(realm);
 }
 
 // ES6 Section 7.2.6: IsInteger (argument)

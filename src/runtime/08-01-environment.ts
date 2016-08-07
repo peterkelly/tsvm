@@ -366,7 +366,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         const home = envRec.homeObject;
         if (home instanceof JSUndefined)
             return new NormalCompletion(new JSUndefined());
-        return home.__GetPrototypeOf__();
+        return home.__GetPrototypeOf__(this.realm);
     }
 }
 

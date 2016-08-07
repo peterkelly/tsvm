@@ -101,7 +101,7 @@ export function GetValue(realm: Realm, VComp: Reference | JSValue | Completion<R
         if (!(thisValueComp instanceof NormalCompletion))
             return thisValueComp;
         const thisValue = thisValueComp.value;
-        return base.__Get__(name,thisValue);
+        return base.__Get__(realm,name,thisValue);
     }
     else {
         const name: string = GetReferencedName(realm,V).stringRep;

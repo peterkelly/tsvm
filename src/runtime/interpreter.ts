@@ -389,17 +389,14 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
 }
 
 class ConsoleLogFunction extends JSObject {
-    public constructor(realm: Realm, prototype: JSObject) {
-        super(realm,prototype);
-    }
     public get implementsCall(): boolean {
         return true;
     }
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         console.log("ConsoleLogFunction.__Call__ begin");
         const strings: string[] = [];
         for (const arg of args) {
-            const strComp = ToString(this.realm,arg);
+            const strComp = ToString(realm,arg);
             if (!(strComp instanceof NormalCompletion))
                 return strComp;
             const str = strComp.value;
@@ -417,12 +414,12 @@ export function evalModule(node: ASTNode): void {
     const ctx = new ExecutionContext(realm, new JSNull(),lexEnv);
 
     envRec.CreateImmutableBinding("console",true);
-    const consoleObject = new JSObject(realm,realm.intrinsics.ObjectPrototype);
+    const consoleObject = new JSObject(realm.intrinsics.ObjectPrototype);
     consoleObject.properties.put("log",new DataDescriptor({
         enumerable: true,
         configurable: true,
         writable: true,
-        value: new ConsoleLogFunction(realm,realm.intrinsics.FunctionPrototype)
+        value: new ConsoleLogFunction(realm.intrinsics.FunctionPrototype)
     }));
     envRec.InitializeBinding("console",consoleObject);
 

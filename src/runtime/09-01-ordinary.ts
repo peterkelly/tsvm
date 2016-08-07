@@ -71,13 +71,13 @@ import {
 
 // ES6 Section 9.1.1: [[GetPrototypeOf]] ()
 
-function JSObject_GetPrototypeOf(O: JSObject): Completion<JSObject | JSNull> {
+function JSObject_GetPrototypeOf(realm: Realm, O: JSObject): Completion<JSObject | JSNull> {
     return new NormalCompletion(O.__prototype__);
 }
 
 // ES6 Section 9.1.2: [[SetPrototypeOf]] (V)
 
-function JSObject_SetPrototypeOf(O: JSObject, V: JSObject | JSNull): Completion<boolean> {
+function JSObject_SetPrototypeOf(realm: Realm, O: JSObject, V: JSObject | JSNull): Completion<boolean> {
     const extensible = O.__extensible__;
     const current = O.__prototype__;
     if (SameValue(V,current))
@@ -102,23 +102,23 @@ function JSObject_SetPrototypeOf(O: JSObject, V: JSObject | JSNull): Completion<
 
 // ES6 Section 9.1.3: [[IsExtensible]] ()
 
-function JSObject_IsExtensible(O: JSObject): Completion<boolean> {
+function JSObject_IsExtensible(realm: Realm, O: JSObject): Completion<boolean> {
     return new NormalCompletion(O.__extensible__);
 }
 
 // ES6 Section 9.1.4: [[PreventExtensions]] ()
 
-function JSObject_PreventExtensions(O: JSObject): Completion<boolean> {
+function JSObject_PreventExtensions(realm: Realm, O: JSObject): Completion<boolean> {
     O.__extensible__ = false;
     return new NormalCompletion(true);
 }
 
 // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
-function JSObject_GetOwnProperty(O: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
+function JSObject_GetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
     if (copy === undefined)
         copy = true;
-    return new NormalCompletion(OrdinaryGetOwnProperty(O.realm,O,P,copy));
+    return new NormalCompletion(OrdinaryGetOwnProperty(realm,O,P,copy));
 }
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
@@ -154,7 +154,7 @@ export function OrdinaryGetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyK
 
 // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
-function JSObject_DefineOwnProperty(O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
+function JSObject_DefineOwnProperty(realm: Realm, O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
     throw new Error("JSObject.__DefineOwnProperty__ not implemented");
 }
 
@@ -184,8 +184,8 @@ export function ValidateAndApplyPropertyDescriptor(
 
 // ES6 Section 9.1.7: [[HasProperty]] (P)
 
-function JSObject_HasProperty(O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    return OrdinaryHasProperty(O.realm,O,P);
+function JSObject_HasProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
+    return OrdinaryHasProperty(realm,O,P);
 }
 
 // ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
@@ -194,30 +194,30 @@ export function OrdinaryHasProperty(realm: Realm, O: JSObject, P: JSPropertyKey)
     const hasOwn = OrdinaryGetOwnProperty(realm,O,P);
     if (!(hasOwn instanceof JSUndefined))
         return new NormalCompletion(true);
-    const parentComp = O.__GetPrototypeOf__();
+    const parentComp = O.__GetPrototypeOf__(realm);
     if (!(parentComp instanceof NormalCompletion))
         return parentComp;
     const parent = parentComp.value;
     if (!(parent instanceof JSNull))
-        return parent.__HasProperty__(P);
+        return parent.__HasProperty__(realm,P);
     return new NormalCompletion(false);
 }
 
 // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
-function JSObject_Get(O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
-    const descComp = O.__GetOwnProperty__(P,false);
+function JSObject_Get(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
+    const descComp = O.__GetOwnProperty__(realm,P,false);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;
     if (desc instanceof JSUndefined) {
-        const parentComp = O.__GetPrototypeOf__();
+        const parentComp = O.__GetPrototypeOf__(realm);
         if (!(parentComp instanceof NormalCompletion))
             return parentComp;
         const parent = parentComp.value;
         if (parent instanceof JSNull)
             return new NormalCompletion(new JSUndefined());
-        return parent.__Get__(P,Receiver);
+        return parent.__Get__(realm,P,Receiver);
     }
     else if (desc instanceof DataDescriptor) {
         return new NormalCompletion(desc.value);
@@ -226,24 +226,24 @@ function JSObject_Get(O: JSObject, P: JSPropertyKey, Receiver: JSValue): Complet
         const getter = desc.__get__;
         if (getter instanceof JSUndefined)
             return new NormalCompletion(new JSUndefined());
-        return Call(O.realm,getter,Receiver,[]);
+        return Call(realm,getter,Receiver,[]);
     }
 }
 
 // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
-function JSObject_Set(O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
-    const ownDescComp = O.__GetOwnProperty__(P,false);
+function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
+    const ownDescComp = O.__GetOwnProperty__(realm,P,false);
     if (!(ownDescComp instanceof NormalCompletion))
         return ownDescComp;
     let ownDesc = ownDescComp.value;
     if (ownDesc instanceof JSUndefined) {
-        const parentComp = O.__GetPrototypeOf__();
+        const parentComp = O.__GetPrototypeOf__(realm);
         if (!(parentComp instanceof NormalCompletion))
             return parentComp;
         const parent = parentComp.value;
         if (!(parent instanceof JSNull)) {
-            return parent.__Set__(P,V,Receiver);
+            return parent.__Set__(realm,P,V,Receiver);
         }
         else {
             ownDesc = new DataDescriptor({
@@ -260,7 +260,7 @@ function JSObject_Set(O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSVal
             return new NormalCompletion(false);
         if (!(Receiver instanceof JSObject))
             return new NormalCompletion(false);
-        const existingDescriptorComp = Receiver.__GetOwnProperty__(P);
+        const existingDescriptorComp = Receiver.__GetOwnProperty__(realm,P);
         if (!(existingDescriptorComp instanceof NormalCompletion))
             return existingDescriptorComp;
         const existingDescriptor = existingDescriptorComp.value;
@@ -270,17 +270,17 @@ function JSObject_Set(O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSVal
             if (!(existingDescriptor.writable))
                 return new NormalCompletion(false);
             const valueDesc = new DataDescriptor({value: V, writable: true });
-            return Receiver.__DefineOwnProperty__(P,valueDesc);
+            return Receiver.__DefineOwnProperty__(realm,P,valueDesc);
         }
         else {
-            return CreateDataProperty(O.realm,Receiver,P,V);
+            return CreateDataProperty(realm,Receiver,P,V);
         }
     }
     else {
         const setter = ownDesc.__set__;
         if (setter instanceof JSUndefined)
             return new NormalCompletion(false);
-        const setterResultComp = Call(O.realm,setter,Receiver,[V]);
+        const setterResultComp = Call(realm,setter,Receiver,[V]);
         if (!(setterResultComp instanceof NormalCompletion))
             return setterResultComp;
         return new NormalCompletion(true);
@@ -289,8 +289,8 @@ function JSObject_Set(O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSVal
 
 // ES6 Section 9.1.10: [[Delete]] (P)
 
-function JSObject_Delete(O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const descComp = O.__GetOwnProperty__(P);
+function JSObject_Delete(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
+    const descComp = O.__GetOwnProperty__(realm,P);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;
@@ -305,20 +305,20 @@ function JSObject_Delete(O: JSObject, P: JSPropertyKey): Completion<boolean> {
 
 // ES6 Section 9.1.11: [[Enumerate]] ()
 
-function JSObject_Enumerate(O: JSObject): Completion<JSObject> {
+function JSObject_Enumerate(realm: Realm, O: JSObject): Completion<JSObject> {
     throw new Error("JSObject.__Enumerate__ not implemented");
 }
 
 // ES6 Section 9.1.12: [[OwnPropertyKeys]] ()
 
-function JSObject_OwnPropertyKeys(O: JSObject): Completion<JSPropertyKey[]> {
+function JSObject_OwnPropertyKeys(realm: Realm, O: JSObject): Completion<JSPropertyKey[]> {
     throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
 }
 
 // ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
 
 export function ObjectCreate(realm: Realm, proto: JSObject | JSNull/*, internalSlotsList: string[]*/): JSObject {
-    const obj = new JSObject(realm);
+    const obj = new JSObject();
     obj.__prototype__ = proto;
     obj.__extensible__ = true; // not really necessary; JSObjects are extensible by default
     return obj;
@@ -338,11 +338,11 @@ export function GetPrototypeFromConstructor(realm: Realm, constructor: any, intr
 
 // Call/Create - not present for ordinary objects
 
-function JSObject_Call(O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+function JSObject_Call(realm: Realm, O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
     throw new Error("Not a callable object; check implementsCall first");
 }
 
-function JSObject_Construct(O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
+function JSObject_Construct(realm: Realm, O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
     throw new Error("Not a constructor object; check implementsConstruct first");
 }
 

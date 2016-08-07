@@ -280,28 +280,28 @@ export function ToObject(realm: Realm, argument: JSValue): Completion<JSObject> 
         case ValueType.Boolean:
             if (argument instanceof JSBoolean) {
                 const proto = realm.intrinsics.BooleanPrototype;
-                const obj = new BooleanObject(realm,proto,argument);
+                const obj = new BooleanObject(proto,argument);
                 return new NormalCompletion(obj);
             }
             break;
         case ValueType.Number:
             if (argument instanceof JSNumber) {
                 const proto = realm.intrinsics.NumberPrototype;
-                const obj = new NumberObject(realm,proto,argument);
+                const obj = new NumberObject(proto,argument);
                 return new NormalCompletion(obj);
             }
             break;
         case ValueType.String:
             if (argument instanceof JSString) {
                 const proto = realm.intrinsics.StringPrototype;
-                const obj = new StringObject(realm,proto,argument);
+                const obj = new StringObject(proto,argument);
                 return new NormalCompletion(obj);
             }
             break;
         case ValueType.Symbol:
             if (argument instanceof JSSymbol) {
                 const proto = realm.intrinsics.SymbolPrototype;
-                const obj = new SymbolObject(realm,proto,argument);
+                const obj = new SymbolObject(proto,argument);
                 return new NormalCompletion(obj);
             }
             break;

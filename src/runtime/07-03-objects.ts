@@ -44,7 +44,7 @@ import {
 // ES6 Section 7.3.1: Get (O, P)
 
 export function Get(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<JSValue> {
-    return O.__Get__(P,O);
+    return O.__Get__(realm,P,O);
 }
 
 // ES6 Section 7.3.2: GetV (V, P)
@@ -54,13 +54,13 @@ export function GetV(realm: Realm, V: JSValue, P: JSPropertyKey): Completion<JSV
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
-    return O.__Get__(P,O);
+    return O.__Get__(realm,P,O);
 }
 
 // ES6 Section 7.3.3: Set (O, P, V, Throw)
 
 export function Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Throw: boolean): Completion<boolean> {
-    const successComp = O.__Set__(P,V,O);
+    const successComp = O.__Set__(realm,P,V,O);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
@@ -75,7 +75,7 @@ export function CreateDataProperty(realm: Realm, O: JSObject, P: JSPropertyKey, 
     const newDesc = new DataDescriptor({ value: V, writable: true });
     newDesc.enumerable = true;
     newDesc.configurable = true;
-    return O.__DefineOwnProperty__(P,newDesc);
+    return O.__DefineOwnProperty__(realm,P,newDesc);
 }
 
 // ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
@@ -84,7 +84,7 @@ export function CreateMethodProperty(realm: Realm, O: JSObject, P: JSPropertyKey
     const newDesc = new DataDescriptor({ value: V, writable: true });
     newDesc.enumerable = false;
     newDesc.configurable = true;
-    return O.__DefineOwnProperty__(P,newDesc);
+    return O.__DefineOwnProperty__(realm,P,newDesc);
 }
 
 // ES6 Section 7.3.6: CreateDataPropertyOrThrow (O, P, V)
@@ -102,7 +102,7 @@ export function CreateDataPropertyOrThrow(realm: Realm, O: JSObject, P: JSProper
 // ES6 Section 7.3.7: DefinePropertyOrThrow (O, P, desc)
 
 export function DefinePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKey, desc: PropertyDescriptor): Completion<boolean> {
-    const successComp = O.__DefineOwnProperty__(P,desc);
+    const successComp = O.__DefineOwnProperty__(realm,P,desc);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
@@ -114,7 +114,7 @@ export function DefinePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKe
 // ES6 Section 7.3.8: DeletePropertyOrThrow (O, P)
 
 export function DeletePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const successComp = O.__Delete__(P);
+    const successComp = O.__Delete__(realm,P);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
@@ -140,13 +140,13 @@ export function GetMethod(realm: Realm, O: JSValue, P: JSPropertyKey): Completio
 // ES6 Section 7.3.10: HasProperty (O, P)
 
 export function HasProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    return O.__HasProperty__(P);
+    return O.__HasProperty__(realm,P);
 }
 
 // ES6 Section 7.3.11: HasOwnProperty (O, P)
 
 export function HasOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const descComp = O.__GetOwnProperty__(P,false);
+    const descComp = O.__GetOwnProperty__(realm,P,false);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;
@@ -162,7 +162,7 @@ export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue
         throw new Error("Object is not callable"); // FIXME: temp
     // if (!IsCallable(F))
         // return realm.throwTypeError();
-    return F.__Call__(V,argumentList);
+    return F.__Call__(realm,V,argumentList);
 }
 
 // ES6 Section 7.3.13: Construct (F, [argumentsList], [newTarget])
@@ -170,7 +170,7 @@ export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue
 export function Construct(realm: Realm, F: JSObject, argumentList: JSValue[], newTarget: JSObject): Completion<JSObject> {
     if (!F.implementsConstruct)
         throw new Error("Attempt to call Construct ot an object that is not a constructor");
-    return F.__Construct__(argumentList,newTarget);
+    return F.__Construct__(realm,argumentList,newTarget);
 }
 
 // ES6 Section 7.3.14: SetIntegrityLevel (O, level)

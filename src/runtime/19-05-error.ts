@@ -77,9 +77,7 @@ class ErrorToStringFunction extends JSObject {
         return true;
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-
-        const realm = this.realm;
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
 
         const O = thisArg;
         if (!(O instanceof JSObject))
@@ -134,21 +132,20 @@ class ErrorToStringFunction extends JSObject {
 export class ErrorObject extends JSObject {
     public message: string;
     public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
-        super(realm,proto);
+        super(proto);
         if (message !== undefined)
             this.properties.put("message",stringDescriptor(message));
     }
 }
 
-export function setupErrorPrototype(obj: JSObject): void {
-    const realm = obj.realm;
+export function setupErrorPrototype(realm: Realm, obj: JSObject): void {
     obj.properties.put("message",stringDescriptor(""));
     obj.properties.put("name",stringDescriptor(""));
     obj.properties.put("toString",new DataDescriptor({
         enumerable: false,
         configurable: true,
         writable: true,
-        value: new ErrorToStringFunction(realm,realm.intrinsics.FunctionPrototype),
+        value: new ErrorToStringFunction(realm.intrinsics.FunctionPrototype),
     }));
 }
 

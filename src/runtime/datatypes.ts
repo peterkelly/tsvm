@@ -180,14 +180,12 @@ export class JSNumber extends JSPrimitiveValue {
 export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
 
-    public realm: Realm;
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
     public readonly properties: PropertyMap;
 
-    public constructor(realm: Realm, prototype?: JSObject | JSNull) {
+    public constructor(prototype?: JSObject | JSNull) {
         super();
-        this.realm = realm;
         if (prototype !== undefined)
             this.__prototype__ = prototype;
         else
@@ -212,60 +210,60 @@ export class JSObject extends JSValue {
         return (this.__GetPrototypeOf__ !== JSObject.prototype.__GetPrototypeOf__);
     }
 
-    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
-        return this.realm.ordinaryOps.__GetPrototypeOf__(this);
+    public __GetPrototypeOf__(realm: Realm): Completion<JSObject | JSNull> {
+        return realm.ordinaryOps.__GetPrototypeOf__(realm,this);
     }
 
-    public __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean> {
-        return this.realm.ordinaryOps.__SetPrototypeOf__(this,V);
+    public __SetPrototypeOf__(realm: Realm, V: JSObject | JSNull): Completion<boolean> {
+        return realm.ordinaryOps.__SetPrototypeOf__(realm,this,V);
     }
 
-    public __IsExtensible__(): Completion<boolean> {
-        return this.realm.ordinaryOps.__IsExtensible__(this);
+    public __IsExtensible__(realm: Realm): Completion<boolean> {
+        return realm.ordinaryOps.__IsExtensible__(realm,this);
     }
 
-    public __PreventExtensions__(): Completion<boolean> {
-        return this.realm.ordinaryOps.__PreventExtensions__(this);
+    public __PreventExtensions__(realm: Realm): Completion<boolean> {
+        return realm.ordinaryOps.__PreventExtensions__(realm,this);
     }
 
-    public __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
-        return this.realm.ordinaryOps.__GetOwnProperty__(this,P,copy);
+    public __GetOwnProperty__(realm: Realm, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor> {
+        return realm.ordinaryOps.__GetOwnProperty__(realm,this,P,copy);
     }
 
-    public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
-        return this.realm.ordinaryOps.__HasProperty__(this,P);
+    public __HasProperty__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
+        return realm.ordinaryOps.__HasProperty__(realm,this,P);
     }
 
-    public __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
-        return this.realm.ordinaryOps.__Get__(this,P,Receiver);
+    public __Get__(realm: Realm, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
+        return realm.ordinaryOps.__Get__(realm,this,P,Receiver);
     }
 
-    public __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
-        return this.realm.ordinaryOps.__Set__(this,P,V,Receiver);
+    public __Set__(realm: Realm, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
+        return realm.ordinaryOps.__Set__(realm,this,P,V,Receiver);
     }
 
-    public __Delete__(P: JSPropertyKey): Completion<boolean> {
-        return this.realm.ordinaryOps.__Delete__(this,P);
+    public __Delete__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
+        return realm.ordinaryOps.__Delete__(realm,this,P);
     }
 
-    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
-        return this.realm.ordinaryOps.__DefineOwnProperty__(this,propertyKey,property);
+    public __DefineOwnProperty__(realm: Realm, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
+        return realm.ordinaryOps.__DefineOwnProperty__(realm,this,propertyKey,property);
     }
 
-    public __Enumerate__(): Completion<JSObject> {
-        return this.realm.ordinaryOps.__Enumerate__(this);
+    public __Enumerate__(realm: Realm): Completion<JSObject> {
+        return realm.ordinaryOps.__Enumerate__(realm,this);
     }
 
-    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
-        return this.realm.ordinaryOps.__OwnPropertyKeys__(this);
+    public __OwnPropertyKeys__(realm: Realm): Completion<JSPropertyKey[]> {
+        return realm.ordinaryOps.__OwnPropertyKeys__(realm,this);
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        return this.realm.ordinaryOps.__Call__(this,thisArg,args);
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        return realm.ordinaryOps.__Call__(realm,this,thisArg,args);
     }
 
-    public __Construct__(args: JSValue[], newTarget: JSObject): Completion<JSObject> {
-        return this.realm.ordinaryOps.__Construct__(this,args,newTarget);
+    public __Construct__(realm: Realm, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
+        return realm.ordinaryOps.__Construct__(realm,this,args,newTarget);
     }
 }
 
@@ -277,20 +275,20 @@ export class JSObject extends JSValue {
 // any module that defines inherited classes, which is why datatypes.ts does needs to be completely
 // independent of all other modules in the runtime system.
 export interface ObjectOperations {
-    __GetPrototypeOf__(O: JSObject): Completion<JSObject | JSNull>;
-    __SetPrototypeOf__(O: JSObject, V: JSObject | JSNull): Completion<boolean>;
-    __IsExtensible__(O: JSObject): Completion<boolean>;
-    __PreventExtensions__(O: JSObject): Completion<boolean>;
-    __GetOwnProperty__(O: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
-    __HasProperty__(O: JSObject, P: JSPropertyKey): Completion<boolean>;
-    __Get__(O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
-    __Set__(O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
-    __Delete__(O: JSObject, P: JSPropertyKey): Completion<boolean>;
-    __DefineOwnProperty__(O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
-    __Enumerate__(O: JSObject, ): Completion<JSObject>;
-    __OwnPropertyKeys__(O: JSObject): Completion<JSPropertyKey[]>;
-    __Call__(O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-    __Construct__(O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
+    __GetPrototypeOf__(realm: Realm, O: JSObject): Completion<JSObject | JSNull>;
+    __SetPrototypeOf__(realm: Realm, O: JSObject, V: JSObject | JSNull): Completion<boolean>;
+    __IsExtensible__(realm: Realm, O: JSObject): Completion<boolean>;
+    __PreventExtensions__(realm: Realm, O: JSObject): Completion<boolean>;
+    __GetOwnProperty__(realm: Realm, O: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
+    __HasProperty__(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __Get__(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
+    __Set__(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
+    __Delete__(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __DefineOwnProperty__(realm: Realm, O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
+    __Enumerate__(realm: Realm, O: JSObject, ): Completion<JSObject>;
+    __OwnPropertyKeys__(realm: Realm, O: JSObject): Completion<JSPropertyKey[]>;
+    __Call__(realm: Realm, O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+    __Construct__(realm: Realm, O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
 }
 
 // Additional implementation types
