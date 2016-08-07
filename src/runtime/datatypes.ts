@@ -405,4 +405,11 @@ export interface Realm {
     globalThis: JSObject;
     globalEnv: LexicalEnvironment;
     templateMap: UnknownType[];
+
+    throwEvalError(message?: string): ThrowCompletion;
+    throwRangeError(message?: string): ThrowCompletion;
+    throwReferenceError(message?: string): ThrowCompletion;
+    throwSyntaxError(message?: string): ThrowCompletion;
+    throwTypeError(message?: string): ThrowCompletion;
+    throwURIError(message?: string): ThrowCompletion;
 }
