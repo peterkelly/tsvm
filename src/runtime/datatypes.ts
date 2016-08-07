@@ -14,44 +14,10 @@
 
 // ES6 Chapter 6: ECMAScript Data Types and Values
 
-// Just a placeholder for places where we don't know the type. All such cases should eventually
-// be fixed by determine which type should be used.
+// This is a placeholder used in cases where we haven't yet determined what type should be used.
+// Eventually all instances of this should be removed.
 export class UnknownType {
     _nominal_type_UnknownType: any;
-}
-
-export interface LexicalEnvironment {
-    record: EnvironmentRecord;
-    outer: LexicalEnvironment | null;
-}
-
-export interface Realm {
-    globalThis: JSObject;
-    globalEnv: LexicalEnvironment;
-    templateMap: any[]; // FIXME
-    intrinsics: Intrinsics;
-    ordinaryOps: ObjectOperations;
-
-    throwEvalError(message?: string): ThrowCompletion;
-    throwRangeError(message?: string): ThrowCompletion;
-    throwReferenceError(message?: string): ThrowCompletion;
-    throwSyntaxError(message?: string): ThrowCompletion;
-    throwTypeError(message?: string): ThrowCompletion;
-    throwURIError(message?: string): ThrowCompletion;
-}
-
-export interface EnvironmentRecord {
-    // FIXME: I believe this can just return a boolean, not a completion
-     HasBinding(N: string): Completion<boolean>;
-     CreateMutableBinding(N: string, D: boolean): void;
-     CreateImmutableBinding(N: string, S: boolean): void;
-     InitializeBinding(N: string, V: JSValue): void;
-     SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
-     GetBindingValue(N: string, S: boolean): Completion<JSValue>;
-     DeleteBinding(N: string): Completion<boolean>;
-     HasThisBinding(): Completion<boolean>;
-     HasSuperBinding(): Completion<boolean>;
-     WithBaseObject(): Completion<JSObject | JSUndefined>;
 }
 
 export class PropertyMap {
@@ -526,7 +492,6 @@ export interface Intrinsics {
     SyntaxError: JSObject;
     SyntaxErrorPrototype: JSObject;
     ThrowTypeError: JSObject;
-    // TypedArray: JSObject;
     TypedArrayPrototype: JSObject;
     TypeError: JSObject;
     TypeErrorPrototype: JSObject;
@@ -627,4 +592,48 @@ export class SuperReference extends Reference {
 
 export class DataBlock {
     _nominal_type_DataBlock: any;
+}
+
+// ES6 Section 8.1: Lexical Environments
+
+export class LexicalEnvironment {
+    record: EnvironmentRecord;
+    outer: LexicalEnvironment | null;
+
+    public constructor(record: EnvironmentRecord, outer: LexicalEnvironment | null) {
+        this.record = record;
+        this.outer = outer;
+    }
+}
+
+// ES6 Section 8.1.1.1: Declarative Environment Records
+
+export abstract class EnvironmentRecord {
+    public abstract HasBinding(N: string): Completion<boolean>;
+    public abstract CreateMutableBinding(N: string, D: boolean): void;
+    public abstract CreateImmutableBinding(N: string, S: boolean): void;
+    public abstract InitializeBinding(N: string, V: JSValue): void;
+    public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
+    public abstract GetBindingValue(N: string, S: boolean): Completion<JSValue>;
+    public abstract DeleteBinding(N: string): Completion<boolean>;
+    public abstract HasThisBinding(): Completion<boolean>;
+    public abstract HasSuperBinding(): Completion<boolean>;
+    public abstract WithBaseObject(): Completion<JSObject | JSUndefined>;
+}
+
+// ES6 Section 8.2: Code Realms
+
+export interface Realm {
+    intrinsics: Intrinsics;
+    globalThis: JSObject;
+    globalEnv: LexicalEnvironment;
+    templateMap: UnknownType[];
+    ordinaryOps: ObjectOperations;
+
+    throwEvalError(message?: string): ThrowCompletion;
+    throwRangeError(message?: string): ThrowCompletion;
+    throwReferenceError(message?: string): ThrowCompletion;
+    throwSyntaxError(message?: string): ThrowCompletion;
+    throwTypeError(message?: string): ThrowCompletion;
+    throwURIError(message?: string): ThrowCompletion;
 }

@@ -71,25 +71,6 @@ import {
 
 // ES6 Section 8.1.1: Environment Records
 
-export abstract class AbstractEnvironmentRecord implements EnvironmentRecord {
-    _nominal_type_EnvironmentRecord: any;
-
-    public constructor() {
-    }
-
-    // FIXME: I believe this can just return a boolean, not a completion
-    public abstract HasBinding(N: string): Completion<boolean>;
-    public abstract CreateMutableBinding(N: string, D: boolean): void;
-    public abstract CreateImmutableBinding(N: string, S: boolean): void;
-    public abstract InitializeBinding(N: string, V: JSValue): void;
-    public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
-    public abstract GetBindingValue(N: string, S: boolean): Completion<JSValue>;
-    public abstract DeleteBinding(N: string): Completion<boolean>;
-    public abstract HasThisBinding(): Completion<boolean>;
-    public abstract HasSuperBinding(): Completion<boolean>;
-    public abstract WithBaseObject(): Completion<JSObject | JSUndefined>;
-}
-
 // ES6 Section 8.1.1.1: Declarative Environment Records
 
 interface DeclarativeBinding {
@@ -100,7 +81,7 @@ interface DeclarativeBinding {
     strict: boolean;
 }
 
-export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
+export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_DeclarativeEnvironmentRecord: any;
 
     public readonly bindings: { [name: string]: DeclarativeBinding } = {};
@@ -111,7 +92,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
         this.realm = realm;
     }
 
-    // ES6 Section 8.1.1.1.1: HasBinding(N)
+    // ES6 Section 8.1.1.1.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
         const result = (N in this.bindings);
@@ -158,7 +139,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
         binding.initialized = true;
     }
 
-    // ES6 Section 8.1.1.1.5 SetMutableBinding (N, V, S)
+    // ES6 Section 8.1.1.1.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
         const envRec = this;
@@ -226,7 +207,7 @@ export class DeclarativeEnvironmentRecord extends AbstractEnvironmentRecord {
     }
 }
 
-export class ObjectEnvironmentRecord extends AbstractEnvironmentRecord {
+export class ObjectEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_ObjectEnvironmentRecord: any;
     public bindingObject: JSObject;
     public realm: Realm;
@@ -239,7 +220,7 @@ export class ObjectEnvironmentRecord extends AbstractEnvironmentRecord {
         // this.withEnvironment = false;
     }
 
-    // ES6 Section 8.1.1.2.1: HasBinding(N)
+    // ES6 Section 8.1.1.2.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
         const envRec = this;
@@ -339,7 +320,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         this.thisValue = new JSUndefined();
     }
 
-    // ES6 Section 8.1.1.3.1: BindThisValue(V)
+    // ES6 Section 8.1.1.3.1: BindThisValue (V)
 
     public BindThisValue(V: JSValue): Completion<JSValue> {
         const envRec = this;
@@ -392,7 +373,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 // ES6 Section 8.1.1.4: Global Environment Records
 
-export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
+export class GlobalEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_GlobalEnvironmentRecord: any;
     public realm: Realm;
     public objectRecord: ObjectEnvironmentRecord;
@@ -407,7 +388,7 @@ export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
         this.varNames = [];
     }
 
-    // ES6 Section 8.1.1.4.1: HasBinding(N)
+    // ES6 Section 8.1.1.4.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
         throw new Error("GlobalEnvironmentRecord.HasBinding not implemented");
@@ -437,7 +418,7 @@ export class GlobalEnvironmentRecord extends AbstractEnvironmentRecord {
         throw new Error("GlobalEnvironmentRecord.SetMutableBinding not implemented");
     }
 
-    // ES6 Section 8.1.1.4.6: GetBindingValue(N, S)
+    // ES6 Section 8.1.1.4.6: GetBindingValue (N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
         throw new Error("GlobalEnvironmentRecord.GetBindingValue not implemented");
@@ -525,7 +506,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
         super(realm);
     }
 
-    // ES6 Section 8.1.1.5.1: GetBindingValue (N,S)
+    // ES6 Section 8.1.1.5.1: GetBindingValue (N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
         throw new Error("ModuleEnvironmentRecord.GetBindingValue not implemented");
@@ -551,7 +532,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
     // ES6 Section 8.1.1.5.5: CreateImportBinding (N, M, N2)
 
-    public CreateImportBinding(N: string, M: any, N2: any): Completion<UnknownType> {
+    public CreateImportBinding(N: string, M: UnknownType, N2: string): Completion<UnknownType> {
         throw new Error("ModuleEnvironmentRecord.CreateImportBinding not implemented");
     }
 }
