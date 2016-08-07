@@ -435,8 +435,8 @@ export class DataDescriptor extends BaseDescriptor {
 
 export class AccessorDescriptor extends BaseDescriptor {
     _nominal_type_AccessorDescriptor: any;
-    public __get__: JSObject | JSUndefined = new JSUndefined;
-    public __set__: JSObject | JSUndefined = new JSUndefined;
+    public __get__: JSObject | JSUndefined = new JSUndefined();
+    public __set__: JSObject | JSUndefined = new JSUndefined();
     public constructor(options?: {
         enumerable?: boolean,
         configurable?: boolean,
