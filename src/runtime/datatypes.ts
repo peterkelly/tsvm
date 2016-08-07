@@ -270,20 +270,20 @@ export class JSObject extends JSValue {
 }
 
 export interface ObjectOperations {
-    __GetPrototypeOf__(obj: JSObject): Completion<JSObject | JSNull>;
-    __SetPrototypeOf__(obj: JSObject, V: JSObject | JSNull): Completion<boolean>;
-    __IsExtensible__(obj: JSObject): Completion<boolean>;
-    __PreventExtensions__(obj: JSObject): Completion<boolean>;
-    __GetOwnProperty__(obj: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
-    __HasProperty__(obj: JSObject, P: JSPropertyKey): Completion<boolean>;
-    __Get__(obj: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
-    __Set__(obj: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
-    __Delete__(obj: JSObject, P: JSPropertyKey): Completion<boolean>;
-    __DefineOwnProperty__(obj: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
-    __Enumerate__(obj: JSObject, ): Completion<JSObject>;
-    __OwnPropertyKeys__(obj: JSObject): Completion<JSPropertyKey[]>;
-    __Call__(obj: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-    __Construct__(obj: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
+    __GetPrototypeOf__(O: JSObject): Completion<JSObject | JSNull>;
+    __SetPrototypeOf__(O: JSObject, V: JSObject | JSNull): Completion<boolean>;
+    __IsExtensible__(O: JSObject): Completion<boolean>;
+    __PreventExtensions__(O: JSObject): Completion<boolean>;
+    __GetOwnProperty__(O: JSObject, P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
+    __HasProperty__(O: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __Get__(O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
+    __Set__(O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
+    __Delete__(O: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __DefineOwnProperty__(O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
+    __Enumerate__(O: JSObject, ): Completion<JSObject>;
+    __OwnPropertyKeys__(O: JSObject): Completion<JSPropertyKey[]>;
+    __Call__(O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+    __Construct__(O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
 }
 
 // Additional implementation types
