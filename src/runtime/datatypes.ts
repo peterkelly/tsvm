@@ -148,59 +148,59 @@ export class JSObject extends JSValue {
         return ValueType.Object;
     }
 
-    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
+    public __GetPrototypeOf__(realm: Realm): Completion<JSObject | JSNull> {
         throw new Error("JSObject.__GetPrototypeOf__ not implemented");
     }
 
-    public __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean> {
+    public __SetPrototypeOf__(realm: Realm, V: JSObject | JSNull): Completion<boolean> {
         throw new Error("JSObject.__SetPrototypeOf__ not implemented");
     }
 
-    public __IsExtensible__(): Completion<boolean> {
+    public __IsExtensible__(realm: Realm): Completion<boolean> {
         throw new Error("JSObject.__IsExtensible__ not implemented");
     }
 
-    public __PreventExtensions__(): Completion<boolean> {
+    public __PreventExtensions__(realm: Realm): Completion<boolean> {
         throw new Error("JSObject.__PreventExtensions__ not implemented");
     }
 
-    public __GetOwnProperty__(P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor> {
+    public __GetOwnProperty__(realm: Realm, P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor> {
         throw new Error("JSObject.__GetOwnProperty__ not implemented");
     }
 
-    public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
+    public __HasProperty__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
         throw new Error("JSObject.__HasProperty__ not implemented");
     }
 
-    public __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
+    public __Get__(realm: Realm, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
         throw new Error("JSObject.__Get__ not implemented");
     }
 
-    public __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
+    public __Set__(realm: Realm, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
         throw new Error("JSObject.__Set__ not implemented");
     }
 
-    public __Delete__(P: JSPropertyKey): Completion<boolean> {
+    public __Delete__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
         throw new Error("JSObject.__Delete__ not implemented");
     }
 
-    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
+    public __DefineOwnProperty__(realm: Realm, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
         throw new Error("JSObject.__DefineOwnProperty__ not implemented");
     }
 
-    public __Enumerate__(): Completion<JSObject> {
+    public __Enumerate__(realm: Realm): Completion<JSObject> {
         throw new Error("JSObject.__Enumerate__ not implemented");
     }
 
-    public __OwnPropertyKeys__(): Completion<JSPropertyKey[]> {
+    public __OwnPropertyKeys__(realm: Realm): Completion<JSPropertyKey[]> {
         throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
     }
 
-    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSObject.__Call__ not implemented");
     }
 
-    public __Construct__(args: JSValue[], newTarget: JSObject): Completion<JSObject> {
+    public __Construct__(realm: Realm, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
         throw new Error("JSObject.__Construct__ not implemented");
     }
 }
