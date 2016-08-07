@@ -83,9 +83,9 @@ export function RequireObjectCoercible(realm: Realm, argument: JSValue): Complet
 
 // ES6 Section 7.2.2: IsArray (argument)
 
-// export function IsArray(realm: Realm, argument: any): Completion<UnknownType> {
-//     throw new Error("IsArray not implemented");
-// }
+export function IsArray(realm: Realm, argument: JSValue): Completion<boolean> {
+    throw new Error("IsArray not implemented");
+}
 
 // ES6 Section 7.2.3: IsCallable (argument)
 
@@ -95,7 +95,7 @@ export function IsCallable(realm: Realm, argument: JSValue): boolean {
 
 // ES6 Section 7.2.4: IsConstructor (argument)
 
-export function IsConstructor(realm: Realm, argument: any): boolean {
+export function IsConstructor(realm: Realm, argument: JSValue): boolean {
     return ((argument instanceof JSObject) && argument.implementsConstruct);
 }
 
@@ -122,9 +122,9 @@ export function IsPropertyKey(realm: Realm, argument: JSValue): argument is JSPr
 
 // ES6 Section 7.2.8 IsRegExp: (argument)
 
-// export function IsRegExp(realm: Realm, argument: any): Completion<UnknownType> {
-//     throw new Error("IsRegExp not implemented");
-// }
+export function IsRegExp(realm: Realm, argument: any): Completion<boolean> {
+    throw new Error("IsRegExp not implemented");
+}
 
 // ES6 Section 7.2.9: SameValue (x, y)
 

@@ -15,7 +15,6 @@
 // ES6 Section 7.3: Operations on Objects
 
 import {
-    UnknownType,
     Realm,
     ValueType,
     JSValue,
@@ -175,13 +174,13 @@ export function Construct(realm: Realm, F: JSObject, argumentList: JSValue[], ne
 
 // ES6 Section 7.3.14: SetIntegrityLevel (O, level)
 
-export function SetIntegrityLevel(realm: Realm, O: JSObject, level: string): Completion<UnknownType> {
+export function SetIntegrityLevel(realm: Realm, O: JSObject, level: string): Completion<boolean> {
     throw new Error("SetIntegrityLevel not implemented");
 }
 
 // ES6 Section 7.3.15: TestIntegrityLevel (O, level)
 
-export function TestIntegrityLevel(realm: Realm, O: JSObject, level: string): Completion<UnknownType> {
+export function TestIntegrityLevel(realm: Realm, O: JSObject, level: string): Completion<boolean> {
     throw new Error("TestIntegrityLevel not implemented");
 }
 
@@ -209,24 +208,24 @@ export function Invoke(realm: Realm, O: JSObject, P: JSPropertyKey, argumentsLis
 
 // ES6 Section 7.3.19: OrdinaryHasInstance (C, O)
 
-export function OrdinaryHasInstance(realm: Realm, C: any, O: JSObject): Completion<UnknownType> {
+export function OrdinaryHasInstance(realm: Realm, C: any, O: JSObject): Completion<boolean> {
     throw new Error("OrdinaryHasInstance not implemented");
 }
 
 // ES6 Section 7.3.20: SpeciesConstructor (O, defaultConstructor)
 
-export function SpeciesConstructor(realm: Realm, O: JSObject, defaultConstructor: any): Completion<UnknownType> {
+export function SpeciesConstructor(realm: Realm, O: JSObject, defaultConstructor: any): Completion<JSObject> {
     throw new Error("SpeciesConstructor not implemented");
 }
 
 // ES6 Section 7.3.21: EnumerableOwnNames (O)
 
-export function EnumerableOwnNames(realm: Realm, O: JSObject): Completion<UnknownType> {
+export function EnumerableOwnNames(realm: Realm, O: JSObject): Completion<JSString[]> {
     throw new Error("EnumerableOwnNames not implemented");
 }
 
 // ES6 Section 7.3.22: GetFunctionRealm (obj)
 
-export function GetFunctionRealm(realm: Realm, obj: JSObject): Completion<UnknownType> {
+export function GetFunctionRealm(realm: Realm, obj: JSObject): Completion<Realm> {
     throw new Error("GetFunctionRealm not implemented");
 }
