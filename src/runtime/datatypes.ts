@@ -225,6 +225,100 @@ export class AccessorDescriptor extends PropertyDescriptor {
     public __set__: JSObject | JSUndefined = new JSUndefined();
 }
 
+// ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
+
+export interface Intrinsics {
+    Array: JSObject;
+    ArrayBuffer: JSObject;
+    ArrayBufferPrototype: JSObject;
+    ArrayIteratorPrototype: JSObject;
+    ArrayPrototype: JSObject;
+    ArrayProto_values: JSObject;
+    Boolean: JSObject;
+    BooleanPrototype: JSObject;
+    DataView: JSObject;
+    DataViewPrototype: JSObject;
+    Date: JSObject;
+    DatePrototype: JSObject;
+    decodeURI: JSObject;
+    decodeURIComponent: JSObject;
+    encodeURI: JSObject;
+    encodeURIComponent: JSObject;
+    Error: JSObject;
+    ErrorPrototype: JSObject;
+    eval: JSObject;
+    EvalError: JSObject;
+    EvalErrorPrototype: JSObject;
+    Float32Array: JSObject;
+    Float32ArrayPrototype: JSObject;
+    Float64Array: JSObject;
+    Float64ArrayPrototype: JSObject;
+    Function: JSObject;
+    FunctionPrototype: JSObject;
+    Generator: JSObject;
+    GeneratorFunction: JSObject;
+    GeneratorPrototype: JSObject;
+    Int8Array: JSObject;
+    Int8ArrayPrototype: JSObject;
+    Int16Array: JSObject;
+    Int16ArrayPrototype: JSObject;
+    Int32Array: JSObject;
+    Int32ArrayPrototype: JSObject;
+    isFinite: JSObject;
+    isNaN: JSObject;
+    IteratorPrototype: JSObject;
+    JSON: JSObject;
+    Map: JSObject;
+    MapIteratorPrototype: JSObject;
+    MapPrototype: JSObject;
+    Math: JSObject;
+    Number: JSObject;
+    NumberPrototype: JSObject;
+    Object: JSObject;
+    ObjectPrototype: JSObject;
+    ObjProto_toString: JSObject;
+    parseFloat: JSObject;
+    parseInt: JSObject;
+    Promise: JSObject;
+    PromisePrototype: JSObject;
+    Proxy: JSObject;
+    RangeError: JSObject;
+    RangeErrorPrototype: JSObject;
+    ReferenceError: JSObject;
+    ReferenceErrorPrototype: JSObject;
+    Reflect: JSObject;
+    RegExp: JSObject;
+    RegExpPrototype: JSObject;
+    Set: JSObject;
+    SetIteratorPrototype: JSObject;
+    SetPrototype: JSObject;
+    String: JSObject;
+    StringIteratorPrototype: JSObject;
+    StringPrototype: JSObject;
+    Symbol: JSObject;
+    SymbolPrototype: JSObject;
+    SyntaxError: JSObject;
+    SyntaxErrorPrototype: JSObject;
+    ThrowTypeError: JSObject;
+    TypedArrayPrototype: JSObject;
+    TypeError: JSObject;
+    TypeErrorPrototype: JSObject;
+    Uint8Array: JSObject;
+    Uint8ArrayPrototype: JSObject;
+    Uint8ClampedArray: JSObject;
+    Uint8ClampedArrayPrototype: JSObject;
+    Uint16Array: JSObject;
+    Uint16ArrayPrototype: JSObject;
+    Uint32Array: JSObject;
+    Uint32ArrayPrototype: JSObject;
+    URIError: JSObject;
+    URIErrorPrototype: JSObject;
+    WeakMap: JSObject;
+    WeakMapPrototype: JSObject;
+    WeakSet: JSObject;
+    WeakSetPrototype: JSObject;
+}
+
 // ES6 Section 6.2: ECMAScript Specification Types
 
 // ES6 Section 6.2.2: The Completion Record Specification Type
@@ -301,4 +395,14 @@ export abstract class EnvironmentRecord {
     public abstract HasThisBinding(): Completion<boolean>;
     public abstract HasSuperBinding(): Completion<boolean>;
     public abstract WithBaseObject(): Completion<JSObject | JSUndefined>;
+}
+
+// ES6 Section 8.2: Code Realms
+
+export interface Realm {
+    _nominal_type_Realm: any;
+    intrinsics: Intrinsics;
+    globalThis: JSObject;
+    globalEnv: LexicalEnvironment;
+    templateMap: UnknownType[];
 }
