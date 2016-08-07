@@ -28,7 +28,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -329,7 +328,7 @@ export function OrdinaryHasProperty(realm: Realm, O: JSObject, P: JSPropertyKey)
 // ES6 Section 9.1.13: ObjectCreate(proto, internalSlotsList)
 
 export function ObjectCreate(realm: Realm, proto: JSObject | JSNull/*, internalSlotsList: string[]*/): JSObject {
-    const obj = new JSOrdinaryObject(realm);
+    const obj = new JSObject(realm);
     obj.__prototype__ = proto;
     obj.__extensible__ = true; // not really necessary; JSObjects are extensible by default
     return obj;

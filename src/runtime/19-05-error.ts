@@ -31,7 +31,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
     ObjectOperations,
     JSInteger,
     JSInt32,
@@ -73,7 +72,7 @@ function stringDescriptor(str: string): PropertyDescriptor {
     });
 }
 
-class ErrorToStringFunction extends JSOrdinaryObject {
+class ErrorToStringFunction extends JSObject {
     public get implementsCall(): boolean {
         return true;
     }
@@ -132,7 +131,7 @@ class ErrorToStringFunction extends JSOrdinaryObject {
     }
 }
 
-export class ErrorObject extends JSOrdinaryObject {
+export class ErrorObject extends JSObject {
     public message: string;
     public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
         super(realm,proto);

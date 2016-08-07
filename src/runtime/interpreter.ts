@@ -28,7 +28,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -389,7 +388,7 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
     return new NormalCompletion(undefined);
 }
 
-class ConsoleLogFunction extends JSOrdinaryObject {
+class ConsoleLogFunction extends JSObject {
     public constructor(realm: Realm, prototype: JSObject) {
         super(realm,prototype);
     }
@@ -418,7 +417,7 @@ export function evalModule(node: ASTNode): void {
     const ctx = new ExecutionContext(realm, new JSNull(),lexEnv);
 
     envRec.CreateImmutableBinding("console",true);
-    const consoleObject = new JSOrdinaryObject(realm,realm.intrinsics.ObjectPrototype);
+    const consoleObject = new JSObject(realm,realm.intrinsics.ObjectPrototype);
     consoleObject.properties.put("log",new DataDescriptor({
         enumerable: true,
         configurable: true,
@@ -429,7 +428,7 @@ export function evalModule(node: ASTNode): void {
 
 
     // const envRec = new EnvironmentRecord
-    // const obj = new JSOrdinaryObject(realm);
+    // const obj = new JSObject(realm);
     // console.log("evalModule");
     checkNode(node,"Module",1);
     const statements = checkListNode(node.children[0]);

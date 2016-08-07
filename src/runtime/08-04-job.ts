@@ -30,7 +30,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,

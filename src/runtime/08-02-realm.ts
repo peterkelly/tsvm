@@ -30,7 +30,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
     ObjectOperations,
     JSInteger,
     JSInt32,
@@ -116,7 +115,7 @@ export class RealmImpl implements Realm {
 
     public constructor() {
         this.intrinsics = CreateIntrinsics(this);
-        this.globalThis = new JSOrdinaryObject(this,this.intrinsics.ObjectPrototype);
+        this.globalThis = new JSObject(this,this.intrinsics.ObjectPrototype);
         this.globalEnv = NewDeclarativeEnvironment(this,null); // FIXME
         this.templateMap = [];
         SetDefaultGlobalBindings(this);
@@ -161,7 +160,7 @@ export function CreateRealm(): Realm {
 // ES6 Section 8.2.2: CreateIntrinsics (realmRec)
 
 export function CreateIntrinsics(realm: Realm): Intrinsics {
-    const ObjectPrototype = new JSOrdinaryObject(realm);
+    const ObjectPrototype = new JSObject(realm);
     const FunctionPrototype = bi.createFunctionPrototype(realm,ObjectPrototype);
     const ThrowTypeError = bi.createThrowTypeErrorFunction(realm,FunctionPrototype);
 

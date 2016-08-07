@@ -177,7 +177,7 @@ export class JSNumber extends JSPrimitiveValue {
 
 // ES6 Section 6.1.7: The Object Type
 
-export abstract class JSObject extends JSValue {
+export class JSObject extends JSValue {
     _nominal_type_JSObject: any;
 
     public realm: Realm;
@@ -212,23 +212,6 @@ export abstract class JSObject extends JSValue {
         return (this.__GetPrototypeOf__ !== JSObject.prototype.__GetPrototypeOf__);
     }
 
-    public abstract __GetPrototypeOf__(): Completion<JSObject | JSNull>;
-    public abstract __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean>;
-    public abstract __IsExtensible__(): Completion<boolean>;
-    public abstract __PreventExtensions__(): Completion<boolean>;
-    public abstract __GetOwnProperty__(P: JSPropertyKey, copy?: boolean): Completion<JSUndefined | PropertyDescriptor>;
-    public abstract __HasProperty__(P: JSPropertyKey): Completion<boolean>;
-    public abstract __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
-    public abstract __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
-    public abstract __Delete__(P: JSPropertyKey): Completion<boolean>;
-    public abstract __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
-    public abstract __Enumerate__(): Completion<JSObject>;
-    public abstract __OwnPropertyKeys__(): Completion<JSPropertyKey[]>;
-    public abstract __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
-    public abstract __Construct__(args: JSValue[], newTarget: JSObject): Completion<JSObject>;
-}
-
-export class JSOrdinaryObject extends JSObject {
     public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
         return this.realm.ordinaryOps.__GetPrototypeOf__(this);
     }

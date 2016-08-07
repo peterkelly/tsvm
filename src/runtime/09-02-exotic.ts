@@ -30,7 +30,6 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
-    JSOrdinaryObject,
     JSInteger,
     JSInt32,
     JSUInt32,
@@ -100,7 +99,7 @@ interface FunctionObjectOptions {
     homeObject: JSObject;
 }
 
-export class JSFunctionObject extends JSOrdinaryObject {
+export class JSFunctionObject extends JSObject {
     _nominal_type_JSFunctionObject: any;
     public environment: LexicalEnvironment;
     public formalParameters: ASTNode;
@@ -224,7 +223,7 @@ export function FunctionDeclarationInstantiation(realm: Realm, func: JSFunctionO
 
 // ES6 Section 9.4.1: Bound Function Exotic Objects
 
-class JSBoundFunctionObject extends JSOrdinaryObject {
+class JSBoundFunctionObject extends JSObject {
 
     public boundFunctionObject: JSObject;
     public boundThis: JSValue;
@@ -361,7 +360,7 @@ export function MakeArgGetter(realm: Realm, name: string, env: EnvironmentRecord
     return new NormalCompletion(fun);
 }
 
-class ArgGetterFunction extends JSOrdinaryObject {
+class ArgGetterFunction extends JSObject {
     public name: string;
     public env: EnvironmentRecord;
 
@@ -390,7 +389,7 @@ export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord
     return new NormalCompletion(fun);
 }
 
-class ArgSetterFunction extends JSOrdinaryObject {
+class ArgSetterFunction extends JSObject {
     public name: string;
     public env: EnvironmentRecord;
 
