@@ -62,7 +62,7 @@ import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
-    JSFunctionObject,
+    JSFunctionObjectOld,
     ThisMode,
 } from "./09-02-exotic";
 import {
@@ -83,14 +83,14 @@ import * as bi from "./builtins";
 export class ExecutionContext {
     _nominal_type_ExecutionContext: any;
     // public state: any; // Implementation-specific
-    public fun: JSFunctionObject | JSNull;
+    public fun: JSFunctionObjectOld | JSNull;
     public realm: Realm;
     public lexicalEnvironment: LexicalEnvironment;
     public variableEnvironment: LexicalEnvironment;
     public strict: boolean = true; // FIXME: This should come from the code being executed
     // public generator: any;
 
-    public constructor(realm: Realm, fun: JSFunctionObject | JSNull, env: LexicalEnvironment) {
+    public constructor(realm: Realm, fun: JSFunctionObjectOld | JSNull, env: LexicalEnvironment) {
         this.realm = realm;
         this.fun = fun;
         this.lexicalEnvironment = env;

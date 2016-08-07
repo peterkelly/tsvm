@@ -60,7 +60,7 @@ import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
-    JSFunctionObject,
+    JSFunctionObjectOld,
     ThisMode,
 } from "./09-02-exotic";
 import {
@@ -307,7 +307,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
     public homeObject: JSObject | JSUndefined;
     public newTarget: JSObject | JSUndefined;
 
-    public constructor(realm: Realm, F: JSFunctionObject, newTarget: JSUndefined | JSObject) {
+    public constructor(realm: Realm, F: JSFunctionObjectOld, newTarget: JSUndefined | JSObject) {
         super(realm);
         this.functionObject = F;
         if (F.thisMode == ThisMode.Lexical)
@@ -578,7 +578,7 @@ export function NewObjectEnvironment(realm: Realm, O: JSObject, E: LexicalEnviro
 
 // ES6 Section 8.1.2.4: NewFunctionEnvironment (F, newTarget)
 
-export function NewFunctionEnvironment(realm: Realm, F: JSFunctionObject, newTarget: JSUndefined | JSObject): LexicalEnvironment {
+export function NewFunctionEnvironment(realm: Realm, F: JSFunctionObjectOld, newTarget: JSUndefined | JSObject): LexicalEnvironment {
     // FIXME: Assert: F is an ECMAScript function
     const bindingStatus = (F.thisMode == ThisMode.Lexical) ?
         BindingStatus.Lexical :

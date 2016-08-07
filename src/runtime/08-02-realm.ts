@@ -64,7 +64,7 @@ import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
-    JSFunctionObject,
+    JSFunctionObjectOld,
     ThisMode,
 } from "./09-02-exotic";
 import {

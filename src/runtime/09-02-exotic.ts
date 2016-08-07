@@ -99,7 +99,7 @@ interface FunctionObjectOptions {
     homeObject: JSObject;
 }
 
-export class JSFunctionObject extends JSObject {
+export class JSFunctionObjectOld extends JSObject {
     _nominal_type_JSFunctionObject: any;
     public environment: LexicalEnvironment;
     public formalParameters: ASTNode;
@@ -139,19 +139,19 @@ export class JSFunctionObject extends JSObject {
 
 // ES6 Section 9.2.1.1: PrepareForOrdinaryCall (F, newTarget)
 
-export function PrepareForOrdinaryCall(realm: Realm, F: JSFunctionObject, newTarget: JSObject | JSUndefined): Completion<UnknownType> {
+export function PrepareForOrdinaryCall(realm: Realm, F: JSFunctionObjectOld, newTarget: JSObject | JSUndefined): Completion<UnknownType> {
     throw new Error("PrepareForOrdinaryCall Not implemented");
 }
 
 // ES6 Section 9.2.1.2: OrdinaryCallBindThis (F, calleeContext, thisArgument)
 
-export function OrdinaryCallBindThis(realm: Realm, F: JSFunctionObject, calleeContext: ExecutionContext, thisArgument: JSValue): Completion<UnknownType> {
+export function OrdinaryCallBindThis(realm: Realm, F: JSFunctionObjectOld, calleeContext: ExecutionContext, thisArgument: JSValue): Completion<UnknownType> {
     throw new Error("OrdinaryCallBindThis Not implemented");
 }
 
 // ES6 Section 9.2.1.3: OrdinaryCallEvaluateBody (F, argumentsList)
 
-export function OrdinaryCallEvaluateBody(realm: Realm, F: JSFunctionObject, argumentsList: JSValue[]): Completion<UnknownType> {
+export function OrdinaryCallEvaluateBody(realm: Realm, F: JSFunctionObjectOld, argumentsList: JSValue[]): Completion<UnknownType> {
     throw new Error("OrdinaryCallEvaluateBody Not implemented");
 }
 
@@ -163,55 +163,55 @@ export function FunctionAllocate(realm: Realm, functionPrototype: JSObject, stri
 
 // ES6 Section 9.2.4: FunctionInitialize (F, kind, ParameterList, Body, Scope)
 
-export function FunctionInitialize(realm: Realm, F: JSFunctionObject, kind: any, ParameterList: any, Body: any, Scope: any): JSFunctionObject {
+export function FunctionInitialize(realm: Realm, F: JSFunctionObjectOld, kind: any, ParameterList: any, Body: any, Scope: any): JSFunctionObjectOld {
     throw new Error("FunctionInitialize Not implemented");
 }
 
 // ES6 Section 9.2.5: FunctionCreate (kind, ParameterList, Body, Scope, Strict, prototype)
 
-export function FunctionCreate(realm: Realm, kind: any, ParameterList: any, Body: any, Scope: any, Strict: any, prototype: any): JSFunctionObject {
+export function FunctionCreate(realm: Realm, kind: any, ParameterList: any, Body: any, Scope: any, Strict: any, prototype: any): JSFunctionObjectOld {
     throw new Error("FunctionInitialize Not implemented");
 }
 
 // ES6 Section 9.2.6: GeneratorFunctionCreate (kind, ParameterList, Body, Scope, Strict)
 
-export function GeneratorFunctionCreate(realm: Realm, kind: any, ParameterList: any, Body: any, Scope: any, Strict: any): JSFunctionObject {
+export function GeneratorFunctionCreate(realm: Realm, kind: any, ParameterList: any, Body: any, Scope: any, Strict: any): JSFunctionObjectOld {
     throw new Error("FunctionInitialize Not implemented");
 }
 
 // ES6 Section 9.2.7 AddRestrictedFunctionProperties (F, realm)
 
-export function AddRestrictedFunctionProperties(F: JSFunctionObject, realm: Realm): Completion<UnknownType> {
+export function AddRestrictedFunctionProperties(F: JSFunctionObjectOld, realm: Realm): Completion<UnknownType> {
     throw new Error("AddRestrictedFunctionProperties Not implemented");
 }
 
 // ES6 Section 9.2.8 MakeConstructor: (F, writablePrototype, prototype)
 
-export function MakeConstructor(realm: Realm, F: JSFunctionObject, writablePrototype: any, prototype: any): Completion<UnknownType> {
+export function MakeConstructor(realm: Realm, F: JSFunctionObjectOld, writablePrototype: any, prototype: any): Completion<UnknownType> {
     throw new Error("MakeConstructor Not implemented");
 }
 
 // ES6 Section 9.2.9: MakeClassConstructor (F)
 
-export function MakeClassConstructor(realm: Realm, F: JSFunctionObject): Completion<UnknownType> {
+export function MakeClassConstructor(realm: Realm, F: JSFunctionObjectOld): Completion<UnknownType> {
     throw new Error("MakeClassConstructor Not implemented");
 }
 
 // ES6 Section 9.2.10 MakeMethod: (F, homeObject)
 
-export function MakeMethod(realm: Realm, F: JSFunctionObject, homeObject: JSObject): Completion<UnknownType> {
+export function MakeMethod(realm: Realm, F: JSFunctionObjectOld, homeObject: JSObject): Completion<UnknownType> {
     throw new Error("MakeMethod Not implemented");
 }
 
 // ES6 Section 9.2.11: SetFunctionName (F, name, prefix)
 
-export function SetFunctionName(realm: Realm, F: JSFunctionObject, name: string, prefix: string): Completion<UnknownType> {
+export function SetFunctionName(realm: Realm, F: JSFunctionObjectOld, name: string, prefix: string): Completion<UnknownType> {
     throw new Error("SetFunctionName Not implemented");
 }
 
 // ES6 Section 9.2.12: FunctionDeclarationInstantiation (func, argumentsList)
 
-export function FunctionDeclarationInstantiation(realm: Realm, func: JSFunctionObject, argumentsList: any[]) {
+export function FunctionDeclarationInstantiation(realm: Realm, func: JSFunctionObjectOld, argumentsList: any[]) {
     throw new Error("FunctionDeclarationInstantiation Not implemented");
 }
 
