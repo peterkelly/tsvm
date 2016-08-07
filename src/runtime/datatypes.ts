@@ -20,12 +20,6 @@ export class UnknownType {
     _nominal_type_UnknownType: any;
 }
 
-// This is here for places in the spec where it says to return "Empty", though I think we can
-// just use void instead.
-export class Empty {
-    _nominal_type_EmptyType: any;
-}
-
 export interface LexicalEnvironment {
     record: EnvironmentRecord;
     outer: LexicalEnvironment | null;

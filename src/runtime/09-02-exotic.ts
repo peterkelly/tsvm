@@ -16,7 +16,6 @@
 
 import {
     UnknownType,
-    Empty,
     LexicalEnvironment,
     Realm,
     EnvironmentRecord,
