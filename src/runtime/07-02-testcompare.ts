@@ -15,85 +15,105 @@
 // ES6 Section 7.2: Testing and Comparison Operations
 
 import {
-    UnknownType,
+    ValueType,
+    JSValue,
+    JSPropertyKey,
+    JSUndefined,
+    JSNull,
+    JSBoolean,
+    JSString,
+    JSSymbol,
+    JSNumber,
+    JSObject,
+    PropertyDescriptor,
+    DataDescriptor,
+    AccessorDescriptor,
+    Intrinsics,
     Completion,
+    NormalCompletion,
+    BreakCompletion,
+    ContinueCompletion,
+    ReturnCompletion,
+    ThrowCompletion,
+    LexicalEnvironment,
+    EnvironmentRecord,
     Realm,
 } from "./datatypes";
 
 // ES6 Section 7.2.1: RequireObjectCoercible (argument)
 
-export function RequireObjectCoercible(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function RequireObjectCoercible(realm: Realm, argument: JSValue): Completion<JSValue> {
     throw new Error("RequireObjectCoercible not implemented");
 }
 
 // ES6 Section 7.2.2: IsArray (argument)
 
-export function IsArray(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function IsArray(realm: Realm, argument: JSValue): Completion<boolean> {
     throw new Error("IsArray not implemented");
 }
 
 // ES6 Section 7.2.3: IsCallable (argument)
 
-export function IsCallable(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function IsCallable(realm: Realm, argument: JSValue): boolean {
     throw new Error("IsCallable not implemented");
 }
 
 // ES6 Section 7.2.4: IsConstructor (argument)
 
-export function IsConstructor(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function IsConstructor(realm: Realm, argument: JSValue): boolean {
     throw new Error("IsConstructor not implemented");
 }
 
 // ES6 Section 7.2.5: IsExtensible (O)
 
-export function IsExtensible(realm: Realm, O: UnknownType): Completion<UnknownType> {
+export function IsExtensible(realm: Realm, O: JSObject): Completion<boolean> {
     throw new Error("IsExtensible not implemented");
 }
 
 // ES6 Section 7.2.6: IsInteger (argument)
 
-export function IsInteger(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function IsInteger(realm: Realm, argument: JSValue): Completion<boolean> {
     throw new Error("IsInteger not implemented");
 }
 
 // ES6 Section 7.2.7: IsPropertyKey (argument)
 
-export function IsPropertyKey(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function IsPropertyKey(realm: Realm, argument: JSValue): argument is JSPropertyKey {
     throw new Error("IsPropertyKey not implemented");
 }
 
 // ES6 Section 7.2.8 IsRegExp: (argument)
 
-export function IsRegExp(realm: Realm, argument: UnknownType): Completion<UnknownType> {
+export function IsRegExp(realm: Realm, argument: JSValue): Completion<boolean> {
     throw new Error("IsRegExp not implemented");
 }
 
 // ES6 Section 7.2.9: SameValue (x, y)
 
-export function SameValue(realm: Realm, x: UnknownType, y: UnknownType): Completion<UnknownType> {
+export function SameValue(x: JSValue, y: JSValue): boolean {
     throw new Error("SameValue not implemented");
 }
 
 // ES6 Section 7.2.10: SameValueZero (x, y)
 
-export function SameValueZero(realm: Realm, x: UnknownType, y: UnknownType): Completion<UnknownType> {
+export function SameValueZero(x: JSValue, y: JSValue): boolean {
     throw new Error("SameValueZero not implemented");
 }
 
 // ES6 Section 7.2.11: Abstract Relational Comparison
 
-export function abstractRelationalComparison(realm: Realm, x: UnknownType, y: UnknownType, leftFirst: UnknownType): Completion<UnknownType> {
+export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValue, leftFirst: boolean = true): Completion<JSBoolean | JSUndefined> {
     throw new Error("abstractRelationalComparison not implemented");
 }
 
 // ES6 Section 7.2.12: Abstract Equality Comparison
 
-export function abstractEqualityComparison(realm: Realm, x: UnknownType, y: UnknownType): Completion<UnknownType> {
+export function abstractEqualityComparison(realm: Realm, x: JSValue, y: JSValue): Completion<boolean> {
     throw new Error("abstractEqualityComparison not implemented");
 }
 
 // ES6 Section 7.2.13: Strict Equality Comparison
 
-export function strictEqualityComparison(realm: Realm, x: UnknownType, y: UnknownType): Completion<UnknownType> {
+export function strictEqualityComparison(realm: Realm, x: JSValue, y: JSValue): boolean {
     throw new Error("strictEqualityComparison not implemented");
 }
