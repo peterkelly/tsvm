@@ -148,47 +148,47 @@ export class JSObject extends JSValue {
         return ValueType.Object;
     }
 
-    public __GetPrototypeOf__(): Completion<UnknownType> {
+    public __GetPrototypeOf__(): Completion<JSObject | JSNull> {
         throw new Error("JSObject.__GetPrototypeOf__ not implemented");
     }
 
-    public __SetPrototypeOf__(V: UnknownType): Completion<UnknownType> {
+    public __SetPrototypeOf__(V: JSObject | JSNull): Completion<boolean> {
         throw new Error("JSObject.__SetPrototypeOf__ not implemented");
     }
 
-    public __IsExtensible__(): Completion<UnknownType> {
+    public __IsExtensible__(): Completion<boolean> {
         throw new Error("JSObject.__IsExtensible__ not implemented");
     }
 
-    public __PreventExtensions__(): Completion<UnknownType> {
+    public __PreventExtensions__(): Completion<boolean> {
         throw new Error("JSObject.__PreventExtensions__ not implemented");
     }
 
-    public __GetOwnProperty__(P: JSPropertyKey): Completion<UnknownType> {
+    public __GetOwnProperty__(P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor> {
         throw new Error("JSObject.__GetOwnProperty__ not implemented");
     }
 
-    public __HasProperty__(P: JSPropertyKey): Completion<UnknownType> {
+    public __HasProperty__(P: JSPropertyKey): Completion<boolean> {
         throw new Error("JSObject.__HasProperty__ not implemented");
     }
 
-    public __Get__(P: JSPropertyKey, Receiver: UnknownType): Completion<UnknownType> {
+    public __Get__(P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
         throw new Error("JSObject.__Get__ not implemented");
     }
 
-    public __Set__(P: JSPropertyKey, V: UnknownType, Receiver: UnknownType): Completion<UnknownType> {
+    public __Set__(P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
         throw new Error("JSObject.__Set__ not implemented");
     }
 
-    public __Delete__(P: JSPropertyKey): Completion<UnknownType> {
+    public __Delete__(P: JSPropertyKey): Completion<boolean> {
         throw new Error("JSObject.__Delete__ not implemented");
     }
 
-    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: UnknownType): Completion<UnknownType> {
+    public __DefineOwnProperty__(propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
         throw new Error("JSObject.__DefineOwnProperty__ not implemented");
     }
 
-    public __Enumerate__(): Completion<UnknownType> {
+    public __Enumerate__(): Completion<JSObject> {
         throw new Error("JSObject.__Enumerate__ not implemented");
     }
 
@@ -196,11 +196,11 @@ export class JSObject extends JSValue {
         throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
     }
 
-    public __Call__(thisArg: UnknownType, args: UnknownType): Completion<UnknownType> {
+    public __Call__(thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         throw new Error("JSObject.__Call__ not implemented");
     }
 
-    public __Construct__(args: UnknownType, newTarget: UnknownType): Completion<UnknownType> {
+    public __Construct__(args: JSValue[], newTarget: JSObject): Completion<JSObject> {
         throw new Error("JSObject.__Construct__ not implemented");
     }
 }
