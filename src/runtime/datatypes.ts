@@ -175,6 +175,64 @@ export class JSNumber extends JSPrimitiveValue {
     }
 }
 
+// Additional implementation-specific numeric types
+
+export class JSInteger extends JSNumber {
+    public readonly integerValue: number;
+    public constructor(integerValue: number) {
+        super(integerValue);
+        this.integerValue = integerValue;
+    }
+}
+
+export class JSInt32 extends JSInteger {
+    public readonly int32Value: number;
+    public constructor(int32Value: number) {
+        super(int32Value);
+        this.int32Value = int32Value;
+    }
+}
+
+export class JSUInt32 extends JSInteger {
+    public readonly uint32Value: number;
+    public constructor(uint32Value: number) {
+        super(uint32Value);
+        this.uint32Value = uint32Value;
+    }
+}
+
+export class JSInt16 extends JSInteger {
+    public readonly int16Value: number;
+    public constructor(int16Value: number) {
+        super(int16Value);
+        this.int16Value = int16Value;
+    }
+}
+
+export class JSUInt16 extends JSInteger {
+    public readonly uint16Value: number;
+    public constructor(uint16Value: number) {
+        super(uint16Value);
+        this.uint16Value = uint16Value;
+    }
+}
+
+export class JSInt8 extends JSInteger {
+    public readonly int8Value: number;
+    public constructor(int8Value: number) {
+        super(int8Value);
+        this.int8Value = int8Value;
+    }
+}
+
+export class JSUInt8 extends JSInteger {
+    public readonly uint8Value: number;
+    public constructor(uint8Value: number) {
+        super(uint8Value);
+        this.uint8Value = uint8Value;
+    }
+}
+
 // ES6 Section 6.1.7: The Object Type
 
 export class JSObject extends JSValue {
@@ -289,64 +347,6 @@ export interface ObjectOperations {
     __OwnPropertyKeys__(realm: Realm, O: JSObject): Completion<JSPropertyKey[]>;
     __Call__(realm: Realm, O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
     __Construct__(realm: Realm, O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
-}
-
-// Additional implementation types
-
-export class JSInteger extends JSNumber {
-    public readonly integerValue: number;
-    public constructor(integerValue: number) {
-        super(integerValue);
-        this.integerValue = integerValue;
-    }
-}
-
-export class JSInt32 extends JSInteger {
-    public readonly int32Value: number;
-    public constructor(int32Value: number) {
-        super(int32Value);
-        this.int32Value = int32Value;
-    }
-}
-
-export class JSUInt32 extends JSInteger {
-    public readonly uint32Value: number;
-    public constructor(uint32Value: number) {
-        super(uint32Value);
-        this.uint32Value = uint32Value;
-    }
-}
-
-export class JSInt16 extends JSInteger {
-    public readonly int16Value: number;
-    public constructor(int16Value: number) {
-        super(int16Value);
-        this.int16Value = int16Value;
-    }
-}
-
-export class JSUInt16 extends JSInteger {
-    public readonly uint16Value: number;
-    public constructor(uint16Value: number) {
-        super(uint16Value);
-        this.uint16Value = uint16Value;
-    }
-}
-
-export class JSInt8 extends JSInteger {
-    public readonly int8Value: number;
-    public constructor(int8Value: number) {
-        super(int8Value);
-        this.int8Value = int8Value;
-    }
-}
-
-export class JSUInt8 extends JSInteger {
-    public readonly uint8Value: number;
-    public constructor(uint8Value: number) {
-        super(uint8Value);
-        this.uint8Value = uint8Value;
-    }
 }
 
 // ES6 Section 6.1.7.1: Property Attributes
