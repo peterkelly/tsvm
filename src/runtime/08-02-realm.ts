@@ -16,6 +16,8 @@
 
 import {
     UnknownType,
+    Completion,
+    ThrowCompletion,
     LexicalEnvironment,
     Realm,
     JSUndefined,
@@ -41,6 +43,30 @@ export class RealmImpl implements Realm {
         this.globalThis = new JSObject();
         this.globalEnv = NewGlobalEnvironment(this.globalThis);
         this.templateMap = [];
+    }
+
+    public throwEvalError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwEvalError not implemented");
+    }
+
+    public throwRangeError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwRangeError not implemented");
+    }
+
+    public throwReferenceError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwReferenceError not implemented");
+    }
+
+    public throwSyntaxError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwSyntaxError not implemented");
+    }
+
+    public throwTypeError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwTypeError not implemented");
+    }
+
+    public throwURIError(message?: string): ThrowCompletion {
+        throw new Error("RealmImpl.throwURIError not implemented");
     }
 }
 
