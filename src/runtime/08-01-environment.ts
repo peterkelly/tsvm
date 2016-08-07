@@ -60,9 +60,9 @@ import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
-    JSFunctionObjectOld,
+    JSFunction,
     ThisMode,
-} from "./09-02-exotic";
+} from "./09-02-function";
 import {
     HasProperty,
 } from "./07-03-objects";
@@ -307,14 +307,14 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
     public homeObject: JSObject | JSUndefined;
     public newTarget: JSObject | JSUndefined;
 
-    public constructor(realm: Realm, F: JSFunctionObjectOld, newTarget: JSUndefined | JSObject) {
+    public constructor(realm: Realm, F: JSFunction, newTarget: JSUndefined | JSObject) {
         super(realm);
         this.functionObject = F;
         if (F.thisMode == ThisMode.Lexical)
             this.thisBindingStatus = BindingStatus.Lexical;
         else
             this.thisBindingStatus = BindingStatus.Uninitialized;
-        this.homeObject = F.homeObject;
+        this.homeObject = (F.homeObject === undefined) ? new JSUndefined() : F.homeObject;
         this.newTarget = newTarget;
         this.thisValue = new JSUndefined();
     }
@@ -578,13 +578,16 @@ export function NewObjectEnvironment(realm: Realm, O: JSObject, E: LexicalEnviro
 
 // ES6 Section 8.1.2.4: NewFunctionEnvironment (F, newTarget)
 
-export function NewFunctionEnvironment(realm: Realm, F: JSFunctionObjectOld, newTarget: JSUndefined | JSObject): LexicalEnvironment {
+export function NewFunctionEnvironment(realm: Realm, F: JSFunction, newTarget: JSUndefined | JSObject): LexicalEnvironment {
     // FIXME: Assert: F is an ECMAScript function
     const bindingStatus = (F.thisMode == ThisMode.Lexical) ?
         BindingStatus.Lexical :
         BindingStatus.Uninitialized;
     const envRec = new FunctionEnvironmentRecord(realm,F,newTarget);
-    return { record: envRec, outer: F.environment };
+    if (F.environment === undefined)
+        return { record: envRec, outer: null };
+    else
+        return { record: envRec, outer: F.environment };
 }
 
 // ES6 Section 8.1.2.5: NewGlobalEnvironment (G)

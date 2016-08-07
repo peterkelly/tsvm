@@ -64,10 +64,6 @@ import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
-    JSFunctionObjectOld,
-    ThisMode,
-} from "./09-02-exotic";
-import {
     HasProperty,
 } from "./07-03-objects";
 import {
