@@ -351,6 +351,15 @@ export interface ObjectOperations {
 
 // ES6 Section 6.1.7.1: Property Attributes
 
+export interface DescriptorFields {
+    enumerable?: boolean;
+    configurable?: boolean;
+    value?: JSValue;
+    writable?: boolean;
+    __get__?: JSObject;
+    __set__?: JSObject;
+}
+
 export type PropertyDescriptor = DataDescriptor | AccessorDescriptor;
 
 export abstract class BaseDescriptor {
@@ -361,7 +370,7 @@ export abstract class BaseDescriptor {
     }
 }
 
-export class DataDescriptor extends BaseDescriptor {
+export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
     _nominal_type_DataDescriptor: any;
     public value: JSValue;
     public writable: boolean;
@@ -381,15 +390,15 @@ export class DataDescriptor extends BaseDescriptor {
     }
 }
 
-export class AccessorDescriptor extends BaseDescriptor {
+export class AccessorDescriptor extends BaseDescriptor implements DescriptorFields {
     _nominal_type_AccessorDescriptor: any;
-    public __get__: JSObject | JSUndefined = new JSUndefined();
-    public __set__: JSObject | JSUndefined = new JSUndefined();
+    public __get__?: JSObject;
+    public __set__?: JSObject;
     public constructor(options?: {
         enumerable?: boolean,
         configurable?: boolean,
-        __get__?: JSObject | JSUndefined;
-        __set__?: JSObject | JSUndefined;
+        __get__?: JSObject;
+        __set__?: JSObject;
     }) {
         super();
         if (options !== undefined) {

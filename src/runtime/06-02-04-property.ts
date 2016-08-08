@@ -24,27 +24,45 @@ import {
     AccessorDescriptor,
     Completion,
     NormalCompletion,
+    DescriptorFields,
 } from "./datatypes";
 
 // ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
 
-export function IsAccessorDescriptor(realm: Realm, Desc: PropertyDescriptor): Desc is AccessorDescriptor {
-    return (Desc instanceof AccessorDescriptor);
+export function IsAccessorDescriptor(Desc: DescriptorFields | undefined): boolean {
+    // 1. If Desc is undefined, return false
+    if (Desc === undefined)
+        return false;
+    // 2. If both Desc.[[Get]] and Desc.[[Set]] are absent, return false.
+    if ((Desc.__get__ === undefined) && (Desc.__set__ === undefined))
+        return false;
+    // 3. Return true.
+    return true;
 }
 
 // ES6 Section 6.2.4.2: IsDataDescriptor (Desc)
 
-export function IsDataDescriptor(realm: Realm, Desc: PropertyDescriptor): Desc is DataDescriptor {
-    return (Desc instanceof DataDescriptor);
+export function IsDataDescriptor(Desc: DescriptorFields | undefined): boolean {
+    // 1. If Desc is undefined, return false.
+    if (Desc === undefined)
+        return false;
+    // 2. If both Desc.[[Value]] and Desc.[[Writable]] are absent, return false.
+    if ((Desc.value === undefined) && (Desc.writable === undefined))
+        return false;
+    // 3. Return true.
+    return true;
 }
 
 // ES6 Section 6.2.4.3: IsGenericDescriptor (Desc)
 
-export function IsGenericDescriptor(realm: Realm, Desc: BaseDescriptor | JSUndefined): boolean {
-    if (Desc instanceof JSUndefined)
+export function IsGenericDescriptor(Desc: DescriptorFields | undefined): boolean {
+    // 1. If Desc is undefined, return false.
+    if (Desc === undefined)
         return false;
-    if (!(Desc instanceof AccessorDescriptor) && !(Desc instanceof DataDescriptor))
+    // 2. If IsAccessorDescriptor(Desc) and IsDataDescriptor(Desc) are both false, return true.
+    if (!IsAccessorDescriptor(Desc) && !IsDataDescriptor(Desc))
         return true;
+    // 3. Return false.
     return false;
 }
 

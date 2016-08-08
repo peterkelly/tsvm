@@ -128,6 +128,16 @@ export function IsRegExp(realm: Realm, argument: any): Completion<boolean> {
 
 // ES6 Section 7.2.9: SameValue (x, y)
 
+export function SameValueUndefined(x: JSValue | undefined, y: JSValue | undefined): boolean {
+    if ((x === undefined) && (y === undefined))
+        return true;
+    if (x === undefined)
+        return false;
+    if (y === undefined)
+        return false;
+    return SameValue(x,y);
+}
+
 export function SameValue(x: JSValue, y: JSValue): boolean {
     return SameValue2(x,y,false);
 }
