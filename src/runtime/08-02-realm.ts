@@ -22,11 +22,15 @@ import {
     Realm,
     JSUndefined,
     JSObject,
+    ObjectOperations,
     Intrinsics,
 } from "./datatypes";
 import {
     NewGlobalEnvironment,
 } from "./08-01-environment";
+import {
+    ordinaryObjectOperations,
+} from "./09-01-ordinary";
 
 // ES6 Section 8.2: Code Realms
 
@@ -37,6 +41,7 @@ export class RealmImpl implements Realm {
     public globalThis: JSObject;
     public globalEnv: LexicalEnvironment;
     public templateMap: UnknownType[];
+    public ordinaryOps: ObjectOperations = ordinaryObjectOperations;
 
     public constructor() {
         this.intrinsics = CreateIntrinsics();
