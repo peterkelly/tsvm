@@ -155,13 +155,18 @@ export function OrdinaryGetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyK
 // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
 function JSObject_DefineOwnProperty(realm: Realm, O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
-    throw new Error("JSObject.__DefineOwnProperty__ not implemented");
+    return OrdinaryDefineOwnProperty(realm,O,propertyKey,property);
 }
 
 // ES6 Section 9.1.6.1: OrdinaryDefineOwnProperty (O, P, Desc)
 
-export function OrdinaryDefineOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<UnknownType> {
-    throw new Error("OrdinaryDefineOwnProperty Not implemented");
+export function OrdinaryDefineOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<boolean> {
+    const currentComp = O.__GetOwnProperty__(realm,P);
+    if (!(currentComp instanceof NormalCompletion))
+        return currentComp;
+    const current = currentComp.value;
+    const extensible = O.__extensible__;
+    return ValidateAndApplyPropertyDescriptor(realm,O,P,extensible,Desc,current);
 }
 
 // ES6 Section 9.1.6.2: IsCompatiblePropertyDescriptor (Extensible, Desc, Current)
@@ -178,7 +183,63 @@ export function ValidateAndApplyPropertyDescriptor(
     P: JSPropertyKey,
     extensible: boolean,
     Desc: PropertyDescriptor,
-    current: PropertyDescriptor): Completion<UnknownType> {
+    current: PropertyDescriptor | JSUndefined): Completion<boolean> {
+
+    // 1. Assert: If O is not undefined then IsPropertyKey(P) is true.
+    // 2. If current is undefined, then
+    //     a. If extensible is false, return false.
+    //     b. Assert: extensible is true.
+    //     c. If IsGenericDescriptor(Desc) or IsDataDescriptor(Desc) is true, then
+    //        i. If O is not undefined, create an own data property named P of object O whose
+    //           [[Value]], [[Writable]], [[Enumerable]] and [[Configurable]] attribute values are
+    //           described by Desc. If the value of an attribute field of Desc is absent, the
+    //           attribute of the newly created property is set to its default value.
+    //     d. Else Desc must be an accessor Property Descriptor,
+    //         i. If O is not undefined, create an own accessor property named P of object O whose
+    //            [[Get]], [[Set]], [[Enumerable]] and [[Configurable]] attribute values are
+    //            described by Desc. If the value of an attribute field of Desc is absent, the
+    //            attribute of the newly created property is set to its default value.
+    //     e. Return true.
+    // 3. Return true, if every field in Desc is absent.
+    // 4. Return true, if every field in Desc also occurs in current and the value of every field
+    // in Desc is the same value as the corresponding field in current when compared using the
+    // SameValue algorithm.
+    // 5. If the [[Configurable]] field of current is false, then
+    //     a. Return false, if the [[Configurable]] field of Desc is true.
+    //     b. Return false, if the [[Enumerable]] field of Desc is present and the [[Enumerable]]
+    //        fields of current and Desc are the Boolean negation of each other.
+    // 6. If IsGenericDescriptor(Desc) is true, no further validation is required.
+    // 7. Else if IsDataDescriptor(current) and IsDataDescriptor(Desc) have different results, then
+    //     a. Return false, if the [[Configurable]] field of current is false.
+    //     b. If IsDataDescriptor(current) is true, then
+    //         i. If O is not undefined, convert the property named P of object O from a data
+    //            property to an accessor property. Preserve the existing values of the converted
+    //            property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
+    //            property’s attributes to their default values.
+    //     c. Else,
+    //         i. If O is not undefined, convert the property named P of object O from an accessor
+    //            property to a data property. Preserve the existing values of the converted
+    //            property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
+    //            property’s attributes to their default values.
+    // 8. Else if IsDataDescriptor(current) and IsDataDescriptor(Desc) are both true, then
+    //     a. If the [[Configurable]] field of current is false, then
+    //         i. Return false, if the [[Writable]] field of current is false and the [[Writable]]
+    //            field of Desc is true.
+    //         ii. If the [[Writable]] field of current is false, then
+    //             1. Return false, if the [[Value]] field of Desc is present and
+    //                SameValue(Desc.[[Value]], current.[[Value]]) is false.
+    //     b. Else the [[Configurable]] field of current is true, so any change is acceptable.
+    // 9. Else IsAccessorDescriptor(current) and IsAccessorDescriptor(Desc) are both true,
+    //     a. If the [[Configurable]] field of current is false, then
+    //         i.  Return false, if the [[Set]] field of Desc is present and SameValue(Desc.[[Set]],
+    //             current.[[Set]]) is false.
+    //         ii. Return false, if the [[Get]] field of Desc is present and SameValue(Desc.[[Get]],
+    //             current.[[Get]]) is false.
+    // 10. If O is not undefined, then
+    //     a. For each field of Desc that is present, set the corresponding attribute of the
+    //        property named P of object O to the value of the field.
+    // 11. Return true.
+
     throw new Error("ValidateAndApplyPropertyDescriptor Not implemented");
 }
 
