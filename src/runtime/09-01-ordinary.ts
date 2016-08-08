@@ -346,21 +346,19 @@ function JSObject_Construct(realm: Realm, O: JSObject, args: JSValue[], newTarge
     throw new Error("Not a constructor object; check implementsConstruct first");
 }
 
-export function ordinaryObjectOperations(): ObjectOperations {
-    return {
-        __GetPrototypeOf__: JSObject_GetPrototypeOf,
-        __SetPrototypeOf__: JSObject_SetPrototypeOf,
-        __IsExtensible__: JSObject_IsExtensible,
-        __PreventExtensions__: JSObject_PreventExtensions,
-        __GetOwnProperty__: JSObject_GetOwnProperty,
-        __HasProperty__: JSObject_HasProperty,
-        __Get__: JSObject_Get,
-        __Set__: JSObject_Set,
-        __Delete__: JSObject_Delete,
-        __DefineOwnProperty__: JSObject_DefineOwnProperty,
-        __Enumerate__: JSObject_Enumerate,
-        __OwnPropertyKeys__: JSObject_OwnPropertyKeys,
-        __Call__: JSObject_Call,
-        __Construct__: JSObject_Construct,
-    };
+export const ordinaryObjectOperations: ObjectOperations = {
+    __GetPrototypeOf__: JSObject_GetPrototypeOf,
+    __SetPrototypeOf__: JSObject_SetPrototypeOf,
+    __IsExtensible__: JSObject_IsExtensible,
+    __PreventExtensions__: JSObject_PreventExtensions,
+    __GetOwnProperty__: JSObject_GetOwnProperty,
+    __HasProperty__: JSObject_HasProperty,
+    __Get__: JSObject_Get,
+    __Set__: JSObject_Set,
+    __Delete__: JSObject_Delete,
+    __DefineOwnProperty__: JSObject_DefineOwnProperty,
+    __Enumerate__: JSObject_Enumerate,
+    __OwnPropertyKeys__: JSObject_OwnPropertyKeys,
+    __Call__: JSObject_Call,
+    __Construct__: JSObject_Construct,
 }

@@ -107,7 +107,7 @@ export class RealmImpl implements Realm {
     public globalThis: JSObject;
     public globalEnv: LexicalEnvironment;
     public templateMap: any[]; // FIXME
-    public ordinaryOps: ObjectOperations = ordinaryObjectOperations();
+    public ordinaryOps: ObjectOperations = ordinaryObjectOperations;
 
     public constructor() {
         this.intrinsics = CreateIntrinsics();
