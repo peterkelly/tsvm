@@ -207,60 +207,84 @@ export class JSObject extends JSValue {
     }
 
     public __GetPrototypeOf__(realm: Realm): Completion<JSObject | JSNull> {
-        throw new Error("JSObject.__GetPrototypeOf__ not implemented");
+        return realm.ordinaryOps.__GetPrototypeOf__(realm,this);
     }
 
     public __SetPrototypeOf__(realm: Realm, V: JSObject | JSNull): Completion<boolean> {
-        throw new Error("JSObject.__SetPrototypeOf__ not implemented");
+        return realm.ordinaryOps.__SetPrototypeOf__(realm,this,V);
     }
 
     public __IsExtensible__(realm: Realm): Completion<boolean> {
-        throw new Error("JSObject.__IsExtensible__ not implemented");
+        return realm.ordinaryOps.__IsExtensible__(realm,this);
     }
 
     public __PreventExtensions__(realm: Realm): Completion<boolean> {
-        throw new Error("JSObject.__PreventExtensions__ not implemented");
+        return realm.ordinaryOps.__PreventExtensions__(realm,this);
     }
 
     public __GetOwnProperty__(realm: Realm, P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor> {
-        throw new Error("JSObject.__GetOwnProperty__ not implemented");
+        return realm.ordinaryOps.__GetOwnProperty__(realm,this,P);
     }
 
     public __HasProperty__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
-        throw new Error("JSObject.__HasProperty__ not implemented");
+        return realm.ordinaryOps.__HasProperty__(realm,this,P);
     }
 
     public __Get__(realm: Realm, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
-        throw new Error("JSObject.__Get__ not implemented");
+        return realm.ordinaryOps.__Get__(realm,this,P,Receiver);
     }
 
     public __Set__(realm: Realm, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
-        throw new Error("JSObject.__Set__ not implemented");
+        return realm.ordinaryOps.__Set__(realm,this,P,V,Receiver);
     }
 
     public __Delete__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
-        throw new Error("JSObject.__Delete__ not implemented");
+        return realm.ordinaryOps.__Delete__(realm,this,P);
     }
 
     public __DefineOwnProperty__(realm: Realm, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
-        throw new Error("JSObject.__DefineOwnProperty__ not implemented");
+        return realm.ordinaryOps.__DefineOwnProperty__(realm,this,propertyKey,property);
     }
 
     public __Enumerate__(realm: Realm): Completion<JSObject> {
-        throw new Error("JSObject.__Enumerate__ not implemented");
+        return realm.ordinaryOps.__Enumerate__(realm,this);
     }
 
     public __OwnPropertyKeys__(realm: Realm): Completion<JSPropertyKey[]> {
-        throw new Error("JSObject.__OwnPropertyKeys__ not implemented");
+        return realm.ordinaryOps.__OwnPropertyKeys__(realm,this);
     }
 
     public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        throw new Error("JSObject.__Call__ not implemented");
+        return realm.ordinaryOps.__Call__(realm,this,thisArg,args);
     }
 
     public __Construct__(realm: Realm, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
-        throw new Error("JSObject.__Construct__ not implemented");
+        return realm.ordinaryOps.__Construct__(realm,this,args,newTarget);
     }
+}
+
+// This interface exists solely for the purpose of achieving a form of dependency injection for the
+// default implementation of JSObject's methods. Many of these implementations rely on functions
+// from other modules, but we can't import those in datatypes.ts because some of those modules that
+// define classes that inherit from JSObject. Because of the way typescript handles inheritance in
+// the generated classes, it is necessary for a module defining a class to be fully loaded before
+// any module that defines inherited classes, which is why datatypes.ts does needs to be completely
+// independent of all other modules in the runtime system.
+export interface ObjectOperations {
+    __GetPrototypeOf__(realm: Realm, O: JSObject): Completion<JSObject | JSNull>;
+    __SetPrototypeOf__(realm: Realm, O: JSObject, V: JSObject | JSNull): Completion<boolean>;
+    __IsExtensible__(realm: Realm, O: JSObject): Completion<boolean>;
+    __PreventExtensions__(realm: Realm, O: JSObject): Completion<boolean>;
+    __GetOwnProperty__(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor>;
+    __HasProperty__(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __Get__(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue>;
+    __Set__(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean>;
+    __Delete__(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean>;
+    __DefineOwnProperty__(realm: Realm, O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean>;
+    __Enumerate__(realm: Realm, O: JSObject, ): Completion<JSObject>;
+    __OwnPropertyKeys__(realm: Realm, O: JSObject): Completion<JSPropertyKey[]>;
+    __Call__(realm: Realm, O: JSObject, thisArg: JSValue, args: JSValue[]): Completion<JSValue>;
+    __Construct__(realm: Realm, O: JSObject, args: JSValue[], newTarget: JSObject): Completion<JSObject>;
 }
 
 // ES6 Section 6.1.7.1: Property Attributes
@@ -463,6 +487,7 @@ export interface Realm {
     globalThis: JSObject;
     globalEnv: LexicalEnvironment;
     templateMap: UnknownType[];
+    ordinaryOps: ObjectOperations;
 
     throwEvalError(message?: string): ThrowCompletion;
     throwRangeError(message?: string): ThrowCompletion;
