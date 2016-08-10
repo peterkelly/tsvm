@@ -224,8 +224,8 @@ export function ValidateAndApplyPropertyDescriptor(
                 O.properties.put(P.stringRep,new AccessorDescriptor({
                     enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
                     configurable: (Desc.configurable !== undefined) ? Desc.configurable : false,
-                    __get__: Desc.__get__,
-                    __set__: Desc.__set__,
+                    __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
+                    __set__: (Desc.__set__ !== undefined) ? Desc.__set__ : new JSUndefined(),
                 }));
             }
         }

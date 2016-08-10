@@ -356,8 +356,8 @@ export interface DescriptorFields {
     configurable?: boolean;
     value?: JSValue;
     writable?: boolean;
-    __get__?: JSObject;
-    __set__?: JSObject;
+    __get__?: JSObject | JSUndefined;
+    __set__?: JSObject | JSUndefined;
 }
 
 export type PropertyDescriptor = DataDescriptor | AccessorDescriptor;
@@ -366,7 +366,18 @@ export abstract class BaseDescriptor {
     _nominal_type_Property: any;
     public enumerable: boolean = true;
     public configurable: boolean = true;
-    public constructor() {
+    public constructor(options: {
+        enumerable?: boolean,
+        configurable?: boolean,
+    }) {
+        if ((options !== undefined) && (options.enumerable !== undefined))
+            this.enumerable = options.enumerable;
+        else
+            this.enumerable = true;
+        if ((options !== undefined) && (options.configurable !== undefined))
+            this.configurable = options.configurable;
+        else
+            this.configurable = true;
     }
 }
 
@@ -380,11 +391,7 @@ export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
         value: JSValue,
         writable: boolean,
     }) {
-        super();
-        if (options.enumerable !== undefined)
-            this.enumerable = options.enumerable;
-        if (options.configurable !== undefined)
-            this.configurable = options.configurable;
+        super(options);
         this.value = options.value;
         this.writable = options.writable;
     }
@@ -392,25 +399,17 @@ export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
 
 export class AccessorDescriptor extends BaseDescriptor implements DescriptorFields {
     _nominal_type_AccessorDescriptor: any;
-    public __get__?: JSObject;
-    public __set__?: JSObject;
-    public constructor(options?: {
+    public __get__: JSObject | JSUndefined
+    public __set__: JSObject | JSUndefined;
+    public constructor(options: {
         enumerable?: boolean,
         configurable?: boolean,
-        __get__?: JSObject;
-        __set__?: JSObject;
+        __get__: JSObject | JSUndefined;
+        __set__: JSObject | JSUndefined;
     }) {
-        super();
-        if (options !== undefined) {
-            if (options.enumerable !== undefined)
-                this.enumerable = options.enumerable;
-            if (options.configurable !== undefined)
-                this.configurable = options.configurable;
-            if (options.__get__ !== undefined) // Note that JSUndefined is distinct from undefined
-                this.__get__ = options.__get__;
-            if (options.__set__ !== undefined)
-                this.__set__ = options.__set__;
-        }
+        super(options);
+        this.__get__ = options.__get__;
+        this.__set__ = options.__set__;
     }
 }
 
