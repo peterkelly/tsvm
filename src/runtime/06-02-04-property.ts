@@ -301,6 +301,52 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
 // ES6 Section 6.2.4.6: CompletePropertyDescriptor (Desc)
 
-export function CompletePropertyDescriptor(realm: Realm, Desc: any): Completion<UnknownType> {
-    throw new Error("CompletePropertyDescriptor not implemented");
+export function CompletePropertyDescriptor(realm: Realm, Desc: DescriptorFields): DescriptorFields {
+    // 1. ReturnIfAbrupt(Desc).
+    // 2. Assert: Desc is a Property Descriptor
+    // 3. Let like be Record {
+    //        [[Value]]: undefined,
+    //        [[Writable]]: false,
+    //        [[Get]]: undefined,
+    //        [[Set]]: undefined,
+    //        [[Enumerable]]: false,
+    //        [[Configurable]]: false }.
+    const like: DescriptorFields = {
+        value: new JSUndefined,
+        writable: false,
+        __get__: new JSUndefined(),
+        __set__: new JSUndefined(),
+        enumerable: false,
+        configurable: false,
+    };
+
+    // 4. If either IsGenericDescriptor(Desc) or IsDataDescriptor(Desc) is true, then
+    if (IsGenericDescriptor(Desc) || IsDataDescriptor(Desc)) {
+        // a. If Desc does not have a [[Value]] field, set Desc.[[Value]] to like.[[Value]].
+        if (Desc.value === undefined)
+            Desc.value = like.value;
+        // b. If Desc does not have a [[Writable]] field, set Desc.[[Writable]] to like.[[Writable]].
+        if (Desc.writable === undefined)
+            Desc.writable = like.writable;
+    }
+    // 5. Else,
+    else {
+        // a. If Desc does not have a [[Get]] field, set Desc.[[Get]] to like.[[Get]].
+        if (Desc.__get__ === undefined)
+            Desc.__get__ = like.__get__;
+        // b. If Desc does not have a [[Set]] field, set Desc.[[Set]] to like.[[Set]].
+        if (Desc.__set__ === undefined)
+            Desc.__set__ = like.__set__;
+    }
+
+    // 6. If Desc does not have an [[Enumerable]] field, set Desc.[[Enumerable]] to like.[[Enumerable]].
+    if (Desc.enumerable === undefined)
+        Desc.enumerable = like.enumerable;
+
+    // 7. If Desc does not have a [[Configurable]] field, set Desc.[[Configurable]] to like.[[Configurable]].
+    if (Desc.configurable === undefined)
+        Desc.configurable = like.configurable;
+
+    // 8. Return Desc.
+    return Desc;
 }
