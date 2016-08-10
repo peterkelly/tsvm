@@ -18,6 +18,7 @@ import {
     UnknownType,
     JSValue,
     JSUndefined,
+    JSBoolean,
     JSString,
     JSObject,
     DescriptorFields,
@@ -34,7 +35,11 @@ import {
 import {
     HasProperty,
     Get,
+    CreateDataProperty,
 } from "./07-03-objects";
+import {
+    ObjectCreate,
+} from "./09-01-ordinary";
 
 // ES6 Section 6.2.4.1: IsAccessorDescriptor (Desc)
 
@@ -77,8 +82,68 @@ export function IsGenericDescriptor(Desc: DescriptorFields | undefined): boolean
 
 // ES6 Section 6.2.4.4: FromPropertyDescriptor (Desc)
 
-export function FromPropertyDescriptor(realm: Realm, Desc: PropertyDescriptor): Completion<UnknownType> {
-    throw new Error("FromPropertyDescriptor not implemented");
+export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | undefined): Completion<JSObject | undefined> {
+    // 1. If Desc is undefined, return undefined.
+    if (Desc === undefined)
+        return new NormalCompletion(undefined);
+
+    // 2. Let obj be ObjectCreate(%ObjectPrototype%).
+    // 3. Assert: obj is an extensible ordinary object with no own properties.
+    const obj = ObjectCreate(realm,realm.intrinsics.ObjectPrototype);
+
+    // 4. If Desc has a [[Value]] field, then
+    if (Desc.value !== undefined) {
+        // a. Perform CreateDataProperty(obj, "value", Desc.[[Value]]).
+        const comp = CreateDataProperty(realm,obj,new JSString("value"),Desc.value);
+        if (!(comp instanceof NormalCompletion))
+            return comp;
+    }
+
+    // 5. If Desc has a [[Writable]] field, then
+    if (Desc.writable !== undefined) {
+        // a. Perform CreateDataProperty(obj, "writable", Desc.[[Writable]]).
+        const comp = CreateDataProperty(realm,obj,new JSString("writable"),new JSBoolean(Desc.writable));
+        if (!(comp instanceof NormalCompletion))
+            return comp;
+    }
+
+    // 6. If Desc has a [[Get]] field, then
+    if (Desc.__get__ !== undefined) {
+        // a. Perform CreateDataProperty(obj, "get", Desc.[[Get]]).
+        const comp = CreateDataProperty(realm,obj,new JSString("get"),Desc.__get__);
+        if (!(comp instanceof NormalCompletion))
+            return comp;
+    }
+
+    // 7. If Desc has a [[Set]] field, then
+    if (Desc.__set__ !== undefined) {
+        // a. Perform CreateDataProperty(obj, "set", Desc.[[Set]])
+        const comp = CreateDataProperty(realm,obj,new JSString("set"),Desc.__set__);
+        if (!(comp instanceof NormalCompletion))
+            return comp;
+    }
+
+    // 8. If Desc has an [[Enumerable]] field, then
+    if (Desc.enumerable !== undefined) {
+        // a. Perform CreateDataProperty(obj, "enumerable", Desc.[[Enumerable]]).
+        const comp = CreateDataProperty(realm,obj,new JSString("enumerable"),new JSBoolean(Desc.enumerable));
+        if (!(comp instanceof NormalCompletion))
+            return comp;
+    }
+
+    // 9. If Desc has a [[Configurable]] field, then
+    if (Desc.configurable !== undefined) {
+        // a. Perform CreateDataProperty(obj , "configurable", Desc.[[Configurable]]).
+        const comp = CreateDataProperty(realm,obj,new JSString("configurable"),new JSBoolean(Desc.configurable));
+        if (!(comp instanceof NormalCompletion))
+            return comp;
+    }
+
+    // 10. Assert: all of the above CreateDataProperty operations return true.
+    // (assumed)
+
+    // 11. Return obj.
+    return new NormalCompletion(obj);
 }
 
 // ES6 Section 6.2.4.5: ToPropertyDescriptor (Obj)
