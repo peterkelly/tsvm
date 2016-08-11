@@ -399,7 +399,7 @@ export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
 
 export class AccessorDescriptor extends BaseDescriptor implements DescriptorFields {
     _nominal_type_AccessorDescriptor: any;
-    public __get__: JSObject | JSUndefined
+    public __get__: JSObject | JSUndefined;
     public __set__: JSObject | JSUndefined;
     public constructor(options: {
         enumerable?: boolean,

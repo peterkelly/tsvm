@@ -193,39 +193,41 @@ export function ValidateAndApplyPropertyDescriptor(
     current: PropertyDescriptor | JSUndefined): Completion<boolean> {
 
     // 1. Assert: If O is not undefined then IsPropertyKey(P) is true.
+    // (guaranteed by argument type)
+
     // 2. If current is undefined, then
     if (current instanceof JSUndefined) {
         // a. If extensible is false, return false.
+        // b. Assert: extensible is true.
         if (!extensible)
             return new NormalCompletion(false);
-        // b. Assert: extensible is true.
         // c. If IsGenericDescriptor(Desc) or IsDataDescriptor(Desc) is true, then
         if (IsGenericDescriptor(Desc) || IsDataDescriptor(Desc)) {
             // i. If O is not undefined, create an own data property named P of object O whose
-            //    [[Value]], [[Writable]], [[Enumerable]] and [[Configurable]] attribute values are
-            //    described by Desc. If the value of an attribute field of Desc is absent, the
-            //    attribute of the newly created property is set to its default value.
+            // [[Value]], [[Writable]], [[Enumerable]] and [[Configurable]] attribute values are
+            // described by Desc. If the value of an attribute field of Desc is absent, the
+            // attribute of the newly created property is set to its default value.
             if (O !== undefined) {
                 O.properties.put(P.stringRep,new DataDescriptor({
+                    value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
+                    writable: (Desc.writable !== undefined) ? Desc.writable : false,
                     enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
                     configurable: (Desc.configurable !== undefined) ? Desc.configurable : false,
-                    writable: (Desc.writable !== undefined) ? Desc.writable : false,
-                    value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
                 }));
             }
         }
         // d. Else Desc must be an accessor Property Descriptor,
         else {
             // i. If O is not undefined, create an own accessor property named P of object O whose
-            //    [[Get]], [[Set]], [[Enumerable]] and [[Configurable]] attribute values are
-            //    described by Desc. If the value of an attribute field of Desc is absent, the
-            //    attribute of the newly created property is set to its default value.
+            // [[Get]], [[Set]], [[Enumerable]] and [[Configurable]] attribute values are described
+            // by Desc. If the value of an attribute field of Desc is absent, the attribute of the
+            // newly created property is set to its default value.
             if (O !== undefined) {
                 O.properties.put(P.stringRep,new AccessorDescriptor({
-                    enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
-                    configurable: (Desc.configurable !== undefined) ? Desc.configurable : false,
                     __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
                     __set__: (Desc.__set__ !== undefined) ? Desc.__set__ : new JSUndefined(),
+                    enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
+                    configurable: (Desc.configurable !== undefined) ? Desc.configurable : false,
                 }));
             }
         }
@@ -245,89 +247,141 @@ export function ValidateAndApplyPropertyDescriptor(
     // 4. Return true, if every field in Desc also occurs in current and the value of every field
     // in Desc is the same value as the corresponding field in current when compared using the
     // SameValue algorithm.
-    const currentValue = (current instanceof DataDescriptor) ? current.value : undefined;
-    const currentWritable = (current instanceof DataDescriptor) ? current.value : undefined;
-    const currentGet = (current instanceof AccessorDescriptor) ? current.__get__ : undefined;
-    const currentSet = (current instanceof AccessorDescriptor) ? current.__set__ : undefined;
-    if ((Desc.enumerable === current.enumerable) &&
-        (Desc.configurable === current.configurable) &&
-        SameValueUndefined(Desc.value,currentValue) &&
-        (Desc.writable === currentWritable) &&
-        SameValueUndefined(Desc.__get__,currentGet) &&
-        SameValueUndefined(Desc.__set__,currentSet))
-        return new NormalCompletion(true)
+    if (current instanceof AccessorDescriptor) {
+        if ((Desc.value === undefined) &&
+            (Desc.writable === undefined) &&
+            (Desc.enumerable === current.enumerable) &&
+            (Desc.configurable === current.configurable) &&
+            SameValueUndefined(Desc.__get__,current.__get__) &&
+            SameValueUndefined(Desc.__get__,current.__set__))
+            return new NormalCompletion(true);
+    }
+    else {
+        // current is a DataDescriptor
+        if ((Desc.__get__ === undefined) &&
+            (Desc.__set__ === undefined) &&
+            (Desc.enumerable === current.enumerable) &&
+            (Desc.configurable === current.configurable) &&
+            SameValueUndefined(Desc.value,current.value) &&
+            (Desc.writable === current.writable))
+            return new NormalCompletion(true);
+    }
 
     // 5. If the [[Configurable]] field of current is false, then
-    if (current.configurable === false) {
+    if (!current.configurable) {
         // a. Return false, if the [[Configurable]] field of Desc is true.
-        if (Desc.configurable === true)
+        if ((Desc.configurable !== undefined) && (Desc.configurable === true))
             return new NormalCompletion(false);
         // b. Return false, if the [[Enumerable]] field of Desc is present and the [[Enumerable]]
-        //    fields of current and Desc are the Boolean negation of each other.
-        if (Desc.enumerable !== undefined) {
-            const descEnumerable = !!Desc.enumerable;
-            const currentEnumerable = !!current.enumerable;
-            if (descEnumerable === currentEnumerable)
-                return new NormalCompletion(false);
-        }
+        // fields of current and Desc are the Boolean negation of each other.
+        if ((Desc.enumerable !== undefined) && (Desc.enumerable != current.enumerable))
+            return new NormalCompletion(false);
     }
 
     // 6. If IsGenericDescriptor(Desc) is true, no further validation is required.
     if (IsGenericDescriptor(Desc)) {
+        // do nothing
     }
     // 7. Else if IsDataDescriptor(current) and IsDataDescriptor(Desc) have different results, then
-    else if (IsDataDescriptor(current) != IsDataDescriptor(Desc)) {
+    else if ((current instanceof DataDescriptor) != IsDataDescriptor(Desc)) {
         // a. Return false, if the [[Configurable]] field of current is false.
         if (!current.configurable)
-            return new NormalCompletion(true);
+            return new NormalCompletion(false);
         // b. If IsDataDescriptor(current) is true, then
-        if (IsDataDescriptor(current)) {
+        if (current instanceof DataDescriptor) {
             // i. If O is not undefined, convert the property named P of object O from a data
-            //    property to an accessor property. Preserve the existing values of the converted
-            //    property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
-            //    property’s attributes to their default values.
+            // property to an accessor property. Preserve the existing values of the converted
+            // property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
+            // property’s attributes to their default values.
+            if (O !== undefined) {
+                O.properties.put(P.stringRep,new AccessorDescriptor({
+                    configurable: current.configurable,
+                    enumerable: current.enumerable,
+                    __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
+                    __set__: (Desc.__set__ !== undefined) ? Desc.__set__ : new JSUndefined(),
+                }))
+            }
         }
         // c. Else,
         else {
             // i. If O is not undefined, convert the property named P of object O from an accessor
-            //    property to a data property. Preserve the existing values of the converted
-            //    property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
-            //    property’s attributes to their default values.
+            // property to a data property. Preserve the existing values of the converted property’s
+            // [[Configurable]] and [[Enumerable]] attributes and set the rest of the property’s
+            // attributes to their default values.
+            if (O !== undefined) {
+                O.properties.put(P.stringRep,new DataDescriptor({
+                    configurable: current.configurable,
+                    enumerable: current.enumerable,
+                    value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
+                    writable: (Desc.writable !== undefined) ? Desc.writable : false,
+                }));
+            }
         }
     }
     // 8. Else if IsDataDescriptor(current) and IsDataDescriptor(Desc) are both true, then
-    else if (IsDataDescriptor(current) && IsDataDescriptor(Desc)) {
+    else if ((current instanceof DataDescriptor) && IsDataDescriptor(Desc)) {
         // a. If the [[Configurable]] field of current is false, then
         if (!current.configurable) {
             // i. Return false, if the [[Writable]] field of current is false and the [[Writable]]
-            //    field of Desc is true.
+            // field of Desc is true.
+            if (!current.writable && (Desc.writable !== undefined) && Desc.writable)
+                return new NormalCompletion(false);
             // ii. If the [[Writable]] field of current is false, then
-            //     1. Return false, if the [[Value]] field of Desc is present and
-            //        SameValue(Desc.[[Value]], current.[[Value]]) is false.
+            if (!current.writable) {
+                // 1. Return false, if the [[Value]] field of Desc is present and
+                // SameValue(Desc.[[Value]], current.[[Value]]) is false.
+                if ((Desc.value !== undefined) && !SameValue(Desc.value,current.value))
+                    return new NormalCompletion(false);
+            }
         }
         // b. Else the [[Configurable]] field of current is true, so any change is acceptable.
-        else {
-        }
     }
     // 9. Else IsAccessorDescriptor(current) and IsAccessorDescriptor(Desc) are both true,
     else {
+        // FIXME: Restructure the code above so flow analysis picks this up
+        if (!(current instanceof AccessorDescriptor))
+            throw new Error("Program logic dictates we should never get here");
         // a. If the [[Configurable]] field of current is false, then
         if (!current.configurable) {
-            // i.  Return false, if the [[Set]] field of Desc is present and SameValue(Desc.[[Set]],
-            //     current.[[Set]]) is false.
-            // ii. Return false, if the [[Get]] field of Desc is present and SameValue(Desc.[[Get]],
-            //     current.[[Get]]) is false.
+            // i. Return false, if the [[Set]] field of Desc is present and SameValue(Desc.[[Set]],
+            // current.[[Set]]) is false.
+            if ((Desc.__set__ !== undefined) && !SameValue(Desc.__set__,current.__set__))
+                return new NormalCompletion(false);
+            // ii. Return false, if the [[Get]] field of Desc is present and
+            // SameValue(Desc.[[Get]], current.[[Get]]) is false.
+            if ((Desc.__get__ !== undefined) && !SameValue(Desc.__get__,current.__get__))
+                return new NormalCompletion(true);
         }
     }
 
     // 10. If O is not undefined, then
     if (O !== undefined) {
         // a. For each field of Desc that is present, set the corresponding attribute of the
-        //    property named P of object O to the value of the field.
-    }
-    // 11. Return true.
+        // property named P of object O to the value of the field.
 
-    throw new Error("ValidateAndApplyPropertyDescriptor Not implemented");
+        if (Desc.enumerable !== undefined)
+            current.enumerable = Desc.enumerable;
+        if (Desc.configurable !== undefined)
+            current.configurable = Desc.configurable;
+
+        // Note: I assume here they mean current
+        if (current instanceof DataDescriptor) {
+            if (Desc.value !== undefined)
+                current.value = Desc.value;
+            if (Desc.writable !== undefined)
+                current.writable = Desc.writable;
+        }
+        else {
+            // current is an AccessorDescriptor
+            if (Desc.__get__ !== undefined)
+                current.__get__ = Desc.__get__;
+            if (Desc.__set__ !== undefined)
+                current.__set__ = Desc.__set__;
+        }
+    }
+
+    // 11. Return true.
+    return new NormalCompletion(true);
 }
 
 // ES6 Section 9.1.7: [[HasProperty]] (P)
