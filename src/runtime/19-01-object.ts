@@ -68,6 +68,7 @@ import {
 import {
     Get,
     HasOwnProperty,
+    Invoke,
 } from "./07-03-objects";
 import {
     StringExoticObject,
@@ -191,6 +192,22 @@ function Object_prototype_propertyIsEnumerable(realm: Realm, thisArg: JSValue, a
 
     // 8. Return the value of desc.[[Enumerable]].
     return new NormalCompletion(new JSBoolean(desc.enumerable));
+}
+
+// ES6 Section 19.1.3.5: Object.prototype.toLocaleString ( [ reserved1 [ , reserved2 ] ] )
+
+function Object_prototype_toLocaleString(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    // Invoke requires an object; the spec does not specify what do do if this function is called
+    // on a non-object. So let's just try to convert the value to an object if it isn't already one.
+
+    // 1. Let O be the this value.
+    const OComp = ToObject(realm,thisArg);
+    if (!(OComp instanceof NormalCompletion))
+        return OComp;
+    const O = OComp.value;
+
+    // 2. Return Invoke(O, "toString").
+    return Invoke(realm,O,new JSString("toString"),[]);
 }
 
 // ES6 Section 19.1.3.6: Object.prototype.toString ( )
