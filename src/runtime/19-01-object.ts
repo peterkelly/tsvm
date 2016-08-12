@@ -59,12 +59,14 @@ import {
 } from "./datatypes";
 import {
     ToObject,
+    ToPropertyKey,
 } from "./07-01-conversion";
 import {
     IsArray,
 } from "./07-02-testcompare";
 import {
     Get,
+    HasOwnProperty,
 } from "./07-03-objects";
 import {
     StringExoticObject,
@@ -92,6 +94,34 @@ export class ObjectObject extends JSObject {
 
 export class ObjectConstructor extends JSObject {
     _nominal_type_ObjectConstructor: any;
+}
+
+// ES6 Section 19.1.3.2: Object.prototype.hasOwnProperty ( V )
+
+function Object_prototype_hasOwnProperty(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    const V = (args.length > 0) ? args[0] : new JSUndefined();
+
+    // 1. Let P be ToPropertyKey(V).
+    // 2. ReturnIfAbrupt(P).
+    const PComp = ToPropertyKey(realm,V);
+    if (!(PComp instanceof NormalCompletion))
+        return PComp;
+    const P = PComp.value;
+
+    // 3. Let O be ToObject(this value).
+    // 4. ReturnIfAbrupt(O).
+    const OComp = ToObject(realm,thisArg);
+    if (!(OComp instanceof NormalCompletion))
+        return OComp;
+    const O = OComp.value;
+
+    // 5. Return HasOwnProperty(O, P).
+    const resultComp = HasOwnProperty(realm,O,P);
+    if (!(resultComp instanceof NormalCompletion))
+        return resultComp;
+    const result = resultComp.value;
+
+    return new NormalCompletion(new JSBoolean(result));
 }
 
 // ES6 Section 19.1.3.6: Object.prototype.toString ( )
