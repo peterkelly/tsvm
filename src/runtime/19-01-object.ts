@@ -159,6 +159,40 @@ function Object_prototype_isPrototypeOf(realm: Realm, thisArg: JSValue, args: JS
     }
 }
 
+// ES6 Section 19.1.3.4: Object.prototype.propertyIsEnumerable ( V )
+
+function Object_prototype_propertyIsEnumerable(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    const V = (args.length > 0) ? args[0] : new JSUndefined();
+
+    // 1. Let P be ToPropertyKey(V).
+    // 2. ReturnIfAbrupt(P).
+    const PComp = ToPropertyKey(realm,V);
+    if (!(PComp instanceof NormalCompletion))
+        return PComp;
+    const P = PComp.value;
+
+    // 3. Let O be ToObject(this value).
+    // 4. ReturnIfAbrupt(O).
+    const OComp = ToObject(realm,this.value);
+    if (!(OComp instanceof NormalCompletion))
+        return OComp;
+    const O = OComp.value;
+
+    // 5. Let desc be O.[[GetOwnProperty]](P).
+    // 6. ReturnIfAbrupt(desc).
+    const descComp = O.__GetOwnProperty__(realm,P,false);
+    if (!(descComp instanceof NormalCompletion))
+        return descComp;
+    const desc = descComp.value;
+
+    // 7. If desc is undefined, return false.
+    if (desc instanceof JSUndefined)
+        return new NormalCompletion(new JSBoolean(false));
+
+    // 8. Return the value of desc.[[Enumerable]].
+    return new NormalCompletion(new JSBoolean(desc.enumerable));
+}
+
 // ES6 Section 19.1.3.6: Object.prototype.toString ( )
 
 function Object_prototype_toString(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
