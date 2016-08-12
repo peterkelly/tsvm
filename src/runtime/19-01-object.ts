@@ -277,3 +277,10 @@ function Object_prototype_toString(realm: Realm, thisArg: JSValue, args: JSValue
     // 19. Return the String that is the result of concatenating "[object ", tag, and "]".
     return new NormalCompletion(new JSString("[object "+tagStr+"]"));
 }
+
+// ES6 Section 19.1.3.7: Object.prototype.valueOf ( )
+
+function Object_prototype_valueOf(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    // 1. Return ToObject(this value).
+    return ToObject(realm,thisArg);
+}
