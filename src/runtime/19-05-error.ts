@@ -63,6 +63,21 @@ import {
     Get,
 } from "./07-03-objects";
 
+export class ErrorObject extends JSObject {
+    _nominal_type_ErrorObject: any;
+    public errorData: JSUndefined = new JSUndefined();
+    public message: string;
+    public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
+        super(proto);
+        if (message !== undefined)
+            this.properties.put("message",stringDescriptor(message));
+    }
+}
+
+export class ErrorConstructor extends JSObject {
+    _nominal_type_ErrorConstructor: any;
+}
+
 function stringDescriptor(str: string): PropertyDescriptor {
     return new DataDescriptor({
         enumerable: false,
@@ -126,15 +141,6 @@ class ErrorToStringFunction extends JSObject {
 
         const combined = nameStr.stringValue+": "+msgStr.stringValue;
         return new NormalCompletion(new JSString(combined));
-    }
-}
-
-export class ErrorObject extends JSObject {
-    public message: string;
-    public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
-        super(proto);
-        if (message !== undefined)
-            this.properties.put("message",stringDescriptor(message));
     }
 }
 

@@ -77,6 +77,7 @@ import {
 // ES6 Section 9.4.1: Bound Function Exotic Objects
 
 class JSBoundFunctionObject extends JSObject {
+    _nominal_type_JSBoundFunctionObject: any;
 
     public boundFunctionObject: JSObject;
     public boundThis: JSValue;
@@ -121,6 +122,10 @@ export function BoundFunctionCreate(realm: Realm, targetFunction: JSObject, boun
 
 // ES6 Section 9.4.2: Array Exotic Objects
 
+export class ArrayExoticObject extends JSObject {
+    _nominal_type_ArrayExoticObject: any;
+}
+
 // ES6 Section 9.4.2.1: [[DefineOwnProperty]] (P, Desc)
 
 // TODO
@@ -144,6 +149,10 @@ export function ArraySetLength(realm: Realm, A: any, Desc: any): Completion<Unkn
 }
 
 // ES6 Section 9.4.3: String Exotic Objects
+
+export class StringExoticObject extends JSObject {
+    _nominal_type_StringExoticObject: any;
+}
 
 // ES6 Section 9.4.3.1: [[GetOwnProperty]] (P)
 
@@ -170,6 +179,11 @@ export function StringCreate(realm: Realm, value: any, prototype: any): Completi
 }
 
 // ES6 Section 9.4.4: Arguments Exotic Objects
+
+export class ArgumentsExoticObject extends JSObject {
+    _nominal_type_ArgumentsExoticObject: any;
+    public parameterMap: any = null;
+}
 
 // ES6 Section 9.4.4.1: [[GetOwnProperty]] (P)
 
@@ -265,6 +279,10 @@ class ArgSetterFunction extends JSObject {
 
 // ES6 Section 9.4.5: Integer Indexed Exotic Objects
 
+export class IntegerInexedExoticObject extends JSObject {
+    _nominal_type_IntegerInexedExoticObject: any;
+}
+
 // ES6 Section 9.4.5.1: [[GetOwnProperty]] (P)
 
 // TODO
@@ -308,6 +326,10 @@ export function IntegerIndexedElementSet(realm: Realm, O: any, index: any, value
 }
 
 // ES6 Section 9.4.6: Module Namespace Exotic Objects
+
+export class ModuleNamespaceExoticObject extends JSObject {
+    _nominal_type_ModuleNamespaceExoticObject: any;
+}
 
 // ES6 Section 9.4.6.1: [[GetPrototypeOf]] ()
 
