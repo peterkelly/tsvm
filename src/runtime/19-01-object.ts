@@ -63,6 +63,7 @@ import {
 } from "./07-01-conversion";
 import {
     IsArray,
+    SameValue,
 } from "./07-02-testcompare";
 import {
     Get,
@@ -122,6 +123,40 @@ function Object_prototype_hasOwnProperty(realm: Realm, thisArg: JSValue, args: J
     const result = resultComp.value;
 
     return new NormalCompletion(new JSBoolean(result));
+}
+
+// ES6 Section 19.1.3.3: Object.prototype.isPrototypeOf ( V )
+
+function Object_prototype_isPrototypeOf(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+    const V1 = (args.length > 0) ? args[0] : new JSUndefined();
+
+    // 1. If Type(V) is not Object, return false.
+    if (!(V1 instanceof JSObject))
+        return new NormalCompletion(new JSBoolean(false));
+
+    // 2. Let O be ToObject(this value).
+    // 3. ReturnIfAbrupt(O).
+    const OComp = ToObject(realm,thisArg);
+    if (!(OComp instanceof NormalCompletion))
+        return OComp;
+    const O = OComp.value;
+
+    // 4. Repeat
+    while (true) {
+        // a. Let V be V.[[GetPrototypeOf]]().
+        const V2Comp = V1.__GetPrototypeOf__(realm);
+        if (!(V2Comp instanceof NormalCompletion))
+            return V2Comp;
+        const V2 = V2Comp.value;
+
+        // b. If V is null, return false
+        if (V2 instanceof JSNull)
+            return new NormalCompletion(new JSBoolean(false));
+
+        // c. If SameValue(O, V) is true, return true.
+        if (SameValue(O,V2))
+            return new NormalCompletion(new JSBoolean(true));
+    }
 }
 
 // ES6 Section 19.1.3.6: Object.prototype.toString ( )
