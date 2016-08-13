@@ -100,12 +100,28 @@ import {
 
 // ES6 Section 8.1.1.1: Declarative Environment Records
 
-interface DeclarativeBinding {
-    value: JSValue;
-    canDelete: boolean;
-    mutable: boolean;
-    initialized: boolean;
-    strict: boolean;
+class DeclarativeBinding {
+    _nominal_type_DeclarativeBinding: any;
+    public value: JSValue;
+    public canDelete: boolean;
+    public mutable: boolean;
+    public initialized: boolean;
+    public strict: boolean;
+
+    public constructor(options: {
+        value: JSValue,
+        canDelete: boolean,
+        mutable: boolean,
+        initialized: boolean,
+        strict: boolean,
+    }) {
+        this.value = options.value;
+        this.canDelete = options.canDelete;
+        this.mutable = options.mutable;
+        this.initialized = options.initialized;
+        this.strict = options.strict;
+    }
+
 }
 
 export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
@@ -147,13 +163,13 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         // 3. Create a mutable binding in envRec for N and record that it is uninitialized. If D is
         // true record that the newly created binding may be deleted by a subsequent DeleteBinding
         // call.
-        this.bindings.put(N,{
+        this.bindings.put(N,new DeclarativeBinding({
             value: new JSUndefined(),
             canDelete: D,
             mutable: true,
             initialized: false,
             strict: true, // Spec doesn't actually mention what strict should be here
-        });
+        }));
 
         // 4. Return NormalCompletion(empty).
         return new NormalCompletion(undefined);
@@ -171,13 +187,13 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 
         // 3. Create an immutable binding in envRec for N and record that it is uninitialized. If S
         // is true record that the newly created binding is a strict binding.
-        this.bindings.put(N,{
+        this.bindings.put(N,new DeclarativeBinding({
             value: new JSUndefined(),
             canDelete: false, // Spec doesn't actually mention what canDelete should be here
             mutable: false,
             initialized: false,
             strict: S,
-        });
+        }));
 
         // 4. Return NormalCompletion(empty).
         return new NormalCompletion(undefined);
