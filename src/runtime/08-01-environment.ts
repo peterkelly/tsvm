@@ -94,115 +94,61 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     // ES6 Section 8.1.1.1.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
-        const result = (N in this.bindings);
-        return new NormalCompletion(result);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.2: CreateMutableBinding (N, D)
 
     public CreateMutableBinding(N: string, D: boolean = false): void {
-        if (N in this.bindings)
-            throw new Error("Binding for "+N+" already exists");
-        this.bindings[N] = {
-            value: new JSUndefined(),
-            canDelete: D,
-            mutable: true,
-            initialized: false,
-            strict: false,
-        };
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.3: CreateImmutableBinding (N, S)
 
     public CreateImmutableBinding(N: string, S: boolean = false): void {
-        if (N in this.bindings)
-            throw new Error("Binding for "+N+" already exists");
-        this.bindings[N] = {
-            value: new JSUndefined(),
-            canDelete: false,
-            mutable: true,
-            initialized: false,
-            strict: S,
-        };
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.4: InitializeBinding (N, V)
 
     public InitializeBinding(N: string, V: JSValue): void {
-        if (!(N in this.bindings))
-            throw new Error("Binding for "+N+" does not exist");
-        const binding = this.bindings[N];
-        if (binding.initialized)
-            throw new Error("Binding for "+N+" is already initialized");
-        binding.value = V;
-        binding.initialized = true;
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
-        const envRec = this;
-
-        if (!(N in envRec.bindings)) {
-            if (S)
-                return this.realm.throwReferenceError();
-            envRec.CreateMutableBinding(N,true);
-            envRec.InitializeBinding(N,V);
-            return new NormalCompletion(undefined);
-        }
-
-        const binding = envRec.bindings[N];
-        if (binding.strict)
-            S = true;
-        if (!binding.initialized)
-            return this.realm.throwReferenceError();
-        else if (binding.mutable)
-            binding.value = V;
-        else if (S)
-            return this.realm.throwTypeError("DeclarativeEnvironmentRecord SetMutableBinding: "+JSON.stringify(N)+": immutable binding");
-        return new NormalCompletion(undefined);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.6: GetBindingValue(N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        const envRec = this;
-        if (!(N in this.bindings))
-            throw new Error("Binding for "+N+" does not exist");
-        const binding = this.bindings[N];
-        if (!binding.initialized)
-            return this.realm.throwReferenceError();
-        return new NormalCompletion(binding.value);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.7: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        if (!(N in this.bindings))
-            throw new Error("Binding for "+N+" does not exist");
-        const binding = this.bindings[N];
-        if (!binding.canDelete)
-            return new NormalCompletion(false);
-        delete this.bindings[N];
-        return new NormalCompletion(true);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.8: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        return new NormalCompletion(false);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.9: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        return new NormalCompletion(false);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.1.10: WithBaseObject ()
 
     public WithBaseObject(): Completion<JSObject | JSUndefined> {
-        return new NormalCompletion(new JSUndefined());
+        throw new Error("not implemented");
     }
 }
 
@@ -222,72 +168,61 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
     // ES6 Section 8.1.1.2.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
-        const envRec = this;
-        const bindings = envRec.bindingObject;
-        const foundBindingComp = HasProperty(this.realm,bindings,new JSString(N));
-        if (!(foundBindingComp instanceof NormalCompletion))
-            return foundBindingComp;
-        const foundBinding = foundBindingComp.value;
-        if (!foundBinding)
-            return new NormalCompletion(false);
-        // if (!envRec.withEnvironment)
-            return new NormalCompletion(true);
-        // FIXME: Unscopables
-        // throw new Error("ObjectEnvironmentRecord.HasBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.2: CreateMutableBinding (N, D)
 
     public CreateMutableBinding(N: string, D: boolean): void {
-        throw new Error("ObjectEnvironmentRecord.CreateMutableBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.3: CreateImmutableBinding (N, S)
 
     public CreateImmutableBinding(N: string, S: boolean): void {
-        throw new Error("ObjectEnvironmentRecord.CreateImmutableBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.4: InitializeBinding (N, V)
 
     public InitializeBinding(N: string, V: JSValue): void {
-        throw new Error("ObjectEnvironmentRecord.InitializeBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
-        throw new Error("ObjectEnvironmentRecord.SetMutableBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.6: GetBindingValue(N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        throw new Error("ObjectEnvironmentRecord.GetBindingValue not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.7: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        throw new Error("ObjectEnvironmentRecord.DeleteBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.8: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("ObjectEnvironmentRecord.HasThisBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.9: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("ObjectEnvironmentRecord.HasSuperBinding not implemented");
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.2.10: WithBaseObject()
 
     public WithBaseObject(): Completion<JSObject | JSUndefined> {
-        throw new Error("ObjectEnvironmentRecord.WithBaseObject not implemented");
+        throw new Error("not implemented");
     }
 }
 
@@ -322,51 +257,31 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
     // ES6 Section 8.1.1.3.1: BindThisValue (V)
 
     public BindThisValue(V: JSValue): Completion<JSValue> {
-        const envRec = this;
-        if (envRec.thisBindingStatus == BindingStatus.Lexical)
-            throw new Error("FunctionEnvironmentRecord.BindThisValue: thisBindingStatus is Lexical");
-        if (envRec.thisBindingStatus == BindingStatus.Initialized)
-            return this.realm.throwReferenceError();
-        envRec.thisValue = V;
-        envRec.thisBindingStatus = BindingStatus.Initialized;
-        return new NormalCompletion(V);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.3.2: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        const envRec = this;
-        const result = (envRec.thisBindingStatus != BindingStatus.Lexical);
-        return new NormalCompletion(result);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.3.3: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        const envRec = this;
-        const result = (envRec.thisBindingStatus != BindingStatus.Lexical);
-        return new NormalCompletion(result);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.3.4: GetThisBinding ()
 
     public GetThisBinding(): Completion<JSValue> {
-        const envRec = this;
-        if (envRec.thisBindingStatus == BindingStatus.Lexical)
-            throw new Error("FunctionEnvironmentRecord.GetThisBinding: thisBindingStatus is Lexical");
-        if (envRec.thisBindingStatus == BindingStatus.Uninitialized)
-            return this.realm.throwReferenceError();
-        return new NormalCompletion(envRec.thisValue);
+        throw new Error("not implemented");
     }
 
     // ES6 Section 8.1.1.3.5: GetSuperBase ()
 
     public GetSuperBase(): Completion<JSValue> {
-        const envRec = this;
-        const home = envRec.homeObject;
-        if (home instanceof JSUndefined)
-            return new NormalCompletion(new JSUndefined());
-        return home.__GetPrototypeOf__(this.realm);
+        throw new Error("not implemented");
     }
 }
 
@@ -541,25 +456,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 // ES6 Section 8.1.2.1: GetIdentifierReference (lex, name, strict)
 
 export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | null, name: string, strict: boolean): Completion<Reference> {
-    if (lex === null) {
-        const ref = new Reference(new JSUndefined(),new JSString(name),new JSBoolean(strict));
-        return new NormalCompletion(ref);
-    }
-
-    const envRec = lex.record;
-    const existsComp = envRec.HasBinding(name);
-    if (!(existsComp instanceof NormalCompletion))
-        return existsComp;
-    const exists = existsComp.value;
-
-    if (exists) {
-        const ref = new Reference(envRec,new JSString(name),new JSBoolean(strict));
-        return new NormalCompletion(ref);
-    }
-    else {
-        const outer = lex.outer;
-        return GetIdentifierReference(realm,outer,name,strict);
-    }
+    throw new Error("not implemented");
 }
 
 // ES6 Section 8.1.2.2: NewDeclarativeEnvironment (E)
