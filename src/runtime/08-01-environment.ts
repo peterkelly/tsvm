@@ -58,6 +58,9 @@ import {
     rt_NaN,
 } from "./runtime";
 import {
+    ToBoolean,
+} from "./07-01-conversion";
+import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
@@ -65,7 +68,28 @@ import {
     ThisMode,
 } from "./09-02-function";
 import {
+    Get,
+    GetV,
+    Set,
+    CreateDataProperty,
+    CreateMethodProperty,
+    CreateDataPropertyOrThrow,
+    DefinePropertyOrThrow,
+    DeletePropertyOrThrow,
+    GetMethod,
     HasProperty,
+    HasOwnProperty,
+    Call,
+    Construct,
+    SetIntegrityLevel,
+    TestIntegrityLevel,
+    CreateArrayFromList,
+    CreateListFromArrayLike,
+    Invoke,
+    OrdinaryHasInstance,
+    SpeciesConstructor,
+    EnumerableOwnNames,
+    GetFunctionRealm,
 } from "./07-03-objects";
 // import * as bi from "./builtins";
 
@@ -109,7 +133,7 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 
     // ES6 Section 8.1.1.1.2: CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean = false): void {
+    public CreateMutableBinding(N: string, D: boolean = false): Completion<void> {
         // 1. Let envRec be the declarative Environment Record for which the method was invoked.
         const envRec = this;
 
@@ -129,12 +153,12 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         });
 
         // 4. Return NormalCompletion(empty).
-        return;
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.1.3: CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean = false): void {
+    public CreateImmutableBinding(N: string, S: boolean = false): Completion<void> {
         // 1. Let envRec be the declarative Environment Record for which the method was invoked.
         const envRec = this;
 
@@ -153,12 +177,12 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         });
 
         // 4. Return NormalCompletion(empty).
-        return;
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.1.4: InitializeBinding (N, V)
 
-    public InitializeBinding(N: string, V: JSValue): void {
+    public InitializeBinding(N: string, V: JSValue): Completion<void> {
         // 1. Let envRec be the declarative Environment Record for which the method was invoked.
         const envRec = this;
 
@@ -176,7 +200,7 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         binding.initialized = true;
 
         // 5. Return NormalCompletion(empty).
-        return;
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.1.5: SetMutableBinding (N, V, S)
@@ -293,73 +317,200 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_ObjectEnvironmentRecord: any;
     public bindingObject: JSObject;
     public realm: Realm;
-    // public withEnvironment: boolean;
+    public withEnvironment: boolean;
 
     public constructor(realm: Realm, bindingObject: JSObject) {
         super();
         this.realm = realm;
         this.bindingObject = bindingObject;
-        // this.withEnvironment = false;
+        this.withEnvironment = true; // FIXME: What should this be by default?
     }
 
     // ES6 Section 8.1.1.2.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let bindings be the binding object for envRec.
+        const bindings = this.bindingObject;
+
+        // 3. Let foundBinding be HasProperty(bindings, N)
+        // 4. ReturnIfAbrupt(foundBinding).
+        const foundBindingComp = HasProperty(this.realm,bindings,new JSString(N));
+        if (!(foundBindingComp instanceof NormalCompletion))
+            return foundBindingComp;
+        const foundBinding = foundBindingComp.value;
+
+        // 5. If foundBinding is false, return false.
+        if (!foundBinding)
+            return new NormalCompletion(false);
+
+        // 6. If the withEnvironment flag of envRec is false, return true.
+        if (!this.withEnvironment)
+            return new NormalCompletion(true);
+
+        // 7. Let unscopables be Get(bindings, @@unscopables).
+        // 8. ReturnIfAbrupt(unscopables).
+        const unscopablesComp = Get(this.realm,bindings,JSSymbol.$$unscopables);
+        if (!(unscopablesComp instanceof NormalCompletion))
+            return unscopablesComp;
+        const unscopables = unscopablesComp.value;
+
+        // 9. If Type(unscopables) is Object, then
+        if (unscopables instanceof JSObject) {
+            // a. Let blocked be ToBoolean(Get(unscopables, N)).
+            // b. ReturnIfAbrupt(blocked).
+            const blockedComp = ToBoolean(this.realm,Get(this.realm,unscopables,new JSString(N)));
+            if (!(blockedComp instanceof NormalCompletion))
+                return blockedComp;
+            const blocked = blockedComp.value;
+
+            // c. If blocked is true, return false.
+            if (blocked)
+                return new NormalCompletion(false);
+        }
+
+        // 10. Return true.
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.2.2: CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): void {
-        throw new Error("not implemented");
+    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let bindings be the binding object for envRec.
+        const bindings = this.bindingObject;
+
+        // 3. If D is true then let configValue be true otherwise let configValue be false.
+        const configValue = D;
+
+        // 4. Return DefinePropertyOrThrow(bindings, N,
+        //        PropertyDescriptor{ [[Value]]:undefined,
+        //                            [[Writable]]: true,
+        //                            [[Enumerable]]: true,
+        //                            [[Configurable]]: configValue }).
+        const resultComp = DefinePropertyOrThrow(this.realm,bindings,new JSString(N),new DataDescriptor({
+            value: new JSUndefined(),
+            writable: true,
+            enumerable: true,
+            configurable: configValue,
+        }));
+        if (!(resultComp instanceof NormalCompletion))
+            return resultComp;
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.2.3: CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): void {
-        throw new Error("not implemented");
+    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
+        throw new Error("CreateImmutableBinding is not used in the spec with object environments");
     }
 
     // ES6 Section 8.1.1.2.4: InitializeBinding (N, V)
 
-    public InitializeBinding(N: string, V: JSValue): void {
-        throw new Error("not implemented");
+    public InitializeBinding(N: string, V: JSValue): Completion<void> {
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec must have an uninitialized binding for N.
+        // 3. Record that the binding for N in envRec has been initialized.
+        //     "NOTE: In this specification, all uses of CreateMutableBinding for object Environment
+        //     Records are immediately followed by a call to InitializeBinding for the same name.
+        //     Hence, implementations do not need to explicitly track the initialization state of
+        //     individual object Environment Record bindings."
+
+        // 4. Return envRec.SetMutableBinding(N, V, false).
+        return envRec.SetMutableBinding(N,V,false);
     }
 
     // ES6 Section 8.1.1.2.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let bindings be the binding object for envRec.
+        const bindings = this.bindingObject;
+
+        // 3. Return Set(bindings, N, V, S).
+        const resultComp = Set(this.realm,bindings,new JSString(N),V,S);
+        if (!(resultComp instanceof NormalCompletion))
+            return resultComp;
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.2.6: GetBindingValue(N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let bindings be the binding object for envRec.
+        const bindings = this.bindingObject;
+
+        // 3. Let value be HasProperty(bindings, N).
+        // 4. ReturnIfAbrupt(value).
+        const valueComp = HasProperty(this.realm,bindings,new JSString(N));
+        if (!(valueComp instanceof NormalCompletion))
+            return valueComp;
+        const value = valueComp.value;
+
+        // 5. If value is false, then
+        if (!value) {
+            // a. If S is false, return the value undefined, otherwise throw a ReferenceError
+            // exception.
+            if (!S)
+                return new NormalCompletion(new JSUndefined());
+            else
+                this.realm.throwReferenceError(N+" is not defined");
+        }
+
+        // 6. Return Get(bindings, N).
+        return Get(this.realm,bindings,new JSString(N));
     }
 
     // ES6 Section 8.1.1.2.7: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let bindings be the binding object for envRec.
+        const bindings = this.bindingObject;
+
+        // 3. Return bindings.[[Delete]](N).
+        return bindings.__Delete__(this.realm,new JSString(N));
     }
 
     // ES6 Section 8.1.1.2.8: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.2.9: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.2.10: WithBaseObject()
 
     public WithBaseObject(): Completion<JSObject | JSUndefined> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the object Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. If the withEnvironment flag of envRec is true, return the binding object for envRec.
+        if (this.withEnvironment)
+            return new NormalCompletion(this.bindingObject);
+
+        // 3. Otherwise, return undefined.
+        return new NormalCompletion(new JSUndefined());
     }
 }
 
@@ -447,19 +598,19 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
     // ES6 Section 8.1.1.4.2: CreateMutableBinding (N, D)
 
-    public CreateMutableBinding(N: string, D: boolean): void {
+    public CreateMutableBinding(N: string, D: boolean): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.CreateMutableBinding not implemented");
     }
 
     // ES6 Section 8.1.1.4.3: CreateImmutableBinding (N, S)
 
-    public CreateImmutableBinding(N: string, S: boolean): void {
+    public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.CreateImmutableBinding not implemented");
     }
 
     // ES6 Section 8.1.1.4.4: InitializeBinding (N, V)
 
-    public InitializeBinding(N: string, V: JSValue): void {
+    public InitializeBinding(N: string, V: JSValue): Completion<void> {
         throw new Error("GlobalEnvironmentRecord.InitializeBinding not implemented");
     }
 

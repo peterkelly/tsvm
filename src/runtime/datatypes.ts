@@ -600,9 +600,9 @@ export class LexicalEnvironment {
 
 export abstract class EnvironmentRecord {
     public abstract HasBinding(N: string): Completion<boolean>;
-    public abstract CreateMutableBinding(N: string, D: boolean): void;
-    public abstract CreateImmutableBinding(N: string, S: boolean): void;
-    public abstract InitializeBinding(N: string, V: JSValue): void;
+    public abstract CreateMutableBinding(N: string, D: boolean): Completion<void>;
+    public abstract CreateImmutableBinding(N: string, S: boolean): Completion<void>;
+    public abstract InitializeBinding(N: string, V: JSValue): Completion<void>;
     public abstract SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void>;
     public abstract GetBindingValue(N: string, S: boolean): Completion<JSValue>;
     public abstract DeleteBinding(N: string): Completion<boolean>;
