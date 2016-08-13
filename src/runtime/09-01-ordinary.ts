@@ -471,7 +471,12 @@ function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, R
                 return new NormalCompletion(false);
             if (!(existingDescriptor.writable))
                 return new NormalCompletion(false);
-            const valueDesc = new DataDescriptor({value: V, writable: true });
+            const valueDesc = new DataDescriptor({
+                value: V,
+                writable: true,
+                enumerable: true,
+                configurable: true,
+            });
             return Receiver.__DefineOwnProperty__(realm,P,valueDesc);
         }
         else {

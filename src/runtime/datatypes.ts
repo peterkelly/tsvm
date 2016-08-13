@@ -364,20 +364,14 @@ export type PropertyDescriptor = DataDescriptor | AccessorDescriptor;
 
 export abstract class BaseDescriptor {
     _nominal_type_Property: any;
-    public enumerable: boolean = true;
-    public configurable: boolean = true;
+    public enumerable: boolean;
+    public configurable: boolean;
     public constructor(options: {
-        enumerable?: boolean,
-        configurable?: boolean,
+        enumerable: boolean,
+        configurable: boolean,
     }) {
-        if ((options !== undefined) && (options.enumerable !== undefined))
-            this.enumerable = options.enumerable;
-        else
-            this.enumerable = true;
-        if ((options !== undefined) && (options.configurable !== undefined))
-            this.configurable = options.configurable;
-        else
-            this.configurable = true;
+        this.enumerable = options.enumerable;
+        this.configurable = options.configurable;
     }
 }
 
@@ -386,8 +380,8 @@ export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
     public value: JSValue;
     public writable: boolean;
     public constructor(options: {
-        enumerable?: boolean,
-        configurable?: boolean,
+        enumerable: boolean,
+        configurable: boolean,
         value: JSValue,
         writable: boolean,
     }) {
@@ -402,8 +396,8 @@ export class AccessorDescriptor extends BaseDescriptor implements DescriptorFiel
     public __get__: JSObject | JSUndefined;
     public __set__: JSObject | JSUndefined;
     public constructor(options: {
-        enumerable?: boolean,
-        configurable?: boolean,
+        enumerable: boolean,
+        configurable: boolean,
         __get__: JSObject | JSUndefined;
         __set__: JSObject | JSUndefined;
     }) {

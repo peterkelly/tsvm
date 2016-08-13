@@ -71,7 +71,12 @@ export function Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Thr
 // ES6 Section 7.3.4: CreateDataProperty (O, P, V)
 
 export function CreateDataProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const newDesc = new DataDescriptor({ value: V, writable: true });
+    const newDesc = new DataDescriptor({
+        value: V,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+    });
     newDesc.enumerable = true;
     newDesc.configurable = true;
     return O.__DefineOwnProperty__(realm,P,newDesc);
@@ -80,10 +85,12 @@ export function CreateDataProperty(realm: Realm, O: JSObject, P: JSPropertyKey, 
 // ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
 
 export function CreateMethodProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const newDesc = new DataDescriptor({ value: V, writable: true });
-    newDesc.enumerable = false;
-    newDesc.configurable = true;
-    return O.__DefineOwnProperty__(realm,P,newDesc);
+    return O.__DefineOwnProperty__(realm,P,new DataDescriptor({
+        value: V,
+        writable: true,
+        enumerable: false,
+        configurable: true,
+    }));
 }
 
 // ES6 Section 7.3.6: CreateDataPropertyOrThrow (O, P, V)
