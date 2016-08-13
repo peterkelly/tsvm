@@ -61,6 +61,9 @@ import {
     ToBoolean,
 } from "./07-01-conversion";
 import {
+    IsExtensible,
+} from "./07-02-testcompare";
+import {
     ObjectCreate,
 } from "./09-01-ordinary";
 import {
@@ -655,109 +658,504 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
     // ES6 Section 8.1.1.4.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
-        throw new Error("GlobalEnvironmentRecord.HasBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, return true.
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas)
+            return new NormalCompletion(true);
+
+        // 4. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 5. Return ObjRec.HasBinding(N).
+        return objRec.HasBinding(N);
     }
 
     // ES6 Section 8.1.1.4.2: CreateMutableBinding (N, D)
 
     public CreateMutableBinding(N: string, D: boolean): Completion<void> {
-        throw new Error("GlobalEnvironmentRecord.CreateMutableBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, throw a TypeError exception.
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas)
+            return this.realm.throwTypeError(N+": binding already exists");
+
+        // 4. Return DclRec.CreateMutableBinding(N, D).
+        return dclRec.CreateMutableBinding(N,D);
     }
 
     // ES6 Section 8.1.1.4.3: CreateImmutableBinding (N, S)
 
     public CreateImmutableBinding(N: string, S: boolean): Completion<void> {
-        throw new Error("GlobalEnvironmentRecord.CreateImmutableBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, throw a TypeError exception.
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas)
+            return this.realm.throwTypeError(N+": binding already exists");
+
+        // 4. Return DclRec.CreateImmutableBinding(N, S).
+        return dclRec.CreateImmutableBinding(N,S);
     }
 
     // ES6 Section 8.1.1.4.4: InitializeBinding (N, V)
 
     public InitializeBinding(N: string, V: JSValue): Completion<void> {
-        throw new Error("GlobalEnvironmentRecord.InitializeBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, then
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas) {
+            // a. Return DclRec.InitializeBinding(N, V).
+            return dclRec.InitializeBinding(N,V);
+        }
+
+        // 4. Assert: If the binding exists it must be in the object Environment Record.
+        // (implicity guaranteed by above)
+
+        // 5. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 6. Return ObjRec.InitializeBinding(N, V).
+        return objRec.InitializeBinding(N,V);
     }
 
     // ES6 Section 8.1.1.4.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
-        throw new Error("GlobalEnvironmentRecord.SetMutableBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, then
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas) {
+            // a. Return DclRec.SetMutableBinding(N, V, S).
+            return dclRec.SetMutableBinding(N,V,S);
+        }
+
+        // 4. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 5. Return ObjRec.SetMutableBinding(N, V, S).
+        return objRec.SetMutableBinding(N,V,S);
     }
 
     // ES6 Section 8.1.1.4.6: GetBindingValue (N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        throw new Error("GlobalEnvironmentRecord.GetBindingValue not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, then
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas) {
+            // a. Return DclRec.GetBindingValue(N, S).
+            return dclRec.GetBindingValue(N,S);
+        }
+
+        // 4. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 5. Return ObjRec.GetBindingValue(N, S).
+        return objRec.GetBindingValue(N,S);
     }
 
     // ES6 Section 8.1.1.4.7: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        throw new Error("GlobalEnvironmentRecord.DeleteBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = envRec.declarativeRecord;
+
+        // 3. If DclRec.HasBinding(N) is true, then
+        const dclHasComp = dclRec.HasBinding(N);
+        if (!(dclHasComp instanceof NormalCompletion))
+            return dclHasComp;
+        const dclHas = dclHasComp.value;
+        if (dclHas) {
+            // a. Return DclRec.DeleteBinding(N).
+            return dclRec.DeleteBinding(N);
+        }
+
+        // 4. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 5. Let globalObject be the binding object for ObjRec.
+        const globalObject = objRec.bindingObject;
+
+        // 6. Let existingProp be HasOwnProperty(globalObject, N).
+        // 7. ReturnIfAbrupt(existingProp).
+        const existingPropComp = HasOwnProperty(this.realm,globalObject,new JSString(N));
+        if (!(existingPropComp instanceof NormalCompletion))
+            return existingPropComp;
+        const existingProp = existingPropComp.value;
+
+        // 8. If existingProp is true, then
+        if (existingProp) {
+            // a. Let status be ObjRec.DeleteBinding(N).
+            // b. ReturnIfAbrupt(status).
+            const statusComp = objRec.DeleteBinding(N);
+            if (!(statusComp instanceof NormalCompletion))
+                return statusComp;
+            const status = statusComp.value;
+
+            // c. If status is true, then
+            if (status) {
+                // i. Let varNames be envRec.[[VarNames]].
+                const varNames = envRec.varNames;
+                // ii. If N is an element of varNames, remove that element from the varNames.
+                const index = varNames.indexOf(N);
+                if (index >= 0)
+                    varNames.splice(index,1);
+            }
+
+            // d. Return status.
+            return new NormalCompletion(status);
+        }
+
+        // 9. Return true.
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.4.8: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("GlobalEnvironmentRecord.HasThisBinding not implemented");
+        // 1. Return true.
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.4.9: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("GlobalEnvironmentRecord.HasSuperBinding not implemented");
+        // 1. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.4.10: WithBaseObject()
 
     public WithBaseObject(): Completion<JSObject | JSUndefined> {
-        throw new Error("GlobalEnvironmentRecord.WithBaseObject not implemented");
+        // 1. Return undefined.
+        return new NormalCompletion(new JSUndefined());
     }
 
     // ES6 Section 8.1.1.4.11: GetThisBinding ()
 
     public GetThisBinding(): Completion<JSValue> {
-        throw new Error("GlobalEnvironmentRecord.GetThisBinding not implemented");
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 3. Let bindings be the binding object for ObjRec.
+        const bindings = objRec.bindingObject;
+
+        // 4. Return bindings.
+        return new NormalCompletion(bindings);
     }
 
     // ES6 Section 8.1.1.4.12: HasVarDeclaration (N)
 
-    public HasVarDeclaration(N: string): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.HasVarDeclaration not implemented");
+    public HasVarDeclaration(N: string): Completion<boolean> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let varDeclaredNames be envRec.[[VarNames]].
+        const varDeclaredNames = envRec.varNames;
+
+        // 3. If varDeclaredNames contains the value of N, return true.
+        if (varDeclaredNames.indexOf(N) >= 0)
+            return new NormalCompletion(true);
+
+        // 4. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.4.13: HasLexicalDeclaration (N)
 
-    public HasLexicalDeclaration(N: string): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.HasLexicalDeclaration not implemented");
+    public HasLexicalDeclaration(N: string): Completion<boolean> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let DclRec be envRec.[[DeclarativeRecord]].
+        const dclRec = this.declarativeRecord;
+
+        // 3. Return DclRec.HasBinding(N).
+        return dclRec.HasBinding(N);
     }
 
     // ES6 Section 8.1.1.4.14: HasRestrictedGlobalProperty (N)
 
-    public HasRestrictedGlobalProperty(N: string): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.HasRestrictedGlobalProperty not implemented");
+    public HasRestrictedGlobalProperty(N: string): Completion<boolean> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 3. Let globalObject be the binding object for ObjRec.
+        const globalObject = objRec.bindingObject;
+
+        // 4. Let existingProp be globalObject.[[GetOwnProperty]](N).
+        // 5. ReturnIfAbrupt(existingProp).
+        const existingPropComp = globalObject.__GetOwnProperty__(this.realm,new JSString(N));
+        if (!(existingPropComp instanceof NormalCompletion))
+            return existingPropComp;
+        const existingProp = existingPropComp.value;
+
+        // 6. If existingProp is undefined, return false.
+        if (existingProp instanceof JSUndefined)
+            return new NormalCompletion(false);
+
+        // 7. If existingProp.[[Configurable]] is true, return false.
+        if (existingProp.configurable)
+            return new NormalCompletion(false);
+
+        // 8. Return true.
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.4.15: CanDeclareGlobalVar (N)
 
-    public CanDeclareGlobalVar(N: string): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.CanDeclareGlobalVar not implemented");
+    public CanDeclareGlobalVar(N: string): Completion<boolean> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 3. Let globalObject be the binding object for ObjRec.
+        const globalObject = objRec.bindingObject;
+
+        // 4. Let hasProperty be HasOwnProperty(globalObject, N).
+        // 5. ReturnIfAbrupt(hasProperty).
+        const hasPropertyComp = HasOwnProperty(this.realm,globalObject,new JSString(N));
+        if (!(hasPropertyComp instanceof NormalCompletion))
+            return hasPropertyComp;
+        const hasProperty = hasPropertyComp.value;
+
+        // 6. If hasProperty is true, return true.
+        if (hasProperty)
+            return new NormalCompletion(true);
+
+        // 7. Return IsExtensible(globalObject).
+        return IsExtensible(this.realm,globalObject);
     }
 
     // ES6 Section 8.1.1.4.16: CanDeclareGlobalFunction (N)
 
-    public CanDeclareGlobalFunction(N: string): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.CanDeclareGlobalFunction not implemented");
+    public CanDeclareGlobalFunction(N: string): Completion<boolean> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 3. Let globalObject be the binding object for ObjRec.
+        const globalObject = objRec.bindingObject;
+
+        // 4. Let existingProp be globalObject.[[GetOwnProperty]](N).
+        // 5. ReturnIfAbrupt(existingProp).
+        const existingPropComp = globalObject.__GetOwnProperty__(this.realm,new JSString(N));
+        if (!(existingPropComp instanceof NormalCompletion))
+            return existingPropComp;
+        const existingProp = existingPropComp.value;
+
+        // 6. If existingProp is undefined, return IsExtensible(globalObject).
+        if (existingProp instanceof JSUndefined)
+            return IsExtensible(this.realm,globalObject);
+
+        // 7. If existingProp.[[Configurable]] is true, return true.
+        if (existingProp.configurable)
+            return new NormalCompletion(true);
+
+        // 8. If IsDataDescriptor(existingProp) is true and existingProp has attribute values
+        // {[[Writable]]: true, [[Enumerable]]: true}, return true.
+        if ((existingProp instanceof DataDescriptor) &&
+            existingProp.writable &&
+            existingProp.enumerable)
+            return new NormalCompletion(true);
+
+        // 9. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.4.17: CreateGlobalVarBinding (N, D)
 
-    public CreateGlobalVarBinding(N: string, D: boolean): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.CreateGlobalVarBinding not implemented");
+    public CreateGlobalVarBinding(N: string, D: boolean): Completion<void> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 3. Let globalObject be the binding object for ObjRec.
+        const globalObject = objRec.bindingObject;
+
+        // 4. Let hasProperty be HasOwnProperty(globalObject, N).
+        // 5. ReturnIfAbrupt(hasProperty).
+        const hasPropertyComp = HasOwnProperty(this.realm,globalObject,new JSString(N));
+        if (!(hasPropertyComp instanceof NormalCompletion))
+            return hasPropertyComp;
+        const hasProperty = hasPropertyComp.value;
+
+        // 6. Let extensible be IsExtensible(globalObject).
+        // 7. ReturnIfAbrupt(extensible).
+        const extensibleComp = IsExtensible(this.realm,globalObject);
+        if (!(extensibleComp instanceof NormalCompletion))
+            return extensibleComp;
+        const extensible = extensibleComp.value;
+
+        // 8. If hasProperty is false and extensible is true, then
+        if (!hasProperty && extensible) {
+            // a. Let status be ObjRec.CreateMutableBinding(N, D).
+            // b. ReturnIfAbrupt(status).
+            const createStatusComp = objRec.CreateMutableBinding(N,D);
+            if (!(createStatusComp instanceof NormalCompletion))
+                return createStatusComp;
+
+            // c. Let status be ObjRec.InitializeBinding(N, undefined).
+            // d. ReturnIfAbrupt(status).
+            const initStatusComp = objRec.InitializeBinding(N,new JSUndefined());
+            if (!(initStatusComp instanceof NormalCompletion))
+                return initStatusComp;
+        }
+
+        // 9. Let varDeclaredNames be envRec.[[VarNames]].
+        const varDeclaredNames = envRec.varNames;
+
+        // 10. If varDeclaredNames does not contain the value of N, then
+        if (varDeclaredNames.indexOf(N) < 0) {
+            // a. Append N to varDeclaredNames.
+            varDeclaredNames.push(N);
+        }
+
+        // 11. Return NormalCompletion(empty).
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.4.18: CreateGlobalFunctionBinding (N, V, D)
 
-    public CreateGlobalFunctionBinding(N: string, V: JSValue, D: boolean): Completion<UnknownType> {
-        throw new Error("GlobalEnvironmentRecord.CreateGlobalFunctionBinding not implemented");
+    public CreateGlobalFunctionBinding(N: string, V: JSValue, D: boolean): Completion<void> {
+        // 1. Let envRec be the global Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let ObjRec be envRec.[[ObjectRecord]].
+        const objRec = envRec.objectRecord;
+
+        // 3. Let globalObject be the binding object for ObjRec.
+        const globalObject = objRec.bindingObject;
+
+        // 4. Let existingProp be globalObject.[[GetOwnProperty]](N).
+        // 5. ReturnIfAbrupt(existingProp).
+        const existingPropComp = globalObject.__GetOwnProperty__(this.realm,new JSString(N));
+        if (!(existingPropComp instanceof NormalCompletion))
+            return existingPropComp;
+        const existingProp = existingPropComp.value;
+
+        // 6. If existingProp is undefined or existingProp.[[Configurable]] is true, then
+        let desc: PropertyDescriptor;
+        if ((existingProp instanceof JSUndefined) || existingProp.configurable) {
+            // a. Let desc be the PropertyDescriptor{[[Value]]:V, [[Writable]]: true,
+            // [[Enumerable]]: true , [[Configurable]]: D}.
+            desc = new DataDescriptor({
+                value: V,
+                writable: true,
+                enumerable: true,
+                configurable: D,
+            });
+        }
+        // 7. Else,
+        else {
+            // a. Let desc be the PropertyDescriptor{[[Value]]:V }.
+
+            // Note: The spec doesn't mention what the other attributes of the newly-created
+            // property descriptor should be. I assume that we should just keep ones from the
+            // existing descriptor.
+
+            // FIXME: Not sure about the writable attribute in the case where the existing
+            // descriptor is an AccessorDescriptor
+
+            desc = new DataDescriptor({
+                value: V,
+                writable: (existingProp instanceof DataDescriptor) ? existingProp.writable : true,
+                enumerable: existingProp.enumerable,
+                configurable: existingProp.configurable,
+            });
+        }
+
+        // 8. Let status be DefinePropertyOrThrow(globalObject, N, desc).
+        // 9. ReturnIfAbrupt(status).
+        const defineStatusComp = DefinePropertyOrThrow(this.realm,globalObject,new JSString(N),desc);
+        if (!(defineStatusComp instanceof NormalCompletion))
+            return defineStatusComp;
+
+        // 10. Let status be Set(globalObject, N, V, false).
+        const setStatusComp = Set(this.realm,globalObject,new JSString(N),V,false);
+
+        // 11. Record that the binding for N in ObjRec has been initialized.
+        // FIXME: Not sure how this statement makes sense in this context, since we don't use
+        // bindings in ObjectEnvironmentRecord. Maybe we should?
+
+        // 12. ReturnIfAbrupt(status).
+        if (!(setStatusComp instanceof NormalCompletion))
+            return setStatusComp;
+
+        // 13. Let varDeclaredNames be envRec.[[VarNames]].
+        const varDeclaredNames = envRec.varNames;
+
+        // 14. If varDeclaredNames does not contain the value of N, then
+        if (varDeclaredNames.indexOf(N) < 0) {
+            // a. Append N to varDeclaredNames.
+            varDeclaredNames.push(N);
+        }
+
+        // 15. Return NormalCompletion(empty).
+        return new NormalCompletion(undefined);
     }
 }
 
