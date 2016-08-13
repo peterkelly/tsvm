@@ -545,31 +545,93 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
     // ES6 Section 8.1.1.3.1: BindThisValue (V)
 
     public BindThisValue(V: JSValue): Completion<JSValue> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the function Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec.[[thisBindingStatus]] is not "lexical".
+        if (envRec.thisBindingStatus === BindingStatus.Lexical)
+            throw new Error("Assertion failure: envRec.[[thisBindingStatus]] is not \"lexical\"");
+
+        // 3. If envRec.[[thisBindingStatus]] is "initialized", throw a ReferenceError exception.
+        if (envRec.thisBindingStatus === BindingStatus.Initialized)
+            return this.realm.throwReferenceError("this binding already initialized");
+
+        // 4. Set envRec.[[thisValue]] to V.
+        envRec.thisValue = V;
+
+        // 5. Set envRec.[[thisBindingStatus]] to "initialized".
+        envRec.thisBindingStatus = BindingStatus.Lexical;
+
+        // 6. Return V.
+        return new NormalCompletion(V);
     }
 
     // ES6 Section 8.1.1.3.2: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the function Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. If envRec.[[thisBindingStatus]] is "lexical", return false; otherwise, return true.
+        if (envRec.thisBindingStatus === BindingStatus.Lexical)
+            return new NormalCompletion(false);
+        else
+            return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.3.3: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the function Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. If envRec.[[thisBindingStatus]] is "lexical", return false.
+        if (envRec.thisBindingStatus === BindingStatus.Lexical)
+            return new NormalCompletion(false);
+
+        // 3. If envRec.[[HomeObject]] has the value undefined, return false, otherwise, return true.
+        if (envRec.homeObject instanceof JSUndefined)
+            return new NormalCompletion(false);
+        else
+            return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.3.4: GetThisBinding ()
 
     public GetThisBinding(): Completion<JSValue> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the function Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec.[[thisBindingStatus]] is not "lexical".
+        if (envRec.thisBindingStatus === BindingStatus.Lexical)
+            throw new Error("Assertion failure: envRec.[[thisBindingStatus]] is not \"lexical\"");
+
+        // 3. If envRec.[[thisBindingStatus]] is "uninitialized", throw a ReferenceError exception.
+        if (envRec.thisBindingStatus === BindingStatus.Uninitialized)
+            return this.realm.throwReferenceError("this binding is uninitialized");
+
+        // 4. Return envRec.[[thisValue]].
+        return new NormalCompletion(envRec.thisValue);
     }
 
     // ES6 Section 8.1.1.3.5: GetSuperBase ()
 
     public GetSuperBase(): Completion<JSValue> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the function Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Let home be the value of envRec.[[HomeObject]].
+        const home = envRec.homeObject;
+
+        // 3. If home has the value undefined, return undefined.
+        if (home instanceof JSUndefined)
+            return new NormalCompletion(new JSUndefined());
+
+        // 4. Assert: Type(home) is Object.
+        // (guaranteed by type system)
+
+        // 5. Return home.[[GetPrototypeOf]]().
+        return home.__GetPrototypeOf__(this.realm);
     }
 }
 
