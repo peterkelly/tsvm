@@ -14,6 +14,7 @@
 
 import {
     UnknownType,
+    GenericMap,
     LexicalEnvironment,
     Realm,
     EnvironmentRecord,
@@ -83,72 +84,208 @@ interface DeclarativeBinding {
 export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     _nominal_type_DeclarativeEnvironmentRecord: any;
 
-    public readonly bindings: { [name: string]: DeclarativeBinding } = {};
+    public readonly bindings: GenericMap<DeclarativeBinding>;
     public realm: Realm;
 
     public constructor(realm: Realm) {
         super();
+        this.bindings = new GenericMap<DeclarativeBinding>();
         this.realm = realm;
     }
 
     // ES6 Section 8.1.1.1.1: HasBinding (N)
 
     public HasBinding(N: string): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. If envRec has a binding for the name that is the value of N, return true.
+        if (this.bindings.contains(N))
+            return new NormalCompletion(true);
+
+        // 3. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.1.2: CreateMutableBinding (N, D)
 
     public CreateMutableBinding(N: string, D: boolean = false): void {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec does not already have a binding for N.
+        if (this.bindings.contains(N))
+            throw new Error("Assertion failure: envRec does not already have a binding for N");
+
+        // 3. Create a mutable binding in envRec for N and record that it is uninitialized. If D is
+        // true record that the newly created binding may be deleted by a subsequent DeleteBinding
+        // call.
+        this.bindings.put(N,{
+            value: new JSUndefined(),
+            canDelete: D,
+            mutable: true,
+            initialized: false,
+            strict: true, // Spec doesn't actually mention what strict should be here
+        });
+
+        // 4. Return NormalCompletion(empty).
+        return;
     }
 
     // ES6 Section 8.1.1.1.3: CreateImmutableBinding (N, S)
 
     public CreateImmutableBinding(N: string, S: boolean = false): void {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec does not already have a binding for N.
+        if (this.bindings.contains(N))
+            throw new Error("Assertion failure: envRec does not already have a binding for N");
+
+        // 3. Create an immutable binding in envRec for N and record that it is uninitialized. If S
+        // is true record that the newly created binding is a strict binding.
+        this.bindings.put(N,{
+            value: new JSUndefined(),
+            canDelete: false, // Spec doesn't actually mention what canDelete should be here
+            mutable: false,
+            initialized: false,
+            strict: S,
+        });
+
+        // 4. Return NormalCompletion(empty).
+        return;
     }
 
     // ES6 Section 8.1.1.1.4: InitializeBinding (N, V)
 
     public InitializeBinding(N: string, V: JSValue): void {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec must have an uninitialized binding for N.
+        const binding = this.bindings.get(N);
+        if (binding === undefined)
+            throw new Error("Assertion failure: envRec must have an uninitialized binding for N.");
+        if (binding.initialized)
+            throw new Error("Assertion failure: envRec must have an uninitialized binding for N.");
+
+        // 3. Set the bound value for N in envRec to V.
+        binding.value = V;
+
+        // 4. Record that the binding for N in envRec has been initialized.
+        binding.initialized = true;
+
+        // 5. Return NormalCompletion(empty).
+        return;
     }
 
     // ES6 Section 8.1.1.1.5: SetMutableBinding (N, V, S)
 
     public SetMutableBinding(N: string, V: JSValue, S: boolean): Completion<void> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. If envRec does not have a binding for N, then
+        const binding = this.bindings.get(N);
+        if (binding === undefined) {
+            // a. If S is true throw a ReferenceError exception.
+            if (S)
+                return this.realm.throwReferenceError(N+": no such binding");
+
+            // b. Perform envRec.CreateMutableBinding(N, true).
+            envRec.CreateMutableBinding(N,true);
+
+            // c. Perform envRec.InitializeBinding(N, V).
+            envRec.InitializeBinding(N,V);
+
+            // d. Return NormalCompletion(empty).
+            return new NormalCompletion(undefined);
+        }
+
+        // 3. If the binding for N in envRec is a strict binding, let S be true.
+        if (binding.strict)
+            S = true;
+
+        // 4. If the binding for N in envRec has not yet been initialized throw a ReferenceError
+        // exception.
+        if (!binding.initialized) {
+            return this.realm.throwReferenceError(N+": binding has not yet been initialized");
+        }
+        // 5. Else if the binding for N in envRec is a mutable binding, change its bound value to V.
+        else if (binding.mutable) {
+            binding.value = V;
+        }
+        // 6. Else this must be an attempt to change the value of an immutable binding so if S is
+        // true throw a TypeError exception.
+        else {
+            return this.realm.throwTypeError(N+": binding is immutable");
+        }
+
+        // Return NormalCompletion(empty).
+        return new NormalCompletion(undefined);
     }
 
     // ES6 Section 8.1.1.1.6: GetBindingValue(N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec has a binding for N.
+        const binding = this.bindings.get(N);
+        if (binding === undefined)
+            throw new Error("Assertion failure: envRec has a binding for N");
+
+        // 3. If the binding for N in envRec is an uninitialized binding, throw a ReferenceError
+        // exception.
+        if (!binding.initialized)
+            throw new Error(N+" has not yet been initialized");
+
+        // 4. Return the value currently bound to N in envRec.
+        return new NormalCompletion(binding.value);
     }
 
     // ES6 Section 8.1.1.1.7: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Let envRec be the declarative Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec has a binding for the name that is the value of N.
+        const binding = this.bindings.get(N);
+        if (binding === undefined)
+            throw new Error("Assertion failure: envRec has a binding for the name that is the value of N");
+
+        // 3. If the binding for N in envRec cannot be deleted, return false.
+        if (!binding.canDelete)
+            return new NormalCompletion(false);
+
+        // 4. Remove the binding for N from envRec.
+        this.bindings.remove(N);
+
+        // 5. Return true.
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.1.8: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.1.9: HasSuperBinding ()
 
     public HasSuperBinding(): Completion<boolean> {
-        throw new Error("not implemented");
+        // 1. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.1.10: WithBaseObject ()
 
     public WithBaseObject(): Completion<JSObject | JSUndefined> {
-        throw new Error("not implemented");
+        // 1. Return undefined.
+        return new NormalCompletion(new JSUndefined());
     }
 }
 

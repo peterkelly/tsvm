@@ -14,7 +14,6 @@
 
 import {
     UnknownType,
-    PropertyMap,
     ValueType,
     JSValue,
     JSPrimitiveValue,

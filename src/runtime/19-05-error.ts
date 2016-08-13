@@ -19,7 +19,6 @@ import {
     LexicalEnvironment,
     Realm,
     EnvironmentRecord,
-    PropertyMap,
     ValueType,
     JSValue,
     JSPrimitiveValue,

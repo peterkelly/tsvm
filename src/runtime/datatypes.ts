@@ -20,16 +20,16 @@ export class UnknownType {
     _nominal_type_UnknownType: any;
 }
 
-export class PropertyMap {
-    private readonly contents: { [key: string]: PropertyDescriptor } = {};
-    public get(key: string): PropertyDescriptor | undefined {
+export class GenericMap<T> {
+    private readonly contents: { [key: string]: T } = {};
+    public get(key: string): T | undefined {
         const fullKey = "prop_"+key;
         if (fullKey in this.contents)
             return this.contents[fullKey];
         else
             return undefined;
     }
-    public put(key: string, value: PropertyDescriptor): void {
+    public put(key: string, value: T): void {
         const fullKey = "prop_"+key;
         this.contents[fullKey] = value;
     }
@@ -240,7 +240,7 @@ export class JSObject extends JSValue {
 
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
-    public readonly properties: PropertyMap;
+    public readonly properties: GenericMap<PropertyDescriptor>;
 
     public constructor(prototype?: JSObject | JSNull) {
         super();
@@ -249,7 +249,7 @@ export class JSObject extends JSValue {
         else
             this.__prototype__ = new JSNull();
         this.__extensible__ = true;
-        this.properties = new PropertyMap();
+        this.properties = new GenericMap<PropertyDescriptor>();
     }
 
     public get type(): ValueType {
