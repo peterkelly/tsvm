@@ -94,7 +94,13 @@ import {
     EnumerableOwnNames,
     GetFunctionRealm,
 } from "./07-03-objects";
-// import * as bi from "./builtins";
+import {
+    ModuleBinding,
+    ModuleRecord,
+    ImportEntry,
+    ExportEntry,
+    SourceTextModuleRecord,
+} from "./15-02-modules";
 
 // ES6 Section 8.1.1: Environment Records
 
@@ -107,6 +113,8 @@ class DeclarativeBinding {
     public mutable: boolean;
     public initialized: boolean;
     public strict: boolean;
+    public referencedModule: ModuleRecord | undefined = undefined;
+    public referencedName: string | undefined = undefined;
 
     public constructor(options: {
         value: JSValue,
@@ -121,7 +129,6 @@ class DeclarativeBinding {
         this.initialized = options.initialized;
         this.strict = options.strict;
     }
-
 }
 
 export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
@@ -1187,31 +1194,102 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
     // ES6 Section 8.1.1.5.1: GetBindingValue (N, S)
 
     public GetBindingValue(N: string, S: boolean): Completion<JSValue> {
-        throw new Error("ModuleEnvironmentRecord.GetBindingValue not implemented");
+        // 1. Let envRec be the module Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec has a binding for N.
+        const binding = envRec.bindings.get(N);
+        if (binding === undefined)
+            throw new Error("Assertion failure: envRec has a binding for "+N);
+
+        // 3. If the binding for N is an indirect binding, then
+        if ((binding.referencedModule !== undefined) && (binding.referencedName !== undefined)) {
+            // a. Let M and N2 be the indirection values provided when this binding for N was created.
+            const M = binding.referencedModule;
+            const N2 = binding.referencedName;
+
+            // b. Let targetEnv be M.[[Environment]].
+            const targetEnv = M.environment;
+
+            // c. If targetEnv is undefined, throw a ReferenceError exception.
+            if (targetEnv === undefined)
+                return this.realm.throwReferenceError();
+
+            // d. Let targetER be targetEnv’s EnvironmentRecord.
+            const targetER = targetEnv.record;
+
+            // e. Return targetER.GetBindingValue(N2, S).
+            return targetER.GetBindingValue(N2,S);
+        }
+
+        // 4. If the binding for N in envRec is an uninitialized binding, throw a ReferenceError exception.
+        if (!binding.initialized)
+            return this.realm.throwReferenceError();
+
+        // 5. Return the value currently bound to N in envRec.
+        return new NormalCompletion(binding.value);
     }
 
     // ES6 Section 8.1.1.5.2: DeleteBinding (N)
 
     public DeleteBinding(N: string): Completion<boolean> {
-        throw new Error("ModuleEnvironmentRecord.DeleteBinding not implemented");
+        // 1. Let envRec be the module Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. If envRec does not have a binding for the name that is the value of N, return true.
+        const binding = envRec.bindings.get(N);
+        if (binding === undefined)
+            return new NormalCompletion(true);
+
+        // 3. Return false.
+        return new NormalCompletion(false);
     }
 
     // ES6 Section 8.1.1.5.3: HasThisBinding ()
 
     public HasThisBinding(): Completion<boolean> {
-        throw new Error("ModuleEnvironmentRecord.HasThisBinding not implemented");
+        // 1. Return true.
+        return new NormalCompletion(true);
     }
 
     // ES6 Section 8.1.1.5.4: GetThisBinding ()
 
     public GetThisBinding(): Completion<JSValue> {
-        throw new Error("ModuleEnvironmentRecord.GetThisBinding not implemented");
+        // 1. Return undefined.
+        return new NormalCompletion(new JSUndefined());
     }
 
     // ES6 Section 8.1.1.5.5: CreateImportBinding (N, M, N2)
 
-    public CreateImportBinding(N: string, M: UnknownType, N2: string): Completion<UnknownType> {
-        throw new Error("ModuleEnvironmentRecord.CreateImportBinding not implemented");
+    public CreateImportBinding(N: string, M: ModuleRecord, N2: string): Completion<void> {
+        // 1. Let envRec be the module Environment Record for which the method was invoked.
+        const envRec = this;
+
+        // 2. Assert: envRec does not already have a binding for N.
+        if (envRec.bindings.contains(N))
+            throw new Error("Assertion failure: envRec does not already have a binding for "+N);
+
+        // 3. Assert: M is a Module Record.
+        // (guaranteed by parameter type)
+
+        // 4. Assert: When M.[[Environment]] is instantiated it will have a direct binding for N2.
+        // (I don't think we can check this here)
+
+        // 5. Create an immutable indirect binding in envRec for N that references M and N2 as its
+        // target binding and record that the binding is initialized.
+        const binding = new DeclarativeBinding({
+            value: new JSUndefined(),
+            canDelete: false,
+            mutable: false,
+            initialized: true,
+            strict: true,
+        });
+        binding.referencedModule = M;
+        binding.referencedName = N2;
+        envRec.bindings.put(N,binding);
+
+        // 6. Return NormalCompletion(empty).
+        return new NormalCompletion(undefined);
     }
 }
 
