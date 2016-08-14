@@ -66,7 +66,12 @@ import {
 
 // ES6 Section 7.1.1: ToPrimitive (input [, PreferredType])
 
-export function ToPrimitive(realm: Realm, input: JSValue, preferredType?: ValueType): Completion<JSValue> {
+export function ToPrimitive(realm: Realm, input: JSValue | Completion<JSValue>, preferredType?: ValueType): Completion<JSValue> {
+    if (input instanceof NormalCompletion)
+        input = input.value;
+    else if (!(input instanceof JSValue))
+        return input;
+
     if (!(input instanceof JSObject))
         return new NormalCompletion(input);
 
@@ -172,7 +177,12 @@ export function OrdinaryToPrimitive(realm: Realm, O: JSObject, hint: "string" | 
 
 // ES6 Section 7.1.2: ToBoolean (argument)
 
-export function ToBoolean(realm: Realm, argument: JSValue): Completion<JSBoolean> {
+export function ToBoolean(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSBoolean> {
+    if (argument instanceof NormalCompletion)
+        argument = argument.value;
+    else if (!(argument instanceof JSValue))
+        return argument;
+
     if (argument instanceof JSUndefined)
         return new NormalCompletion(new JSBoolean(false));
     if (argument instanceof JSNull)
@@ -200,7 +210,12 @@ export function ToBoolean(realm: Realm, argument: JSValue): Completion<JSBoolean
 
 // ES6 Section 7.1.3: ToNumber (argument)
 
-export function ToNumber(realm: Realm, argument: JSValue): Completion<JSNumber> {
+export function ToNumber(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSNumber> {
+    if (argument instanceof NormalCompletion)
+        argument = argument.value;
+    else if (!(argument instanceof JSValue))
+        return argument;
+
     if (argument instanceof JSUndefined)
         return new NormalCompletion(new JSNumber(NaN));
     if (argument instanceof JSNull)
@@ -237,55 +252,60 @@ export function ToNumber_boolean(realm: Realm, argument: JSBoolean): JSNumber {
 
 // ES6 Section 7.1.4: ToInteger (argument)
 
-export function ToInteger(realm: Realm, argument: JSValue): Completion<JSInteger> {
+export function ToInteger(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSInteger> {
     throw new Error("ToInteger not implemented");
 }
 
 // ES6 Section 7.1.5: ToInt32 (argument)
 
-export function ToInt32(realm: Realm, argument: JSValue): Completion<JSInt32> {
+export function ToInt32(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSInt32> {
     throw new Error("ToInt32 not implemented");
 }
 
 // ES6 Section 7.1.6: ToUint32 (argument)
 
-export function ToUint32(realm: Realm, argument: JSValue): Completion<JSUInt32> {
+export function ToUint32(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSUInt32> {
     throw new Error("ToUint32 not implemented");
 }
 
 // ES6 Section 7.1.7: ToInt16 (argument)
 
-export function ToInt16(realm: Realm, argument: JSValue): Completion<JSInt16> {
+export function ToInt16(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSInt16> {
     throw new Error("ToInt16 not implemented");
 }
 
 // ES6 Section 7.1.8: ToUint16 (argument)
 
-export function ToUint16(realm: Realm, argument: JSValue): Completion<JSUInt16> {
+export function ToUint16(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSUInt16> {
     throw new Error("ToUint16 not implemented");
 }
 
 // ES6 Section 7.1.9: ToInt8 (argument)
 
-export function ToInt8(realm: Realm, argument: JSValue): Completion<JSInt8> {
+export function ToInt8(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSInt8> {
     throw new Error("ToInt8 not implemented");
 }
 
 // ES6 Section 7.1.10: ToUint8 (argument)
 
-export function ToUint8(realm: Realm, argument: JSValue): Completion<JSUInt8> {
+export function ToUint8(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSUInt8> {
     throw new Error("ToUint8 not implemented");
 }
 
 // ES6 Section 7.1.11: ToUint8Clamp (argument)
 
-export function ToUint8Clamp(realm: Realm, argument: JSValue): Completion<JSUInt8> {
+export function ToUint8Clamp(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSUInt8> {
     throw new Error("ToUint8Clamp not implemented");
 }
 
 // ES6 Section 7.1.12: ToString (argument)
 
-export function ToString(realm: Realm, argument: JSValue): Completion<JSString> {
+export function ToString(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSString> {
+    if (argument instanceof NormalCompletion)
+        argument = argument.value;
+    else if (!(argument instanceof JSValue))
+        return argument;
+
     if (argument instanceof JSUndefined)
         return new NormalCompletion(new JSString("undefined"));
     if (argument instanceof JSNull)
@@ -316,7 +336,12 @@ export function ToString(realm: Realm, argument: JSValue): Completion<JSString> 
 
 // ES6 Section 7.1.13: ToObject (argument)
 
-export function ToObject(realm: Realm, argument: JSValue): Completion<JSObject> {
+export function ToObject(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSObject> {
+    if (argument instanceof NormalCompletion)
+        argument = argument.value;
+    else if (!(argument instanceof JSValue))
+        return argument;
+
     switch (argument.type) {
         case ValueType.Undefined:
             if (argument instanceof JSUndefined)
@@ -364,7 +389,7 @@ export function ToObject(realm: Realm, argument: JSValue): Completion<JSObject> 
 
 // ES6 Section 7.1.14: ToPropertyKey (argument)
 
-export function ToPropertyKey(realm: Realm, argument: JSValue): Completion<JSPropertyKey> {
+export function ToPropertyKey(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSPropertyKey> {
     // 1. Let key be ToPrimitive(argument, hint String).
     // 2. ReturnIfAbrupt(key).
     const keyComp = ToPrimitive(realm,argument,ValueType.String);
@@ -384,7 +409,7 @@ export function ToPropertyKey(realm: Realm, argument: JSValue): Completion<JSPro
 
 // ES6 Section 7.1.15: ToLength (argument)
 
-export function ToLength(realm: Realm, argument: JSValue): Completion<JSNumber> {
+export function ToLength(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSNumber> {
     throw new Error("ToLength not implemented");
 }
 
