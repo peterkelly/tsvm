@@ -15,11 +15,18 @@
 // ES6 Section 19.3: Boolean Objects
 
 import {
+    JSNull,
+    JSBoolean,
     JSObject,
 } from "./datatypes";
 
 export class BooleanObject extends JSObject {
     _nominal_type_BooleanObject: any;
+    public booleanData: JSBoolean;
+    public constructor(prototype: JSObject | JSNull, booleanData: JSBoolean) {
+        super(prototype);
+        this.booleanData = booleanData;
+    }
 }
 
 export class BooleanConstructor extends JSObject {

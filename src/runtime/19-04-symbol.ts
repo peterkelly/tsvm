@@ -15,11 +15,18 @@
 // ES6 Section 19.4: Symbol Objects
 
 import {
+    JSNull,
+    JSSymbol,
     JSObject,
 } from "./datatypes";
 
 export class SymbolObject extends JSObject {
     _nominal_type_SymbolObject: any;
+    public symbolData: JSSymbol;
+    public constructor(prototype: JSObject | JSNull, symbolData: JSSymbol) {
+        super(prototype);
+        this.symbolData = symbolData;
+    }
 }
 
 export class SymbolConstructor extends JSObject {

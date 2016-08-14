@@ -15,11 +15,18 @@
 // ES6 Section 21.1: String Objects
 
 import {
+    JSNull,
+    JSString,
     JSObject,
 } from "./datatypes";
 
 export class StringObject extends JSObject {
     _nominal_type_StringObject: any;
+    public stringData: JSString;
+    public constructor(prototype: JSObject | JSNull, stringData: JSString) {
+        super(prototype);
+        this.stringData = stringData;
+    }
 }
 
 export class StringConstructor extends JSObject {

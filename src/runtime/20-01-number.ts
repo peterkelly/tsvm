@@ -15,11 +15,18 @@
 // ES6 Section 20.1: Number Objects
 
 import {
+    JSNull,
+    JSNumber,
     JSObject,
 } from "./datatypes";
 
 export class NumberObject extends JSObject {
     _nominal_type_NumberObject: any;
+    public numberData: JSNumber;
+    public constructor(prototype: JSObject | JSNull, numberData: JSNumber) {
+        super(prototype);
+        this.numberData = numberData;
+    }
 }
 
 export class NumberConstructor extends JSObject {

@@ -140,6 +140,20 @@ export class JSSymbol extends JSPropertyKey {
     public get stringRep(): string {
         return "symbol:"+this.symbolId;
     }
+
+    // ES6 Section 6.1.5.1: Well-Known Symbols
+
+    public static readonly $$hasInstance = new JSSymbol(new JSString("Symbol.hasInstance"));
+    public static readonly $$isConcatSpreadable = new JSSymbol(new JSString("Symbol.isConcatSpreadable"));
+    public static readonly $$iterator = new JSSymbol(new JSString("Symbol.iterator"));
+    public static readonly $$match = new JSSymbol(new JSString("Symbol.match"));
+    public static readonly $$replace = new JSSymbol(new JSString("Symbol.replace"));
+    public static readonly $$search = new JSSymbol(new JSString("Symbol.search"));
+    public static readonly $$species = new JSSymbol(new JSString("Symbol.species"));
+    public static readonly $$split = new JSSymbol(new JSString("Symbol.split"));
+    public static readonly $$toPrimitive = new JSSymbol(new JSString("Symbol.toPrimitive"));
+    public static readonly $$toStringTag = new JSSymbol(new JSString("Symbol.toStringTag"));
+    public static readonly $$unscopables = new JSSymbol(new JSString("Symbol.unscopables"));
 }
 
 // ES6 Section 6.1.6: The Number Type
