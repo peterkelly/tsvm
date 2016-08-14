@@ -46,7 +46,7 @@ export class RealmImpl implements Realm {
     public constructor() {
         this.intrinsics = CreateIntrinsics();
         this.globalThis = new JSObject();
-        this.globalEnv = NewGlobalEnvironment(this.globalThis);
+        this.globalEnv = NewGlobalEnvironment(this,this.globalThis);
         this.templateMap = [];
     }
 
