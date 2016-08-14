@@ -154,6 +154,177 @@ function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSV
     return Call(ctx.realm,func,thisValue,argList);
 }
 
+function evalAdd(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const left = checkNodeNotNull(node.children[0]);
+    const right = checkNodeNotNull(node.children[1]);
+
+    const lrefComp = evalExpression(ctx,left);
+    const lvalComp = GetValue(ctx.realm,lrefComp);
+    if (!(lvalComp instanceof NormalCompletion))
+        return lvalComp;
+    const lval = lvalComp.value;
+
+    const rrefComp = evalExpression(ctx,right);
+    const rvalComp = GetValue(ctx.realm,rrefComp);
+    if (!(rvalComp instanceof NormalCompletion))
+        return rvalComp;
+    const rval = rvalComp.value;
+
+    const lprimComp = ToPrimitive(ctx.realm,lval);
+    if (!(lprimComp instanceof NormalCompletion))
+        return lprimComp;
+    const lprim = lprimComp.value;
+
+    const rprimComp = ToPrimitive(ctx.realm,rval);
+    if (!(rprimComp instanceof NormalCompletion))
+        return rprimComp;
+    const rprim = rprimComp.value;
+
+    if ((lprim instanceof JSString) || (rprim instanceof JSString)) {
+        const lstrComp = ToString(ctx.realm,lprim);
+        if (!(lstrComp instanceof NormalCompletion))
+            return lstrComp;
+        const lstr = lstrComp.value;
+
+        const rstrComp = ToString(ctx.realm,rprim);
+        if (!(rstrComp instanceof NormalCompletion))
+            return rstrComp;
+        const rstr = rstrComp.value;
+
+        const resultStr = rt_string_concat(lstr.stringValue,rstr.stringValue);
+        const result = new JSString(resultStr);
+        return new NormalCompletion(result);
+    }
+
+    const lnumComp = ToNumber(ctx.realm,lprim);
+    if (!(lnumComp instanceof NormalCompletion))
+        return lnumComp;
+    const lnum = lnumComp.value;
+
+    const rnumComp = ToNumber(ctx.realm,rprim);
+    if (!(rnumComp instanceof NormalCompletion))
+        return rnumComp;
+    const rnum = rnumComp.value;
+
+    const resultNum = rt_double_add(lnum.numberValue,rnum.numberValue);
+    const result = new JSNumber(resultNum);
+    return new NormalCompletion(result);
+}
+
+function evalSubtract(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const left = checkNodeNotNull(node.children[0]);
+    const right = checkNodeNotNull(node.children[1]);
+
+    const lrefComp = evalExpression(ctx,left);
+    const lvalComp = GetValue(ctx.realm,lrefComp);
+    if (!(lvalComp instanceof NormalCompletion))
+        return lvalComp;
+    const lval = lvalComp.value;
+
+    const rrefComp = evalExpression(ctx,right);
+    const rvalComp = GetValue(ctx.realm,rrefComp);
+    if (!(rvalComp instanceof NormalCompletion))
+        return rvalComp;
+    const rval = rvalComp.value;
+
+    const lnumComp = ToNumber(ctx.realm,lval);
+    if (!(lnumComp instanceof NormalCompletion))
+        return lnumComp;
+    const lnum = lnumComp.value;
+
+    const rnumComp = ToNumber(ctx.realm,rval);
+    if (!(rnumComp instanceof NormalCompletion))
+        return rnumComp;
+    const rnum = rnumComp.value;
+
+    const resultNum = rt_double_sub(lnum.numberValue,rnum.numberValue);
+    const result = new JSNumber(resultNum);
+    return new NormalCompletion(result);
+}
+
+function evalMultiplicativeExpr(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    const leftComp = evalExpression(ctx,leftNode);
+    const leftValueComp = GetValue(ctx.realm,leftComp);
+    if (!(leftValueComp instanceof NormalCompletion))
+        return leftValueComp;
+    const leftValue = leftValueComp.value;
+
+    const rightComp = evalExpression(ctx,rightNode);
+    const rightValueComp = GetValue(ctx.realm,rightComp);
+    if (!(rightValueComp instanceof NormalCompletion))
+        return rightValueComp;
+    const rightValue = rightValueComp.value;
+
+    const lnumComp = ToNumber(ctx.realm,leftValue);
+    if (!(lnumComp instanceof NormalCompletion))
+        return lnumComp;
+    const lnum = lnumComp.value;
+
+    const rnumComp = ToNumber(ctx.realm,rightValue);
+    if (!(rnumComp instanceof NormalCompletion))
+        return rnumComp;
+    const rnum = rnumComp.value;
+
+    let resultNum: number;
+    if (node.kind === "Multiply")
+        resultNum = rt_double_mul(lnum.numberValue,rnum.numberValue);
+    else if (node.kind === "Divide")
+        resultNum = rt_double_div(lnum.numberValue,rnum.numberValue);
+    else
+        resultNum = rt_double_mod(lnum.numberValue,rnum.numberValue);
+    const result = new JSNumber(resultNum);
+    return new NormalCompletion(result);
+}
+
+function evalMemberAccessIdent(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    const baseReferenceComp = evalExpression(ctx,leftNode);
+    if (!(baseReferenceComp instanceof NormalCompletion))
+        return baseReferenceComp;
+    // const baseReference = baseReferenceComp.value;
+    const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+    if (!(baseValueComp instanceof NormalCompletion))
+        return baseValueComp;
+    const baseValue = baseValueComp.value;
+
+    const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+    if (!(bvComp instanceof NormalCompletion))
+        return bvComp;
+    const bv = bvComp.value;
+    if (!(bv instanceof JSObject))
+        throw new Error("FIXME: Need to support non-objects for MemberAccessIdent");
+
+    if (!(rightNode instanceof GenericStringNode))
+        throw new Error("MemberAccessIdent: rightNode should be a GenericStringNode, kind is "+rightNode.kind);
+    const propertyNameString = rightNode.value;
+    const strict = true; // FIXME: This must be determined by the AST node
+
+    const ref = new Reference(bv,new JSString(propertyNameString),new JSBoolean(strict));
+    return new NormalCompletion(ref);
+}
+
+function evalCall(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    checkNode(node,"Call",2);
+    const funNode = checkNodeNotNull(node.children[0]);
+    const argsNode = checkNode(node.children[1],"Arguments",1);
+    const argsListNode = checkListNode(argsNode.children[0]);
+
+    const refComp = evalExpression(ctx,funNode);
+    const funcComp = GetValue(ctx.realm,refComp);
+    if (!(funcComp instanceof NormalCompletion))
+        return funcComp;
+    const func = funcComp.value;
+
+    const thisValue = new JSUndefined(); // FIXME: temp
+
+    return EvaluateDirectCall(ctx,func,thisValue,argsListNode.elements,false);
+}
+
 function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
     switch (node.kind) {
         case "NullLiteral":
@@ -177,174 +348,18 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
             return ctx.ResolveBinding(node.value);
         case "This":
             return ctx.ResolveThisBinding();
-        case "Add": {
-            const left = checkNodeNotNull(node.children[0]);
-            const right = checkNodeNotNull(node.children[1]);
-
-            const lrefComp = evalExpression(ctx,left);
-            const lvalComp = GetValue(ctx.realm,lrefComp);
-            if (!(lvalComp instanceof NormalCompletion))
-                return lvalComp;
-            const lval = lvalComp.value;
-
-            const rrefComp = evalExpression(ctx,right);
-            const rvalComp = GetValue(ctx.realm,rrefComp);
-            if (!(rvalComp instanceof NormalCompletion))
-                return rvalComp;
-            const rval = rvalComp.value;
-
-            const lprimComp = ToPrimitive(ctx.realm,lval);
-            if (!(lprimComp instanceof NormalCompletion))
-                return lprimComp;
-            const lprim = lprimComp.value;
-
-            const rprimComp = ToPrimitive(ctx.realm,rval);
-            if (!(rprimComp instanceof NormalCompletion))
-                return rprimComp;
-            const rprim = rprimComp.value;
-
-            if ((lprim instanceof JSString) || (rprim instanceof JSString)) {
-                const lstrComp = ToString(ctx.realm,lprim);
-                if (!(lstrComp instanceof NormalCompletion))
-                    return lstrComp;
-                const lstr = lstrComp.value;
-
-                const rstrComp = ToString(ctx.realm,rprim);
-                if (!(rstrComp instanceof NormalCompletion))
-                    return rstrComp;
-                const rstr = rstrComp.value;
-
-                const resultStr = rt_string_concat(lstr.stringValue,rstr.stringValue);
-                const result = new JSString(resultStr);
-                return new NormalCompletion(result);
-            }
-
-            const lnumComp = ToNumber(ctx.realm,lprim);
-            if (!(lnumComp instanceof NormalCompletion))
-                return lnumComp;
-            const lnum = lnumComp.value;
-
-            const rnumComp = ToNumber(ctx.realm,rprim);
-            if (!(rnumComp instanceof NormalCompletion))
-                return rnumComp;
-            const rnum = rnumComp.value;
-
-            const resultNum = rt_double_add(lnum.numberValue,rnum.numberValue);
-            const result = new JSNumber(resultNum);
-            return new NormalCompletion(result);
-        }
-        case "Subtract": {
-            const left = checkNodeNotNull(node.children[0]);
-            const right = checkNodeNotNull(node.children[1]);
-
-            const lrefComp = evalExpression(ctx,left);
-            const lvalComp = GetValue(ctx.realm,lrefComp);
-            if (!(lvalComp instanceof NormalCompletion))
-                return lvalComp;
-            const lval = lvalComp.value;
-
-            const rrefComp = evalExpression(ctx,right);
-            const rvalComp = GetValue(ctx.realm,rrefComp);
-            if (!(rvalComp instanceof NormalCompletion))
-                return rvalComp;
-            const rval = rvalComp.value;
-
-            const lnumComp = ToNumber(ctx.realm,lval);
-            if (!(lnumComp instanceof NormalCompletion))
-                return lnumComp;
-            const lnum = lnumComp.value;
-
-            const rnumComp = ToNumber(ctx.realm,rval);
-            if (!(rnumComp instanceof NormalCompletion))
-                return rnumComp;
-            const rnum = rnumComp.value;
-
-            const resultNum = rt_double_sub(lnum.numberValue,rnum.numberValue);
-            const result = new JSNumber(resultNum);
-            return new NormalCompletion(result);
-        }
+        case "Add":
+            return evalAdd(ctx,node);
+        case "Subtract":
+            return evalSubtract(ctx,node);
         case "Multiply":
         case "Divide":
-        case "Modulo": {
-            const leftNode = checkNodeNotNull(node.children[0]);
-            const rightNode = checkNodeNotNull(node.children[1]);
-
-            const leftComp = evalExpression(ctx,leftNode);
-            const leftValueComp = GetValue(ctx.realm,leftComp);
-            if (!(leftValueComp instanceof NormalCompletion))
-                return leftValueComp;
-            const leftValue = leftValueComp.value;
-
-            const rightComp = evalExpression(ctx,rightNode);
-            const rightValueComp = GetValue(ctx.realm,rightComp);
-            if (!(rightValueComp instanceof NormalCompletion))
-                return rightValueComp;
-            const rightValue = rightValueComp.value;
-
-            const lnumComp = ToNumber(ctx.realm,leftValue);
-            if (!(lnumComp instanceof NormalCompletion))
-                return lnumComp;
-            const lnum = lnumComp.value;
-
-            const rnumComp = ToNumber(ctx.realm,rightValue);
-            if (!(rnumComp instanceof NormalCompletion))
-                return rnumComp;
-            const rnum = rnumComp.value;
-
-            let resultNum: number;
-            if (node.kind === "Multiply")
-                resultNum = rt_double_mul(lnum.numberValue,rnum.numberValue);
-            else if (node.kind === "Divide")
-                resultNum = rt_double_div(lnum.numberValue,rnum.numberValue);
-            else
-                resultNum = rt_double_mod(lnum.numberValue,rnum.numberValue);
-            const result = new JSNumber(resultNum);
-            return new NormalCompletion(result);
-        }
-        case "MemberAccessIdent": {
-            const leftNode = checkNodeNotNull(node.children[0]);
-            const rightNode = checkNodeNotNull(node.children[1]);
-
-            const baseReferenceComp = evalExpression(ctx,leftNode);
-            if (!(baseReferenceComp instanceof NormalCompletion))
-                return baseReferenceComp;
-            // const baseReference = baseReferenceComp.value;
-            const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
-            if (!(baseValueComp instanceof NormalCompletion))
-                return baseValueComp;
-            const baseValue = baseValueComp.value;
-
-            const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
-            if (!(bvComp instanceof NormalCompletion))
-                return bvComp;
-            const bv = bvComp.value;
-            if (!(bv instanceof JSObject))
-                throw new Error("FIXME: Need to support non-objects for MemberAccessIdent");
-
-            if (!(rightNode instanceof GenericStringNode))
-                throw new Error("MemberAccessIdent: rightNode should be a GenericStringNode, kind is "+rightNode.kind);
-            const propertyNameString = rightNode.value;
-            const strict = true; // FIXME: This must be determined by the AST node
-
-            const ref = new Reference(bv,new JSString(propertyNameString),new JSBoolean(strict));
-            return new NormalCompletion(ref);
-        }
-        case "Call": {
-            checkNode(node,"Call",2);
-            const funNode = checkNodeNotNull(node.children[0]);
-            const argsNode = checkNode(node.children[1],"Arguments",1);
-            const argsListNode = checkListNode(argsNode.children[0]);
-
-            const refComp = evalExpression(ctx,funNode);
-            const funcComp = GetValue(ctx.realm,refComp);
-            if (!(funcComp instanceof NormalCompletion))
-                return funcComp;
-            const func = funcComp.value;
-
-            const thisValue = new JSUndefined(); // FIXME: temp
-
-            return EvaluateDirectCall(ctx,func,thisValue,argsListNode.elements,false);
-        }
+        case "Modulo":
+            return evalMultiplicativeExpr(ctx,node);
+        case "MemberAccessIdent":
+            return evalMemberAccessIdent(ctx,node);
+        case "Call":
+            return evalCall(ctx,node);
     }
 
     throw new Error("Unsupported expression node: "+node.kind);
