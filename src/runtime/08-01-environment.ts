@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import {
-    UnknownType,
     GenericMap,
     JSValue,
     JSUndefined,
+    JSBoolean,
     JSString,
     JSSymbol,
     JSObject,
@@ -24,6 +24,7 @@ import {
     DataDescriptor,
     Completion,
     NormalCompletion,
+    Reference,
     LexicalEnvironment,
     EnvironmentRecord,
     Realm,
@@ -1268,8 +1269,40 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
 // ES6 Section 8.1.2.1: GetIdentifierReference (lex, name, strict)
 
-export function GetIdentifierReference(lex: LexicalEnvironment | null, name: string, strict: boolean): Completion<UnknownType> {
-    throw new Error("GetIdentifierReference not implemented");
+export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | null, name: string, strict: boolean): Completion<Reference> {
+    // 1. If lex is the value null, then
+    if (lex === null) {
+        // a. Return a value of type Reference whose base value is undefined, whose referenced name
+        // is name, and whose strict reference flag is strict.
+        const ref = new Reference(new JSUndefined(),new JSString(name),new JSBoolean(strict));
+        return new NormalCompletion(ref);
+    }
+
+    // 2. Let envRec be lex’s EnvironmentRecord.
+    const envRec = lex.record;
+
+    // 3. Let exists be envRec.HasBinding(name).
+    // 4. ReturnIfAbrupt(exists).
+    const existsComp = envRec.HasBinding(name);
+    if (!(existsComp instanceof NormalCompletion))
+        return existsComp;
+    const exists = existsComp.value;
+
+    // 5. If exists is true, then
+    if (exists) {
+        // a. Return a value of type Reference whose base value is envRec, whose referenced name is
+        // name, and whose strict reference flag is strict.
+        const ref = new Reference(envRec,new JSString(name),new JSBoolean(strict));
+        return new NormalCompletion(ref);
+    }
+    // 6. Else
+    else {
+        // a. Let outer be the value of lex’s outer environment reference.
+        const outer = lex.outer;
+
+        // b. Return GetIdentifierReference(outer, name, strict).
+        return GetIdentifierReference(realm,outer,name,strict);
+    }
 }
 
 // ES6 Section 8.1.2.2: NewDeclarativeEnvironment (E)

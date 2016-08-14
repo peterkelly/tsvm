@@ -547,6 +547,32 @@ export class ThrowCompletion {
     }
 }
 
+// ES6 Section 6.2.3: The Reference Specification Type
+
+export type ReferenceBase = JSUndefined | JSObject | JSBoolean | JSPropertyKey | JSNumber | EnvironmentRecord;
+export type SuperReferenceBase = JSUndefined | JSObject | JSBoolean | JSPropertyKey | JSNumber;
+
+export class Reference {
+    _nominal_type_Reference: any;
+    public base: ReferenceBase;
+    public name: JSPropertyKey;
+    public strict: JSBoolean;
+    public constructor(base: ReferenceBase, name: JSPropertyKey, strict: JSBoolean) {
+        this.base = base;
+        this.name = name;
+        this.strict = strict;
+    }
+}
+
+export class SuperReference extends Reference {
+    _nominal_type_SuperReference: any;
+    public thisValue: JSValue;
+    public constructor(base: SuperReferenceBase, name: JSPropertyKey, strict: JSBoolean) {
+        super(base,name,strict);
+        this.thisValue = new JSUndefined();
+    }
+}
+
 // ES6 Section 8.1: Lexical Environments
 
 export class LexicalEnvironment {
