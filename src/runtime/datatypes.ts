@@ -322,20 +322,47 @@ export interface ObjectOperations {
 
 export abstract class PropertyDescriptor {
     _nominal_type_PropertyDescriptor: any;
-    public enumerable: boolean = true;
-    public configurable: boolean = true;
+    public enumerable: boolean;
+    public configurable: boolean;
+    public constructor(options: {
+        enumerable: boolean,
+        configurable: boolean,
+    }) {
+        this.enumerable = options.enumerable;
+        this.configurable = options.configurable;
+    }
 }
 
 export class DataDescriptor extends PropertyDescriptor {
     _nominal_type_DataDescriptor: any;
-    public value: JSValue = new JSUndefined();
-    public writable: boolean = true;
+    public value: JSValue;
+    public writable: boolean;
+    public constructor(options: {
+        enumerable: boolean,
+        configurable: boolean,
+        value: JSValue,
+        writable: boolean,
+    }) {
+        super(options);
+        this.value = options.value;
+        this.writable = options.writable;
+    }
 }
 
 export class AccessorDescriptor extends PropertyDescriptor {
     _nominal_type_AccessorDescriptor: any;
-    public __get__: JSObject | JSUndefined = new JSUndefined();
-    public __set__: JSObject | JSUndefined = new JSUndefined();
+    public __get__: JSObject | JSUndefined;
+    public __set__: JSObject | JSUndefined;
+    public constructor(options: {
+        enumerable: boolean,
+        configurable: boolean,
+        __get__: JSObject | JSUndefined;
+        __set__: JSObject | JSUndefined;
+    }) {
+        super(options);
+        this.__get__ = options.__get__;
+        this.__set__ = options.__set__;
+    }
 }
 
 // ES6 Section 6.1.7.4: Well-Known Intrinsic Objects
