@@ -70,6 +70,7 @@ import {
 import {
     ToString,
     ToNumber,
+    ToBoolean,
 } from "./07-01-conversion";
 import {
     GetValue,
@@ -154,6 +155,8 @@ function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSV
     return Call(ctx.realm,func,thisValue,argList);
 }
 
+// ES6 Section 12.7.3.1: The Addition operator ( + ) - Runtime Semantics: Evaluation
+
 function evalAdd(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
     const left = checkNodeNotNull(node.children[0]);
     const right = checkNodeNotNull(node.children[1]);
@@ -210,6 +213,8 @@ function evalAdd(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Ref
     const result = new JSNumber(resultNum);
     return new NormalCompletion(result);
 }
+
+// ES6 Section 12.7.4.1: The Subtraction Operator ( - ) - Runtime Semantics: Evaluation
 
 function evalSubtract(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
     const left = checkNodeNotNull(node.children[0]);
@@ -277,6 +282,74 @@ function evalMultiplicativeExpr(ctx: ExecutionContext, node: ASTNode): Completio
         resultNum = rt_double_mod(lnum.numberValue,rnum.numberValue);
     const result = new JSNumber(resultNum);
     return new NormalCompletion(result);
+}
+
+function evalLogicalAND(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    // 1. Let lref be the result of evaluating LogicalANDExpression.
+    const lrefComp = evalExpression(ctx,leftNode);
+    if (!(lrefComp instanceof NormalCompletion))
+        return lrefComp;
+    const lref = lrefComp.value;
+
+    // 2. Let lval be GetValue(lref).
+    const lvalComp = GetValue(ctx.realm,lrefComp);
+    if (!(lvalComp instanceof NormalCompletion))
+        return lvalComp;
+    const lval = lvalComp.value;
+
+    // 3. Let lbool be ToBoolean(lval).
+    // 4. ReturnIfAbrupt(lbool).
+    const lboolComp = ToBoolean(ctx.realm,lvalComp);
+    if (!(lboolComp instanceof NormalCompletion))
+        return lboolComp;
+    const lbool = lboolComp.value;
+
+    // 5. If lbool is false, return lval.
+    if (lbool.booleanValue === false)
+        return new NormalCompletion(lval);
+
+    // 6. Let rref be the result of evaluating BitwiseORExpression.
+    const rrefComp = evalExpression(ctx,rightNode);
+
+    // 7. Return GetValue(rref).
+    return GetValue(ctx.realm,rrefComp);
+}
+
+function evalLogicalOR(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    // 1. Let lref be the result of evaluating LogicalORExpression.
+    const lrefComp = evalExpression(ctx,leftNode);
+    if (!(lrefComp instanceof NormalCompletion))
+        return lrefComp;
+    const lref = lrefComp.value;
+
+    // 2. Let lval be GetValue(lref).
+    const lvalComp = GetValue(ctx.realm,lref);
+    if (!(lvalComp instanceof NormalCompletion))
+        return lvalComp;
+    const lval = lvalComp.value;
+
+    // 3. Let lbool be ToBoolean(lval).
+    // 4. ReturnIfAbrupt(lbool).
+    const lboolComp = ToBoolean(ctx.realm,lval);
+    if (!(lboolComp instanceof NormalCompletion))
+        return lboolComp;
+    const lbool = lboolComp.value;
+
+    // 5. If lbool is true, return lval.
+    if (lbool.booleanValue === true)
+        return new NormalCompletion(lval);
+
+    // 6. Let rref be the result of evaluating LogicalANDExpression.
+    const rrefComp = evalExpression(ctx,rightNode);
+
+    // 7. Return GetValue(rref).
+    return GetValue(ctx.realm,rrefComp);
 }
 
 function evalMemberAccessIdent(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
@@ -356,6 +429,10 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
         case "Divide":
         case "Modulo":
             return evalMultiplicativeExpr(ctx,node);
+        case "LogicalAND":
+            return evalLogicalAND(ctx,node);
+        case "LogicalOR":
+            return evalLogicalOR(ctx,node);
         case "MemberAccessIdent":
             return evalMemberAccessIdent(ctx,node);
         case "Call":
