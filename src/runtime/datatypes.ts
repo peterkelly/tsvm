@@ -251,6 +251,14 @@ export class JSObject extends JSValue {
         return ValueType.Object;
     }
 
+    public get implementsCall(): boolean {
+        return false;
+    }
+
+    public get implementsConstruct(): boolean {
+        return false;
+    }
+
     public __GetPrototypeOf__(realm: Realm): Completion<JSObject | JSNull> {
         return realm.ordinaryOps.__GetPrototypeOf__(realm,this);
     }
