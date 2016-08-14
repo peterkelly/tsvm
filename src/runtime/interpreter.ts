@@ -155,6 +155,45 @@ function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSV
     return Call(ctx.realm,func,thisValue,argList);
 }
 
+// ES6 Section 12.6.3: Multiplicative Operators - Runtime Semantics: Evaluation
+
+function evalMultiplicativeExpr(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    const leftComp = evalExpression(ctx,leftNode);
+    const leftValueComp = GetValue(ctx.realm,leftComp);
+    if (!(leftValueComp instanceof NormalCompletion))
+        return leftValueComp;
+    const leftValue = leftValueComp.value;
+
+    const rightComp = evalExpression(ctx,rightNode);
+    const rightValueComp = GetValue(ctx.realm,rightComp);
+    if (!(rightValueComp instanceof NormalCompletion))
+        return rightValueComp;
+    const rightValue = rightValueComp.value;
+
+    const lnumComp = ToNumber(ctx.realm,leftValue);
+    if (!(lnumComp instanceof NormalCompletion))
+        return lnumComp;
+    const lnum = lnumComp.value;
+
+    const rnumComp = ToNumber(ctx.realm,rightValue);
+    if (!(rnumComp instanceof NormalCompletion))
+        return rnumComp;
+    const rnum = rnumComp.value;
+
+    let resultNum: number;
+    if (node.kind === "Multiply")
+        resultNum = rt_double_mul(lnum.numberValue,rnum.numberValue);
+    else if (node.kind === "Divide")
+        resultNum = rt_double_div(lnum.numberValue,rnum.numberValue);
+    else
+        resultNum = rt_double_mod(lnum.numberValue,rnum.numberValue);
+    const result = new JSNumber(resultNum);
+    return new NormalCompletion(result);
+}
+
 // ES6 Section 12.7.3.1: The Addition operator ( + ) - Runtime Semantics: Evaluation
 
 function evalAdd(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
@@ -247,42 +286,7 @@ function evalSubtract(ctx: ExecutionContext, node: ASTNode): Completion<JSValue 
     return new NormalCompletion(result);
 }
 
-function evalMultiplicativeExpr(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
-    const leftNode = checkNodeNotNull(node.children[0]);
-    const rightNode = checkNodeNotNull(node.children[1]);
-
-    const leftComp = evalExpression(ctx,leftNode);
-    const leftValueComp = GetValue(ctx.realm,leftComp);
-    if (!(leftValueComp instanceof NormalCompletion))
-        return leftValueComp;
-    const leftValue = leftValueComp.value;
-
-    const rightComp = evalExpression(ctx,rightNode);
-    const rightValueComp = GetValue(ctx.realm,rightComp);
-    if (!(rightValueComp instanceof NormalCompletion))
-        return rightValueComp;
-    const rightValue = rightValueComp.value;
-
-    const lnumComp = ToNumber(ctx.realm,leftValue);
-    if (!(lnumComp instanceof NormalCompletion))
-        return lnumComp;
-    const lnum = lnumComp.value;
-
-    const rnumComp = ToNumber(ctx.realm,rightValue);
-    if (!(rnumComp instanceof NormalCompletion))
-        return rnumComp;
-    const rnum = rnumComp.value;
-
-    let resultNum: number;
-    if (node.kind === "Multiply")
-        resultNum = rt_double_mul(lnum.numberValue,rnum.numberValue);
-    else if (node.kind === "Divide")
-        resultNum = rt_double_div(lnum.numberValue,rnum.numberValue);
-    else
-        resultNum = rt_double_mod(lnum.numberValue,rnum.numberValue);
-    const result = new JSNumber(resultNum);
-    return new NormalCompletion(result);
-}
+// ES6 Section 12.12.3: Binary Logical Operators: Runtime Semantics: Evaluation
 
 function evalLogicalAND(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
     const leftNode = checkNodeNotNull(node.children[0]);
