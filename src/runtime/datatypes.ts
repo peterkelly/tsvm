@@ -259,6 +259,10 @@ export class JSObject extends JSValue {
         return false;
     }
 
+    public get overridesGetPrototypeOf(): boolean {
+        return (this.__GetPrototypeOf__ !== JSObject.prototype.__GetPrototypeOf__);
+    }
+
     public __GetPrototypeOf__(realm: Realm): Completion<JSObject | JSNull> {
         return realm.ordinaryOps.__GetPrototypeOf__(realm,this);
     }
@@ -342,8 +346,19 @@ export interface ObjectOperations {
 
 // ES6 Section 6.1.7.1: Property Attributes
 
-export abstract class PropertyDescriptor {
-    _nominal_type_PropertyDescriptor: any;
+export interface DescriptorFields {
+    enumerable?: boolean;
+    configurable?: boolean;
+    value?: JSValue;
+    writable?: boolean;
+    __get__?: JSObject | JSUndefined;
+    __set__?: JSObject | JSUndefined;
+}
+
+export type PropertyDescriptor = DataDescriptor | AccessorDescriptor;
+
+export abstract class BaseDescriptor {
+    _nominal_type_Property: any;
     public enumerable: boolean;
     public configurable: boolean;
     public constructor(options: {
@@ -355,7 +370,7 @@ export abstract class PropertyDescriptor {
     }
 }
 
-export class DataDescriptor extends PropertyDescriptor {
+export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
     _nominal_type_DataDescriptor: any;
     public value: JSValue;
     public writable: boolean;
@@ -371,7 +386,7 @@ export class DataDescriptor extends PropertyDescriptor {
     }
 }
 
-export class AccessorDescriptor extends PropertyDescriptor {
+export class AccessorDescriptor extends BaseDescriptor implements DescriptorFields {
     _nominal_type_AccessorDescriptor: any;
     public __get__: JSObject | JSUndefined;
     public __set__: JSObject | JSUndefined;
