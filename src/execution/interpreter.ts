@@ -31,6 +31,8 @@ import {
     ReturnCompletion,
     ThrowCompletion,
     Reference,
+    AbstractReference,
+    PropertyReference,
     Realm,
 } from "../runtime/datatypes";
 import {
@@ -137,7 +139,7 @@ function evalMemberAccessIdent(ctx: ExecutionContext, node: ASTNode): Completion
 
     // 8. Return a value of type Reference whose base value is bv and whose referenced name is
     // propertyNameString, and whose strict reference flag is strict.
-    const ref = new Reference(bv,new JSString(propertyNameString),new JSBoolean(strict));
+    const ref = new PropertyReference(bv,new JSString(propertyNameString),strict);
     return new NormalCompletion(ref);
 }
 
@@ -498,7 +500,7 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
                     return resultComp;
                 const result = resultComp.value;
                 let value: JSValue;
-                if (result instanceof Reference) {
+                if (result instanceof AbstractReference) {
                     const valueComp = GetValue(ctx.realm,result);
                     if (!(valueComp instanceof NormalCompletion))
                         return valueComp;
@@ -548,7 +550,7 @@ export function evalModule(node: ASTNode): void {
 
     envRec.CreateImmutableBinding("console",true);
     const consoleObject = new JSObject(realm.intrinsics.ObjectPrototype);
-    consoleObject.properties.put("log",new DataDescriptor({
+    consoleObject.properties.put(new JSString("log"),new DataDescriptor({
         enumerable: true,
         configurable: true,
         writable: true,

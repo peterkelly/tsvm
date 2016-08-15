@@ -102,8 +102,7 @@ function JSObject_GetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey): C
 export function OrdinaryGetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey): JSUndefined | PropertyDescriptor {
     // I'm not sure why this needs to make a copy of the property; perhaps there are some cases
     // where we can avoid doing so.
-    const stringKey = P.stringRep;
-    const X = O.properties.get(stringKey);
+    const X = O.properties.get(P);
     if (X === undefined)
         return new JSUndefined();
     if (X instanceof DataDescriptor) {
@@ -175,7 +174,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // described by Desc. If the value of an attribute field of Desc is absent, the
             // attribute of the newly created property is set to its default value.
             if (O !== undefined) {
-                O.properties.put(P.stringRep,new DataDescriptor({
+                O.properties.put(P,new DataDescriptor({
                     value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
                     writable: (Desc.writable !== undefined) ? Desc.writable : false,
                     enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
@@ -190,7 +189,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // by Desc. If the value of an attribute field of Desc is absent, the attribute of the
             // newly created property is set to its default value.
             if (O !== undefined) {
-                O.properties.put(P.stringRep,new AccessorDescriptor({
+                O.properties.put(P,new AccessorDescriptor({
                     __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
                     __set__: (Desc.__set__ !== undefined) ? Desc.__set__ : new JSUndefined(),
                     enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
@@ -261,7 +260,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
             // property’s attributes to their default values.
             if (O !== undefined) {
-                O.properties.put(P.stringRep,new AccessorDescriptor({
+                O.properties.put(P,new AccessorDescriptor({
                     configurable: current.configurable,
                     enumerable: current.enumerable,
                     __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
@@ -276,7 +275,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // [[Configurable]] and [[Enumerable]] attributes and set the rest of the property’s
             // attributes to their default values.
             if (O !== undefined) {
-                O.properties.put(P.stringRep,new DataDescriptor({
+                O.properties.put(P,new DataDescriptor({
                     configurable: current.configurable,
                     enumerable: current.enumerable,
                     value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
@@ -471,7 +470,7 @@ function JSObject_Delete(realm: Realm, O: JSObject, P: JSPropertyKey): Completio
     if (desc instanceof JSUndefined)
         return new NormalCompletion(true);
     if (desc.configurable) {
-        O.properties.remove(P.stringRep);
+        O.properties.remove(P);
         return new NormalCompletion(true);
     }
     return new NormalCompletion(false);

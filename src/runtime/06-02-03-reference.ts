@@ -28,8 +28,11 @@ import {
     Completion,
     NormalCompletion,
     ReferenceBase,
-    SuperReferenceBase,
     Reference,
+    AbstractReference,
+    UnresolvableReference,
+    PropertyReference,
+    EnvironmentReference,
     SuperReference,
 } from "./datatypes";
 import {
@@ -45,7 +48,7 @@ export function GetReferencedName(realm: Realm, V: Reference): JSPropertyKey {
 }
 
 export function IsStrictReference(realm: Realm, V: Reference): boolean {
-    return V.strict.booleanValue;
+    return V.strict;
 }
 
 export function HasPrimitiveBase(realm: Realm, V: Reference): boolean {
@@ -70,24 +73,38 @@ export function IsSuperReference(realm: Realm, V: Reference): boolean {
 // ES6 Section 6.2.3.1: GetValue (V)
 
 export function GetValue(realm: Realm, VComp: Reference | JSValue | Completion<Reference | JSValue>): Completion<JSValue> {
+    // 1. ReturnIfAbrupt(V).
+    // 2. If Type(V) is not Reference, return V.
     let V: Reference | JSValue;
-    if ((VComp instanceof Reference) || (VComp instanceof JSValue))
+    if ((VComp instanceof AbstractReference) || (VComp instanceof JSValue))
         V = VComp;
     else if (VComp instanceof NormalCompletion)
         V = VComp.value;
     else
         return VComp;
 
-    if (!(V instanceof Reference))
+    // 2. If Type(V) is not Reference, return V.
+    if (!(V instanceof AbstractReference))
         return new NormalCompletion(V);
-    let base = GetBase(realm,V);
-    if (base instanceof JSUndefined)
-        throw new Error("FIXME: Should throw ReferenceError here, but can't import it");
-    if ((base instanceof JSUndefined) ||
-        (base instanceof JSObject) ||
-        (base instanceof JSBoolean) ||
-        (base instanceof JSPropertyKey) ||
-        (base instanceof JSNumber)) {
+
+    // 3. Let base be GetBase(V).
+    // (We use different classes to represent references with different types of bases, so we
+    // access the base within the cases for each, so the type checker gets the appropriate type).
+
+    // 4. If IsUnresolvableReference(V), throw a ReferenceError exception.
+    if (V instanceof UnresolvableReference) {
+        let nameStr: string;
+        if (V.name instanceof JSString)
+            nameStr = V.name.stringValue;
+        else if ((V.name instanceof JSSymbol) && (V.name.description instanceof JSString))
+            nameStr = V.name.description.stringValue;
+        else
+            nameStr = "[symbol]";
+        return realm.throwReferenceError(name+" is not defined");
+    }
+    // 5. If IsPropertyReference(V), then
+    else if (V instanceof PropertyReference) {
+        let base = V.base;
         if (!(base instanceof JSObject)) {
             const baseComp = ToObject(realm,base);
             if (!(baseComp instanceof NormalCompletion))
@@ -101,10 +118,12 @@ export function GetValue(realm: Realm, VComp: Reference | JSValue | Completion<R
         const thisValue = thisValueComp.value;
         return base.__Get__(realm,name,thisValue);
     }
+    // 6. Else base must be an Environment Record,
     else {
-        const name: string = GetReferencedName(realm,V).stringRep;
+        // a. Return base.GetBindingValue(GetReferencedName(V), IsStrictReference(V))
+        const name: string = V.name.stringValue;
         const strict: boolean = IsStrictReference(realm,V);
-        return base.GetBindingValue(name,strict);
+        return V.base.GetBindingValue(name,strict);
     }
 }
 
