@@ -22,6 +22,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    DataDescriptor,
     Intrinsics,
     Completion,
     NormalCompletion,
@@ -59,6 +60,13 @@ import {
     ToPrimitive,
 } from "../runtime/07-01-conversion";
 import {
+    RequireObjectCoercible,
+    IsCallable,
+} from "../runtime/07-02-testcompare";
+import {
+    Call,
+} from "../runtime/07-03-objects";
+import {
     pr_double_add,
     pr_double_sub,
     pr_double_mul,
@@ -89,6 +97,107 @@ function checkListNode(node: ASTNode | null): ListNode {
     if (!(node instanceof ListNode))
         throw new Error("Expected list node, got "+node.kind);
     return node;
+}
+
+// ES6 Section 12.3.2.1: Property Accessors - Runtime Semantics: Evaluation
+
+function evalMemberAccessIdent(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    // 1. Let baseReference be the result of evaluating MemberExpression.
+    const baseReferenceComp = evalExpression(ctx,leftNode);
+    if (!(baseReferenceComp instanceof NormalCompletion))
+        return baseReferenceComp;
+
+    // 2. Let baseValue be GetValue(baseReference).
+    // 3. ReturnIfAbrupt(baseValue).
+    const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+    if (!(baseValueComp instanceof NormalCompletion))
+        return baseValueComp;
+    const baseValue = baseValueComp.value;
+
+    // 4. Let bv be RequireObjectCoercible(baseValue).
+    // 5. ReturnIfAbrupt(bv).
+    const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+    if (!(bvComp instanceof NormalCompletion))
+        return bvComp;
+    const bv = bvComp.value;
+    if (!(bv instanceof JSObject))
+        throw new Error("FIXME: Need to support non-objects for MemberAccessIdent");
+
+    // 6. Let propertyNameString be StringValue of IdentifierName
+    if (!(rightNode instanceof GenericStringNode))
+        throw new Error("MemberAccessIdent: rightNode should be a GenericStringNode, kind is "+rightNode.kind);
+    const propertyNameString = rightNode.value;
+
+    // 7. If the code matched by the syntactic production that is being evaluated is strict mode
+    // code, let strict be true, else let strict be false.
+    const strict = true; // FIXME: This must be determined by the AST node
+
+    // 8. Return a value of type Reference whose base value is bv and whose referenced name is
+    // propertyNameString, and whose strict reference flag is strict.
+    const ref = new Reference(bv,new JSString(propertyNameString),new JSBoolean(strict));
+    return new NormalCompletion(ref);
+}
+
+// ES6 Section 12.3.4.1: Function Calls - Runtime Semantics: Evaluation
+
+function evalCall(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    // A basic, incomplete implementation. Need to go through this and expand it to cover all
+    // steps given in the spec. For example we don't set the this value correctly.
+    checkNode(node,"Call",2);
+    const funNode = checkNodeNotNull(node.children[0]);
+    const argsNode = checkNode(node.children[1],"Arguments",1);
+    const argsListNode = checkListNode(argsNode.children[0]);
+
+    const refComp = evalExpression(ctx,funNode);
+    const funcComp = GetValue(ctx.realm,refComp);
+    if (!(funcComp instanceof NormalCompletion))
+        return funcComp;
+    const func = funcComp.value;
+
+    const thisValue = new JSUndefined(); // FIXME: temp
+
+    return EvaluateDirectCall(ctx,func,thisValue,argsListNode.elements,false);
+}
+
+// ES6 Section 12.3.4.3: Function Call - Runtime Semantics:
+// EvaluateDirectCall (func, thisValue, arguments, tailPosition)
+
+function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSValue,
+                            args: ASTNode[], tailPosition: boolean): Completion<JSValue> {
+    const argListComp = ArgumentListEvaluation(ctx,args);
+    if (!(argListComp instanceof NormalCompletion))
+        return argListComp;
+    const argList = argListComp.value;
+
+    if (!(func instanceof JSValue))
+        return ctx.realm.throwTypeError("Attempt to call a value that is not an object");
+
+    if (!IsCallable(ctx.realm,func))
+        return ctx.realm.throwTypeError("Object is not callable");
+
+    // FIXME: support tail calls
+    return Call(ctx.realm,func,thisValue,argList);
+}
+
+// ES6 Section 12.3.6.1: Argument Lists - Runtime Semantics: ArgumentListEvaluation
+
+function ArgumentListEvaluation(ctx: ExecutionContext, argNodes: ASTNode[]): Completion<JSValue[]> {
+    // FIXME: This is just a temporary implementation to get basic functionality... need to look
+    // closer at the spec to ensure we're doing it correctly, and add support for spread arguments
+    const result: JSValue[] = [];
+    for (let i = 0; i < argNodes.length; i++) {
+        const argNode = argNodes[i];
+        const refComp = evalExpression(ctx,argNode);
+        const argComp = GetValue(ctx.realm,refComp);
+        if (!(argComp instanceof NormalCompletion))
+            return argComp;
+        const arg = argComp.value;
+        result.push(arg);
+    }
+    return new NormalCompletion(result);
 }
 
 // ES6 Section 12.6.3: Multiplicative Operators - Runtime Semantics: Evaluation
@@ -295,6 +404,10 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
         case "Divide":
         case "Modulo":
             return evalMultiplicativeExpr(ctx,node);
+        case "MemberAccessIdent":
+            return evalMemberAccessIdent(ctx,node);
+        case "Call":
+            return evalCall(ctx,node);
     }
 
     throw new Error("Unsupported expression node: "+node.kind);
@@ -334,11 +447,40 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
     return new NormalCompletion(undefined);
 }
 
+class ConsoleLogFunction extends JSObject {
+    public get implementsCall(): boolean {
+        return true;
+    }
+    public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
+        console.log("ConsoleLogFunction.__Call__ begin");
+        const strings: string[] = [];
+        for (const arg of args) {
+            const strComp = ToString(realm,arg);
+            if (!(strComp instanceof NormalCompletion))
+                return strComp;
+            const str = strComp.value;
+            strings.push(str.stringValue);
+        }
+        console.log("==== "+strings.join(" "));
+        return new NormalCompletion(new JSUndefined());
+    }
+}
+
 export function evalModule(node: ASTNode): void {
     const realm = new RealmImpl();
     const envRec = new DeclarativeEnvironmentRecord(realm);
     const lexEnv = { record: envRec, outer: null };
     const ctx = new ExecutionContext(realm, new JSNull(),lexEnv);
+
+    envRec.CreateImmutableBinding("console",true);
+    const consoleObject = new JSObject(realm.intrinsics.ObjectPrototype);
+    consoleObject.properties.put("log",new DataDescriptor({
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: new ConsoleLogFunction(realm.intrinsics.FunctionPrototype)
+    }));
+    envRec.InitializeBinding("console",consoleObject);
 
     checkNode(node,"Module",1);
     const statements = checkListNode(node.children[0]);
