@@ -573,6 +573,12 @@ export class SuperReference extends Reference {
     }
 }
 
+// ES6 Section 6.2.6: Data Blocks
+
+export class DataBlock {
+    _nominal_type_DataBlock: any;
+}
+
 // ES6 Section 8.1: Lexical Environments
 
 export class LexicalEnvironment {
