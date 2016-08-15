@@ -48,7 +48,6 @@ import {
     ReturnCompletion,
     ThrowCompletion,
     ReferenceBase,
-    SuperReferenceBase,
     Reference,
     SuperReference,
     DataBlock,

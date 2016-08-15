@@ -39,7 +39,7 @@ export class ErrorObject extends JSObject {
     public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
         super(proto);
         if (message !== undefined)
-            this.properties.put("message",stringDescriptor(message));
+            this.properties.put(new JSString("message"),stringDescriptor(message));
     }
 }
 
@@ -114,9 +114,9 @@ class ErrorToStringFunction extends JSObject {
 }
 
 export function setupErrorPrototype(realm: Realm, obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor(""));
-    obj.properties.put("toString",new DataDescriptor({
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor(""));
+    obj.properties.put(new JSString("toString"),new DataDescriptor({
         enumerable: false,
         configurable: true,
         writable: true,
@@ -125,31 +125,31 @@ export function setupErrorPrototype(realm: Realm, obj: JSObject): void {
 }
 
 export function setupEvalErrorPrototype(obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor("EvalError"));
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor("EvalError"));
 }
 
 export function setupRangeErrorPrototype(obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor("RangeError"));
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor("RangeError"));
 }
 
 export function setupReferenceErrorPrototype(obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor("ReferenceError"));
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor("ReferenceError"));
 }
 
 export function setupSyntaxErrorPrototype(obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor("SyntaxError"));
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor("SyntaxError"));
 }
 
 export function setupTypeErrorPrototype(obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor("TypeError"));
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor("TypeError"));
 }
 
 export function setupURIErrorPrototype(obj: JSObject): void {
-    obj.properties.put("message",stringDescriptor(""));
-    obj.properties.put("name",stringDescriptor("URIError"));
+    obj.properties.put(new JSString("message"),stringDescriptor(""));
+    obj.properties.put(new JSString("name"),stringDescriptor("URIError"));
 }

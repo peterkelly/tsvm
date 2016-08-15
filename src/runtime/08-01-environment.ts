@@ -25,6 +25,8 @@ import {
     Completion,
     NormalCompletion,
     Reference,
+    UnresolvableReference,
+    EnvironmentReference,
     LexicalEnvironment,
     EnvironmentRecord,
     Realm,
@@ -1274,7 +1276,7 @@ export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | n
     if (lex === null) {
         // a. Return a value of type Reference whose base value is undefined, whose referenced name
         // is name, and whose strict reference flag is strict.
-        const ref = new Reference(new JSUndefined(),new JSString(name),new JSBoolean(strict));
+        const ref = new UnresolvableReference(new JSString(name),strict);
         return new NormalCompletion(ref);
     }
 
@@ -1292,7 +1294,7 @@ export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | n
     if (exists) {
         // a. Return a value of type Reference whose base value is envRec, whose referenced name is
         // name, and whose strict reference flag is strict.
-        const ref = new Reference(envRec,new JSString(name),new JSBoolean(strict));
+        const ref = new EnvironmentReference(envRec,new JSString(name),strict);
         return new NormalCompletion(ref);
     }
     // 6. Else

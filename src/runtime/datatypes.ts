@@ -41,13 +41,28 @@ export class GenericMap<T> {
         const fullKey = "prop_"+key;
         delete this.contents[fullKey];
     }
-    public keys(): string[] {
-        const result: string[] = [];
-        for (const key in this.contents) {
-            if (key.match(/^prop_/))
-                result.push(key.substring(5));
-        }
-        return result.sort();
+}
+
+export class PropertyKeyMap<T> {
+    private readonly contents: { [key: string]: T } = {};
+    public get(pkey: JSPropertyKey): T | undefined {
+        const fullKey = "prop_"+pkey.stringRep;
+        if (fullKey in this.contents)
+            return this.contents[fullKey];
+        else
+            return undefined;
+    }
+    public put(pkey: JSPropertyKey, value: T): void {
+        const fullKey = "prop_"+pkey.stringRep;
+        this.contents[fullKey] = value;
+    }
+    public contains(pkey: JSPropertyKey): boolean {
+        const fullKey = "prop_"+pkey.stringRep;
+        return (fullKey in this.contents);
+    }
+    public remove(pkey: JSPropertyKey): void {
+        const fullKey = "prop_"+pkey.stringRep;
+        delete this.contents[fullKey];
     }
 }
 
@@ -118,7 +133,7 @@ export class JSString extends JSPropertyKey {
         return ValueType.String;
     }
     public get stringRep(): string {
-        return this.stringValue;
+        return "string:"+this.stringValue;
     }
 }
 
@@ -235,7 +250,7 @@ export class JSObject extends JSValue {
 
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
-    public readonly properties: GenericMap<PropertyDescriptor>;
+    public readonly properties: PropertyKeyMap<PropertyDescriptor>;
 
     public constructor(prototype?: JSObject | JSNull) {
         super();
@@ -244,7 +259,7 @@ export class JSObject extends JSValue {
         else
             this.__prototype__ = new JSNull();
         this.__extensible__ = true;
-        this.properties = new GenericMap<PropertyDescriptor>();
+        this.properties = new PropertyKeyMap<PropertyDescriptor>();
     }
 
     public get type(): ValueType {
@@ -549,25 +564,77 @@ export class ThrowCompletion {
 
 // ES6 Section 6.2.3: The Reference Specification Type
 
-export type ReferenceBase = JSUndefined | JSObject | JSBoolean | JSPropertyKey | JSNumber | EnvironmentRecord;
-export type SuperReferenceBase = JSUndefined | JSObject | JSBoolean | JSPropertyKey | JSNumber;
+export type PrimitiveReferenceBase = JSBoolean | JSPropertyKey | JSNumber;
+export type PropertyReferenceBase = JSObject | PrimitiveReferenceBase;
+export type ReferenceBase = JSUndefined | PropertyReferenceBase | EnvironmentRecord;
 
-export class Reference {
+export type Reference = UnresolvableReference | PropertyReference | EnvironmentReference;
+
+export abstract class AbstractReference {
     _nominal_type_Reference: any;
-    public base: ReferenceBase;
-    public name: JSPropertyKey;
-    public strict: JSBoolean;
-    public constructor(base: ReferenceBase, name: JSPropertyKey, strict: JSBoolean) {
-        this.base = base;
-        this.name = name;
+    public strict: boolean;
+    public constructor(strict: boolean) {
         this.strict = strict;
+    }
+    public abstract get base(): ReferenceBase;
+    public abstract get name(): JSPropertyKey;
+}
+
+export class UnresolvableReference extends AbstractReference {
+    _nominal_type_UnresolvableReference: any;
+    private _base: JSUndefined;
+    private _name: JSPropertyKey;
+    public constructor(name: JSPropertyKey, strict: boolean) {
+        super(strict);
+        this._base = new JSUndefined();
+        this._name = name;
+    }
+    public get base(): JSUndefined {
+        return this._base;
+    }
+    public get name(): JSPropertyKey {
+        return this._name;
     }
 }
 
-export class SuperReference extends Reference {
+export class PropertyReference extends AbstractReference {
+    _nominal_type_PropertyReference: any;
+    private _base: PropertyReferenceBase;
+    private _name: JSPropertyKey;
+    public constructor(base: PropertyReferenceBase, name: JSPropertyKey, strict: boolean) {
+        super(strict);
+        this._base = base;
+        this._name = name;
+    }
+    public get base(): PropertyReferenceBase {
+        return this._base;
+    }
+    public get name(): JSPropertyKey {
+        return this._name;
+    }
+}
+
+export class EnvironmentReference extends AbstractReference {
+    _nominal_type_EnvironmentReference: any;
+    private _base: EnvironmentRecord;
+    private _name: JSString;
+    public constructor(base: EnvironmentRecord, name: JSString, strict: boolean) {
+        super(strict);
+        this._base = base;
+        this._name = name;
+    }
+    public get base(): EnvironmentRecord {
+        return this._base;
+    }
+    public get name(): JSString {
+        return this._name;
+    }
+}
+
+export class SuperReference extends PropertyReference {
     _nominal_type_SuperReference: any;
     public thisValue: JSValue;
-    public constructor(base: SuperReferenceBase, name: JSPropertyKey, strict: JSBoolean) {
+    public constructor(base: PropertyReferenceBase, name: JSPropertyKey, strict: boolean) {
         super(base,name,strict);
         this.thisValue = new JSUndefined();
     }

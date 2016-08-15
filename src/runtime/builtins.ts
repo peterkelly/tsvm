@@ -72,7 +72,7 @@ class ThrowTypeErrorFunction extends BuiltinFunction {
     public constructor(proto: JSObject) {
         super(proto);
         this.__extensible__ = false;
-        this.properties.put("length",new DataDescriptor({
+        this.properties.put(new JSString("length"),new DataDescriptor({
             enumerable: false,
             configurable: false,
             value: new JSNumber(1),
@@ -100,7 +100,7 @@ export function createThrowTypeErrorFunction(proto: JSObject): JSObject {
 class TypeErrorObject extends JSObject {
     public constructor(prototype: JSObject | JSNull, message: JSString | JSUndefined) {
         super(prototype);
-        this.properties.put("message",new DataDescriptor({
+        this.properties.put(new JSString("message"),new DataDescriptor({
             enumerable: true,
             configurable: false,
             value: message,
