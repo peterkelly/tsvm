@@ -14,11 +14,16 @@
 
 import {
     JSValue,
+    JSPropertyKey,
+    JSUndefined,
     JSObject,
     Completion,
     LexicalEnvironment,
     Realm,
 } from "./datatypes";
+import {
+    ExecutionContext,
+} from "./08-03-context";
 import {
     ASTNode
 } from "../parser/ast";
@@ -93,4 +98,126 @@ export class JSFunction extends JSObject {
     public __Construct__(realm: Realm, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
         throw new Error("JSFunction.__Construct__ not implemented");
     }
+}
+
+// ES6 Section 9.2.1.1: PrepareForOrdinaryCall (F, newTarget)
+
+export function PrepareForOrdinaryCall(
+    ctx: ExecutionContext,
+    F: JSFunction,
+    newTarget: JSObject | JSUndefined
+): Completion<ExecutionContext> {
+    throw new Error("PrepareForOrdinaryCall not implemented");
+}
+
+// ES6 Section 9.2.1.2: OrdinaryCallBindThis (F, calleeContext, thisArgument)
+
+export function OrdinaryCallBindThis(
+    realm: Realm,
+    F: JSFunction,
+    calleeContext: ExecutionContext,
+    thisArgument: JSValue
+): Completion<JSValue> {
+    throw new Error("OrdinaryCallBindThis not implemented");
+}
+
+// ES6 Section 9.2.1.3: OrdinaryCallEvaluateBody (F, argumentsList)
+
+export function OrdinaryCallEvaluateBody(F: JSFunction, argumentsList: JSValue[]): Completion<JSValue> {
+    throw new Error("OrdinaryCallEvaluateBody not implemented");
+}
+
+// ES6 Section 9.2.3: FunctionAllocate (functionPrototype, strict [,functionKind])
+
+export enum AllocateKind {
+    Normal,
+    NonConstructor,
+    Generator,
+}
+
+export function FunctionAllocate(functionPrototype: JSObject, strict: boolean, functionKind: AllocateKind): Completion<JSFunction> {
+    throw new Error("FunctionAllocate not implemented");
+}
+
+// ES6 Section 9.2.4: FunctionInitialize (F, kind, ParameterList, Body, Scope)
+
+export enum InitializeKind {
+    Normal,
+    Method,
+    Arrow
+}
+
+export function FunctionInitialize(
+    F: JSFunction,
+    kind: InitializeKind,
+    ParameterList: ASTNode,
+    Body: ASTNode,
+    Scope: LexicalEnvironment
+): Completion<JSFunction> {
+    throw new Error("FunctionInitialize not implemented");
+}
+
+// ES6 Section 9.2.5: FunctionCreate (kind, ParameterList, Body, Scope, Strict, prototype)
+
+export function FunctionCreate(
+    kind: InitializeKind,
+    ParameterList: ASTNode,
+    Body: ASTNode,
+    Scope: LexicalEnvironment,
+    Strict: boolean,
+    prototype: JSObject
+): Completion<JSFunction> {
+    throw new Error("FunctionCreate not implemented");
+}
+
+// ES6 Section 9.2.6: GeneratorFunctionCreate (kind, ParameterList, Body, Scope, Strict)
+
+export function GeneratorFunctionCreate(
+    kind: "normal" | "method",
+    ParameterList: ASTNode,
+    Body: ASTNode,
+    Scope: LexicalEnvironment,
+    Strict: boolean
+): Completion<JSFunction> {
+    throw new Error("GeneratorFunctionCreate not implemented");
+}
+
+// ES6 Section 9.2.7: AddRestrictedFunctionProperties (F, realm)
+
+export function AddRestrictedFunctionProperties(F: JSFunction, realm: Realm): Completion<void> {
+    throw new Error("AddRestrictedFunctionProperties not implemented");
+}
+
+// ES6 Section 9.2.7.1: %ThrowTypeError% ( )
+
+// Implemented as part of Intrinsics
+
+// ES6 Section 9.2.8: MakeConstructor (F, writablePrototype, prototype)
+
+export function MakeConstructor(F: JSFunction, writablePrototype?: boolean, prototype?: JSObject): Completion<void> {
+    throw new Error("MakeConstructor not implemented");
+}
+
+// ES6 Section 9.2.9: MakeClassConstructor (F)
+
+export function MakeClassConstructor(F: JSFunction): Completion<void> {
+    throw new Error("MakeClassConstructor not implemented");
+}
+
+// ES6 Section 9.2.10: MakeMethod (F, homeObject)
+
+export function MakeMethod(F: JSFunction, homeObject: JSObject): Completion<void> {
+    throw new Error("MakeMethod not implemented");
+}
+
+// ES6 Section 9.2.11: SetFunctionName (F, name, prefix)
+
+export function SetFunctionName(F: JSObject, name: JSPropertyKey, prefix?: string): Completion<boolean> {
+    throw new Error("SetFunctionName not implemented");
+}
+
+// ES6 Section 9.2.12: FunctionDeclarationInstantiation (func, argumentsList)
+
+export function FunctionDeclarationInstantiation(func: JSFunction, argumentsList: JSValue[]): Completion<void> {
+    throw new Error("FunctionDeclarationInstantiation not implemented");
 }
