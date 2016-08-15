@@ -373,6 +373,76 @@ function evalSubtract(ctx: ExecutionContext, node: ASTNode): Completion<JSValue 
     return new NormalCompletion(result);
 }
 
+// ES6 Section 12.12.3: Binary Logical Operators: Runtime Semantics: Evaluation
+
+function evalLogicalAND(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    // 1. Let lref be the result of evaluating LogicalANDExpression.
+    const lrefComp = evalExpression(ctx,leftNode);
+    if (!(lrefComp instanceof NormalCompletion))
+        return lrefComp;
+    const lref = lrefComp.value;
+
+    // 2. Let lval be GetValue(lref).
+    const lvalComp = GetValue(ctx.realm,lrefComp);
+    if (!(lvalComp instanceof NormalCompletion))
+        return lvalComp;
+    const lval = lvalComp.value;
+
+    // 3. Let lbool be ToBoolean(lval).
+    // 4. ReturnIfAbrupt(lbool).
+    const lboolComp = ToBoolean(ctx.realm,lvalComp);
+    if (!(lboolComp instanceof NormalCompletion))
+        return lboolComp;
+    const lbool = lboolComp.value;
+
+    // 5. If lbool is false, return lval.
+    if (lbool.booleanValue === false)
+        return new NormalCompletion(lval);
+
+    // 6. Let rref be the result of evaluating BitwiseORExpression.
+    const rrefComp = evalExpression(ctx,rightNode);
+
+    // 7. Return GetValue(rref).
+    return GetValue(ctx.realm,rrefComp);
+}
+
+function evalLogicalOR(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
+    const leftNode = checkNodeNotNull(node.children[0]);
+    const rightNode = checkNodeNotNull(node.children[1]);
+
+    // 1. Let lref be the result of evaluating LogicalORExpression.
+    const lrefComp = evalExpression(ctx,leftNode);
+    if (!(lrefComp instanceof NormalCompletion))
+        return lrefComp;
+    const lref = lrefComp.value;
+
+    // 2. Let lval be GetValue(lref).
+    const lvalComp = GetValue(ctx.realm,lref);
+    if (!(lvalComp instanceof NormalCompletion))
+        return lvalComp;
+    const lval = lvalComp.value;
+
+    // 3. Let lbool be ToBoolean(lval).
+    // 4. ReturnIfAbrupt(lbool).
+    const lboolComp = ToBoolean(ctx.realm,lval);
+    if (!(lboolComp instanceof NormalCompletion))
+        return lboolComp;
+    const lbool = lboolComp.value;
+
+    // 5. If lbool is true, return lval.
+    if (lbool.booleanValue === true)
+        return new NormalCompletion(lval);
+
+    // 6. Let rref be the result of evaluating LogicalANDExpression.
+    const rrefComp = evalExpression(ctx,rightNode);
+
+    // 7. Return GetValue(rref).
+    return GetValue(ctx.realm,rrefComp);
+}
+
 function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValue | Reference> {
     switch (node.kind) {
         case "NullLiteral":
@@ -404,6 +474,10 @@ function evalExpression(ctx: ExecutionContext, node: ASTNode): Completion<JSValu
         case "Divide":
         case "Modulo":
             return evalMultiplicativeExpr(ctx,node);
+        case "LogicalAND":
+            return evalLogicalAND(ctx,node);
+        case "LogicalOR":
+            return evalLogicalOR(ctx,node);
         case "MemberAccessIdent":
             return evalMemberAccessIdent(ctx,node);
         case "Call":
