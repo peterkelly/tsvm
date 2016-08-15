@@ -118,7 +118,7 @@ export class JSString extends JSPropertyKey {
         return ValueType.String;
     }
     public get stringRep(): string {
-        return "string:"+this.stringValue;
+        return this.stringValue;
     }
 }
 
