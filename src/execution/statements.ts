@@ -15,35 +15,225 @@
 import {
     Range,
     ASTNode,
+    ExpressionNode,
     DeclarationNode,
     BindingIdentifierNode,
+    GenericStringNode,
+    check,
+    CannotConvertError,
 } from "../parser/ast";
 import {
+    ExpressionNode_fromGeneric,
     PropertyNameType,
-    ExpressionNode,
     ElisionNode,
 } from "./expressions";
 import {
     FunctionDeclarationNode,
+    GeneratorDeclarationNode,
+    DefaultGeneratorDeclarationNode,
+    ClassDeclarationNode,
 } from "./functions";
 
+export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNode {
+    if (node === null)
+        throw new CannotConvertError("DeclarationNode",node);
+    switch (node.kind) {
+        case "FunctionDeclaration":
+            return FunctionDeclarationNode.fromGeneric(node);
+        case "GeneratorDeclaration":
+            return GeneratorDeclarationNode.fromGeneric(node);
+        case "DefaultGeneratorDeclaration":
+            return DefaultGeneratorDeclarationNode.fromGeneric(node);
+        case "ClassDeclaration":
+            return ClassDeclarationNode.fromGeneric(node);
+        case "Let":
+            return LetNode.fromGeneric(node);
+        case "Const":
+            return ConstNode.fromGeneric(node);
+        default:
+            throw new CannotConvertError("DeclarationNode",node);
+    }
+}
+
 export type ForCInitType = ExpressionNode | VarNode | LetNode | ConstNode | null;
+export const ForCInitType = {
+    fromGeneric(node: ASTNode | null): ForCInitType {
+        try { return ExpressionNode_fromGeneric(node); } catch (e) {}
+        try { return VarNode.fromGeneric(node); } catch (e) {}
+        try { return LetNode.fromGeneric(node); } catch (e) {}
+        try { return ConstNode.fromGeneric(node); } catch (e) {}
+        if (node === null)
+            return null;
+        throw new CannotConvertError("ForCInitType",node);
+    }
+};
+
 export type ForBindingType = BindingIdentifierNode | BindingPatternNode;
+export const ForBindingType = {
+    fromGeneric(node: ASTNode | null): ForBindingType {
+        try { return BindingIdentifierNode.fromGeneric(node); } catch (e) {}
+        try { return BindingPatternNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ForBindingType",node);
+    }
+};
+
 export type ForInBindingType = ExpressionNode | VarForDeclarationNode | LetForDeclarationNode | ConstForDeclarationNode;
+export const ForInBindingType = {
+    fromGeneric(node: ASTNode | null): ForInBindingType {
+        try { return ExpressionNode_fromGeneric(node); } catch (e) {}
+        try { return VarForDeclarationNode.fromGeneric(node); } catch (e) {}
+        try { return LetForDeclarationNode.fromGeneric(node); } catch (e) {}
+        try { return ConstForDeclarationNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ForInBindingType",node);
+    }
+};
+
 export type ForOfBindingType = ExpressionNode | VarForDeclarationNode | LetForDeclarationNode | ConstForDeclarationNode;
+export const ForOfBindingType = {
+    fromGeneric(node: ASTNode | null): ForOfBindingType {
+        try { return ExpressionNode_fromGeneric(node); } catch (e) {}
+        try { return VarForDeclarationNode.fromGeneric(node); } catch (e) {}
+        try { return LetForDeclarationNode.fromGeneric(node); } catch (e) {}
+        try { return ConstForDeclarationNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ForOfBindingType",node);
+    }
+};
+
 export type CatchParameterType = BindingIdentifierNode | BindingPatternNode;
+export const CatchParameterType = {
+    fromGeneric(node: ASTNode | null): CatchParameterType {
+        try { return BindingIdentifierNode.fromGeneric(node); } catch (e) {}
+        try { return BindingPatternNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("CatchParameterType",node);
+    }
+};
 
 export type SingleNameBindingType = BindingIdentifierNode | SingleNameBindingNode;
+export const SingleNameBindingType = {
+    fromGeneric(node: ASTNode | null): SingleNameBindingType {
+        try { return BindingIdentifierNode.fromGeneric(node); } catch (e) {}
+        try { return SingleNameBindingNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("SingleNameBindingType",node);
+    }
+};
+
 export type BindingElementType = SingleNameBindingType | BindingPatternInitNode |
                                  BindingPatternNode | BindingRestElementNode |
                                  ElisionNode;
+export const BindingElementType = {
+    fromGeneric(node: ASTNode | null): BindingElementType {
+        try { return SingleNameBindingType.fromGeneric(node); } catch (e) {}
+        try { return BindingPatternInitNode.fromGeneric(node); } catch (e) {}
+        try { return BindingPatternNode.fromGeneric(node); } catch (e) {}
+        try { return BindingRestElementNode.fromGeneric(node); } catch (e) {}
+        try { return ElisionNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("BindingElementType",node);
+    }
+};
+
 export type BindingPropertyType = SingleNameBindingType | BindingPropertyNode;
+export const BindingPropertyType = {
+    fromGeneric(node: ASTNode | null): BindingPropertyType {
+        try { return SingleNameBindingType.fromGeneric(node); } catch (e) {}
+        try { return BindingPropertyNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("BindingPropertyType",node);
+    }
+};
+
 export type StatementListItemType = StatementNode | DeclarationNode;
+export const StatementListItemType = {
+    fromGeneric(node: ASTNode | null): StatementListItemType {
+        if (node === null)
+            throw new CannotConvertError("StatementListItemType",node);
+        switch (node.kind) {
+            case "FunctionDeclaration":
+            case "GeneratorDeclaration":
+            case "DefaultGeneratorDeclaration":
+            case "ClassDeclaration":
+            case "Let":
+            case "Const":
+                return DeclarationNode_fromGeneric(node);
+            default:
+                return StatementNode.fromGeneric(node);
+        }
+    }
+};
+
+export type VariableDeclarationListItemType = VarIdentifierNode | VarPatternNode;
+export const VariableDeclarationListItemType = {
+    fromGeneric(node: ASTNode | null): VariableDeclarationListItemType {
+        if (node === null)
+            throw new CannotConvertError("VariableDeclarationListItemType",node);
+        switch (node.kind) {
+            case "VarIdentifier":
+                return VarIdentifierNode.fromGeneric(node);
+            case "VarPattern":
+                return VarPatternNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("VariableDeclarationListItemType",node);
+        }
+    }
+}
+
+export type CaseClauseListItemType = CaseClauseNode | DefaultClauseNode;
+export const CaseClauseListItemType = {
+    fromGeneric(node: ASTNode | null): CaseClauseListItemType {
+        try { return CaseClauseNode.fromGeneric(node); } catch (e) {}
+        try { return DefaultClauseNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("CaseClauseListItemType",node);
+    }
+}
 
 // ES6 Chapter 13: ECMAScript Language: Statements and Declarations
 
 export abstract class StatementNode extends ASTNode {
     _nominal_type_StatementNode: any;
+    public static fromGeneric(node: ASTNode | null): StatementNode {
+        if (node === null)
+            throw new CannotConvertError("StatementNode",node);
+        switch (node.kind) {
+            case "DoStatement":
+                return DoStatementNode.fromGeneric(node);
+            case "WhileStatement":
+                return WhileStatementNode.fromGeneric(node);
+            case "ForC":
+                return ForCNode.fromGeneric(node);
+            case "ForIn":
+                return ForInNode.fromGeneric(node);
+            case "ForOf":
+                return ForOfNode.fromGeneric(node);
+            case "SwitchStatement":
+                return SwitchStatementNode.fromGeneric(node);
+            case "Block":
+                return BlockNode.fromGeneric(node);
+            case "Var":
+                return VarNode.fromGeneric(node);
+            case "EmptyStatement":
+                return EmptyStatementNode.fromGeneric(node);
+            case "ExpressionStatement":
+                return ExpressionStatementNode.fromGeneric(node);
+            case "IfStatement":
+                return IfStatementNode.fromGeneric(node);
+            case "ContinueStatement":
+                return ContinueStatementNode.fromGeneric(node);
+            case "BreakStatement":
+                return BreakStatementNode.fromGeneric(node);
+            case "ReturnStatement":
+                return ReturnStatementNode.fromGeneric(node);
+            case "WithStatement":
+                return WithStatementNode.fromGeneric(node);
+            case "LabelledStatement":
+                return LabelledStatementNode.fromGeneric(node);
+            case "ThrowStatement":
+                return ThrowStatementNode.fromGeneric(node);
+            case "TryStatement":
+                return TryStatementNode.fromGeneric(node);
+            case "DebuggerStatement":
+                return DebuggerStatementNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("StatementNode",node);
+        }
+    }
 }
 
 export class StatementListNode extends ASTNode {
@@ -55,6 +245,13 @@ export class StatementListNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+    public static fromGeneric(node: ASTNode | null): StatementListNode {
+        const list = check.list(node);
+        const elements: StatementListItemType[] = [];
+        for (const listElement of list.elements)
+            elements.push(StatementListItemType.fromGeneric(listElement));
+        return new StatementListNode(list.range,elements);
     }
 }
 
@@ -72,10 +269,18 @@ export class LabelIdentifierNode extends ASTNode {
         return "LabelIdentifier("+JSON.stringify(this.value)+")";
         // return this.value;
     }
+    public static fromGeneric(node: ASTNode | null): LabelIdentifierNode {
+        if ((node === null) || (node.kind !== "LabelIdentifier") || !(node instanceof GenericStringNode))
+            throw new CannotConvertError("LabelIdentifier",node);
+        return new LabelIdentifierNode(node.range,node.value);
+    }
 }
 
 export abstract class BreakableStatementNode extends StatementNode {
     _nominal_type_BreakableStatementNode: any;
+    public static fromGeneric(node: ASTNode | null): BreakableStatementNode {
+        throw new Error("BreakableStatementNode.fromGeneric not implemented");
+    }
 }
 
 // ES6 Section 13.1: Statement Semantics
@@ -91,6 +296,11 @@ export class BlockNode extends StatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+    public static fromGeneric(node: ASTNode | null): BlockNode {
+        node = check.node(node,"Block",1);
+        const statements = StatementListNode.fromGeneric(node.children[0]);
+        return new BlockNode(node.range,statements);
     }
 }
 
@@ -108,6 +318,13 @@ export class BindingListNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): BindingListNode {
+        const list = check.list(node);
+        const elements: LexicalBindingNode[] = [];
+        for (const listElement of list.elements)
+            elements.push(LexicalBindingNode.fromGeneric(listElement));
+        return new BindingListNode(list.range,elements);
+    }
 }
 
 export class LetNode extends DeclarationNode {
@@ -119,6 +336,11 @@ export class LetNode extends DeclarationNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.bindings];
+    }
+    public static fromGeneric(node: ASTNode | null): LetNode {
+        node = check.node(node,"Let",1);
+        const bindings = BindingListNode.fromGeneric(node.children[0]);
+        return new LetNode(node.range,bindings);
     }
 }
 
@@ -132,20 +354,37 @@ export class ConstNode extends DeclarationNode {
     public get children(): (ASTNode | null)[] {
         return [this.bindings];
     }
+    public static fromGeneric(node: ASTNode | null): ConstNode {
+        node = check.node(node,"Const",1);
+        const bindings = BindingListNode.fromGeneric(node.children[0]);
+        return new ConstNode(node.range,bindings);
+    }
 }
 
 export abstract class LexicalBindingNode extends ASTNode {
     _nominal_type_LexicalBindingNode: any;
+    public static fromGeneric(node: ASTNode | null): LexicalBindingNode {
+        if (node === null)
+            throw new CannotConvertError("LexicalBindingNode",node);
+        switch (node.kind) {
+            case "LexicalIdentifierBinding":
+                return LexicalIdentifierBindingNode.fromGeneric(node);
+            case "LexicalPatternBinding":
+                return LexicalPatternBindingNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("LexicalBindingNode",node);
+        }
+    }
 }
 
 export class LexicalIdentifierBindingNode extends LexicalBindingNode {
     _nominal_type_LexicalIdentifierBindingNode: any;
     public identifier: BindingIdentifierNode;
-    public initializer: ExpressionNode;
+    public initializer: ExpressionNode | null;
     public constructor(
         range: Range,
         identifier: BindingIdentifierNode,
-        initializer: ExpressionNode
+        initializer: ExpressionNode | null
     ) {
         super(range,"LexicalIdentifierBinding");
         this.identifier = identifier;
@@ -153,6 +392,12 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.identifier,this.initializer];
+    }
+    public static fromGeneric(node: ASTNode | null): LexicalIdentifierBindingNode {
+        node = check.node(node,"LexicalIdentifierBinding",2);
+        const identifier = BindingIdentifierNode.fromGeneric(node.children[0]);
+        const initializer = (node.children[1] === null) ? null : ExpressionNode_fromGeneric(node.children[1]);
+        return new LexicalIdentifierBindingNode(node.range,identifier,initializer);
     }
 }
 
@@ -172,19 +417,32 @@ export class LexicalPatternBindingNode extends LexicalBindingNode {
     public get children(): (ASTNode | null)[] {
         return [this.pattern,this.initializer];
     }
+    public static fromGeneric(node: ASTNode | null): LexicalPatternBindingNode {
+        node = check.node(node,"LexicalPatternBinding",2);
+        const pattern = BindingPatternNode.fromGeneric(node.children[0]);
+        const initializer = ExpressionNode_fromGeneric(node.children[1]);
+        return new LexicalPatternBindingNode(node.range,pattern,initializer);
+    }
 }
 
 // ES6 Section 13.3.2: Variable Statement
 
 export class VariableDeclarationListNode extends ASTNode {
     _nominal_type_VariableDeclarationListNode: any;
-    public readonly elements: (VarIdentifierNode | VarPatternNode)[];
-    public constructor(range: Range, elements: (VarIdentifierNode | VarPatternNode)[]) {
+    public readonly elements: VariableDeclarationListItemType[];
+    public constructor(range: Range, elements: VariableDeclarationListItemType[]) {
         super(range,"[]");
         this.elements = elements;
     }
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+    public static fromGeneric(node: ASTNode | null): VariableDeclarationListNode {
+        const list = check.list(node);
+        const elements: VariableDeclarationListItemType[] = [];
+        for (const listElement of list.elements)
+            elements.push(VariableDeclarationListItemType.fromGeneric(listElement));
+        return new VariableDeclarationListNode(list.range,elements);
     }
 }
 
@@ -198,16 +456,21 @@ export class VarNode extends StatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.declarations];
     }
+    public static fromGeneric(node: ASTNode | null): VarNode {
+        node = check.node(node,"Var",1);
+        const declarations = VariableDeclarationListNode.fromGeneric(node.children[0]);
+        return new VarNode(node.range,declarations);
+    }
 }
 
 export class VarIdentifierNode extends ASTNode {
     _nominal_type_VarIdentifierNode: any;
     public identifier: BindingIdentifierNode;
-    public initializer: ExpressionNode;
+    public initializer: ExpressionNode | null;
     public constructor(
         range: Range,
         identifier: BindingIdentifierNode,
-        initializer: ExpressionNode
+        initializer: ExpressionNode | null
     ) {
         super(range,"VarIdentifier");
         this.identifier = identifier;
@@ -215,6 +478,12 @@ export class VarIdentifierNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.identifier,this.initializer];
+    }
+    public static fromGeneric(node: ASTNode | null): VarIdentifierNode {
+        node = check.node(node,"VarIdentifier",2);
+        const identifier = BindingIdentifierNode.fromGeneric(node.children[0]);
+        const initializer = (node.children[1] === null) ? null : ExpressionNode_fromGeneric(node.children[1]);
+        return new VarIdentifierNode(node.range,identifier,initializer);
     }
 }
 
@@ -234,6 +503,12 @@ export class VarPatternNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.pattern,this.initializer];
     }
+    public static fromGeneric(node: ASTNode | null): VarPatternNode {
+        node = check.node(node,"VarPattern",2);
+        const pattern = BindingPatternNode.fromGeneric(node.children[0]);
+        const initializer = ExpressionNode_fromGeneric(node.children[1]);
+        return new VarPatternNode(node.range,pattern,initializer);
+    }
 }
 
 // ES6 Section 13.3.3: Destructuring Binding Patterns
@@ -248,10 +523,29 @@ export class BindingPropertyListNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): BindingPropertyListNode {
+        const list = check.list(node);
+        const elements: BindingPropertyType[] = [];
+        for (const listElement of list.elements)
+            elements.push(BindingPropertyType.fromGeneric(listElement));
+        return new BindingPropertyListNode(list.range,elements);
+    }
 }
 
 export abstract class BindingPatternNode extends ASTNode {
     _nominal_type_BindingPatternNode: any;
+    public static fromGeneric(node: ASTNode | null): BindingPatternNode {
+        if (node === null)
+            throw new CannotConvertError("BindingPatternNode",node);
+        switch (node.kind) {
+            case "ObjectBindingPattern":
+                return ObjectBindingPatternNode.fromGeneric(node);
+            case "ArrayBindingPattern":
+                return ArrayBindingPatternNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("BindingPatternNode",node);
+        }
+    }
 }
 
 export class ObjectBindingPatternNode extends BindingPatternNode {
@@ -263,6 +557,11 @@ export class ObjectBindingPatternNode extends BindingPatternNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.properties];
+    }
+    public static fromGeneric(node: ASTNode | null): ObjectBindingPatternNode {
+        node = check.node(node,"ObjectBindingPattern",1);
+        const properties = BindingPropertyListNode.fromGeneric(node.children[0]);
+        return new ObjectBindingPatternNode(node.range,properties);
     }
 }
 
@@ -276,15 +575,22 @@ export class BindingElementListNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): BindingElementListNode {
+        const list = check.list(node);
+        const elements: BindingElementType[] = [];
+        for (const listElement of list.elements)
+            elements.push(BindingElementType.fromGeneric(listElement));
+        return new BindingElementListNode(list.range,elements);
+    }
 }
 
 export class ArrayBindingPatternNode extends BindingPatternNode {
     public readonly elements: BindingElementListNode;
-    public readonly rest: BindingRestElementNode;
+    public readonly rest: BindingRestElementNode | null;
     public constructor(
         range: Range,
         elements: BindingElementListNode,
-        rest: BindingRestElementNode
+        rest: BindingRestElementNode | null
     ) {
         super(range,"ArrayBindingPattern");
         this.elements = elements;
@@ -292,6 +598,12 @@ export class ArrayBindingPatternNode extends BindingPatternNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.elements,this.rest];
+    }
+    public static fromGeneric(node: ASTNode | null): ArrayBindingPatternNode {
+        node = check.node(node,"ArrayBindingPattern",2);
+        const elements = BindingElementListNode.fromGeneric(node.children[0]);
+        const rest = (node.children[1] === null) ? null : BindingRestElementNode.fromGeneric(node.children[1]);
+        return new ArrayBindingPatternNode(node.range,elements,rest);
     }
 }
 
@@ -306,6 +618,12 @@ export class BindingPropertyNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.name,this.element];
+    }
+    public static fromGeneric(node: ASTNode | null): BindingPropertyNode {
+        node = check.node(node,"BindingProperty",2);
+        const name = PropertyNameType.fromGeneric(node.children[0]);
+        const element = BindingElementType.fromGeneric(node.children[1]);
+        return new BindingPropertyNode(node.range,name,element);
     }
 }
 
@@ -325,6 +643,12 @@ export class BindingPatternInitNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.pattern,this.init];
     }
+    public static fromGeneric(node: ASTNode | null): BindingPatternInitNode {
+        node = check.node(node,"BindingPatternInit",2);
+        const pattern = BindingPatternNode.fromGeneric(node.children[0]);
+        const init = ExpressionNode_fromGeneric(node.children[1]);
+        return new BindingPatternInitNode(node.range,pattern,init);
+    }
 }
 
 export class SingleNameBindingNode extends ASTNode {
@@ -339,6 +663,12 @@ export class SingleNameBindingNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.init];
     }
+    public static fromGeneric(node: ASTNode | null): SingleNameBindingNode {
+        node = check.node(node,"SingleNameBinding",2);
+        const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
+        const init = ExpressionNode_fromGeneric(node.children[1]);
+        return new SingleNameBindingNode(node.range,ident,init);
+    }
 }
 
 export class BindingRestElementNode extends ASTNode {
@@ -351,6 +681,11 @@ export class BindingRestElementNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.ident];
     }
+    public static fromGeneric(node: ASTNode | null): BindingRestElementNode {
+        node = check.node(node,"BindingRestElement",1);
+        const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
+        return new BindingRestElementNode(node.range,ident);
+    }
 }
 
 // ES6 Section 13.4: Empty Statement
@@ -362,6 +697,10 @@ export class EmptyStatementNode extends StatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [];
+    }
+    public static fromGeneric(node: ASTNode | null): EmptyStatementNode {
+        node = check.node(node,"EmptyStatement",0);
+        return new EmptyStatementNode(node.range);
     }
 }
 
@@ -377,6 +716,11 @@ export class ExpressionStatementNode extends StatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
+    public static fromGeneric(node: ASTNode | null): ExpressionStatementNode {
+        node = check.node(node,"ExpressionStatement",1);
+        const expr = ExpressionNode_fromGeneric(node.children[0]);
+        return new ExpressionStatementNode(node.range,expr);
+    }
 }
 
 // ES6 Section 13.6: The if Statement
@@ -385,12 +729,12 @@ export class IfStatementNode extends StatementNode {
     _nominal_type_IfStatementNode: any;
     public readonly condition: ExpressionNode;
     public readonly trueBranch: StatementNode;
-    public readonly falseBranch: StatementNode;
+    public readonly falseBranch: StatementNode | null;
     public constructor(
         range: Range,
         condition: ExpressionNode,
         trueBranch: StatementNode,
-        falseBranch: StatementNode
+        falseBranch: StatementNode | null
     ) {
         super(range,"IfStatement");
         this.condition = condition;
@@ -399,6 +743,13 @@ export class IfStatementNode extends StatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.trueBranch,this.falseBranch];
+    }
+    public static fromGeneric(node: ASTNode | null): IfStatementNode {
+        node = check.node(node,"IfStatement",3);
+        const condition = ExpressionNode_fromGeneric(node.children[0]);
+        const trueBranch = StatementNode.fromGeneric(node.children[1]);
+        const falseBranch = (node.children[2] === null) ? null : StatementNode.fromGeneric(node.children[2]);
+        return new IfStatementNode(node.range,condition,trueBranch,falseBranch);
     }
 }
 
@@ -420,6 +771,12 @@ export class DoStatementNode extends BreakableStatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.body,this.condition];
     }
+    public static fromGeneric(node: ASTNode | null): DoStatementNode {
+        node = check.node(node,"DoStatement",2);
+        const body = StatementNode.fromGeneric(node.children[0]);
+        const condition = ExpressionNode_fromGeneric(node.children[1]);
+        return new DoStatementNode(node.range,body,condition);
+    }
 }
 
 // ES6 Section 13.7.3: The while Statement
@@ -436,6 +793,12 @@ export class WhileStatementNode extends BreakableStatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.body];
     }
+    public static fromGeneric(node: ASTNode | null): WhileStatementNode {
+        node = check.node(node,"WhileStatement",2);
+        const condition = ExpressionNode_fromGeneric(node.children[0]);
+        const body = StatementNode.fromGeneric(node.children[1]);
+        return new WhileStatementNode(node.range,condition,body);
+    }
 }
 
 // ES6 Section 13.7.4: The for Statement
@@ -443,14 +806,14 @@ export class WhileStatementNode extends BreakableStatementNode {
 export class ForCNode extends BreakableStatementNode {
     _nominal_type_ForCNode: any;
     public readonly init: ForCInitType;
-    public readonly condition: ExpressionNode;
-    public readonly update: ExpressionNode;
+    public readonly condition: ExpressionNode | null;
+    public readonly update: ExpressionNode | null;
     public readonly body: StatementNode;
     public constructor(
         range: Range,
         init: ForCInitType,
-        condition: ExpressionNode,
-        update: ExpressionNode,
+        condition: ExpressionNode | null,
+        update: ExpressionNode | null,
         body: StatementNode
     ) {
         super(range,"ForC");
@@ -461,6 +824,14 @@ export class ForCNode extends BreakableStatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.init,this.condition,this.update,this.body];
+    }
+    public static fromGeneric(node: ASTNode | null): ForCNode {
+        node = check.node(node,"ForC",4);
+        const init = ForCInitType.fromGeneric(node.children[0]);
+        const condition = (node.children[1] === null) ? null : ExpressionNode_fromGeneric(node.children[1]);
+        const update = (node.children[2] === null) ? null : ExpressionNode_fromGeneric(node.children[2]);
+        const body = StatementNode.fromGeneric(node.children[3]);
+        return new ForCNode(node.range,init,condition,update,body);
     }
 }
 
@@ -485,6 +856,13 @@ export class ForInNode extends BreakableStatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
     }
+    public static fromGeneric(node: ASTNode | null): ForInNode {
+        node = check.node(node,"ForIn",3);
+        const binding = ForInBindingType.fromGeneric(node.children[0]);
+        const expr = ExpressionNode_fromGeneric(node.children[1]);
+        const body = StatementNode.fromGeneric(node.children[2]);
+        return new ForInNode(node.range,binding,expr,body);
+    }
 }
 
 export class ForOfNode extends BreakableStatementNode {
@@ -506,6 +884,13 @@ export class ForOfNode extends BreakableStatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
     }
+    public static fromGeneric(node: ASTNode | null): ForOfNode {
+        node = check.node(node,"ForOf",3);
+        const binding = ForOfBindingType.fromGeneric(node.children[0]);
+        const expr = ExpressionNode_fromGeneric(node.children[1]);
+        const body = StatementNode.fromGeneric(node.children[2]);
+        return new ForOfNode(node.range,binding,expr,body);
+    }
 }
 
 export class VarForDeclarationNode extends ASTNode {
@@ -517,6 +902,11 @@ export class VarForDeclarationNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+    public static fromGeneric(node: ASTNode | null): VarForDeclarationNode {
+        node = check.node(node,"VarForDeclaration",1);
+        const binding = ForBindingType.fromGeneric(node.children[0]);
+        return new VarForDeclarationNode(node.range,binding);
     }
 }
 
@@ -530,6 +920,11 @@ export class LetForDeclarationNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
+    public static fromGeneric(node: ASTNode | null): LetForDeclarationNode {
+        node = check.node(node,"LetForDeclaration",1);
+        const binding = ForBindingType.fromGeneric(node.children[0]);
+        return new LetForDeclarationNode(node.range,binding);
+    }
 }
 
 export class ConstForDeclarationNode extends ASTNode {
@@ -542,19 +937,29 @@ export class ConstForDeclarationNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
+    public static fromGeneric(node: ASTNode | null): ConstForDeclarationNode {
+        node = check.node(node,"ConstForDeclaration",1);
+        const binding = ForBindingType.fromGeneric(node.children[0]);
+        return new ConstForDeclarationNode(node.range,binding);
+    }
 }
 
 // ES6 Section 13.8: The continue Statement
 
 export class ContinueStatementNode extends StatementNode {
     _nominal_type_ContinueStatementNode: any;
-    public readonly labelIdentifier: LabelIdentifierNode;
-    public constructor(range: Range, labelIdentifier: LabelIdentifierNode) {
+    public readonly labelIdentifier: LabelIdentifierNode | null;
+    public constructor(range: Range, labelIdentifier: LabelIdentifierNode | null) {
         super(range,"ContinueStatement");
         this.labelIdentifier = labelIdentifier;
     }
     public get children(): (ASTNode | null)[] {
         return [this.labelIdentifier];
+    }
+    public static fromGeneric(node: ASTNode | null): ContinueStatementNode {
+        node = check.node(node,"ContinueStatement",1);
+        const labelIdentifier = (node.children[0] === null) ? null : LabelIdentifierNode.fromGeneric(node.children[0]);
+        return new ContinueStatementNode(node.range,labelIdentifier);
     }
 }
 
@@ -562,13 +967,18 @@ export class ContinueStatementNode extends StatementNode {
 
 export class BreakStatementNode extends StatementNode {
     _nominal_type_BreakStatementNode: any;
-    public readonly labelIdentifier: LabelIdentifierNode;
-    public constructor(range: Range, labelIdentifier: LabelIdentifierNode) {
+    public readonly labelIdentifier: LabelIdentifierNode | null;
+    public constructor(range: Range, labelIdentifier: LabelIdentifierNode | null) {
         super(range,"BreakStatement");
         this.labelIdentifier = labelIdentifier;
     }
     public get children(): (ASTNode | null)[] {
         return [this.labelIdentifier];
+    }
+    public static fromGeneric(node: ASTNode | null): BreakStatementNode {
+        node = check.node(node,"BreakStatement",1);
+        const labelIdentifier = (node.children[0] === null) ? null : LabelIdentifierNode.fromGeneric(node.children[0]);
+        return new BreakStatementNode(node.range,labelIdentifier);
     }
 }
 
@@ -576,13 +986,18 @@ export class BreakStatementNode extends StatementNode {
 
 export class ReturnStatementNode extends StatementNode {
     _nominal_type_ReturnStatementNode: any;
-    public readonly expr: ExpressionNode;
-    public constructor(range: Range, expr: ExpressionNode) {
+    public readonly expr: ExpressionNode | null;
+    public constructor(range: Range, expr: ExpressionNode | null) {
         super(range,"ReturnStatement");
         this.expr = expr;
     }
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+    public static fromGeneric(node: ASTNode | null): ReturnStatementNode {
+        node = check.node(node,"ReturnStatement",1);
+        const expr = (node.children[0] === null) ? null : ExpressionNode_fromGeneric(node.children[0]);
+        return new ReturnStatementNode(node.range,expr);
     }
 }
 
@@ -600,6 +1015,12 @@ export class WithStatementNode extends StatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.body];
     }
+    public static fromGeneric(node: ASTNode | null): WithStatementNode {
+        node = check.node(node,"WithStatement",2);
+        const expr = ExpressionNode_fromGeneric(node.children[0]);
+        const body = StatementNode.fromGeneric(node.children[1]);
+        return new WithStatementNode(node.range,expr,body);
+    }
 }
 
 // ES6 Section 13.12: The switch Statement
@@ -607,8 +1028,8 @@ export class WithStatementNode extends StatementNode {
 export class SwitchStatementNode extends BreakableStatementNode {
     _nominal_type_SwitchStatementNode: any;
     public readonly expr: ExpressionNode;
-    public readonly cases: CaseClauseListNode;
-    public constructor(range: Range, expr: ExpressionNode, cases: CaseClauseListNode) {
+    public readonly cases: CaseBlockNode;
+    public constructor(range: Range, expr: ExpressionNode, cases: CaseBlockNode) {
         super(range,"SwitchStatement");
         this.expr = expr;
         this.cases = cases;
@@ -616,22 +1037,47 @@ export class SwitchStatementNode extends BreakableStatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.cases];
     }
+    public static fromGeneric(node: ASTNode | null): SwitchStatementNode {
+        node = check.node(node,"SwitchStatement",2);
+        const expr = ExpressionNode_fromGeneric(node.children[0]);
+        const cases = CaseBlockNode.fromGeneric(node.children[1]);
+        return new SwitchStatementNode(node.range,expr,cases);
+    }
 }
 
 export class CaseClauseListNode extends ASTNode {
     _nominal_type_CaseClauseListNode: any;
-    public readonly elements: (CaseClauseNode | DefaultClauseNode)[];
-    public constructor(range: Range, elements: (CaseClauseNode | DefaultClauseNode)[]) {
+    public readonly elements: CaseClauseListItemType[];
+    public constructor(range: Range, elements: CaseClauseListItemType[]) {
         super(range,"[]");
         this.elements = elements;
     }
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): CaseClauseListNode {
+        const list = check.list(node);
+        const elements: CaseClauseListItemType[] = [];
+        for (const listElement of list.elements)
+            elements.push(CaseClauseListItemType.fromGeneric(listElement));
+        return new CaseClauseListNode(list.range,elements);
+    }
 }
 
 export abstract class CaseBlockNode extends ASTNode {
     _nominal_type_CaseBlockNode: any;
+    public static fromGeneric(node: ASTNode | null): CaseBlockNode {
+        if (node === null)
+            throw new CannotConvertError("CaseBlockNode",node);
+        switch (node.kind) {
+            case "CaseBlock1":
+                return CaseBlock1Node.fromGeneric(node);
+            case "CaseBlock2":
+                return CaseBlock2Node.fromGeneric(node);
+            default:
+                throw new CannotConvertError("CaseBlockNode",node);
+        }
+    }
 };
 
 export class CaseBlock1Node extends CaseBlockNode {
@@ -644,18 +1090,23 @@ export class CaseBlock1Node extends CaseBlockNode {
     public get children(): (ASTNode | null)[] {
         return [this.caseClauses];
     }
+    public static fromGeneric(node: ASTNode | null): CaseBlock1Node {
+        node = check.node(node,"CaseBlock1",1);
+        const caseClauses = CaseClauseListNode.fromGeneric(node.children[0]);
+        return new CaseBlock1Node(node.range,caseClauses);
+    }
 }
 
 export class CaseBlock2Node extends CaseBlockNode {
     _nominal_type_CaseBlock2Node: any;
-    public caseClauses1: CaseClauseListNode;
+    public caseClauses1: CaseClauseListNode | null;
     public defaultClause: DefaultClauseNode;
-    public caseClauses2: CaseClauseListNode;
+    public caseClauses2: CaseClauseListNode | null;
     public constructor(
         range: Range,
-        caseClauses1: CaseClauseListNode,
+        caseClauses1: CaseClauseListNode | null,
         defaultClause: DefaultClauseNode,
-        caseClauses2: CaseClauseListNode
+        caseClauses2: CaseClauseListNode | null
     ) {
         super(range,"CaseBlock2");
         this.range = range;
@@ -665,6 +1116,13 @@ export class CaseBlock2Node extends CaseBlockNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.caseClauses1,this.defaultClause,this.caseClauses2];
+    }
+    public static fromGeneric(node: ASTNode | null): CaseBlock2Node {
+        node = check.node(node,"CaseBlock2",3);
+        const caseClauses1 = (node.children[0] === null) ? null : CaseClauseListNode.fromGeneric(node.children[0]);
+        const defaultClause = DefaultClauseNode.fromGeneric(node.children[1]);
+        const caseClauses2 = (node.children[2] === null) ? null : CaseClauseListNode.fromGeneric(node.children[2]);
+        return new CaseBlock2Node(node.range,caseClauses1,defaultClause,caseClauses2);
     }
 }
 
@@ -680,6 +1138,12 @@ export class CaseClauseNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.statements];
     }
+    public static fromGeneric(node: ASTNode | null): CaseClauseNode {
+        node = check.node(node,"CaseClause",2);
+        const expr = ExpressionNode_fromGeneric(node.children[0]);
+        const statements = StatementListNode.fromGeneric(node.children[1]);
+        return new CaseClauseNode(node.range,expr,statements);
+    }
 }
 
 export class DefaultClauseNode extends ASTNode {
@@ -692,18 +1156,32 @@ export class DefaultClauseNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.statements];
     }
+    public static fromGeneric(node: ASTNode | null): DefaultClauseNode {
+        node = check.node(node,"DefaultClause",1);
+        const statements = StatementListNode.fromGeneric(node.children[0]);
+        return new DefaultClauseNode(node.range,statements);
+    }
 }
 
 // ES6 Section 13.13: Labelled Statements
 
+type LabelledStatementItemType = StatementNode | FunctionDeclarationNode;
+const LabelledStatementItemType = {
+    fromGeneric(node: ASTNode | null): LabelledStatementItemType {
+        try { return StatementNode.fromGeneric(node); } catch (e) {}
+        try { return FunctionDeclarationNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("LabelledStatementItemType",node);
+    }
+};
+
 export class LabelledStatementNode extends StatementNode {
     _nominal_type_LabelledStatementNode: any;
     public readonly ident: LabelIdentifierNode;
-    public readonly item: StatementNode | FunctionDeclarationNode;
+    public readonly item: LabelledStatementItemType;
     public constructor(
         range: Range,
         ident: LabelIdentifierNode,
-        item: StatementNode | FunctionDeclarationNode
+        item: LabelledStatementItemType
     ) {
         super(range,"LabelledStatement");
         this.ident = ident;
@@ -711,6 +1189,12 @@ export class LabelledStatementNode extends StatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.item];
+    }
+    public static fromGeneric(node: ASTNode | null): LabelledStatementNode {
+        node = check.node(node,"LabelledStatement",2);
+        const ident = LabelIdentifierNode.fromGeneric(node.children[0]);
+        const item = LabelledStatementItemType.fromGeneric(node.children[1]);
+        return new LabelledStatementNode(node.range,ident,item);
     }
 }
 
@@ -726,6 +1210,11 @@ export class ThrowStatementNode extends StatementNode {
     public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
+    public static fromGeneric(node: ASTNode | null): ThrowStatementNode {
+        node = check.node(node,"ThrowStatement",1);
+        const expr = ExpressionNode_fromGeneric(node.children[0]);
+        return new ThrowStatementNode(node.range,expr);
+    }
 }
 
 // ES6 Section 13.15: The try Statement
@@ -733,13 +1222,13 @@ export class ThrowStatementNode extends StatementNode {
 export class TryStatementNode extends StatementNode {
     _nominal_type_TryStatementNode: any;
     public tryNode: BlockNode;
-    public catchNode: CatchNode;
-    public finallyNode: FinallyNode;
+    public catchNode: CatchNode | null;
+    public finallyNode: FinallyNode | null;
     public constructor(
         range: Range,
         tryNode: BlockNode,
-        catchNode: CatchNode,
-        finallyNode: FinallyNode
+        catchNode: CatchNode | null,
+        finallyNode: FinallyNode | null
     ) {
         super(range,"TryStatement");
         this.tryNode = tryNode;
@@ -748,6 +1237,13 @@ export class TryStatementNode extends StatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.tryNode,this.catchNode,this.finallyNode];
+    }
+    public static fromGeneric(node: ASTNode | null): TryStatementNode {
+        node = check.node(node,"TryStatement",3);
+        const tryNode = BlockNode.fromGeneric(node.children[0]);
+        const catchNode = (node.children[1] === null) ? null : CatchNode.fromGeneric(node.children[1]);
+        const finallyNode = (node.children[2] === null) ? null : FinallyNode.fromGeneric(node.children[2]);
+        return new TryStatementNode(node.range,tryNode,catchNode,finallyNode);
     }
 }
 
@@ -763,6 +1259,12 @@ export class CatchNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.param,this.block];
     }
+    public static fromGeneric(node: ASTNode | null): CatchNode {
+        node = check.node(node,"Catch",2);
+        const param = CatchParameterType.fromGeneric(node.children[0]);
+        const block = BlockNode.fromGeneric(node.children[1]);
+        return new CatchNode(node.range,param,block);
+    }
 }
 
 export class FinallyNode extends ASTNode {
@@ -775,6 +1277,11 @@ export class FinallyNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.block];
     }
+    public static fromGeneric(node: ASTNode | null): FinallyNode {
+        node = check.node(node,"Finally",1);
+        const block = BlockNode.fromGeneric(node.children[0]);
+        return new FinallyNode(node.range,block);
+    }
 }
 
 // ES6 Section 13.16: The debugger statement
@@ -786,5 +1293,9 @@ export class DebuggerStatementNode extends StatementNode {
     }
     public get children(): (ASTNode | null)[] {
         return [];
+    }
+    public static fromGeneric(node: ASTNode | null): DebuggerStatementNode {
+        node = check.node(node,"DebuggerStatement",0);
+        return new DebuggerStatementNode(node.range);
     }
 }

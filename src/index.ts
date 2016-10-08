@@ -17,6 +17,7 @@ import path = require("path");
 import { grm, parseModule } from "./parser/syntax";
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
+import { ModuleNode } from "./execution/modules";
 // import { compileModule } from "./parser/compiler";
 import { evalModule } from "./execution/interpreter";
 
@@ -93,7 +94,8 @@ const commands: CommandSet = {
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
-        return nodeToPlainTree(root,p);
+        const typedRoot = ModuleNode.fromGeneric(root);
+        return nodeToPlainTree(typedRoot,p);
     }
 
 }
@@ -335,9 +337,9 @@ function main(): void {
         for (; i < argc; i++) {
             if (argv[i] == "-w")
                 write = true;
-            else if (command == null)
+            else if (command == "")
                 command = argv[i];
-            else if (filename == null)
+            else if (filename == "")
                 filename = argv[i];
         }
 
