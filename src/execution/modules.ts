@@ -15,20 +15,63 @@
 import {
     Range,
     ASTNode,
+    ExpressionNode,
     DeclarationNode,
     IdentifierNode,
     BindingIdentifierNode,
+    check,
+    CannotConvertError,
 } from "../parser/ast";
 import {
-    ExpressionNode,
+    ExpressionNode_fromGeneric,
     StringLiteralNode,
 } from "./expressions";
 import {
+    DeclarationNode_fromGeneric,
     StatementListItemType,
     VarNode,
 } from "./statements";
 
 export type ModuleItemType = ImportNode | ExportNode | StatementListItemType;
+export const ModuleItemType = {
+    fromGeneric(node: ASTNode | null): ModuleItemType {
+        if (node === null)
+            throw new CannotConvertError("ModuleItemType",node);
+        switch (node.kind) {
+            case "ImportFrom":
+            case "ImportModule":
+                return ImportNode.fromGeneric(node);
+            case "ExportDefault":
+            case "ExportStar":
+            case "ExportPlain":
+            case "ExportVariable":
+            case "ExportDeclaration":
+            case "ExportFrom":
+            case "ExportClause":
+                return ExportNode.fromGeneric(node);
+            default:
+                return StatementListItemType.fromGeneric(node);
+        }
+    }
+};
+
+export type ImportListItemType = ImportAsSpecifierNode | ImportSpecifierNode;
+export const ImportListItemType = {
+    fromGeneric(node: ASTNode | null): ImportListItemType {
+        try { return ImportAsSpecifierNode.fromGeneric(node); } catch (e) {}
+        try { return ImportSpecifierNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ImportListItemType",node);
+    }
+}
+
+export type ExportsListItemType = ExportAsSpecifierNode | ExportNormalSpecifierNode;
+export const ExportsListItemType = {
+    fromGeneric(node: ASTNode | null): ExportsListItemType {
+        try { return ExportAsSpecifierNode.fromGeneric(node); } catch (e) {}
+        try { return ExportNormalSpecifierNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ExportsListItemType",node);
+    }
+}
 
 // ES6 Chapter 15: ECMAScript Language: Scripts and Modules
 
@@ -44,6 +87,13 @@ export class ScriptNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.body];
     }
+    public static fromGeneric(node: ASTNode | null): ScriptNode {
+        node = check.node(node,"Script",1);
+        const body = node.children[0];
+        if (body === null)
+            throw new CannotConvertError("ASTNode",body);
+        return new ScriptNode(node.range,body);
+    }
 }
 
 // ES6 Section 15.2: Modules
@@ -58,6 +108,13 @@ export class ModuleItemListNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): ModuleItemListNode {
+        const list = check.list(node);
+        const elements: ModuleItemType[] = [];
+        for (const listElement of list.elements)
+            elements.push(ModuleItemType.fromGeneric(listElement));
+        return new ModuleItemListNode(list.range,elements);
+    }
 }
 
 export class ModuleNode extends ASTNode {
@@ -70,6 +127,11 @@ export class ModuleNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.body];
     }
+    public static fromGeneric(node: ASTNode | null): ModuleNode {
+        node = check.node(node,"Module",1);
+        const body = ModuleItemListNode.fromGeneric(node.children[0]);
+        return new ModuleNode(node.range,body);
+    }
 }
 
 // ES6 Section 15.2.1: Module Semantics
@@ -78,18 +140,36 @@ export class ModuleNode extends ASTNode {
 
 export class ImportsListNode extends ASTNode {
     _nominal_type_ImportsListNode: any;
-    public readonly elements: (ImportAsSpecifierNode | ImportSpecifierNode)[];
-    public constructor(range: Range, elements: (ImportAsSpecifierNode | ImportSpecifierNode)[]) {
+    public readonly elements: ImportListItemType[];
+    public constructor(range: Range, elements: ImportListItemType[]) {
         super(range,"[]");
         this.elements = elements;
     }
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): ImportsListNode {
+        const list = check.list(node);
+        const elements: ImportListItemType[] = [];
+        for (const listElement of list.elements)
+            elements.push(ImportListItemType.fromGeneric(listElement));
+        return new ImportsListNode(list.range,elements);
+    }
 }
 
 export abstract class ImportNode extends ASTNode {
     _nominal_type_ImportNode: any;
+    public static fromGeneric(node: ASTNode | null): ImportNode {
+        node = check.nodeNotNull(node);
+        switch (node.kind) {
+            case "ImportFrom":
+                return ImportFromNode.fromGeneric(node);
+            case "ImportModule":
+                return ImportModuleNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("ImportNode",node);
+        }
+    }
 }
 
 export class ImportFromNode extends ImportNode {
@@ -104,6 +184,12 @@ export class ImportFromNode extends ImportNode {
     public get children(): (ASTNode | null)[] {
         return [this.importClause,this.fromClause];
     }
+    public static fromGeneric(node: ASTNode | null): ImportFromNode {
+        node = check.node(node,"ImportFrom",2);
+        const importClause = ImportClauseNode.fromGeneric(node.children[0]);
+        const fromClause = StringLiteralNode.fromGeneric(node.children[1]);
+        return new ImportFromNode(node.range,importClause,fromClause);
+    }
 }
 
 export class ImportModuleNode extends ImportNode {
@@ -116,10 +202,33 @@ export class ImportModuleNode extends ImportNode {
     public get children(): (ASTNode | null)[] {
         return [this.specifier];
     }
+    public static fromGeneric(node: ASTNode | null): ImportModuleNode {
+        node = check.node(node,"ImportModule",1);
+        const specifier = StringLiteralNode.fromGeneric(node.children[0]);
+        return new ImportModuleNode(node.range,specifier);
+    }
 }
 
 export abstract class ImportClauseNode extends ASTNode {
     _nominal_type_ImportClauseNode: any;
+    public static fromGeneric(node: ASTNode | null): ImportClauseNode {
+        if (node === null)
+            throw new CannotConvertError("ImportClauseNode",node);
+        switch (node.kind) {
+            case "DefaultAndNameSpaceImports":
+                return DefaultAndNameSpaceImportsNode.fromGeneric(node);
+            case "DefaultAndNamedImports":
+                return DefaultAndNamedImportsNode.fromGeneric(node);
+            case "DefaultImport":
+                return DefaultImportNode.fromGeneric(node);
+            case "NameSpaceImport":
+                return NameSpaceImportNode.fromGeneric(node);
+            case "NamedImports":
+                return NamedImportsNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("ImportClauseNode",node);
+        }
+    }
 }
 
 export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
@@ -137,6 +246,12 @@ export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.defaultBinding,this.nameSpaceImport];
+    }
+    public static fromGeneric(node: ASTNode | null): DefaultAndNameSpaceImportsNode {
+        node = check.node(node,"DefaultAndNameSpaceImports",2);
+        const defaultBinding = BindingIdentifierNode.fromGeneric(node.children[0]);
+        const nameSpaceImport = NameSpaceImportNode.fromGeneric(node.children[1]);
+        return new DefaultAndNameSpaceImportsNode(node.range,defaultBinding,nameSpaceImport);
     }
 }
 
@@ -156,6 +271,12 @@ export class DefaultAndNamedImportsNode extends ImportClauseNode {
     public get children(): (ASTNode | null)[] {
         return [this.defaultBinding,this.namedImports];
     }
+    public static fromGeneric(node: ASTNode | null): DefaultAndNamedImportsNode {
+        node = check.node(node,"DefaultAndNamedImports",2);
+        const defaultBinding = BindingIdentifierNode.fromGeneric(node.children[0]);
+        const namedImports = NamedImportsNode.fromGeneric(node.children[1]);
+        return new DefaultAndNamedImportsNode(node.range,defaultBinding,namedImports);
+    }
 }
 
 export class DefaultImportNode extends ImportClauseNode {
@@ -167,6 +288,11 @@ export class DefaultImportNode extends ImportClauseNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+    public static fromGeneric(node: ASTNode | null): DefaultImportNode {
+        node = check.node(node,"DefaultImport",1);
+        const binding = BindingIdentifierNode.fromGeneric(node.children[0]);
+        return new DefaultImportNode(node.range,binding);
     }
 }
 
@@ -180,6 +306,11 @@ export class NameSpaceImportNode extends ImportClauseNode {
     public get children(): (ASTNode | null)[] {
         return [this.binding];
     }
+    public static fromGeneric(node: ASTNode | null): NameSpaceImportNode {
+        node = check.node(node,"NameSpaceImport",1);
+        const binding = BindingIdentifierNode.fromGeneric(node.children[0]);
+        return new NameSpaceImportNode(node.range,binding);
+    }
 }
 
 export class NamedImportsNode extends ImportClauseNode {
@@ -192,6 +323,11 @@ export class NamedImportsNode extends ImportClauseNode {
     public get children(): (ASTNode | null)[] {
         return [this.imports];
     }
+    public static fromGeneric(node: ASTNode | null): NamedImportsNode {
+        node = check.node(node,"NamedImports",1);
+        const imports = ImportsListNode.fromGeneric(node.children[0]);
+        return new NamedImportsNode(node.range,imports);
+    }
 }
 
 export class ImportSpecifierNode extends ASTNode {
@@ -203,6 +339,11 @@ export class ImportSpecifierNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+    public static fromGeneric(node: ASTNode | null): ImportSpecifierNode {
+        node = check.node(node,"ImportSpecifier",1);
+        const binding = BindingIdentifierNode.fromGeneric(node.children[0]);
+        return new ImportSpecifierNode(node.range,binding);
     }
 }
 
@@ -218,35 +359,94 @@ export class ImportAsSpecifierNode extends ASTNode {
     public get children(): (ASTNode | null)[] {
         return [this.name,this.binding];
     }
+    public static fromGeneric(node: ASTNode | null): ImportAsSpecifierNode {
+        node = check.node(node,"ImportAsSpecifier",2);
+        const name = IdentifierNode.fromGeneric(node.children[0]);
+        const binding = BindingIdentifierNode.fromGeneric(node.children[1]);
+        return new ImportAsSpecifierNode(node.range,name,binding);
+    }
 }
 
 // ES6 Section 15.2.3: Exports
 
 export class ExportsListNode extends ASTNode {
     _nominal_type_ExportsListNode: any;
-    public readonly elements: (ExportAsSpecifierNode | ExportNormalSpecifierNode)[];
-    public constructor(range: Range, elements: (ExportAsSpecifierNode | ExportNormalSpecifierNode)[]) {
+    public readonly elements: ExportsListItemType[];
+    public constructor(range: Range, elements: ExportsListItemType[]) {
         super(range,"[]");
         this.elements = elements;
     }
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+    public static fromGeneric(node: ASTNode | null): ExportsListNode {
+        const list = check.list(node);
+        const elements: ExportsListItemType[] = [];
+        for (const listElement of list.elements)
+            elements.push(ExportsListItemType.fromGeneric(listElement));
+        return new ExportsListNode(list.range,elements);
+    }
 }
 
 export abstract class ExportNode extends ASTNode {
     _nominal_type_ExportNode: any;
+    public static fromGeneric(node: ASTNode | null): ExportNode {
+        if (node === null)
+            throw new CannotConvertError("ExportClauseNode",node);
+        switch (node.kind) {
+            case "ExportDefault":
+                return ExportDefaultNode.fromGeneric(node);
+            case "ExportStar":
+                return ExportStarNode.fromGeneric(node);
+            case "ExportPlain":
+                return ExportPlainNode.fromGeneric(node);
+            case "ExportVariable":
+                return ExportVariableNode.fromGeneric(node);
+            case "ExportDeclaration":
+                return ExportDeclarationNode.fromGeneric(node);
+            case "ExportFrom":
+                return ExportFromNode.fromGeneric(node);
+            case "ExportClause":
+                return ExportClauseNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("ExportNode",node);
+        }
+    }
 }
+
+type DeclarationOrExpressionType = DeclarationNode | ExpressionNode;
+const DeclarationOrExpressionType = {
+    fromGeneric(node: ASTNode | null): DeclarationOrExpressionType {
+        if (node === null)
+            throw new CannotConvertError("DeclarationOrExpressionType",node);
+        switch (node.kind) {
+            case "FunctionDeclaration":
+            case "GeneratorDeclaration":
+            case "DefaultGeneratorDeclaration":
+            case "ClassDeclaration":
+            case "Let":
+            case "Const":
+                return DeclarationNode_fromGeneric(node);
+            default:
+                return ExpressionNode_fromGeneric(node);
+        }
+    }
+};
 
 export class ExportDefaultNode extends ExportNode {
     _nominal_type_ExportDefaultNode: any;
-    public readonly decl: DeclarationNode | ExpressionNode;
-    public constructor(range: Range, decl: DeclarationNode | ExpressionNode) {
+    public readonly decl: DeclarationOrExpressionType;
+    public constructor(range: Range, decl: DeclarationOrExpressionType) {
         super(range,"ExportDefault");
         this.decl = decl;
     }
     public get children(): (ASTNode | null)[] {
         return [this.decl];
+    }
+    public static fromGeneric(node: ASTNode | null): ExportDefaultNode {
+        node = check.node(node,"ExportDefault",1);
+        const decl = DeclarationOrExpressionType.fromGeneric(node.children[0]);
+        return new ExportDefaultNode(node.range,decl);
     }
 }
 
@@ -260,6 +460,11 @@ export class ExportStarNode extends ExportNode {
     public get children(): (ASTNode | null)[] {
         return [this.from];
     }
+    public static fromGeneric(node: ASTNode | null): ExportStarNode {
+        node = check.node(node,"ExportStar",1);
+        const from = StringLiteralNode.fromGeneric(node.children[0]);
+        return new ExportStarNode(node.range,from);
+    }
 }
 
 export class ExportPlainNode extends ExportNode {
@@ -271,6 +476,11 @@ export class ExportPlainNode extends ExportNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.clause];
+    }
+    public static fromGeneric(node: ASTNode | null): ExportPlainNode {
+        node = check.node(node,"ExportPlain",1);
+        const clause = ExportClauseNode.fromGeneric(node.children[0]);
+        return new ExportPlainNode(node.range,clause);
     }
 }
 
@@ -284,6 +494,11 @@ export class ExportVariableNode extends ExportNode {
     public get children(): (ASTNode | null)[] {
         return [this.variable];
     }
+    public static fromGeneric(node: ASTNode | null): ExportVariableNode {
+        node = check.node(node,"ExportVariable",1);
+        const variable = VarNode.fromGeneric(node.children[0]);
+        return new ExportVariableNode(node.range,variable);
+    }
 }
 
 export class ExportDeclarationNode extends ExportNode {
@@ -295,6 +510,11 @@ export class ExportDeclarationNode extends ExportNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.decl];
+    }
+    public static fromGeneric(node: ASTNode | null): ExportDeclarationNode {
+        node = check.node(node,"ExportDeclaration",1);
+        const decl = DeclarationNode_fromGeneric(node.children[0]);
+        return new ExportDeclarationNode(node.range,decl);
     }
 }
 
@@ -314,6 +534,12 @@ export class ExportFromNode extends ExportNode {
     public get children(): (ASTNode | null)[] {
         return [this.exportClause,this.fromClause];
     }
+    public static fromGeneric(node: ASTNode | null): ExportFromNode {
+        node = check.node(node,"ExportFrom",2);
+        const exportClause = ExportClauseNode.fromGeneric(node.children[0]);
+        const fromClause = StringLiteralNode.fromGeneric(node.children[1]);
+        return new ExportFromNode(node.range,exportClause,fromClause);
+    }
 }
 
 export class ExportClauseNode extends ExportNode {
@@ -326,6 +552,11 @@ export class ExportClauseNode extends ExportNode {
     public get children(): (ASTNode | null)[] {
         return [this.items];
     }
+    public static fromGeneric(node: ASTNode | null): ExportClauseNode {
+        node = check.node(node,"ExportClause",1);
+        const items = ExportsListNode.fromGeneric(node.children[0]);
+        return new ExportClauseNode(node.range,items);
+    }
 }
 
 export class ExportNormalSpecifierNode extends ASTNode {
@@ -337,6 +568,11 @@ export class ExportNormalSpecifierNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.ident];
+    }
+    public static fromGeneric(node: ASTNode | null): ExportNormalSpecifierNode {
+        node = check.node(node,"ExportNormalSpecifier",1);
+        const ident = IdentifierNode.fromGeneric(node.children[0]);
+        return new ExportNormalSpecifierNode(node.range,ident);
     }
 }
 
@@ -351,5 +587,11 @@ export class ExportAsSpecifierNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.asIdent];
+    }
+    public static fromGeneric(node: ASTNode | null): ExportAsSpecifierNode {
+        node = check.node(node,"ExportAsSpecifier",2);
+        const ident = IdentifierNode.fromGeneric(node.children[0]);
+        const asIdent = IdentifierNode.fromGeneric(node.children[1]);
+        return new ExportAsSpecifierNode(node.range,ident,asIdent);
     }
 }

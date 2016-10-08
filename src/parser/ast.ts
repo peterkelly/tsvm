@@ -44,6 +44,10 @@ export abstract class ASTNode {
     public get label(): string { return this.kind; }
 }
 
+export abstract class ExpressionNode extends ASTNode {
+    _nominal_type_ExpressionNode: any;
+}
+
 export abstract class DeclarationNode extends ASTNode {
     _nominal_type_DeclarationNode: any;
 }
@@ -62,6 +66,11 @@ export class BindingIdentifierNode extends ASTNode {
         return "BindingIdentifier("+JSON.stringify(this.value)+")";
         // return this.value;
     }
+    public static fromGeneric(node: ASTNode | null): BindingIdentifierNode {
+        if ((node === null) || (node.kind !== "BindingIdentifier") || !(node instanceof GenericStringNode))
+            throw new CannotConvertError("BindingIdentifier",node);
+        return new BindingIdentifierNode(node.range,node.value);
+    }
 }
 
 export class IdentifierNode extends ASTNode {
@@ -78,6 +87,11 @@ export class IdentifierNode extends ASTNode {
         return "Identifier("+JSON.stringify(this.value)+")";
         // return this.value;
     }
+    public static fromGeneric(node: ASTNode | null): IdentifierNode {
+        if ((node === null) || (node.kind !== "Identifier") || !(node instanceof GenericStringNode))
+            throw new CannotConvertError("Identifier",node);
+        return new IdentifierNode(node.range,node.value);
+    }
 }
 
 export class ListNode extends ASTNode {
@@ -89,6 +103,9 @@ export class ListNode extends ASTNode {
     }
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+    public static fromGeneric(node: ASTNode | null): ListNode {
+        throw new Error("ListNode.fromGeneric not implemented");
     }
 }
 
@@ -104,6 +121,9 @@ export class ErrorNode extends ASTNode {
     }
     public get label(): string {
         return "ERROR: "+this.message;
+    }
+    public static fromGeneric(node: ASTNode | null): ErrorNode {
+        throw new Error("ErrorNode.fromGeneric not implemented");
     }
 }
 
@@ -161,5 +181,53 @@ export class GenericNumberNode extends ASTNode {
     }
     public get label(): string {
         return ""+this.value;
+    }
+}
+
+export class check {
+
+    public static arity(node: ASTNode, arity: number): void {
+        if (node.children.length != arity)
+            throw new Error(node.kind+" node has "+node.children.length+" children, expected "+arity);
+    }
+
+    public static node(node: ASTNode | null, name: string, arity: number): ASTNode {
+        if (node === null)
+            throw new Error("node is null; expected "+name);
+        if (node.kind !== name)
+            throw new Error("node is "+node.kind+"; expected "+name);
+        if (node.children.length != arity)
+            throw new Error("node has "+node.children.length+" children, expected "+arity);
+        return node;
+    }
+
+    public static nodeNotNull(node: ASTNode | null): ASTNode {
+        if (node === null)
+            throw new Error("node is null; expected "+name);
+        return node;
+    }
+
+    public static list(node: ASTNode | null): ListNode {
+        if (node === null)
+            throw new Error("node is null; expected a list");
+        if (!(node instanceof ListNode))
+            throw new Error("node is "+node.kind+"; expected a list");
+        return node;
+    }
+
+}
+
+export class CannotConvertError {
+    public readonly desiredType: string;
+    public readonly node: ASTNode | null;
+    public constructor(desiredType: string, node: ASTNode | null) {
+        this.desiredType = desiredType;
+        this.node = node;
+    }
+    public toString(): string {
+        if (this.node === null)
+            return "Cannot convert null to "+this.desiredType;
+        else
+            return "Cannot convert "+this.node.kind+" to "+this.desiredType;
     }
 }
