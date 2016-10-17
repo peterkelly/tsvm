@@ -30,6 +30,15 @@ import {
     BindingElementType,
     BindingRestElementNode,
 } from "./statements";
+import {
+    Empty,
+    Completion,
+    Reference,
+    JSValue,
+} from "../runtime/datatypes";
+import {
+    ExecutionContext,
+} from "../runtime/08-03-context";
 
 export type ClassElementType = MethodDefinitionNode | StaticMethodDefinitionNode | EmptyClassElementNode;
 export const ClassElementType = {
@@ -109,6 +118,10 @@ export class FunctionDeclarationNode extends DeclarationNode {
         return [this.ident,this.params,this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("FunctionDeclarationNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): FunctionDeclarationNode {
         node = check.node(node,"FunctionDeclaration",3);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -138,6 +151,10 @@ export class FunctionExpressionNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("FunctionExpressionNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): FunctionExpressionNode {
@@ -287,6 +304,10 @@ export class ArrowFunctionNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ArrowFunctionNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ArrowFunctionNode {
@@ -460,6 +481,10 @@ export class GeneratorDeclarationNode extends DeclarationNode {
         return [this.ident,this.params,this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("GeneratorDeclarationNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): GeneratorDeclarationNode {
         node = check.node(node,"GeneratorDeclaration",3);
         const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -482,6 +507,10 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("DefaultGeneratorDeclarationNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): DefaultGeneratorDeclarationNode {
@@ -514,6 +543,10 @@ export class GeneratorExpressionNode extends ExpressionNode {
         return [this.ident,this.params,this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("GeneratorExpressionNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): GeneratorExpressionNode {
         node = check.node(node,"GeneratorExpression",3);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -536,6 +569,10 @@ export class YieldExprNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("YieldExprNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): YieldExprNode {
         node = check.node(node,"YieldExpr",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -556,6 +593,10 @@ export class YieldStarNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("YieldStarNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): YieldStarNode {
         node = check.node(node,"YieldStar",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -572,6 +613,10 @@ export class YieldNothingNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("YieldNothingNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): YieldNothingNode {
@@ -619,6 +664,10 @@ export class ClassDeclarationNode extends DeclarationNode {
         return [this.ident,this.tail];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ClassDeclarationNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ClassDeclarationNode {
         node = check.node(node,"ClassDeclaration",2);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -640,6 +689,10 @@ export class ClassExpressionNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ClassExpressionNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ClassExpressionNode {

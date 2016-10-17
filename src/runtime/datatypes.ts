@@ -515,6 +515,10 @@ export interface Intrinsics {
 
 // ES6 Section 6.2.2: The Completion Record Specification Type
 
+export class Empty {
+    public _nominal_type_Empty: any;
+}
+
 export type Completion<T> =
     NormalCompletion<T> |
     BreakCompletion |
