@@ -32,6 +32,14 @@ import {
     YieldNothingNode,
     ClassExpressionNode,
 } from "./functions";
+import {
+    Completion,
+    Reference,
+    JSValue,
+} from "../runtime/datatypes";
+import {
+    ExecutionContext,
+} from "../runtime/08-03-context";
 
 export function ExpressionNode_fromGeneric(node: ASTNode | null): ExpressionNode {
     if (node === null)
@@ -278,6 +286,8 @@ export abstract class BinaryNode extends ExpressionNode {
     public get children(): (ASTNode | null)[] {
         return this._children;
     }
+
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
 }
 
 // ES6 Section 12.1: Identifiers
@@ -298,6 +308,10 @@ export class IdentifierReferenceNode extends ExpressionNode {
     public get label(): string {
         return "IdentifierReference("+JSON.stringify(this.value)+")";
         // return this.value;
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("IdentifierReferenceNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): IdentifierReferenceNode {
@@ -324,6 +338,10 @@ export class ThisNode extends ExpressionNode {
         return [];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ThisNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ThisNode {
         node = check.node(node,"This",0);
         return new ThisNode(node.range);
@@ -345,6 +363,10 @@ export class NullLiteralNode extends ExpressionNode {
         return [];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("NullLiteralNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): NullLiteralNode {
         node = check.node(node,"NullLiteral",0);
         return new NullLiteralNode(node.range);
@@ -362,6 +384,10 @@ export class TrueNode extends ExpressionNode {
         return [];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("TrueNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): TrueNode {
         node = check.node(node,"True",0);
         return new TrueNode(node.range);
@@ -377,6 +403,10 @@ export class FalseNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("FalseNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): FalseNode {
@@ -403,6 +433,10 @@ export class NumericLiteralNode extends ExpressionNode {
         return ""+this.value;
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("NumericLiteralNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): NumericLiteralNode {
         if ((node === null) || (node.kind !== "NumericLiteral") || !(node instanceof GenericNumberNode))
             throw new CannotConvertError("NumericLiteral",node);
@@ -426,6 +460,10 @@ export class StringLiteralNode extends ExpressionNode {
     public get label(): string {
         // return "StringLiteral("+JSON.stringify(this.value)+")";
         return JSON.stringify(this.value);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("StringLiteralNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): StringLiteralNode {
@@ -470,6 +508,10 @@ export class ArrayLiteralNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.elements];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ArrayLiteralNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ArrayLiteralNode {
@@ -551,6 +593,10 @@ export class ObjectLiteralNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.properties];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ObjectLiteralNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ObjectLiteralNode {
@@ -651,6 +697,10 @@ export class MemberAccessExprNode extends ExpressionNode {
         return [this.obj,this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("MemberAccessExprNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): MemberAccessExprNode {
         node = check.node(node,"MemberAccessExpr",2);
         const obj = ExpressionNode_fromGeneric(node.children[0]);
@@ -674,6 +724,10 @@ export class MemberAccessIdentNode extends ExpressionNode {
         return [this.obj,this.ident];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("MemberAccessIdentNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): MemberAccessIdentNode {
         node = check.node(node,"MemberAccessIdent",2);
         const obj = ExpressionNode_fromGeneric(node.children[0]);
@@ -693,6 +747,10 @@ export class SuperPropertyExprNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("SuperPropertyExprNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): SuperPropertyExprNode {
@@ -715,6 +773,10 @@ export class SuperPropertyIdentNode extends ExpressionNode {
         return [this.ident];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("SuperPropertyIdentNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): SuperPropertyIdentNode {
         node = check.node(node,"SuperPropertyIdent",1);
         const ident = IdentifierNode.fromGeneric(node.children[0]);
@@ -731,6 +793,10 @@ export class NewTargetNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("NewTargetNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): NewTargetNode {
@@ -752,6 +818,10 @@ export class NewExpressionNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.args];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("NewExpressionNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): NewExpressionNode {
@@ -777,6 +847,10 @@ export class CallNode extends ExpressionNode {
         return [this.fun,this.args];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("CallNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): CallNode {
         node = check.node(node,"Call",2);
         const fun = ExpressionNode_fromGeneric(node.children[0]);
@@ -796,6 +870,10 @@ export class SuperCallNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.args];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("SuperCallNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): SuperCallNode {
@@ -862,6 +940,10 @@ export class PostIncrementNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("PostIncrementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): PostIncrementNode {
         node = check.node(node,"PostIncrement",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -880,6 +962,10 @@ export class PostDecrementNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("PostDecrementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): PostDecrementNode {
@@ -904,6 +990,10 @@ export class DeleteNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("DeleteNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): DeleteNode {
         node = check.node(node,"Delete",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -922,6 +1012,10 @@ export class VoidNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("VoidNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): VoidNode {
@@ -944,6 +1038,10 @@ export class TypeOfNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("TypeOfNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): TypeOfNode {
         node = check.node(node,"TypeOf",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -962,6 +1060,10 @@ export class PreIncrementNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("PreIncrementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): PreIncrementNode {
@@ -984,6 +1086,10 @@ export class PreDecrementNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("PreDecrementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): PreDecrementNode {
         node = check.node(node,"PreDecrement",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -1002,6 +1108,10 @@ export class UnaryPlusNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("UnaryPlusNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryPlusNode {
@@ -1024,6 +1134,10 @@ export class UnaryMinusNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("UnaryMinusNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): UnaryMinusNode {
         node = check.node(node,"UnaryMinus",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -1042,6 +1156,10 @@ export class UnaryBitwiseNotNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("UnaryBitwiseNotNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryBitwiseNotNode {
@@ -1064,6 +1182,10 @@ export class UnaryLogicalNotNode extends ExpressionNode {
         return [this.expr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("UnaryLogicalNotNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): UnaryLogicalNotNode {
         node = check.node(node,"UnaryLogicalNot",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -1078,6 +1200,10 @@ export class MultiplyNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Multiply",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("MultiplyNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): MultiplyNode {
@@ -1095,6 +1221,10 @@ export class DivideNode extends BinaryNode {
         super(range,"Divide",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("DivideNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): DivideNode {
         node = check.node(node,"Divide",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1108,6 +1238,10 @@ export class ModuloNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Modulo",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ModuloNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ModuloNode {
@@ -1127,6 +1261,10 @@ export class AddNode extends BinaryNode {
         super(range,"Add",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AddNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AddNode {
         node = check.node(node,"Add",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1140,6 +1278,10 @@ export class SubtractNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Subtract",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("SubtractNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): SubtractNode {
@@ -1159,6 +1301,10 @@ export class LeftShiftNode extends BinaryNode {
         super(range,"LeftShift",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("LeftShiftNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LeftShiftNode {
         node = check.node(node,"LeftShift",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1174,6 +1320,10 @@ export class SignedRightShiftNode extends BinaryNode {
         super(range,"SignedRightShift",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("SignedRightShiftNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): SignedRightShiftNode {
         node = check.node(node,"SignedRightShift",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1187,6 +1337,10 @@ export class UnsignedRightShiftNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"UnsignedRightShift",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("UnsignedRightShiftNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): UnsignedRightShiftNode {
@@ -1206,6 +1360,10 @@ export class LessThanNode extends BinaryNode {
         super(range,"LessThan",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("LessThanNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LessThanNode {
         node = check.node(node,"LessThan",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1219,6 +1377,10 @@ export class GreaterThanNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"GreaterThan",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("GreaterThanNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): GreaterThanNode {
@@ -1236,6 +1398,10 @@ export class LessEqualNode extends BinaryNode {
         super(range,"LessEqual",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("LessEqualNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LessEqualNode {
         node = check.node(node,"LessEqual",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1249,6 +1415,10 @@ export class GreaterEqualNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"GreaterEqual",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("GreaterEqualNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): GreaterEqualNode {
@@ -1266,6 +1436,10 @@ export class InstanceOfNode extends BinaryNode {
         super(range,"InstanceOf",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("InstanceOfNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): InstanceOfNode {
         node = check.node(node,"InstanceOf",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1279,6 +1453,10 @@ export class InNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"In",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("InNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): InNode {
@@ -1298,6 +1476,10 @@ export class AbstractEqualsNode extends BinaryNode {
         super(range,"AbstractEquals",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AbstractEqualsNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AbstractEqualsNode {
         node = check.node(node,"AbstractEquals",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1311,6 +1493,10 @@ export class AbstractNotEqualsNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AbstractNotEquals",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AbstractNotEqualsNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AbstractNotEqualsNode {
@@ -1328,6 +1514,10 @@ export class StrictEqualsNode extends BinaryNode {
         super(range,"StrictEquals",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("StrictEqualsNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): StrictEqualsNode {
         node = check.node(node,"StrictEquals",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1341,6 +1531,10 @@ export class StrictNotEqualsNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"StrictNotEquals",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("StrictNotEqualsNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): StrictNotEqualsNode {
@@ -1360,6 +1554,10 @@ export class BitwiseANDNode extends BinaryNode {
         super(range,"BitwiseAND",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("BitwiseANDNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): BitwiseANDNode {
         node = check.node(node,"BitwiseAND",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1375,6 +1573,10 @@ export class BitwiseXORNode extends BinaryNode {
         super(range,"BitwiseXOR",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("BitwiseXORNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): BitwiseXORNode {
         node = check.node(node,"BitwiseXOR",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1388,6 +1590,10 @@ export class BitwiseORNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"BitwiseOR",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("BitwiseORNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): BitwiseORNode {
@@ -1407,6 +1613,10 @@ export class LogicalANDNode extends BinaryNode {
         super(range,"LogicalAND",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("LogicalANDNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LogicalANDNode {
         node = check.node(node,"LogicalAND",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1420,6 +1630,10 @@ export class LogicalORNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"LogicalOR",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("LogicalORNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): LogicalORNode {
@@ -1454,6 +1668,10 @@ export class ConditionalNode extends ExpressionNode {
         return [this.condition,this.trueExpr,this.falseExpr];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ConditionalNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ConditionalNode {
         node = check.node(node,"Conditional",3);
         const condition = ExpressionNode_fromGeneric(node.children[0]);
@@ -1472,6 +1690,10 @@ export class AssignNode extends BinaryNode {
         super(range,"Assign",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AssignNode {
         node = check.node(node,"Assign",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1485,6 +1707,10 @@ export class AssignMultiplyNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignMultiply",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignMultiplyNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignMultiplyNode {
@@ -1502,6 +1728,10 @@ export class AssignDivideNode extends BinaryNode {
         super(range,"AssignDivide",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignDivideNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AssignDivideNode {
         node = check.node(node,"AssignDivide",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1515,6 +1745,10 @@ export class AssignModuloNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignModulo",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignModuloNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignModuloNode {
@@ -1532,6 +1766,10 @@ export class AssignAddNode extends BinaryNode {
         super(range,"AssignAdd",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignAddNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AssignAddNode {
         node = check.node(node,"AssignAdd",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1545,6 +1783,10 @@ export class AssignSubtractNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignSubtract",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignSubtractNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignSubtractNode {
@@ -1562,6 +1804,10 @@ export class AssignLeftShiftNode extends BinaryNode {
         super(range,"AssignLeftShift",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignLeftShiftNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AssignLeftShiftNode {
         node = check.node(node,"AssignLeftShift",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1575,6 +1821,10 @@ export class AssignSignedRightShiftNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignSignedRightShift",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignSignedRightShiftNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignSignedRightShiftNode {
@@ -1592,6 +1842,10 @@ export class AssignUnsignedRightShiftNode extends BinaryNode {
         super(range,"AssignUnsignedRightShift",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignUnsignedRightShiftNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AssignUnsignedRightShiftNode {
         node = check.node(node,"AssignUnsignedRightShift",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1605,6 +1859,10 @@ export class AssignBitwiseANDNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignBitwiseAND",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignBitwiseANDNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignBitwiseANDNode {
@@ -1622,6 +1880,10 @@ export class AssignBitwiseXORNode extends BinaryNode {
         super(range,"AssignBitwiseXOR",left,right);
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignBitwiseXORNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): AssignBitwiseXORNode {
         node = check.node(node,"AssignBitwiseXOR",2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
@@ -1635,6 +1897,10 @@ export class AssignBitwiseORNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignBitwiseOR",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("AssignBitwiseORNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignBitwiseORNode {
@@ -1652,6 +1918,10 @@ export class CommaNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Comma",left,right);
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("CommaNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): CommaNode {

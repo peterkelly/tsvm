@@ -33,6 +33,15 @@ import {
     DefaultGeneratorDeclarationNode,
     ClassDeclarationNode,
 } from "./functions";
+import {
+    Empty,
+    Completion,
+    Reference,
+    JSValue,
+} from "../runtime/datatypes";
+import {
+    ExecutionContext,
+} from "../runtime/08-03-context";
 
 export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNode {
     if (node === null)
@@ -189,6 +198,8 @@ export const CaseClauseListItemType = {
 export abstract class StatementNode extends ASTNode {
     public _type_StatementNode: any;
 
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
+
     public static fromGeneric(node: ASTNode | null): StatementNode {
         if (node === null)
             throw new CannotConvertError("StatementNode",node);
@@ -309,6 +320,10 @@ export class BlockNode extends StatementNode {
         return [this.statements];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("BlockNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): BlockNode {
         node = check.node(node,"Block",1);
         const statements = StatementListNode.fromGeneric(node.children[0]);
@@ -355,6 +370,10 @@ export class LetNode extends DeclarationNode {
         return [this.bindings];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("LetNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LetNode {
         node = check.node(node,"Let",1);
         const bindings = BindingListNode.fromGeneric(node.children[0]);
@@ -373,6 +392,10 @@ export class ConstNode extends DeclarationNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.bindings];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ConstNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ConstNode {
@@ -488,6 +511,10 @@ export class VarNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.declarations];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("VarNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): VarNode {
@@ -767,6 +794,10 @@ export class EmptyStatementNode extends StatementNode {
         return [];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("EmptyStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): EmptyStatementNode {
         node = check.node(node,"EmptyStatement",0);
         return new EmptyStatementNode(node.range);
@@ -786,6 +817,10 @@ export class ExpressionStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ExpressionStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ExpressionStatementNode {
@@ -819,6 +854,10 @@ export class IfStatementNode extends StatementNode {
         return [this.condition,this.trueBranch,this.falseBranch];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("IfStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): IfStatementNode {
         node = check.node(node,"IfStatement",3);
         const condition = ExpressionNode_fromGeneric(node.children[0]);
@@ -849,6 +888,10 @@ export class DoStatementNode extends BreakableStatementNode {
         return [this.body,this.condition];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("DoStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): DoStatementNode {
         node = check.node(node,"DoStatement",2);
         const body = StatementNode.fromGeneric(node.children[0]);
@@ -872,6 +915,10 @@ export class WhileStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.body];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("WhileStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): WhileStatementNode {
@@ -909,6 +956,10 @@ export class ForCNode extends BreakableStatementNode {
         return [this.init,this.condition,this.update,this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ForCNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ForCNode {
         node = check.node(node,"ForC",4);
         const init = ForCInitType.fromGeneric(node.children[0]);
@@ -943,6 +994,10 @@ export class ForInNode extends BreakableStatementNode {
         return [this.binding,this.expr,this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ForInNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ForInNode {
         node = check.node(node,"ForIn",3);
         const binding = ForInBindingType.fromGeneric(node.children[0]);
@@ -972,6 +1027,10 @@ export class ForOfNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ForOfNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ForOfNode {
@@ -1058,6 +1117,10 @@ export class ContinueStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ContinueStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ContinueStatementNode {
         node = check.node(node,"ContinueStatement",1);
         const labelIdentifier = (node.children[0] === null) ? null : LabelIdentifierNode.fromGeneric(node.children[0]);
@@ -1080,6 +1143,10 @@ export class BreakStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("BreakStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): BreakStatementNode {
         node = check.node(node,"BreakStatement",1);
         const labelIdentifier = (node.children[0] === null) ? null : LabelIdentifierNode.fromGeneric(node.children[0]);
@@ -1100,6 +1167,10 @@ export class ReturnStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ReturnStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ReturnStatementNode {
@@ -1126,6 +1197,10 @@ export class WithStatementNode extends StatementNode {
         return [this.expr,this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("WithStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): WithStatementNode {
         node = check.node(node,"WithStatement",2);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -1149,6 +1224,10 @@ export class SwitchStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.cases];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("SwitchStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): SwitchStatementNode {
@@ -1323,6 +1402,10 @@ export class LabelledStatementNode extends StatementNode {
         return [this.ident,this.item];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("LabelledStatementNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LabelledStatementNode {
         node = check.node(node,"LabelledStatement",2);
         const ident = LabelIdentifierNode.fromGeneric(node.children[0]);
@@ -1344,6 +1427,10 @@ export class ThrowStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("ThrowStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ThrowStatementNode {
@@ -1375,6 +1462,10 @@ export class TryStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.tryNode,this.catchNode,this.finallyNode];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("TryStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): TryStatementNode {
@@ -1440,6 +1531,10 @@ export class DebuggerStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        throw new Error("DebuggerStatementNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): DebuggerStatementNode {

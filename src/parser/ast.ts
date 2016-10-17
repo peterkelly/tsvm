@@ -12,6 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {
+    Empty,
+    Completion,
+    Reference,
+    JSValue,
+} from "../runtime/datatypes";
+import {
+    ExecutionContext,
+} from "../runtime/08-03-context";
+
 export class CastError {
     public value: any;
     public typeName: string;
@@ -50,10 +60,14 @@ export abstract class ASTNode {
 
 export abstract class ExpressionNode extends ASTNode {
     public _type_ExpressionNode: any;
+
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
 }
 
 export abstract class DeclarationNode extends ASTNode {
     public _type_DeclarationNode: any;
+
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 }
 
 export class BindingIdentifierNode extends ASTNode {
