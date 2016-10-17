@@ -15,10 +15,12 @@
 export class CastError {
     public value: any;
     public typeName: string;
+
     constructor(value: any, typeName: string) {
         this.value = value;
         this.typeName = typeName;
     }
+
     public toString(): string {
         return this.value+" is not a "+this.typeName;
     }
@@ -27,6 +29,7 @@ export class CastError {
 export class Range {
     public start: number;
     public end: number;
+
     public constructor(start: number, end: number) {
         this.start = start;
         this.end = end;
@@ -36,6 +39,7 @@ export class Range {
 export abstract class ASTNode {
     public range: Range;
     public readonly kind: string;
+
     public constructor(range: Range, kind: string) {
         this.range = range;
         this.kind = kind;
@@ -55,17 +59,21 @@ export abstract class DeclarationNode extends ASTNode {
 export class BindingIdentifierNode extends ASTNode {
     public _type_BindingIdentifierNode: any;
     public readonly value: string;
+
     public constructor(range: Range, value: string) {
         super(range,"BindingIdentifier");
         this.value = value;
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public get label(): string {
         return "BindingIdentifier("+JSON.stringify(this.value)+")";
         // return this.value;
     }
+
     public static fromGeneric(node: ASTNode | null): BindingIdentifierNode {
         if ((node === null) || (node.kind !== "BindingIdentifier") || !(node instanceof GenericStringNode))
             throw new CannotConvertError("BindingIdentifier",node);
@@ -76,6 +84,7 @@ export class BindingIdentifierNode extends ASTNode {
 export class IdentifierNode extends ASTNode {
     public _type_IdentifierNode: any;
     public readonly value: string;
+
     public constructor(range: Range, value: string) {
         super(range,"Identifier");
         this.value = value;
@@ -97,13 +106,16 @@ export class IdentifierNode extends ASTNode {
 export class ListNode extends ASTNode {
     public _type_ListNode: any;
     public readonly elements: ASTNode[];
+
     public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
+
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+
     public static fromGeneric(node: ASTNode | null): ListNode {
         throw new Error("ListNode.fromGeneric not implemented");
     }
@@ -112,16 +124,20 @@ export class ListNode extends ASTNode {
 export class ErrorNode extends ASTNode {
     public _type_ErrorNode: any;
     public readonly message: string;
+
     public constructor(range: Range, message: string) {
         super(range,"Error");
         this.message = message;
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public get label(): string {
         return "ERROR: "+this.message;
     }
+
     public static fromGeneric(node: ASTNode | null): ErrorNode {
         throw new Error("ErrorNode.fromGeneric not implemented");
     }
@@ -131,6 +147,7 @@ export class GenericNode extends ASTNode {
     public _type_GenericNode: any ;
     public readonly _children: ASTNode[];
     public readonly value: any;
+
     public constructor(range: Range, kind: string, children: any[], value?: any) {
         super(range,kind);
         this._children = [];
@@ -141,9 +158,11 @@ export class GenericNode extends ASTNode {
         }
         this.value = value;
     }
+
     public get children(): (ASTNode | null)[] {
         return this._children;
     }
+
     public get label(): string {
         return this.kind;
     }
@@ -153,14 +172,17 @@ export class GenericStringNode extends ASTNode {
     public _type_GenericStringNode: any;
     public readonly value: string;
     public readonly raw: boolean;
+
     public constructor(range: Range, kind: string, value: string, raw: boolean = false) {
         super(range,kind);
         this.value = value;
         this.raw = raw;
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public get label(): string {
         if (this.raw)
             return JSON.stringify(this.value);
@@ -172,13 +194,16 @@ export class GenericStringNode extends ASTNode {
 export class GenericNumberNode extends ASTNode {
     public _type_GenericNumberNode: any;
     public readonly value: number;
+
     public constructor(range: Range, kind: string, value: number) {
         super(range,kind);
         this.value = value;
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public get label(): string {
         return ""+this.value;
     }
@@ -220,10 +245,12 @@ export class check {
 export class CannotConvertError {
     public readonly desiredType: string;
     public readonly node: ASTNode | null;
+
     public constructor(desiredType: string, node: ASTNode | null) {
         this.desiredType = desiredType;
         this.node = node;
     }
+
     public toString(): string {
         if (this.node === null)
             return "Cannot convert null to "+this.desiredType;
