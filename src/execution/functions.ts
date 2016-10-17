@@ -68,13 +68,16 @@ export const FormalParameterListItemType = {
 export class FormalParameterListNode extends ASTNode {
     public _type_FormalParameterListNode: any;
     public readonly elements: FormalParameterListItemType[];
+
     public constructor(range: Range, elements: FormalParameterListItemType[]) {
         super(range,"[]");
         this.elements = elements;
     }
+
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+
     public static fromGeneric(node: ASTNode | null): FormalParameterListNode {
         const list = check.list(node);
         const elements: FormalParameterListItemType[] = [];
@@ -89,6 +92,7 @@ export class FunctionDeclarationNode extends DeclarationNode {
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | null,
@@ -100,9 +104,11 @@ export class FunctionDeclarationNode extends DeclarationNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): FunctionDeclarationNode {
         node = check.node(node,"FunctionDeclaration",3);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -117,6 +123,7 @@ export class FunctionExpressionNode extends ExpressionNode {
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | null,
@@ -128,9 +135,11 @@ export class FunctionExpressionNode extends ExpressionNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): FunctionExpressionNode {
         node = check.node(node,"FunctionExpression",3);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -142,6 +151,7 @@ export class FunctionExpressionNode extends ExpressionNode {
 
 export abstract class FormalParametersNode extends ASTNode {
     public _type_FormalParametersNode: any;
+
     public static fromGeneric(node: ASTNode | null): FormalParametersNode {
         if (node === null)
             throw new CannotConvertError("FormalParametersNode",node);
@@ -162,12 +172,15 @@ export abstract class FormalParametersNode extends ASTNode {
 
 export class FormalParameters1Node extends FormalParametersNode {
     public _type_FormalParameters1Node: any;
+
     public constructor(range: Range) {
         super(range,"FormalParameters1");
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters1Node {
         node = check.node(node,"FormalParameters1",0);
         return new FormalParameters1Node(node.range);
@@ -177,13 +190,16 @@ export class FormalParameters1Node extends FormalParametersNode {
 export class FormalParameters2Node extends FormalParametersNode {
     public _type_FormalParameters2Node: any;
     public readonly rest: BindingRestElementNode;
+
     public constructor(range: Range, rest: BindingRestElementNode) {
         super(range,"FormalParameters2");
         this.rest = rest;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.rest];
     }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters2Node {
         node = check.node(node,"FormalParameters2",1);
         const rest = BindingRestElementNode.fromGeneric(node.children[0]);
@@ -194,13 +210,16 @@ export class FormalParameters2Node extends FormalParametersNode {
 export class FormalParameters3Node extends FormalParametersNode {
     public _type_FormalParameters3Node: any;
     public readonly elements: FormalParameterListNode;
+
     public constructor(range: Range, elements: FormalParameterListNode) {
         super(range,"FormalParameters3");
         this.elements = elements;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.elements];
     }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters3Node {
         node = check.node(node,"FormalParameters3",1);
         const elements = FormalParameterListNode.fromGeneric(node.children[0]);
@@ -212,14 +231,17 @@ export class FormalParameters4Node extends FormalParametersNode {
     public _type_FormalParameters4Node: any;
     public readonly elements: FormalParameterListNode;
     public readonly rest: BindingRestElementNode;
+
     public constructor(range: Range, elements: FormalParameterListNode, rest: BindingRestElementNode) {
         super(range,"FormalParameters4");
         this.elements = elements;
         this.rest = rest;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.elements,this.rest];
     }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters4Node {
         node = check.node(node,"FormalParameters4",2);
         const elements = FormalParameterListNode.fromGeneric(node.children[0]);
@@ -252,6 +274,7 @@ export class ArrowFunctionNode extends ExpressionNode {
     public _type_ArrowFunctionNode: any;
     public readonly params: ArrowFunctionParamsType;
     public readonly body: ArrowFunctionBodyType;
+
     public constructor(
         range: Range,
         params: ArrowFunctionParamsType,
@@ -261,9 +284,11 @@ export class ArrowFunctionNode extends ExpressionNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): ArrowFunctionNode {
         node = check.node(node,"ArrowFunction",2);
         const params = ArrowFunctionParamsType.fromGeneric(node.children[0]);
@@ -276,6 +301,7 @@ export class ArrowFunctionNode extends ExpressionNode {
 
 export abstract class MethodDefinitionNode extends ASTNode {
     public _type_MethodDefinitionNode: any;
+
     public static fromGeneric(node: ASTNode | null): MethodDefinitionNode {
         if (node === null)
             throw new CannotConvertError("MethodDefinitionNode",node);
@@ -299,6 +325,7 @@ export class MethodNode extends MethodDefinitionNode {
     public readonly name: PropertyNameType;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         name: PropertyNameType,
@@ -310,9 +337,11 @@ export class MethodNode extends MethodDefinitionNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.name,this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): MethodNode {
         node = check.node(node,"Method",3);
         const name = PropertyNameType.fromGeneric(node.children[0]);
@@ -326,14 +355,17 @@ export class GetterNode extends MethodDefinitionNode {
     public _type_GetterNode: any;
     public readonly name: PropertyNameType;
     public readonly body: StatementListNode;
+
     public constructor(range: Range, name: PropertyNameType, body: StatementListNode) {
         super(range,"Getter");
         this.name = name;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.name,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): GetterNode {
         node = check.node(node,"Getter",2);
         const name = PropertyNameType.fromGeneric(node.children[0]);
@@ -347,6 +379,7 @@ export class SetterNode extends MethodDefinitionNode {
     public readonly name: PropertyNameType;
     public readonly param: BindingElementType;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         name: PropertyNameType,
@@ -358,9 +391,11 @@ export class SetterNode extends MethodDefinitionNode {
         this.param = param;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.name,this.param,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): SetterNode {
         node = check.node(node,"Setter",3);
         const name = PropertyNameType.fromGeneric(node.children[0]);
@@ -377,6 +412,7 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
     public readonly name: PropertyNameType;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         name: PropertyNameType,
@@ -388,9 +424,11 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.name,this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): GeneratorMethodNode {
         node = check.node(node,"GeneratorMethod",3);
         const name = PropertyNameType.fromGeneric(node.children[0]);
@@ -405,6 +443,7 @@ export class GeneratorDeclarationNode extends DeclarationNode {
     public readonly ident: BindingIdentifierNode;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         ident: BindingIdentifierNode,
@@ -416,9 +455,11 @@ export class GeneratorDeclarationNode extends DeclarationNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): GeneratorDeclarationNode {
         node = check.node(node,"GeneratorDeclaration",3);
         const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -432,14 +473,17 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
     public _type_DefaultGeneratorDeclarationNode: any;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(range: Range, params: FormalParametersNode, body: StatementListNode) {
         super(range,"DefaultGeneratorDeclaration");
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): DefaultGeneratorDeclarationNode {
         node = check.node(node,"DefaultGeneratorDeclaration",2);
         const params = FormalParametersNode.fromGeneric(node.children[0]);
@@ -453,6 +497,7 @@ export class GeneratorExpressionNode extends ExpressionNode {
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
+
     public constructor(
         range: Range,
         ident: BindingIdentifierNode | null,
@@ -464,9 +509,11 @@ export class GeneratorExpressionNode extends ExpressionNode {
         this.params = params;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): GeneratorExpressionNode {
         node = check.node(node,"GeneratorExpression",3);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -479,13 +526,16 @@ export class GeneratorExpressionNode extends ExpressionNode {
 export class YieldExprNode extends ExpressionNode {
     public _type_YieldExprNode: any;
     public readonly expr: ExpressionNode;
+
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"YieldExpr");
         this.expr = expr;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
+
     public static fromGeneric(node: ASTNode | null): YieldExprNode {
         node = check.node(node,"YieldExpr",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -496,13 +546,16 @@ export class YieldExprNode extends ExpressionNode {
 export class YieldStarNode extends ExpressionNode {
     public _type_YieldStarNode: any;
     public readonly expr: ExpressionNode;
+
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"YieldStar");
         this.expr = expr;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
+
     public static fromGeneric(node: ASTNode | null): YieldStarNode {
         node = check.node(node,"YieldStar",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -512,12 +565,15 @@ export class YieldStarNode extends ExpressionNode {
 
 export class YieldNothingNode extends ExpressionNode {
     public _type_YieldNothingNode: any;
+
     public constructor(range: Range) {
         super(range,"YieldNothing");
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public static fromGeneric(node: ASTNode | null): YieldNothingNode {
         node = check.node(node,"YieldNothing",0);
         return new YieldNothingNode(node.range);
@@ -529,13 +585,16 @@ export class YieldNothingNode extends ExpressionNode {
 export class ClassElementListNode extends ASTNode {
     public _type_ClassElementListNode: any;
     public readonly elements: ClassElementType[];
+
     public constructor(range: Range, elements: ClassElementType[]) {
         super(range,"[]");
         this.elements = elements;
     }
+
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
+
     public static fromGeneric(node: ASTNode | null): ClassElementListNode {
         const list = check.list(node);
         const elements: ClassElementType[] = [];
@@ -549,14 +608,17 @@ export class ClassDeclarationNode extends DeclarationNode {
     public _type_ClassDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly tail: ClassTailNode;
+
     public constructor(range: Range, ident: BindingIdentifierNode | null, tail: ClassTailNode) {
         super(range,"ClassDeclaration");
         this.ident = ident;
         this.tail = tail;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
     }
+
     public static fromGeneric(node: ASTNode | null): ClassDeclarationNode {
         node = check.node(node,"ClassDeclaration",2);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -569,14 +631,17 @@ export class ClassExpressionNode extends ExpressionNode {
     public _type_ClassExpressionNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly tail: ClassTailNode;
+
     public constructor(range: Range, ident: BindingIdentifierNode | null, tail: ClassTailNode) {
         super(range,"ClassExpression");
         this.ident = ident;
         this.tail = tail;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
     }
+
     public static fromGeneric(node: ASTNode | null): ClassExpressionNode {
         node = check.node(node,"ClassExpression",2);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -589,14 +654,17 @@ export class ClassTailNode extends ASTNode {
     public _type_ClassTailNode: any;
     public readonly heritage: ExtendsNode | null;
     public readonly body: ClassElementListNode;
+
     public constructor(range: Range, heritage: ExtendsNode | null, body: ClassElementListNode) {
         super(range,"ClassTail");
         this.heritage = heritage;
         this.body = body;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.heritage,this.body];
     }
+
     public static fromGeneric(node: ASTNode | null): ClassTailNode {
         node = check.node(node,"ClassTail",2);
         const heritage = (node.children[0] === null) ? null : ExtendsNode.fromGeneric(node.children[0]);
@@ -608,13 +676,16 @@ export class ClassTailNode extends ASTNode {
 export class ExtendsNode extends ASTNode {
     public _type_ExtendsNode: any;
     public readonly expr: ExpressionNode;
+
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"Extends");
         this.expr = expr;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
+
     public static fromGeneric(node: ASTNode | null): ExtendsNode {
         node = check.node(node,"Extends",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -625,13 +696,16 @@ export class ExtendsNode extends ASTNode {
 export class StaticMethodDefinitionNode extends ASTNode {
     public _type_StaticMethodDefinitionNode: any;
     public readonly method: MethodDefinitionNode;
+
     public constructor(range: Range, method: MethodDefinitionNode) {
         super(range,"StaticMethodDefinition");
         this.method = method;
     }
+
     public get children(): (ASTNode | null)[] {
         return [this.method];
     }
+
     public static fromGeneric(node: ASTNode | null): StaticMethodDefinitionNode {
         node = check.node(node,"StaticMethodDefinition",1);
         const method = MethodDefinitionNode.fromGeneric(node.children[0]);
@@ -641,12 +715,15 @@ export class StaticMethodDefinitionNode extends ASTNode {
 
 export class EmptyClassElementNode extends ASTNode {
     public _type_EmptyClassElementNode: any;
+
     public constructor(range: Range) {
         super(range,"EmptyClassElement");
     }
+
     public get children(): (ASTNode | null)[] {
         return [];
     }
+
     public static fromGeneric(node: ASTNode | null): EmptyClassElementNode {
         node = check.node(node,"EmptyClassElement",0);
         return new EmptyClassElementNode(node.range);
