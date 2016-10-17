@@ -27,7 +27,7 @@ import {
 } from "../parser/ast";
 
 export class ModuleBinding {
-    _nominal_type_ModuleBinding: any;
+    public _type_ModuleBinding: any;
     public readonly module: ModuleRecord;
     public readonly name: string;
     public constructor(module: ModuleRecord, name: string) {
@@ -37,7 +37,7 @@ export class ModuleBinding {
 }
 
 export abstract class ModuleRecord {
-    _nominal_type_ModuleRecord: any;
+    public _type_ModuleRecord: any;
 
     public realm: Realm | undefined = undefined;
     public environment: LexicalEnvironment | undefined = undefined;
@@ -51,7 +51,7 @@ export abstract class ModuleRecord {
 }
 
 export class ImportEntry {
-    _nominal_type_ImportEntry: any;
+    public _type_ImportEntry: any;
     public moduleRequest: string;
     public importName: string;
     public localName: string;
@@ -68,7 +68,7 @@ export class ImportEntry {
 }
 
 export class ExportEntry {
-    _nominal_type_ExportEntry: any;
+    public _type_ExportEntry: any;
     public exportName: string;
     public moduleRequest: string | null;
     public importName: string | null;
@@ -83,7 +83,7 @@ export class ExportEntry {
 }
 
 export class SourceTextModuleRecord extends ModuleRecord {
-    _nominal_type_SourceTextModuleRecord: any;
+    public _type_SourceTextModuleRecord: any;
     public ecmascriptCode: ASTNode;
     public requestedModules: string[] = [];
     public importEntries: ImportEntry[] = [];

@@ -263,7 +263,7 @@ export const ArrayLiteralItemType = {
 // ES6 Chapter 12: ECMAScript Language: Expressions
 
 export abstract class BinaryNode extends ExpressionNode {
-    _nominal_type_BinaryNode: any;
+    public _type_BinaryNode: any;
     public readonly left: ExpressionNode;
     public readonly right: ExpressionNode;
     public readonly _children: ASTNode[];
@@ -281,7 +281,7 @@ export abstract class BinaryNode extends ExpressionNode {
 // ES6 Section 12.1: Identifiers
 
 export class IdentifierReferenceNode extends ExpressionNode {
-    _nominal_type_IdentifierReferenceNode: any;
+    public _type_IdentifierReferenceNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"IdentifierReference");
@@ -308,7 +308,7 @@ export class IdentifierReferenceNode extends ExpressionNode {
 // ES6 Section 12.2.2: The this Keyword
 
 export class ThisNode extends ExpressionNode {
-    _nominal_type_ThisNode: any;
+    public _type_ThisNode: any;
     public constructor(range: Range) {
         super(range,"This");
     }
@@ -326,7 +326,7 @@ export class ThisNode extends ExpressionNode {
 // ES6 Section 12.2.4: Literals
 
 export class NullLiteralNode extends ExpressionNode {
-    _nominal_type_NullLiteralNode: any;
+    public _type_NullLiteralNode: any;
     public constructor(range: Range) {
         super(range,"NullLiteral");
     }
@@ -340,7 +340,7 @@ export class NullLiteralNode extends ExpressionNode {
 }
 
 export class TrueNode extends ExpressionNode {
-    _nominal_type_TrueNode: any;
+    public _type_TrueNode: any;
     public constructor(range: Range) {
         super(range,"True");
     }
@@ -354,7 +354,7 @@ export class TrueNode extends ExpressionNode {
 }
 
 export class FalseNode extends ExpressionNode {
-    _nominal_type_FalseNode: any;
+    public _type_FalseNode: any;
     public constructor(range: Range) {
         super(range,"False");
     }
@@ -368,7 +368,7 @@ export class FalseNode extends ExpressionNode {
 }
 
 export class NumericLiteralNode extends ExpressionNode {
-    _nominal_type_NumericLiteralNode: any;
+    public _type_NumericLiteralNode: any;
     public readonly value: number;
     public constructor(range: Range, value: number) {
         super(range,"NumericLiteral");
@@ -389,7 +389,7 @@ export class NumericLiteralNode extends ExpressionNode {
 }
 
 export class StringLiteralNode extends ExpressionNode {
-    _nominal_type_StringLiteralNode: any;
+    public _type_StringLiteralNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"StringLiteral");
@@ -412,7 +412,7 @@ export class StringLiteralNode extends ExpressionNode {
 // ES6 Section 12.2.5: Array Initializer
 
 export class ElementListNode extends ASTNode {
-    _nominal_type_ElementListNode: any;
+    public _type_ElementListNode: any;
     public readonly elements: ArrayLiteralItemType[];
     public constructor(range: Range, elements: ArrayLiteralItemType[]) {
         super(range,"[]");
@@ -431,7 +431,7 @@ export class ElementListNode extends ASTNode {
 }
 
 export class ArrayLiteralNode extends ExpressionNode {
-    _nominal_type_ArrayLiteralNode: any;
+    public _type_ArrayLiteralNode: any;
     private readonly elements: ElementListNode;
     public constructor(range: Range, elements: ElementListNode) {
         super(range,"ArrayLiteral");
@@ -448,7 +448,7 @@ export class ArrayLiteralNode extends ExpressionNode {
 }
 
 export class ElisionNode extends ASTNode {
-    _nominal_type_ElisionNode: any;
+    public _type_ElisionNode: any;
     public constructor(range: Range) {
         super(range,"Elision");
     }
@@ -462,7 +462,7 @@ export class ElisionNode extends ASTNode {
 }
 
 export class SpreadElementNode extends ASTNode {
-    _nominal_type_SpreadElementNode: any;
+    public _type_SpreadElementNode: any;
     public readonly child: ExpressionNode;
     public constructor(range: Range, child: ExpressionNode) {
         super(range,"SpreadElement");
@@ -481,7 +481,7 @@ export class SpreadElementNode extends ASTNode {
 // ES6 Section 12.2.6: Object Initializer
 
 export class PropertyDefinitionListNode extends ASTNode {
-    _nominal_type_PropertyDefinitionListNode: any;
+    public _type_PropertyDefinitionListNode: any;
     public readonly elements: PropertyDefinitionType[];
     public constructor(range: Range, elements: PropertyDefinitionType[]) {
         super(range,"[]");
@@ -500,7 +500,7 @@ export class PropertyDefinitionListNode extends ASTNode {
 }
 
 export class ObjectLiteralNode extends ExpressionNode {
-    _nominal_type_ObjectLiteralNode: any;
+    public _type_ObjectLiteralNode: any;
     public readonly properties: PropertyDefinitionListNode;
     public constructor(range: Range, properties: PropertyDefinitionListNode) {
         super(range,"ObjectLiteral");
@@ -517,7 +517,7 @@ export class ObjectLiteralNode extends ExpressionNode {
 }
 
 export class ColonPropertyDefinitionNode extends ASTNode {
-    _nominal_type_ColonPropertyDefinitionNode: any;
+    public _type_ColonPropertyDefinitionNode: any;
     public readonly name: PropertyNameType;
     public readonly init: ExpressionNode;
     public constructor(range: Range, name: PropertyNameType, init: ExpressionNode) {
@@ -537,7 +537,7 @@ export class ColonPropertyDefinitionNode extends ASTNode {
 }
 
 export class ComputedPropertyNameNode extends ASTNode {
-    _nominal_type_ComputedPropertyNameNode: any;
+    public _type_ComputedPropertyNameNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"ComputedPropertyName");
@@ -554,7 +554,7 @@ export class ComputedPropertyNameNode extends ASTNode {
 }
 
 export class CoverInitializedNameNode extends ASTNode {
-    _nominal_type_CoverInitializedNameNode: any;
+    public _type_CoverInitializedNameNode: any;
     public readonly ident: IdentifierReferenceNode;
     public readonly init: ExpressionNode;
     public constructor(range: Range, ident: IdentifierReferenceNode, init: ExpressionNode) {
@@ -584,7 +584,7 @@ export class CoverInitializedNameNode extends ASTNode {
 // ES6 Section 12.3: Left-Hand-Side Expressions
 
 export class MemberAccessExprNode extends ExpressionNode {
-    _nominal_type_MemberAccessExprNode: any;
+    public _type_MemberAccessExprNode: any;
     public readonly obj: ExpressionNode;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, obj: ExpressionNode, expr: ExpressionNode) {
@@ -604,7 +604,7 @@ export class MemberAccessExprNode extends ExpressionNode {
 }
 
 export class MemberAccessIdentNode extends ExpressionNode {
-    _nominal_type_MemberAccessIdentNode: any;
+    public _type_MemberAccessIdentNode: any;
     public readonly obj: ExpressionNode;
     public readonly ident: IdentifierNode;
     public constructor(range: Range, obj: ExpressionNode, ident: IdentifierNode) {
@@ -624,7 +624,7 @@ export class MemberAccessIdentNode extends ExpressionNode {
 }
 
 export class SuperPropertyExprNode extends ExpressionNode {
-    _nominal_type_SuperPropertyExprNode: any;
+    public _type_SuperPropertyExprNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"SuperPropertyExpr");
@@ -641,7 +641,7 @@ export class SuperPropertyExprNode extends ExpressionNode {
 }
 
 export class SuperPropertyIdentNode extends ExpressionNode {
-    _nominal_type_SuperPropertyIdentNode: any;
+    public _type_SuperPropertyIdentNode: any;
     public readonly ident: IdentifierNode;
     public constructor(range: Range, ident: IdentifierNode) {
         super(range,"SuperPropertyIdent");
@@ -658,7 +658,7 @@ export class SuperPropertyIdentNode extends ExpressionNode {
 }
 
 export class NewTargetNode extends ExpressionNode {
-    _nominal_type_NewTargetNode: any;
+    public _type_NewTargetNode: any;
     public constructor(range: Range) {
         super(range,"NewTarget");
     }
@@ -672,7 +672,7 @@ export class NewTargetNode extends ExpressionNode {
 }
 
 export class NewExpressionNode extends ExpressionNode {
-    _nominal_type_NewExpressionNode: any;
+    public _type_NewExpressionNode: any;
     public readonly expr: ExpressionNode;
     public readonly args: ArgumentsNode | null;
     public constructor(range: Range, expr: ExpressionNode, args: ArgumentsNode | null) {
@@ -692,7 +692,7 @@ export class NewExpressionNode extends ExpressionNode {
 }
 
 export class CallNode extends ExpressionNode {
-    _nominal_type_CallNode: any;
+    public _type_CallNode: any;
     public readonly fun: ExpressionNode;
     public readonly args: ArgumentsNode;
     public constructor(range: Range, fun: ExpressionNode, args: ArgumentsNode) {
@@ -712,7 +712,7 @@ export class CallNode extends ExpressionNode {
 }
 
 export class SuperCallNode extends ExpressionNode {
-    _nominal_type_SuperCallNode: any;
+    public _type_SuperCallNode: any;
     public readonly args: ArgumentsNode;
     public constructor(range: Range, args: ArgumentsNode) {
         super(range,"SuperCall");
@@ -729,7 +729,7 @@ export class SuperCallNode extends ExpressionNode {
 }
 
 export class ArgumentListNode extends ASTNode {
-    _nominal_type_ArgumentListNode: any;
+    public _type_ArgumentListNode: any;
     public readonly elements: ArgumentType[];
     public constructor(range: Range, elements: ArgumentType[]) {
         super(range,"[]");
@@ -748,7 +748,7 @@ export class ArgumentListNode extends ASTNode {
 }
 
 export class ArgumentsNode extends ASTNode {
-    _nominal_type_ArgumentsNode: any;
+    public _type_ArgumentsNode: any;
     public readonly items: ArgumentListNode;
     public constructor(range: Range, items: ArgumentListNode) {
         super(range,"Arguments");
@@ -767,7 +767,7 @@ export class ArgumentsNode extends ASTNode {
 // ES6 Section 12.4: Postfix Expressions
 
 export class PostIncrementNode extends ExpressionNode {
-    _nominal_type_PostIncrementNode: any;
+    public _type_PostIncrementNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"PostIncrement");
@@ -784,7 +784,7 @@ export class PostIncrementNode extends ExpressionNode {
 }
 
 export class PostDecrementNode extends ExpressionNode {
-    _nominal_type_PostDecrementNode: any;
+    public _type_PostDecrementNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"PostDecrement");
@@ -803,7 +803,7 @@ export class PostDecrementNode extends ExpressionNode {
 // ES6 Section 12.5: Unary Operators
 
 export class DeleteNode extends ExpressionNode {
-    _nominal_type_DeleteNode: any;
+    public _type_DeleteNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"Delete");
@@ -820,7 +820,7 @@ export class DeleteNode extends ExpressionNode {
 }
 
 export class VoidNode extends ExpressionNode {
-    _nominal_type_VoidNode: any;
+    public _type_VoidNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"Void");
@@ -837,7 +837,7 @@ export class VoidNode extends ExpressionNode {
 }
 
 export class TypeOfNode extends ExpressionNode {
-    _nominal_type_TypeOfNode: any;
+    public _type_TypeOfNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"TypeOf");
@@ -854,7 +854,7 @@ export class TypeOfNode extends ExpressionNode {
 }
 
 export class PreIncrementNode extends ExpressionNode {
-    _nominal_type_PreIncrementNode: any;
+    public _type_PreIncrementNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"PreIncrement");
@@ -871,7 +871,7 @@ export class PreIncrementNode extends ExpressionNode {
 }
 
 export class PreDecrementNode extends ExpressionNode {
-    _nominal_type_PreDecrementNode: any;
+    public _type_PreDecrementNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"PreDecrement");
@@ -888,7 +888,7 @@ export class PreDecrementNode extends ExpressionNode {
 }
 
 export class UnaryPlusNode extends ExpressionNode {
-    _nominal_type_UnaryPlusNode: any;
+    public _type_UnaryPlusNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"UnaryPlus");
@@ -905,7 +905,7 @@ export class UnaryPlusNode extends ExpressionNode {
 }
 
 export class UnaryMinusNode extends ExpressionNode {
-    _nominal_type_UnaryMinusNode: any;
+    public _type_UnaryMinusNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"UnaryMinus");
@@ -922,7 +922,7 @@ export class UnaryMinusNode extends ExpressionNode {
 }
 
 export class UnaryBitwiseNotNode extends ExpressionNode {
-    _nominal_type_UnaryBitwiseNotNode: any;
+    public _type_UnaryBitwiseNotNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"UnaryBitwiseNot");
@@ -939,7 +939,7 @@ export class UnaryBitwiseNotNode extends ExpressionNode {
 }
 
 export class UnaryLogicalNotNode extends ExpressionNode {
-    _nominal_type_UnaryLogicalNotNode: any;
+    public _type_UnaryLogicalNotNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"UnaryLogicalNot");
@@ -958,7 +958,7 @@ export class UnaryLogicalNotNode extends ExpressionNode {
 // ES6 Section 12.6: Multiplicative Operators
 
 export class MultiplyNode extends BinaryNode {
-    _nominal_type_MultiplyNode: any;
+    public _type_MultiplyNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Multiply",left,right);
     }
@@ -971,7 +971,7 @@ export class MultiplyNode extends BinaryNode {
 }
 
 export class DivideNode extends BinaryNode {
-    _nominal_type_DivideNode: any;
+    public _type_DivideNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Divide",left,right);
     }
@@ -984,7 +984,7 @@ export class DivideNode extends BinaryNode {
 }
 
 export class ModuloNode extends BinaryNode {
-    _nominal_type_ModuloNode: any;
+    public _type_ModuloNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Modulo",left,right);
     }
@@ -999,7 +999,7 @@ export class ModuloNode extends BinaryNode {
 // ES6 Section 12.7: Additive Operators
 
 export class AddNode extends BinaryNode {
-    _nominal_type_AddNode: any;
+    public _type_AddNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Add",left,right);
     }
@@ -1012,7 +1012,7 @@ export class AddNode extends BinaryNode {
 }
 
 export class SubtractNode extends BinaryNode {
-    _nominal_type_SubtractNode: any;
+    public _type_SubtractNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Subtract",left,right);
     }
@@ -1027,7 +1027,7 @@ export class SubtractNode extends BinaryNode {
 // ES6 Section 12.8: Bitwise Shift Operators
 
 export class LeftShiftNode extends BinaryNode {
-    _nominal_type_LeftShiftNode: any;
+    public _type_LeftShiftNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"LeftShift",left,right);
     }
@@ -1040,7 +1040,7 @@ export class LeftShiftNode extends BinaryNode {
 }
 
 export class SignedRightShiftNode extends BinaryNode {
-    _nominal_type_SignedRightShiftNode: any;
+    public _type_SignedRightShiftNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"SignedRightShift",left,right);
     }
@@ -1053,7 +1053,7 @@ export class SignedRightShiftNode extends BinaryNode {
 }
 
 export class UnsignedRightShiftNode extends BinaryNode {
-    _nominal_type_UnsignedRightShiftNode: any;
+    public _type_UnsignedRightShiftNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"UnsignedRightShift",left,right);
     }
@@ -1068,7 +1068,7 @@ export class UnsignedRightShiftNode extends BinaryNode {
 // ES6 Section 12.9: Relational Operators
 
 export class LessThanNode extends BinaryNode {
-    _nominal_type_LessThanNode: any;
+    public _type_LessThanNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"LessThan",left,right);
     }
@@ -1081,7 +1081,7 @@ export class LessThanNode extends BinaryNode {
 }
 
 export class GreaterThanNode extends BinaryNode {
-    _nominal_type_GreaterThanNode: any;
+    public _type_GreaterThanNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"GreaterThan",left,right);
     }
@@ -1094,7 +1094,7 @@ export class GreaterThanNode extends BinaryNode {
 }
 
 export class LessEqualNode extends BinaryNode {
-    _nominal_type_LessEqualNode: any;
+    public _type_LessEqualNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"LessEqual",left,right);
     }
@@ -1107,7 +1107,7 @@ export class LessEqualNode extends BinaryNode {
 }
 
 export class GreaterEqualNode extends BinaryNode {
-    _nominal_type_GreaterEqualNode: any;
+    public _type_GreaterEqualNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"GreaterEqual",left,right);
     }
@@ -1120,7 +1120,7 @@ export class GreaterEqualNode extends BinaryNode {
 }
 
 export class InstanceOfNode extends BinaryNode {
-    _nominal_type_InstanceOfNode: any;
+    public _type_InstanceOfNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"InstanceOf",left,right);
     }
@@ -1133,7 +1133,7 @@ export class InstanceOfNode extends BinaryNode {
 }
 
 export class InNode extends BinaryNode {
-    _nominal_type_InNode: any;
+    public _type_InNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"In",left,right);
     }
@@ -1148,7 +1148,7 @@ export class InNode extends BinaryNode {
 // ES6 Section 12.10: Equality Operators
 
 export class AbstractEqualsNode extends BinaryNode {
-    _nominal_type_AbstractEqualsNode: any;
+    public _type_AbstractEqualsNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AbstractEquals",left,right);
     }
@@ -1161,7 +1161,7 @@ export class AbstractEqualsNode extends BinaryNode {
 }
 
 export class AbstractNotEqualsNode extends BinaryNode {
-    _nominal_type_AbstractNotEqualsNode: any;
+    public _type_AbstractNotEqualsNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AbstractNotEquals",left,right);
     }
@@ -1174,7 +1174,7 @@ export class AbstractNotEqualsNode extends BinaryNode {
 }
 
 export class StrictEqualsNode extends BinaryNode {
-    _nominal_type_StrictEqualsNode: any;
+    public _type_StrictEqualsNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"StrictEquals",left,right);
     }
@@ -1187,7 +1187,7 @@ export class StrictEqualsNode extends BinaryNode {
 }
 
 export class StrictNotEqualsNode extends BinaryNode {
-    _nominal_type_StrictNotEqualsNode: any;
+    public _type_StrictNotEqualsNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"StrictNotEquals",left,right);
     }
@@ -1202,7 +1202,7 @@ export class StrictNotEqualsNode extends BinaryNode {
 // ES6 Section 12.11: Binary Bitwise Operators
 
 export class BitwiseANDNode extends BinaryNode {
-    _nominal_type_BitwiseANDNode: any;
+    public _type_BitwiseANDNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"BitwiseAND",left,right);
     }
@@ -1215,7 +1215,7 @@ export class BitwiseANDNode extends BinaryNode {
 }
 
 export class BitwiseXORNode extends BinaryNode {
-    _nominal_type_BitwiseXORNode: any;
+    public _type_BitwiseXORNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"BitwiseXOR",left,right);
     }
@@ -1228,7 +1228,7 @@ export class BitwiseXORNode extends BinaryNode {
 }
 
 export class BitwiseORNode extends BinaryNode {
-    _nominal_type_BitwiseORNode: any;
+    public _type_BitwiseORNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"BitwiseOR",left,right);
     }
@@ -1243,7 +1243,7 @@ export class BitwiseORNode extends BinaryNode {
 // ES6 Section 12.12: Binary Logical Operators
 
 export class LogicalANDNode extends BinaryNode {
-    _nominal_type_LogicalANDNode: any;
+    public _type_LogicalANDNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"LogicalAND",left,right);
     }
@@ -1256,7 +1256,7 @@ export class LogicalANDNode extends BinaryNode {
 }
 
 export class LogicalORNode extends BinaryNode {
-    _nominal_type_LogicalORNode: any;
+    public _type_LogicalORNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"LogicalOR",left,right);
     }
@@ -1271,7 +1271,7 @@ export class LogicalORNode extends BinaryNode {
 // ES6 Section 12.13: Conditional Operator ( ? : )
 
 export class ConditionalNode extends ExpressionNode {
-    _nominal_type_ConditionalNode: any;
+    public _type_ConditionalNode: any;
     public readonly condition: ExpressionNode;
     public readonly trueExpr: ExpressionNode;
     public readonly falseExpr: ExpressionNode;
@@ -1301,7 +1301,7 @@ export class ConditionalNode extends ExpressionNode {
 // ES6 Section 12.14: Assignment Operators
 
 export class AssignNode extends BinaryNode {
-    _nominal_type_AssignNode: any;
+    public _type_AssignNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Assign",left,right);
     }
@@ -1314,7 +1314,7 @@ export class AssignNode extends BinaryNode {
 }
 
 export class AssignMultiplyNode extends BinaryNode {
-    _nominal_type_AssignMultiplyNode: any;
+    public _type_AssignMultiplyNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignMultiply",left,right);
     }
@@ -1327,7 +1327,7 @@ export class AssignMultiplyNode extends BinaryNode {
 }
 
 export class AssignDivideNode extends BinaryNode {
-    _nominal_type_AssignDivideNode: any;
+    public _type_AssignDivideNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignDivide",left,right);
     }
@@ -1340,7 +1340,7 @@ export class AssignDivideNode extends BinaryNode {
 }
 
 export class AssignModuloNode extends BinaryNode {
-    _nominal_type_AssignModuloNode: any;
+    public _type_AssignModuloNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignModulo",left,right);
     }
@@ -1353,7 +1353,7 @@ export class AssignModuloNode extends BinaryNode {
 }
 
 export class AssignAddNode extends BinaryNode {
-    _nominal_type_AssignAddNode: any;
+    public _type_AssignAddNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignAdd",left,right);
     }
@@ -1366,7 +1366,7 @@ export class AssignAddNode extends BinaryNode {
 }
 
 export class AssignSubtractNode extends BinaryNode {
-    _nominal_type_AssignSubtractNode: any;
+    public _type_AssignSubtractNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignSubtract",left,right);
     }
@@ -1379,7 +1379,7 @@ export class AssignSubtractNode extends BinaryNode {
 }
 
 export class AssignLeftShiftNode extends BinaryNode {
-    _nominal_type_AssignLeftShiftNode: any;
+    public _type_AssignLeftShiftNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignLeftShift",left,right);
     }
@@ -1392,7 +1392,7 @@ export class AssignLeftShiftNode extends BinaryNode {
 }
 
 export class AssignSignedRightShiftNode extends BinaryNode {
-    _nominal_type_AssignSignedRightShiftNode: any;
+    public _type_AssignSignedRightShiftNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignSignedRightShift",left,right);
     }
@@ -1405,7 +1405,7 @@ export class AssignSignedRightShiftNode extends BinaryNode {
 }
 
 export class AssignUnsignedRightShiftNode extends BinaryNode {
-    _nominal_type_AssignUnsignedRightShiftNode: any;
+    public _type_AssignUnsignedRightShiftNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignUnsignedRightShift",left,right);
     }
@@ -1418,7 +1418,7 @@ export class AssignUnsignedRightShiftNode extends BinaryNode {
 }
 
 export class AssignBitwiseANDNode extends BinaryNode {
-    _nominal_type_AssignBitwiseANDNode: any;
+    public _type_AssignBitwiseANDNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignBitwiseAND",left,right);
     }
@@ -1431,7 +1431,7 @@ export class AssignBitwiseANDNode extends BinaryNode {
 }
 
 export class AssignBitwiseXORNode extends BinaryNode {
-    _nominal_type_AssignBitwiseXORNode: any;
+    public _type_AssignBitwiseXORNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignBitwiseXOR",left,right);
     }
@@ -1444,7 +1444,7 @@ export class AssignBitwiseXORNode extends BinaryNode {
 }
 
 export class AssignBitwiseORNode extends BinaryNode {
-    _nominal_type_AssignBitwiseORNode: any;
+    public _type_AssignBitwiseORNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignBitwiseOR",left,right);
     }
@@ -1459,7 +1459,7 @@ export class AssignBitwiseORNode extends BinaryNode {
 // ES6 Section 12.15: Comma Operator ( , )
 
 export class CommaNode extends BinaryNode {
-    _nominal_type_CommaNode: any;
+    public _type_CommaNode: any;
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Comma",left,right);
     }

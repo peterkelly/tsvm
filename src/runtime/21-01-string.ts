@@ -21,7 +21,7 @@ import {
 } from "./datatypes";
 
 export class StringObject extends JSObject {
-    _nominal_type_StringObject: any;
+    public _type_StringObject: any;
     public stringData: JSString;
     public constructor(prototype: JSObject | JSNull, stringData: JSString) {
         super(prototype);
@@ -30,5 +30,5 @@ export class StringObject extends JSObject {
 }
 
 export class StringConstructor extends JSObject {
-    _nominal_type_StringConstructor: any;
+    public _type_StringConstructor: any;
 }

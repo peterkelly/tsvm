@@ -48,7 +48,7 @@ export enum ThisMode {
 }
 
 export class JSFunction extends JSObject {
-    _nominal_type_JSFunction: any;
+    public _type_JSFunction: any;
     // FIXME: The types of most of these properties should not include undefined; but they have
     // not be initialized properly by the constructor
     public environment: LexicalEnvironment | undefined = undefined;

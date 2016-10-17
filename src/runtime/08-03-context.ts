@@ -53,7 +53,7 @@ import * as bi from "./builtins";
 // ES6 Section 8.3: Execution Contexts
 
 export class ExecutionContext {
-    _nominal_type_ExecutionContext: any;
+    public _type_ExecutionContext: any;
     // public state: any; // Implementation-specific
     public fun: JSFunction | JSNull;
     public realm: Realm;

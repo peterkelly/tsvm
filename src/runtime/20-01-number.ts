@@ -21,7 +21,7 @@ import {
 } from "./datatypes";
 
 export class NumberObject extends JSObject {
-    _nominal_type_NumberObject: any;
+    public _type_NumberObject: any;
     public numberData: JSNumber;
     public constructor(prototype: JSObject | JSNull, numberData: JSNumber) {
         super(prototype);
@@ -30,5 +30,5 @@ export class NumberObject extends JSObject {
 }
 
 export class NumberConstructor extends JSObject {
-    _nominal_type_NumberConstructor: any;
+    public _type_NumberConstructor: any;
 }

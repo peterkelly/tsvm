@@ -81,7 +81,7 @@ import {
 // ES6 Section 8.1.1.1: Declarative Environment Records
 
 class DeclarativeBinding {
-    _nominal_type_DeclarativeBinding: any;
+    public _type_DeclarativeBinding: any;
     public value: JSValue;
     public canDelete: boolean;
     public mutable: boolean;
@@ -106,7 +106,7 @@ class DeclarativeBinding {
 }
 
 export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
-    _nominal_type_DeclarativeEnvironmentRecord: any;
+    public _type_DeclarativeEnvironmentRecord: any;
 
     public readonly bindings: GenericMap<DeclarativeBinding>;
     public realm: Realm;
@@ -314,7 +314,7 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 }
 
 export class ObjectEnvironmentRecord extends EnvironmentRecord {
-    _nominal_type_ObjectEnvironmentRecord: any;
+    public _type_ObjectEnvironmentRecord: any;
     public bindingObject: JSObject;
     public realm: Realm;
     public withEnvironment: boolean;
@@ -523,7 +523,7 @@ enum BindingStatus {
 }
 
 export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
-    _nominal_type_FunctionEnvironmentRecord: any;
+    public _type_FunctionEnvironmentRecord: any;
     public thisValue: JSValue;
     public thisBindingStatus: BindingStatus;
     public functionObject: JSObject;
@@ -638,7 +638,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
 // ES6 Section 8.1.1.4: Global Environment Records
 
 export class GlobalEnvironmentRecord extends EnvironmentRecord {
-    _nominal_type_GlobalEnvironmentRecord: any;
+    public _type_GlobalEnvironmentRecord: any;
     public realm: Realm;
     public objectRecord: ObjectEnvironmentRecord;
     public declarativeRecord: DeclarativeEnvironmentRecord;
@@ -1159,7 +1159,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 // ES6 Section 8.1.1.5: Module Environment Records
 
 export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
-    _nominal_type_ModuleEnvironmentRecord: any;
+    public _type_ModuleEnvironmentRecord: any;
 
     public constructor(realm: Realm) {
         super(realm);

@@ -75,8 +75,8 @@ function setupIntrinsicObjects(realm: Realm): void {
 // ES6 Section 8.2: Code Realms
 
 export class RealmImpl implements Realm {
-    _nominal_type_Realm: any;
-    _nominal_type_RealmImpl: any;
+    public _type_Realm: any;
+    public _type_RealmImpl: any;
     public intrinsics: Intrinsics;
     public globalThis: JSObject;
     public globalEnv: LexicalEnvironment;

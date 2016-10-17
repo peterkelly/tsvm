@@ -17,7 +17,7 @@
 // This is a placeholder used in cases where we haven't yet determined what type should be used.
 // Eventually all instances of this should be removed.
 export class UnknownType {
-    _nominal_type_UnknownType: any;
+    public _type_UnknownType: any;
 }
 
 export class GenericMap<T> {
@@ -79,19 +79,19 @@ export enum ValueType {
 }
 
 export abstract class JSValue {
-    _nominal_type_JSValue: any;
+    public _type_JSValue: any;
     public abstract get type(): ValueType;
 }
 
 export abstract class JSPropertyKey extends JSValue {
-    _nominal_type_PropertyKey: any;
+    public _type_PropertyKey: any;
     public abstract get stringRep(): string;
 }
 
 // ES6 Section 6.1.1: The Undefined Type
 
 export class JSUndefined extends JSValue {
-    _nominal_type_JSUndefined: any;
+    public _type_JSUndefined: any;
     public get type(): ValueType {
         return ValueType.Undefined;
     }
@@ -100,7 +100,7 @@ export class JSUndefined extends JSValue {
 // ES6 Section 6.1.2: The Null Type
 
 export class JSNull extends JSValue {
-    _nominal_type_JSNull: any;
+    public _type_JSNull: any;
     public get type(): ValueType {
         return ValueType.Null;
     }
@@ -109,7 +109,7 @@ export class JSNull extends JSValue {
 // ES6 Section 6.1.3: The Boolean Type
 
 export class JSBoolean extends JSValue {
-    _nominal_type_JSBoolean: any;
+    public _type_JSBoolean: any;
     public readonly booleanValue: boolean;
     public constructor(booleanValue: boolean) {
         super();
@@ -123,7 +123,7 @@ export class JSBoolean extends JSValue {
 // ES6 Section 6.1.4: The String Type
 
 export class JSString extends JSPropertyKey {
-    _nominal_type_JSString: any;
+    public _type_JSString: any;
     public readonly stringValue: string;
     public constructor(stringValue: string) {
         super();
@@ -140,7 +140,7 @@ export class JSString extends JSPropertyKey {
 // ES6 Section 6.1.5: The Symbol Type
 
 export class JSSymbol extends JSPropertyKey {
-    _nominal_type_JSSymbol: any;
+    public _type_JSSymbol: any;
     public readonly description: JSString | JSUndefined;
     public readonly symbolId: number;
     private static nextSymbolId: number = 1;
@@ -174,7 +174,7 @@ export class JSSymbol extends JSPropertyKey {
 // ES6 Section 6.1.6: The Number Type
 
 export class JSNumber extends JSValue {
-    _nominal_type_JSNumber: any;
+    public _type_JSNumber: any;
     public readonly numberValue: number;
     public constructor(numberValue: number) {
         super();
@@ -246,7 +246,7 @@ export class JSUInt8 extends JSInteger {
 // ES6 Section 6.1.7: The Object Type
 
 export class JSObject extends JSValue {
-    _nominal_type_JSObject: any;
+    public _type_JSObject: any;
 
     public __prototype__: JSObject | JSNull;
     public __extensible__: boolean;
@@ -373,7 +373,7 @@ export interface DescriptorFields {
 export type PropertyDescriptor = DataDescriptor | AccessorDescriptor;
 
 export abstract class BaseDescriptor {
-    _nominal_type_Property: any;
+    public _type_Property: any;
     public enumerable: boolean;
     public configurable: boolean;
     public constructor(options: {
@@ -386,7 +386,7 @@ export abstract class BaseDescriptor {
 }
 
 export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
-    _nominal_type_DataDescriptor: any;
+    public _type_DataDescriptor: any;
     public value: JSValue;
     public writable: boolean;
     public constructor(options: {
@@ -402,7 +402,7 @@ export class DataDescriptor extends BaseDescriptor implements DescriptorFields {
 }
 
 export class AccessorDescriptor extends BaseDescriptor implements DescriptorFields {
-    _nominal_type_AccessorDescriptor: any;
+    public _type_AccessorDescriptor: any;
     public __get__: JSObject | JSUndefined;
     public __set__: JSObject | JSUndefined;
     public constructor(options: {
@@ -571,7 +571,7 @@ export type ReferenceBase = JSUndefined | PropertyReferenceBase | EnvironmentRec
 export type Reference = UnresolvableReference | PropertyReference | EnvironmentReference;
 
 export abstract class AbstractReference {
-    _nominal_type_Reference: any;
+    public _type_Reference: any;
     public strict: boolean;
     public constructor(strict: boolean) {
         this.strict = strict;
@@ -581,7 +581,7 @@ export abstract class AbstractReference {
 }
 
 export class UnresolvableReference extends AbstractReference {
-    _nominal_type_UnresolvableReference: any;
+    public _type_UnresolvableReference: any;
     private _base: JSUndefined;
     private _name: JSPropertyKey;
     public constructor(name: JSPropertyKey, strict: boolean) {
@@ -598,7 +598,7 @@ export class UnresolvableReference extends AbstractReference {
 }
 
 export class PropertyReference extends AbstractReference {
-    _nominal_type_PropertyReference: any;
+    public _type_PropertyReference: any;
     private _base: PropertyReferenceBase;
     private _name: JSPropertyKey;
     public constructor(base: PropertyReferenceBase, name: JSPropertyKey, strict: boolean) {
@@ -615,7 +615,7 @@ export class PropertyReference extends AbstractReference {
 }
 
 export class EnvironmentReference extends AbstractReference {
-    _nominal_type_EnvironmentReference: any;
+    public _type_EnvironmentReference: any;
     private _base: EnvironmentRecord;
     private _name: JSString;
     public constructor(base: EnvironmentRecord, name: JSString, strict: boolean) {
@@ -632,7 +632,7 @@ export class EnvironmentReference extends AbstractReference {
 }
 
 export class SuperReference extends PropertyReference {
-    _nominal_type_SuperReference: any;
+    public _type_SuperReference: any;
     public thisValue: JSValue;
     public constructor(base: PropertyReferenceBase, name: JSPropertyKey, strict: boolean) {
         super(base,name,strict);
@@ -643,7 +643,7 @@ export class SuperReference extends PropertyReference {
 // ES6 Section 6.2.6: Data Blocks
 
 export class DataBlock {
-    _nominal_type_DataBlock: any;
+    public _type_DataBlock: any;
 }
 
 // ES6 Section 8.1: Lexical Environments
@@ -676,7 +676,7 @@ export abstract class EnvironmentRecord {
 // ES6 Section 8.2: Code Realms
 
 export interface Realm {
-    _nominal_type_Realm: any;
+    _type_Realm: any;
     intrinsics: Intrinsics;
     globalThis: JSObject;
     globalEnv: LexicalEnvironment;

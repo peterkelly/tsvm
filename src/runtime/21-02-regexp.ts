@@ -19,9 +19,9 @@ import {
 } from "./datatypes";
 
 export class RegExpObject extends JSObject {
-    _nominal_type_RegExpObject: any;
+    public _type_RegExpObject: any;
 }
 
 export class RegExpConstructor extends JSObject {
-    _nominal_type_RegExpConstructor: any;
+    public _type_RegExpConstructor: any;
 }

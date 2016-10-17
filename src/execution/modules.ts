@@ -78,7 +78,7 @@ export const ExportsListItemType = {
 // ES6 Section 15.1: Scripts
 
 export class ScriptNode extends ASTNode {
-    _nominal_type_ScriptNode: any;
+    public _type_ScriptNode: any;
     public readonly body: ASTNode;
     public constructor(range: Range, body: ASTNode) {
         super(range,"Script");
@@ -99,7 +99,7 @@ export class ScriptNode extends ASTNode {
 // ES6 Section 15.2: Modules
 
 export class ModuleItemListNode extends ASTNode {
-    _nominal_type_ModuleItemListNode: any;
+    public _type_ModuleItemListNode: any;
     public readonly elements: ModuleItemType[];
     public constructor(range: Range, elements: ModuleItemType[]) {
         super(range,"[]");
@@ -118,7 +118,7 @@ export class ModuleItemListNode extends ASTNode {
 }
 
 export class ModuleNode extends ASTNode {
-    _nominal_type_ModuleNode: any;
+    public _type_ModuleNode: any;
     public readonly body: ASTNode;
     public constructor(range: Range, body: ASTNode) {
         super(range,"Module");
@@ -139,7 +139,7 @@ export class ModuleNode extends ASTNode {
 // ES6 Section 15.2.2: Imports
 
 export class ImportsListNode extends ASTNode {
-    _nominal_type_ImportsListNode: any;
+    public _type_ImportsListNode: any;
     public readonly elements: ImportListItemType[];
     public constructor(range: Range, elements: ImportListItemType[]) {
         super(range,"[]");
@@ -158,7 +158,7 @@ export class ImportsListNode extends ASTNode {
 }
 
 export abstract class ImportNode extends ASTNode {
-    _nominal_type_ImportNode: any;
+    public _type_ImportNode: any;
     public static fromGeneric(node: ASTNode | null): ImportNode {
         node = check.nodeNotNull(node);
         switch (node.kind) {
@@ -173,7 +173,7 @@ export abstract class ImportNode extends ASTNode {
 }
 
 export class ImportFromNode extends ImportNode {
-    _nominal_type_ImportFromNode: any;
+    public _type_ImportFromNode: any;
     public readonly importClause: ImportClauseNode;
     public readonly fromClause: StringLiteralNode;
     public constructor(range: Range, importClause: ImportClauseNode, fromClause: StringLiteralNode) {
@@ -193,7 +193,7 @@ export class ImportFromNode extends ImportNode {
 }
 
 export class ImportModuleNode extends ImportNode {
-    _nominal_type_ImportModuleNode: any;
+    public _type_ImportModuleNode: any;
     public readonly specifier: StringLiteralNode;
     public constructor(range: Range, specifier: StringLiteralNode) {
         super(range,"ImportModule");
@@ -210,7 +210,7 @@ export class ImportModuleNode extends ImportNode {
 }
 
 export abstract class ImportClauseNode extends ASTNode {
-    _nominal_type_ImportClauseNode: any;
+    public _type_ImportClauseNode: any;
     public static fromGeneric(node: ASTNode | null): ImportClauseNode {
         if (node === null)
             throw new CannotConvertError("ImportClauseNode",node);
@@ -232,7 +232,7 @@ export abstract class ImportClauseNode extends ASTNode {
 }
 
 export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
-    _nominal_type_DefaultAndNameSpaceImportsNode: any;
+    public _type_DefaultAndNameSpaceImportsNode: any;
     public readonly defaultBinding: BindingIdentifierNode;
     public readonly nameSpaceImport: NameSpaceImportNode;
     public constructor(
@@ -256,7 +256,7 @@ export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
 }
 
 export class DefaultAndNamedImportsNode extends ImportClauseNode {
-    _nominal_type_DefaultAndNamedImportsNode: any;
+    public _type_DefaultAndNamedImportsNode: any;
     public readonly defaultBinding: BindingIdentifierNode;
     public readonly namedImports: NamedImportsNode;
     public constructor(
@@ -280,7 +280,7 @@ export class DefaultAndNamedImportsNode extends ImportClauseNode {
 }
 
 export class DefaultImportNode extends ImportClauseNode {
-    _nominal_type_DefaultImportNode: any;
+    public _type_DefaultImportNode: any;
     public readonly binding: BindingIdentifierNode;
     public constructor(range: Range, binding: BindingIdentifierNode) {
         super(range,"DefaultImport");
@@ -297,7 +297,7 @@ export class DefaultImportNode extends ImportClauseNode {
 }
 
 export class NameSpaceImportNode extends ImportClauseNode {
-    _nominal_type_NameSpaceImportNode: any;
+    public _type_NameSpaceImportNode: any;
     public readonly binding: BindingIdentifierNode;
     public constructor(range: Range, binding: BindingIdentifierNode) {
         super(range,"NameSpaceImport");
@@ -314,7 +314,7 @@ export class NameSpaceImportNode extends ImportClauseNode {
 }
 
 export class NamedImportsNode extends ImportClauseNode {
-    _nominal_type_NamedImportsNode: any;
+    public _type_NamedImportsNode: any;
     public readonly imports: ImportsListNode;
     public constructor(range: Range, imports: ImportsListNode) {
         super(range,"NamedImports");
@@ -331,7 +331,7 @@ export class NamedImportsNode extends ImportClauseNode {
 }
 
 export class ImportSpecifierNode extends ASTNode {
-    _nominal_type_ImportSpecifierNode: any;
+    public _type_ImportSpecifierNode: any;
     public readonly binding: BindingIdentifierNode;
     public constructor(range: Range, binding: BindingIdentifierNode) {
         super(range,"ImportSpecifier");
@@ -348,7 +348,7 @@ export class ImportSpecifierNode extends ASTNode {
 }
 
 export class ImportAsSpecifierNode extends ASTNode {
-    _nominal_type_ImportAsSpecifierNode: any;
+    public _type_ImportAsSpecifierNode: any;
     public readonly name: IdentifierNode;
     public readonly binding: BindingIdentifierNode;
     public constructor(range: Range, name: IdentifierNode, binding: BindingIdentifierNode) {
@@ -370,7 +370,7 @@ export class ImportAsSpecifierNode extends ASTNode {
 // ES6 Section 15.2.3: Exports
 
 export class ExportsListNode extends ASTNode {
-    _nominal_type_ExportsListNode: any;
+    public _type_ExportsListNode: any;
     public readonly elements: ExportsListItemType[];
     public constructor(range: Range, elements: ExportsListItemType[]) {
         super(range,"[]");
@@ -389,7 +389,7 @@ export class ExportsListNode extends ASTNode {
 }
 
 export abstract class ExportNode extends ASTNode {
-    _nominal_type_ExportNode: any;
+    public _type_ExportNode: any;
     public static fromGeneric(node: ASTNode | null): ExportNode {
         if (node === null)
             throw new CannotConvertError("ExportClauseNode",node);
@@ -434,7 +434,7 @@ const DeclarationOrExpressionType = {
 };
 
 export class ExportDefaultNode extends ExportNode {
-    _nominal_type_ExportDefaultNode: any;
+    public _type_ExportDefaultNode: any;
     public readonly decl: DeclarationOrExpressionType;
     public constructor(range: Range, decl: DeclarationOrExpressionType) {
         super(range,"ExportDefault");
@@ -451,7 +451,7 @@ export class ExportDefaultNode extends ExportNode {
 }
 
 export class ExportStarNode extends ExportNode {
-    _nominal_type_ExportStarNode: any;
+    public _type_ExportStarNode: any;
     public readonly from: StringLiteralNode;
     public constructor(range: Range, from: StringLiteralNode) {
         super(range,"ExportStar");
@@ -468,7 +468,7 @@ export class ExportStarNode extends ExportNode {
 }
 
 export class ExportPlainNode extends ExportNode {
-    _nominal_type_ExportPlainNode: any;
+    public _type_ExportPlainNode: any;
     public readonly clause: ExportClauseNode;
     public constructor(range: Range, clause: ExportClauseNode) {
         super(range,"ExportPlain");
@@ -485,7 +485,7 @@ export class ExportPlainNode extends ExportNode {
 }
 
 export class ExportVariableNode extends ExportNode {
-    _nominal_type_ExportVariableNode: any;
+    public _type_ExportVariableNode: any;
     public readonly variable: VarNode;
     public constructor(range: Range, variable: VarNode) {
         super(range,"ExportVariable");
@@ -502,7 +502,7 @@ export class ExportVariableNode extends ExportNode {
 }
 
 export class ExportDeclarationNode extends ExportNode {
-    _nominal_type_ExportDeclarationNode: any;
+    public _type_ExportDeclarationNode: any;
     public readonly decl: DeclarationNode;
     public constructor(range: Range, decl: DeclarationNode) {
         super(range,"ExportDeclaration");
@@ -519,7 +519,7 @@ export class ExportDeclarationNode extends ExportNode {
 }
 
 export class ExportFromNode extends ExportNode {
-    _nominal_type_ExportFromNode: any;
+    public _type_ExportFromNode: any;
     public readonly exportClause: ExportClauseNode;
     public readonly fromClause: StringLiteralNode;
     public constructor(
@@ -543,7 +543,7 @@ export class ExportFromNode extends ExportNode {
 }
 
 export class ExportClauseNode extends ExportNode {
-    _nominal_type_ExportClauseNode: any;
+    public _type_ExportClauseNode: any;
     public readonly items: ExportsListNode;
     public constructor(range: Range, items: ExportsListNode) {
         super(range,"ExportClause");
@@ -560,7 +560,7 @@ export class ExportClauseNode extends ExportNode {
 }
 
 export class ExportNormalSpecifierNode extends ASTNode {
-    _nominal_type_ExportNormalSpecifierNode: any;
+    public _type_ExportNormalSpecifierNode: any;
     public readonly ident: IdentifierNode;
     public constructor(range: Range, ident: IdentifierNode) {
         super(range,"ExportNormalSpecifier");
@@ -577,7 +577,7 @@ export class ExportNormalSpecifierNode extends ASTNode {
 }
 
 export class ExportAsSpecifierNode extends ASTNode {
-    _nominal_type_ExportAsSpecifierNode: any;
+    public _type_ExportAsSpecifierNode: any;
     public readonly ident: IdentifierNode;
     public readonly asIdent: IdentifierNode;
     public constructor(range: Range, ident: IdentifierNode, asIdent: IdentifierNode) {

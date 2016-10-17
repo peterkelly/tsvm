@@ -45,15 +45,15 @@ export abstract class ASTNode {
 }
 
 export abstract class ExpressionNode extends ASTNode {
-    _nominal_type_ExpressionNode: any;
+    public _type_ExpressionNode: any;
 }
 
 export abstract class DeclarationNode extends ASTNode {
-    _nominal_type_DeclarationNode: any;
+    public _type_DeclarationNode: any;
 }
 
 export class BindingIdentifierNode extends ASTNode {
-    _nominal_type_BindingIdentifierNode: any;
+    public _type_BindingIdentifierNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"BindingIdentifier");
@@ -74,7 +74,7 @@ export class BindingIdentifierNode extends ASTNode {
 }
 
 export class IdentifierNode extends ASTNode {
-    _nominal_type_IdentifierNode: any;
+    public _type_IdentifierNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"Identifier");
@@ -95,7 +95,7 @@ export class IdentifierNode extends ASTNode {
 }
 
 export class ListNode extends ASTNode {
-    _nominal_type_ListNode: any;
+    public _type_ListNode: any;
     public readonly elements: ASTNode[];
     public constructor(range: Range, elements: ASTNode[]) {
         super(range,"[]");
@@ -110,7 +110,7 @@ export class ListNode extends ASTNode {
 }
 
 export class ErrorNode extends ASTNode {
-    _nominal_type_ErrorNode: any;
+    public _type_ErrorNode: any;
     public readonly message: string;
     public constructor(range: Range, message: string) {
         super(range,"Error");
@@ -128,7 +128,7 @@ export class ErrorNode extends ASTNode {
 }
 
 export class GenericNode extends ASTNode {
-    _nominal_type_GenericNode: any ;
+    public _type_GenericNode: any ;
     public readonly _children: ASTNode[];
     public readonly value: any;
     public constructor(range: Range, kind: string, children: any[], value?: any) {
@@ -150,7 +150,7 @@ export class GenericNode extends ASTNode {
 }
 
 export class GenericStringNode extends ASTNode {
-    _nominal_type_GenericStringNode: any;
+    public _type_GenericStringNode: any;
     public readonly value: string;
     public readonly raw: boolean;
     public constructor(range: Range, kind: string, value: string, raw: boolean = false) {
@@ -170,7 +170,7 @@ export class GenericStringNode extends ASTNode {
 }
 
 export class GenericNumberNode extends ASTNode {
-    _nominal_type_GenericNumberNode: any;
+    public _type_GenericNumberNode: any;
     public readonly value: number;
     public constructor(range: Range, kind: string, value: number) {
         super(range,kind);
