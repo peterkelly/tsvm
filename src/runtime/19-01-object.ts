@@ -62,11 +62,11 @@ import {
 } from "./21-02-regexp";
 
 export class ObjectObject extends JSObject {
-    _nominal_type_ObjectObject: any;
+    public _type_ObjectObject: any;
 }
 
 export class ObjectConstructor extends JSObject {
-    _nominal_type_ObjectConstructor: any;
+    public _type_ObjectConstructor: any;
 }
 
 // ES6 Section 19.1.3.2: Object.prototype.hasOwnProperty ( V )

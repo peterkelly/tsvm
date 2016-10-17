@@ -21,7 +21,7 @@ import {
 } from "./datatypes";
 
 export class SymbolObject extends JSObject {
-    _nominal_type_SymbolObject: any;
+    public _type_SymbolObject: any;
     public symbolData: JSSymbol;
     public constructor(prototype: JSObject | JSNull, symbolData: JSSymbol) {
         super(prototype);
@@ -30,5 +30,5 @@ export class SymbolObject extends JSObject {
 }
 
 export class SymbolConstructor extends JSObject {
-    _nominal_type_SymbolConstructor: any;
+    public _type_SymbolConstructor: any;
 }

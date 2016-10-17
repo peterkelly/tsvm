@@ -19,9 +19,9 @@ import {
 } from "./datatypes";
 
 export class FunctionObject extends JSObject {
-    _nominal_type_FunctionObject: any;
+    public _type_FunctionObject: any;
 }
 
 export class FunctionConstructor extends JSObject {
-    _nominal_type_FunctionConstructor: any;
+    public _type_FunctionConstructor: any;
 }

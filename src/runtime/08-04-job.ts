@@ -75,7 +75,7 @@ import * as bi from "./builtins";
 // ES6 Section 8.4: Jobs and Job Queues
 
 export class PendingJob {
-    _nominal_type_PendingJob: any;
+    public _type_PendingJob: any;
     public job: string;
     public arguments: JSValue[];
     public realm: Realm;

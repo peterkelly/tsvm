@@ -187,7 +187,7 @@ export const CaseClauseListItemType = {
 // ES6 Chapter 13: ECMAScript Language: Statements and Declarations
 
 export abstract class StatementNode extends ASTNode {
-    _nominal_type_StatementNode: any;
+    public _type_StatementNode: any;
     public static fromGeneric(node: ASTNode | null): StatementNode {
         if (node === null)
             throw new CannotConvertError("StatementNode",node);
@@ -237,7 +237,7 @@ export abstract class StatementNode extends ASTNode {
 }
 
 export class StatementListNode extends ASTNode {
-    _nominal_type_StatementListNode: any;
+    public _type_StatementListNode: any;
     public readonly elements: StatementListItemType[];
     public constructor(range: Range, elements: StatementListItemType[]) {
         super(range,"[]");
@@ -256,7 +256,7 @@ export class StatementListNode extends ASTNode {
 }
 
 export class LabelIdentifierNode extends ASTNode {
-    _nominal_type_LabelIdentifierNode: any;
+    public _type_LabelIdentifierNode: any;
     public readonly value: string;
     public constructor(range: Range, value: string) {
         super(range,"LabelIdentifier");
@@ -277,7 +277,7 @@ export class LabelIdentifierNode extends ASTNode {
 }
 
 export abstract class BreakableStatementNode extends StatementNode {
-    _nominal_type_BreakableStatementNode: any;
+    public _type_BreakableStatementNode: any;
     public static fromGeneric(node: ASTNode | null): BreakableStatementNode {
         throw new Error("BreakableStatementNode.fromGeneric not implemented");
     }
@@ -288,7 +288,7 @@ export abstract class BreakableStatementNode extends StatementNode {
 // ES6 Section 13.2: Block
 
 export class BlockNode extends StatementNode {
-    _nominal_type_BlockNode: any;
+    public _type_BlockNode: any;
     public statements: StatementListNode;
     public constructor(range: Range, statements: StatementListNode) {
         super(range,"Block");
@@ -309,7 +309,7 @@ export class BlockNode extends StatementNode {
 // ES6 Section 13.3.1: Let and Const Declarations
 
 export class BindingListNode extends ASTNode {
-    _nominal_type_BindingListNode: any;
+    public _type_BindingListNode: any;
     public readonly elements: LexicalBindingNode[];
     public constructor(range: Range, elements: LexicalBindingNode[]) {
         super(range,"[]");
@@ -328,7 +328,7 @@ export class BindingListNode extends ASTNode {
 }
 
 export class LetNode extends DeclarationNode {
-    _nominal_type_LetNode: any;
+    public _type_LetNode: any;
     public bindings: BindingListNode;
     public constructor(range: Range, bindings: BindingListNode) {
         super(range,"Let");
@@ -345,7 +345,7 @@ export class LetNode extends DeclarationNode {
 }
 
 export class ConstNode extends DeclarationNode {
-    _nominal_type_ConstNode: any;
+    public _type_ConstNode: any;
     public bindings: BindingListNode;
     public constructor(range: Range, bindings: BindingListNode) {
         super(range,"Const");
@@ -362,7 +362,7 @@ export class ConstNode extends DeclarationNode {
 }
 
 export abstract class LexicalBindingNode extends ASTNode {
-    _nominal_type_LexicalBindingNode: any;
+    public _type_LexicalBindingNode: any;
     public static fromGeneric(node: ASTNode | null): LexicalBindingNode {
         if (node === null)
             throw new CannotConvertError("LexicalBindingNode",node);
@@ -378,7 +378,7 @@ export abstract class LexicalBindingNode extends ASTNode {
 }
 
 export class LexicalIdentifierBindingNode extends LexicalBindingNode {
-    _nominal_type_LexicalIdentifierBindingNode: any;
+    public _type_LexicalIdentifierBindingNode: any;
     public identifier: BindingIdentifierNode;
     public initializer: ExpressionNode | null;
     public constructor(
@@ -402,7 +402,7 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
 }
 
 export class LexicalPatternBindingNode extends LexicalBindingNode {
-    _nominal_type_LexicalPatternBindingNode: any;
+    public _type_LexicalPatternBindingNode: any;
     public pattern: BindingPatternNode;
     public initializer: ExpressionNode;
     public constructor(
@@ -428,7 +428,7 @@ export class LexicalPatternBindingNode extends LexicalBindingNode {
 // ES6 Section 13.3.2: Variable Statement
 
 export class VariableDeclarationListNode extends ASTNode {
-    _nominal_type_VariableDeclarationListNode: any;
+    public _type_VariableDeclarationListNode: any;
     public readonly elements: VariableDeclarationListItemType[];
     public constructor(range: Range, elements: VariableDeclarationListItemType[]) {
         super(range,"[]");
@@ -447,7 +447,7 @@ export class VariableDeclarationListNode extends ASTNode {
 }
 
 export class VarNode extends StatementNode {
-    _nominal_type_VarNode: any;
+    public _type_VarNode: any;
     public declarations: VariableDeclarationListNode;
     public constructor(range: Range, declarations: VariableDeclarationListNode) {
         super(range,"Var");
@@ -464,7 +464,7 @@ export class VarNode extends StatementNode {
 }
 
 export class VarIdentifierNode extends ASTNode {
-    _nominal_type_VarIdentifierNode: any;
+    public _type_VarIdentifierNode: any;
     public identifier: BindingIdentifierNode;
     public initializer: ExpressionNode | null;
     public constructor(
@@ -488,7 +488,7 @@ export class VarIdentifierNode extends ASTNode {
 }
 
 export class VarPatternNode extends ASTNode {
-    _nominal_type_VarPatternNode: any;
+    public _type_VarPatternNode: any;
     public pattern: BindingPatternNode;
     public initializer: ExpressionNode;
     public constructor(
@@ -514,7 +514,7 @@ export class VarPatternNode extends ASTNode {
 // ES6 Section 13.3.3: Destructuring Binding Patterns
 
 export class BindingPropertyListNode extends ASTNode {
-    _nominal_type_BindingPropertyListNode: any;
+    public _type_BindingPropertyListNode: any;
     public readonly elements: BindingPropertyType[];
     public constructor(range: Range, elements: BindingPropertyType[]) {
         super(range,"[]");
@@ -533,7 +533,7 @@ export class BindingPropertyListNode extends ASTNode {
 }
 
 export abstract class BindingPatternNode extends ASTNode {
-    _nominal_type_BindingPatternNode: any;
+    public _type_BindingPatternNode: any;
     public static fromGeneric(node: ASTNode | null): BindingPatternNode {
         if (node === null)
             throw new CannotConvertError("BindingPatternNode",node);
@@ -549,7 +549,7 @@ export abstract class BindingPatternNode extends ASTNode {
 }
 
 export class ObjectBindingPatternNode extends BindingPatternNode {
-    _nominal_type_ObjectBindingPatternNode: any;
+    public _type_ObjectBindingPatternNode: any;
     public readonly properties: BindingPropertyListNode;
     public constructor(range: Range, properties: BindingPropertyListNode) {
         super(range,"ObjectBindingPattern");
@@ -566,7 +566,7 @@ export class ObjectBindingPatternNode extends BindingPatternNode {
 }
 
 export class BindingElementListNode extends ASTNode {
-    _nominal_type_BindingElementListNode: any;
+    public _type_BindingElementListNode: any;
     public readonly elements: BindingElementType[];
     public constructor(range: Range, elements: BindingElementType[]) {
         super(range,"[]");
@@ -608,7 +608,7 @@ export class ArrayBindingPatternNode extends BindingPatternNode {
 }
 
 export class BindingPropertyNode extends ASTNode {
-    _nominal_type_BindingPropertyNode: any;
+    public _type_BindingPropertyNode: any;
     public readonly name: PropertyNameType;
     public readonly element: BindingElementType;
     public constructor(range: Range, name: PropertyNameType, element: BindingElementType) {
@@ -628,7 +628,7 @@ export class BindingPropertyNode extends ASTNode {
 }
 
 export class BindingPatternInitNode extends ASTNode {
-    _nominal_type_BindingPatternInitNode: any;
+    public _type_BindingPatternInitNode: any;
     public readonly pattern: BindingPatternNode;
     public readonly init: ExpressionNode;
     public constructor(
@@ -652,7 +652,7 @@ export class BindingPatternInitNode extends ASTNode {
 }
 
 export class SingleNameBindingNode extends ASTNode {
-    _nominal_type_SingleNameBindingNode: any;
+    public _type_SingleNameBindingNode: any;
     public readonly ident: BindingIdentifierNode;
     public readonly init: ExpressionNode;
     public constructor(range: Range, ident: BindingIdentifierNode, init: ExpressionNode) {
@@ -672,7 +672,7 @@ export class SingleNameBindingNode extends ASTNode {
 }
 
 export class BindingRestElementNode extends ASTNode {
-    _nominal_type_BindingRestElementNode: any;
+    public _type_BindingRestElementNode: any;
     public readonly ident: BindingIdentifierNode;
     public constructor(range: Range, ident: BindingIdentifierNode) {
         super(range,"BindingRestElement");
@@ -691,7 +691,7 @@ export class BindingRestElementNode extends ASTNode {
 // ES6 Section 13.4: Empty Statement
 
 export class EmptyStatementNode extends StatementNode {
-    _nominal_type_EmptyStatementNode: any;
+    public _type_EmptyStatementNode: any;
     public constructor(range: Range) {
         super(range,"EmptyStatement");
     }
@@ -707,7 +707,7 @@ export class EmptyStatementNode extends StatementNode {
 // ES6 Section 13.5: Expression Statement
 
 export class ExpressionStatementNode extends StatementNode {
-    _nominal_type_ExpressionStatementNode: any;
+    public _type_ExpressionStatementNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"ExpressionStatement");
@@ -726,7 +726,7 @@ export class ExpressionStatementNode extends StatementNode {
 // ES6 Section 13.6: The if Statement
 
 export class IfStatementNode extends StatementNode {
-    _nominal_type_IfStatementNode: any;
+    public _type_IfStatementNode: any;
     public readonly condition: ExpressionNode;
     public readonly trueBranch: StatementNode;
     public readonly falseBranch: StatementNode | null;
@@ -760,7 +760,7 @@ export class IfStatementNode extends StatementNode {
 // ES6 Section 13.7.2: The do-while Statement
 
 export class DoStatementNode extends BreakableStatementNode {
-    _nominal_type_DoStatementNode: any;
+    public _type_DoStatementNode: any;
     public readonly body: StatementNode;
     public readonly condition: ExpressionNode;
     public constructor(range: Range, body: StatementNode, condition: ExpressionNode) {
@@ -782,7 +782,7 @@ export class DoStatementNode extends BreakableStatementNode {
 // ES6 Section 13.7.3: The while Statement
 
 export class WhileStatementNode extends BreakableStatementNode {
-    _nominal_type_WhileStatementNode: any;
+    public _type_WhileStatementNode: any;
     public readonly condition: ExpressionNode;
     public readonly body: StatementNode;
     public constructor(range: Range, condition: ExpressionNode, body: StatementNode) {
@@ -804,7 +804,7 @@ export class WhileStatementNode extends BreakableStatementNode {
 // ES6 Section 13.7.4: The for Statement
 
 export class ForCNode extends BreakableStatementNode {
-    _nominal_type_ForCNode: any;
+    public _type_ForCNode: any;
     public readonly init: ForCInitType;
     public readonly condition: ExpressionNode | null;
     public readonly update: ExpressionNode | null;
@@ -838,7 +838,7 @@ export class ForCNode extends BreakableStatementNode {
 // ES6 Section 13.7.5: The for-in and for-of Statements
 
 export class ForInNode extends BreakableStatementNode {
-    _nominal_type_ForInNode: any;
+    public _type_ForInNode: any;
     public readonly binding: ForInBindingType;
     public readonly expr: ExpressionNode;
     public readonly body: StatementNode;
@@ -866,7 +866,7 @@ export class ForInNode extends BreakableStatementNode {
 }
 
 export class ForOfNode extends BreakableStatementNode {
-    _nominal_type_ForOfNode: any;
+    public _type_ForOfNode: any;
     public readonly binding: ForOfBindingType;
     public readonly expr: ExpressionNode;
     public readonly body: StatementNode;
@@ -894,7 +894,7 @@ export class ForOfNode extends BreakableStatementNode {
 }
 
 export class VarForDeclarationNode extends ASTNode {
-    _nominal_type_VarForDeclarationNode: any;
+    public _type_VarForDeclarationNode: any;
     public readonly binding: ForBindingType;
     public constructor(range: Range, binding: ForBindingType) {
         super(range,"VarForDeclaration");
@@ -911,7 +911,7 @@ export class VarForDeclarationNode extends ASTNode {
 }
 
 export class LetForDeclarationNode extends ASTNode {
-    _nominal_type_LetForDeclarationNode: any;
+    public _type_LetForDeclarationNode: any;
     public readonly binding: ForBindingType;
     public constructor(range: Range, binding: ForBindingType) {
         super(range,"LetForDeclaration");
@@ -928,7 +928,7 @@ export class LetForDeclarationNode extends ASTNode {
 }
 
 export class ConstForDeclarationNode extends ASTNode {
-    _nominal_type_ConstForDeclarationNode: any;
+    public _type_ConstForDeclarationNode: any;
     public readonly binding: ForBindingType;
     public constructor(range: Range, binding: ForBindingType) {
         super(range,"ConstForDeclaration");
@@ -947,7 +947,7 @@ export class ConstForDeclarationNode extends ASTNode {
 // ES6 Section 13.8: The continue Statement
 
 export class ContinueStatementNode extends StatementNode {
-    _nominal_type_ContinueStatementNode: any;
+    public _type_ContinueStatementNode: any;
     public readonly labelIdentifier: LabelIdentifierNode | null;
     public constructor(range: Range, labelIdentifier: LabelIdentifierNode | null) {
         super(range,"ContinueStatement");
@@ -966,7 +966,7 @@ export class ContinueStatementNode extends StatementNode {
 // ES6 Section 13.9: The break Statement
 
 export class BreakStatementNode extends StatementNode {
-    _nominal_type_BreakStatementNode: any;
+    public _type_BreakStatementNode: any;
     public readonly labelIdentifier: LabelIdentifierNode | null;
     public constructor(range: Range, labelIdentifier: LabelIdentifierNode | null) {
         super(range,"BreakStatement");
@@ -985,7 +985,7 @@ export class BreakStatementNode extends StatementNode {
 // ES6 Section 13.10: The return Statement
 
 export class ReturnStatementNode extends StatementNode {
-    _nominal_type_ReturnStatementNode: any;
+    public _type_ReturnStatementNode: any;
     public readonly expr: ExpressionNode | null;
     public constructor(range: Range, expr: ExpressionNode | null) {
         super(range,"ReturnStatement");
@@ -1004,7 +1004,7 @@ export class ReturnStatementNode extends StatementNode {
 // ES6 Section 13.11: The with Statement
 
 export class WithStatementNode extends StatementNode {
-    _nominal_type_WithStatementNode: any;
+    public _type_WithStatementNode: any;
     public expr: ExpressionNode;
     public body: StatementNode;
     public constructor(range: Range, expr: ExpressionNode, body: StatementNode) {
@@ -1026,7 +1026,7 @@ export class WithStatementNode extends StatementNode {
 // ES6 Section 13.12: The switch Statement
 
 export class SwitchStatementNode extends BreakableStatementNode {
-    _nominal_type_SwitchStatementNode: any;
+    public _type_SwitchStatementNode: any;
     public readonly expr: ExpressionNode;
     public readonly cases: CaseBlockNode;
     public constructor(range: Range, expr: ExpressionNode, cases: CaseBlockNode) {
@@ -1046,7 +1046,7 @@ export class SwitchStatementNode extends BreakableStatementNode {
 }
 
 export class CaseClauseListNode extends ASTNode {
-    _nominal_type_CaseClauseListNode: any;
+    public _type_CaseClauseListNode: any;
     public readonly elements: CaseClauseListItemType[];
     public constructor(range: Range, elements: CaseClauseListItemType[]) {
         super(range,"[]");
@@ -1065,7 +1065,7 @@ export class CaseClauseListNode extends ASTNode {
 }
 
 export abstract class CaseBlockNode extends ASTNode {
-    _nominal_type_CaseBlockNode: any;
+    public _type_CaseBlockNode: any;
     public static fromGeneric(node: ASTNode | null): CaseBlockNode {
         if (node === null)
             throw new CannotConvertError("CaseBlockNode",node);
@@ -1081,7 +1081,7 @@ export abstract class CaseBlockNode extends ASTNode {
 };
 
 export class CaseBlock1Node extends CaseBlockNode {
-    _nominal_type_CaseBlock1Node: any;
+    public _type_CaseBlock1Node: any;
     public caseClauses: CaseClauseListNode;
     public constructor(range: Range, caseClauses: CaseClauseListNode) {
         super(range,"CaseBlock1");
@@ -1098,7 +1098,7 @@ export class CaseBlock1Node extends CaseBlockNode {
 }
 
 export class CaseBlock2Node extends CaseBlockNode {
-    _nominal_type_CaseBlock2Node: any;
+    public _type_CaseBlock2Node: any;
     public caseClauses1: CaseClauseListNode | null;
     public defaultClause: DefaultClauseNode;
     public caseClauses2: CaseClauseListNode | null;
@@ -1127,7 +1127,7 @@ export class CaseBlock2Node extends CaseBlockNode {
 }
 
 export class CaseClauseNode extends ASTNode {
-    _nominal_type_CaseClauseNode: any;
+    public _type_CaseClauseNode: any;
     public readonly expr: ExpressionNode;
     public readonly statements: StatementListNode;
     public constructor(range: Range, expr: ExpressionNode, statements: StatementListNode) {
@@ -1147,7 +1147,7 @@ export class CaseClauseNode extends ASTNode {
 }
 
 export class DefaultClauseNode extends ASTNode {
-    _nominal_type_DefaultClauseNode: any;
+    public _type_DefaultClauseNode: any;
     public readonly statements: StatementListNode;
     public constructor(range: Range, statements: StatementListNode) {
         super(range,"DefaultClause");
@@ -1175,7 +1175,7 @@ const LabelledStatementItemType = {
 };
 
 export class LabelledStatementNode extends StatementNode {
-    _nominal_type_LabelledStatementNode: any;
+    public _type_LabelledStatementNode: any;
     public readonly ident: LabelIdentifierNode;
     public readonly item: LabelledStatementItemType;
     public constructor(
@@ -1201,7 +1201,7 @@ export class LabelledStatementNode extends StatementNode {
 // ES6 Section 13.14: The throw Statement
 
 export class ThrowStatementNode extends StatementNode {
-    _nominal_type_ThrowStatementNode: any;
+    public _type_ThrowStatementNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"ThrowStatement");
@@ -1220,7 +1220,7 @@ export class ThrowStatementNode extends StatementNode {
 // ES6 Section 13.15: The try Statement
 
 export class TryStatementNode extends StatementNode {
-    _nominal_type_TryStatementNode: any;
+    public _type_TryStatementNode: any;
     public tryNode: BlockNode;
     public catchNode: CatchNode | null;
     public finallyNode: FinallyNode | null;
@@ -1248,7 +1248,7 @@ export class TryStatementNode extends StatementNode {
 }
 
 export class CatchNode extends ASTNode {
-    _nominal_type_CatchNode: any;
+    public _type_CatchNode: any;
     public readonly param: CatchParameterType;
     public readonly block: BlockNode;
     public constructor(range: Range, param: CatchParameterType, block: BlockNode) {
@@ -1268,7 +1268,7 @@ export class CatchNode extends ASTNode {
 }
 
 export class FinallyNode extends ASTNode {
-    _nominal_type_FinallyNode: any;
+    public _type_FinallyNode: any;
     public readonly block: BlockNode;
     public constructor(range: Range, block: BlockNode) {
         super(range,"Finally");
@@ -1287,7 +1287,7 @@ export class FinallyNode extends ASTNode {
 // ES6 Section 13.16: The debugger statement
 
 export class DebuggerStatementNode extends StatementNode {
-    _nominal_type_DebuggerStatementNode: any;
+    public _type_DebuggerStatementNode: any;
     public constructor(range: Range) {
         super(range,"DebuggerStatement");
     }

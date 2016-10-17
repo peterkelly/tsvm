@@ -66,7 +66,7 @@ export const FormalParameterListItemType = {
 // ES6 Section 14.1: Function Definitions
 
 export class FormalParameterListNode extends ASTNode {
-    _nominal_type_FormalParameterListNode: any;
+    public _type_FormalParameterListNode: any;
     public readonly elements: FormalParameterListItemType[];
     public constructor(range: Range, elements: FormalParameterListItemType[]) {
         super(range,"[]");
@@ -85,7 +85,7 @@ export class FormalParameterListNode extends ASTNode {
 }
 
 export class FunctionDeclarationNode extends DeclarationNode {
-    _nominal_type_FunctionDeclarationNode: any;
+    public _type_FunctionDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -113,7 +113,7 @@ export class FunctionDeclarationNode extends DeclarationNode {
 }
 
 export class FunctionExpressionNode extends ExpressionNode {
-    _nominal_type_FunctionExpressionNode: any;
+    public _type_FunctionExpressionNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -141,7 +141,7 @@ export class FunctionExpressionNode extends ExpressionNode {
 }
 
 export abstract class FormalParametersNode extends ASTNode {
-    _nominal_type_FormalParametersNode: any;
+    public _type_FormalParametersNode: any;
     public static fromGeneric(node: ASTNode | null): FormalParametersNode {
         if (node === null)
             throw new CannotConvertError("FormalParametersNode",node);
@@ -161,7 +161,7 @@ export abstract class FormalParametersNode extends ASTNode {
 }
 
 export class FormalParameters1Node extends FormalParametersNode {
-    _nominal_type_FormalParameters1Node: any;
+    public _type_FormalParameters1Node: any;
     public constructor(range: Range) {
         super(range,"FormalParameters1");
     }
@@ -175,7 +175,7 @@ export class FormalParameters1Node extends FormalParametersNode {
 }
 
 export class FormalParameters2Node extends FormalParametersNode {
-    _nominal_type_FormalParameters2Node: any;
+    public _type_FormalParameters2Node: any;
     public readonly rest: BindingRestElementNode;
     public constructor(range: Range, rest: BindingRestElementNode) {
         super(range,"FormalParameters2");
@@ -192,7 +192,7 @@ export class FormalParameters2Node extends FormalParametersNode {
 }
 
 export class FormalParameters3Node extends FormalParametersNode {
-    _nominal_type_FormalParameters3Node: any;
+    public _type_FormalParameters3Node: any;
     public readonly elements: FormalParameterListNode;
     public constructor(range: Range, elements: FormalParameterListNode) {
         super(range,"FormalParameters3");
@@ -209,7 +209,7 @@ export class FormalParameters3Node extends FormalParametersNode {
 }
 
 export class FormalParameters4Node extends FormalParametersNode {
-    _nominal_type_FormalParameters4Node: any;
+    public _type_FormalParameters4Node: any;
     public readonly elements: FormalParameterListNode;
     public readonly rest: BindingRestElementNode;
     public constructor(range: Range, elements: FormalParameterListNode, rest: BindingRestElementNode) {
@@ -249,7 +249,7 @@ const ArrowFunctionBodyType = {
 };
 
 export class ArrowFunctionNode extends ExpressionNode {
-    _nominal_type_ArrowFunctionNode: any;
+    public _type_ArrowFunctionNode: any;
     public readonly params: ArrowFunctionParamsType;
     public readonly body: ArrowFunctionBodyType;
     public constructor(
@@ -275,7 +275,7 @@ export class ArrowFunctionNode extends ExpressionNode {
 // ES6 Section 14.3: Method Definitions
 
 export abstract class MethodDefinitionNode extends ASTNode {
-    _nominal_type_MethodDefinitionNode: any;
+    public _type_MethodDefinitionNode: any;
     public static fromGeneric(node: ASTNode | null): MethodDefinitionNode {
         if (node === null)
             throw new CannotConvertError("MethodDefinitionNode",node);
@@ -295,7 +295,7 @@ export abstract class MethodDefinitionNode extends ASTNode {
 }
 
 export class MethodNode extends MethodDefinitionNode {
-    _nominal_type_MethodNode: any;
+    public _type_MethodNode: any;
     public readonly name: PropertyNameType;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -323,7 +323,7 @@ export class MethodNode extends MethodDefinitionNode {
 }
 
 export class GetterNode extends MethodDefinitionNode {
-    _nominal_type_GetterNode: any;
+    public _type_GetterNode: any;
     public readonly name: PropertyNameType;
     public readonly body: StatementListNode;
     public constructor(range: Range, name: PropertyNameType, body: StatementListNode) {
@@ -343,7 +343,7 @@ export class GetterNode extends MethodDefinitionNode {
 }
 
 export class SetterNode extends MethodDefinitionNode {
-    _nominal_type_SetterNode: any;
+    public _type_SetterNode: any;
     public readonly name: PropertyNameType;
     public readonly param: BindingElementType;
     public readonly body: StatementListNode;
@@ -373,7 +373,7 @@ export class SetterNode extends MethodDefinitionNode {
 // ES6 Section 14.4: Generator Function Definitions
 
 export class GeneratorMethodNode extends MethodDefinitionNode {
-    _nominal_type_GeneratorMethodNode: any;
+    public _type_GeneratorMethodNode: any;
     public readonly name: PropertyNameType;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -401,7 +401,7 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
 }
 
 export class GeneratorDeclarationNode extends DeclarationNode {
-    _nominal_type_GeneratorDeclarationNode: any;
+    public _type_GeneratorDeclarationNode: any;
     public readonly ident: BindingIdentifierNode;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -429,7 +429,7 @@ export class GeneratorDeclarationNode extends DeclarationNode {
 }
 
 export class DefaultGeneratorDeclarationNode extends DeclarationNode {
-    _nominal_type_DefaultGeneratorDeclarationNode: any;
+    public _type_DefaultGeneratorDeclarationNode: any;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
     public constructor(range: Range, params: FormalParametersNode, body: StatementListNode) {
@@ -449,7 +449,7 @@ export class DefaultGeneratorDeclarationNode extends DeclarationNode {
 }
 
 export class GeneratorExpressionNode extends ExpressionNode {
-    _nominal_type_GeneratorExpressionNode: any;
+    public _type_GeneratorExpressionNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -477,7 +477,7 @@ export class GeneratorExpressionNode extends ExpressionNode {
 }
 
 export class YieldExprNode extends ExpressionNode {
-    _nominal_type_YieldExprNode: any;
+    public _type_YieldExprNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"YieldExpr");
@@ -494,7 +494,7 @@ export class YieldExprNode extends ExpressionNode {
 }
 
 export class YieldStarNode extends ExpressionNode {
-    _nominal_type_YieldStarNode: any;
+    public _type_YieldStarNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"YieldStar");
@@ -511,7 +511,7 @@ export class YieldStarNode extends ExpressionNode {
 }
 
 export class YieldNothingNode extends ExpressionNode {
-    _nominal_type_YieldNothingNode: any;
+    public _type_YieldNothingNode: any;
     public constructor(range: Range) {
         super(range,"YieldNothing");
     }
@@ -527,7 +527,7 @@ export class YieldNothingNode extends ExpressionNode {
 // ES6 Section 14.5: Class Definitions
 
 export class ClassElementListNode extends ASTNode {
-    _nominal_type_ClassElementListNode: any;
+    public _type_ClassElementListNode: any;
     public readonly elements: ClassElementType[];
     public constructor(range: Range, elements: ClassElementType[]) {
         super(range,"[]");
@@ -546,7 +546,7 @@ export class ClassElementListNode extends ASTNode {
 }
 
 export class ClassDeclarationNode extends DeclarationNode {
-    _nominal_type_ClassDeclarationNode: any;
+    public _type_ClassDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly tail: ClassTailNode;
     public constructor(range: Range, ident: BindingIdentifierNode | null, tail: ClassTailNode) {
@@ -566,7 +566,7 @@ export class ClassDeclarationNode extends DeclarationNode {
 }
 
 export class ClassExpressionNode extends ExpressionNode {
-    _nominal_type_ClassExpressionNode: any;
+    public _type_ClassExpressionNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly tail: ClassTailNode;
     public constructor(range: Range, ident: BindingIdentifierNode | null, tail: ClassTailNode) {
@@ -586,7 +586,7 @@ export class ClassExpressionNode extends ExpressionNode {
 }
 
 export class ClassTailNode extends ASTNode {
-    _nominal_type_ClassTailNode: any;
+    public _type_ClassTailNode: any;
     public readonly heritage: ExtendsNode | null;
     public readonly body: ClassElementListNode;
     public constructor(range: Range, heritage: ExtendsNode | null, body: ClassElementListNode) {
@@ -606,7 +606,7 @@ export class ClassTailNode extends ASTNode {
 }
 
 export class ExtendsNode extends ASTNode {
-    _nominal_type_ExtendsNode: any;
+    public _type_ExtendsNode: any;
     public readonly expr: ExpressionNode;
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"Extends");
@@ -623,7 +623,7 @@ export class ExtendsNode extends ASTNode {
 }
 
 export class StaticMethodDefinitionNode extends ASTNode {
-    _nominal_type_StaticMethodDefinitionNode: any;
+    public _type_StaticMethodDefinitionNode: any;
     public readonly method: MethodDefinitionNode;
     public constructor(range: Range, method: MethodDefinitionNode) {
         super(range,"StaticMethodDefinition");
@@ -640,7 +640,7 @@ export class StaticMethodDefinitionNode extends ASTNode {
 }
 
 export class EmptyClassElementNode extends ASTNode {
-    _nominal_type_EmptyClassElementNode: any;
+    public _type_EmptyClassElementNode: any;
     public constructor(range: Range) {
         super(range,"EmptyClassElement");
     }

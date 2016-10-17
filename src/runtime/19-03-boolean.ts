@@ -21,7 +21,7 @@ import {
 } from "./datatypes";
 
 export class BooleanObject extends JSObject {
-    _nominal_type_BooleanObject: any;
+    public _type_BooleanObject: any;
     public booleanData: JSBoolean;
     public constructor(prototype: JSObject | JSNull, booleanData: JSBoolean) {
         super(prototype);
@@ -30,5 +30,5 @@ export class BooleanObject extends JSObject {
 }
 
 export class BooleanConstructor extends JSObject {
-    _nominal_type_BooleanConstructor: any;
+    public _type_BooleanConstructor: any;
 }

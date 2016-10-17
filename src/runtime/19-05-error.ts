@@ -33,7 +33,7 @@ import {
 } from "./07-03-objects";
 
 export class ErrorObject extends JSObject {
-    _nominal_type_ErrorObject: any;
+    public _type_ErrorObject: any;
     public errorData: JSUndefined = new JSUndefined();
     public message: string;
     public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
@@ -44,7 +44,7 @@ export class ErrorObject extends JSObject {
 }
 
 export class ErrorConstructor extends JSObject {
-    _nominal_type_ErrorConstructor: any;
+    public _type_ErrorConstructor: any;
 }
 
 function stringDescriptor(str: string): PropertyDescriptor {

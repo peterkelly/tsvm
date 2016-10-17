@@ -19,9 +19,9 @@ import {
 } from "./datatypes";
 
 export class DateObject extends JSObject {
-    _nominal_type_DateObject: any;
+    public _type_DateObject: any;
 }
 
 export class DateConstructor extends JSObject {
-    _nominal_type_DateConstructor: any;
+    public _type_DateConstructor: any;
 }
