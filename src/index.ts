@@ -96,6 +96,30 @@ const commands: CommandSet = {
             throw new ParseError(p,p.pos,"Expected end of file");
         const typedRoot = ModuleNode.fromGeneric(root);
         return nodeToPlainTree(typedRoot,p);
+    },
+
+    ["execute"](input: string): string {
+        const p = new Parser(input);
+        const root = parseModule(p);
+        p.skipWhitespace();
+        if (p.pos < p.len)
+            throw new ParseError(p,p.pos,"Expected end of file");
+
+        const outputLines: string[] = [];
+        evalModule(root,{
+            log(message: string): void {
+                outputLines.push(message);
+            },
+            success(): void {
+                // outputLines.push("");
+                // outputLines.push("// Execution completed normally");
+            },
+            failure(reason: string): void {
+                outputLines.push("");
+                outputLines.push("// " + reason);
+            }
+        });
+        return outputLines.join("\n");
     }
 
 }
@@ -283,22 +307,9 @@ function execute(relFilename: string) {
     const absFilename = path.resolve(process.cwd(),relFilename);
     try {
         const content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
-
         const { input } = splitTestData(content);
-
-        const p = new Parser(input);
-        const root = parseModule(p);
-        p.skipWhitespace();
-        if (p.pos < p.len)
-            throw new ParseError(p,p.pos,"Expected end of file");
-
-        try {
-            evalModule(root);
-        }
-        catch (e) {
-            console.log(e);
-            console.log(e.stack);
-        }
+        const output = commands["execute"](input);
+        console.log(output);
     }
     catch (e) {
         console.error(absFilename+": "+e);
