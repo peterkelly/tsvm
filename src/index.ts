@@ -104,9 +104,10 @@ const commands: CommandSet = {
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
+            const typedRoot = ModuleNode.fromGeneric(root);
 
         const outputLines: string[] = [];
-        evalModule(root,{
+        evalModule(typedRoot,{
             log(message: string): void {
                 outputLines.push(message);
             },

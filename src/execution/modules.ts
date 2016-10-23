@@ -31,6 +31,39 @@ import {
     StatementListItemType,
     VarNode,
 } from "./statements";
+import {
+    JSValue,
+    JSPropertyKey,
+    JSUndefined,
+    JSNull,
+    JSBoolean,
+    JSString,
+    JSSymbol,
+    JSNumber,
+    JSObject,
+    DataDescriptor,
+    Intrinsics,
+    Empty,
+    Completion,
+    NormalCompletion,
+    BreakCompletion,
+    ContinueCompletion,
+    ReturnCompletion,
+    ThrowCompletion,
+    Reference,
+    AbstractReference,
+    PropertyReference,
+    Realm,
+} from "../runtime/datatypes";
+import {
+    ExecutionContext,
+} from "../runtime/08-03-context";
+import {
+    RealmImpl,
+} from "../runtime/08-02-realm";
+import {
+    DeclarativeEnvironmentRecord,
+} from "../runtime/08-01-environment";
 
 export type ModuleItemType = ImportNode | ExportNode | StatementListItemType;
 export const ModuleItemType = {
@@ -90,6 +123,10 @@ export class ScriptNode extends ASTNode {
         return [this.body];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ScriptNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ScriptNode {
         node = check.node(node,"Script",1);
         const body = node.children[0];
@@ -114,6 +151,25 @@ export class ModuleItemListNode extends ASTNode {
         return this.elements;
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        let result: NormalCompletion<JSValue | Reference | Empty> | null = null;
+        for (const elem of this.elements) {
+            const comp = elem.evaluate(ctx);
+            if (!(comp instanceof NormalCompletion))
+                return comp;
+            result = comp;
+        }
+
+        if (result === null) // Will only be true if the list is empty
+            return new NormalCompletion(new JSUndefined());
+
+        const value = result.value;
+        if (value instanceof Empty)
+            return new NormalCompletion(new JSUndefined());
+
+        return new NormalCompletion(value);
+    }
+
     public static fromGeneric(node: ASTNode | null): ModuleItemListNode {
         const list = check.list(node);
         const elements: ModuleItemType[] = [];
@@ -125,15 +181,19 @@ export class ModuleItemListNode extends ASTNode {
 
 export class ModuleNode extends ASTNode {
     public _type_ModuleNode: any;
-    public readonly body: ASTNode;
+    public readonly body: ModuleItemListNode;
 
-    public constructor(range: Range, body: ASTNode) {
+    public constructor(range: Range, body: ModuleItemListNode) {
         super(range,"Module");
         this.body = body;
     }
 
     public get children(): (ASTNode | null)[] {
         return [this.body];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        return this.body.evaluate(ctx);
     }
 
     public static fromGeneric(node: ASTNode | null): ModuleNode {
@@ -172,6 +232,8 @@ export class ImportsListNode extends ASTNode {
 export abstract class ImportNode extends ASTNode {
     public _type_ImportNode: any;
 
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+
     public static fromGeneric(node: ASTNode | null): ImportNode {
         node = check.nodeNotNull(node);
         switch (node.kind) {
@@ -200,6 +262,11 @@ export class ImportFromNode extends ImportNode {
         return [this.importClause,this.fromClause];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        // Do nothing
+        return new NormalCompletion(new Empty());
+    }
+
     public static fromGeneric(node: ASTNode | null): ImportFromNode {
         node = check.node(node,"ImportFrom",2);
         const importClause = ImportClauseNode.fromGeneric(node.children[0]);
@@ -219,6 +286,11 @@ export class ImportModuleNode extends ImportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.specifier];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        // Do nothing
+        return new NormalCompletion(new Empty());
     }
 
     public static fromGeneric(node: ASTNode | null): ImportModuleNode {
@@ -435,6 +507,8 @@ export class ExportsListNode extends ASTNode {
 export abstract class ExportNode extends ASTNode {
     public _type_ExportNode: any;
 
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+
     public static fromGeneric(node: ASTNode | null): ExportNode {
         if (node === null)
             throw new CannotConvertError("ExportClauseNode",node);
@@ -491,6 +565,10 @@ export class ExportDefaultNode extends ExportNode {
         return [this.decl];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportDefaultNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ExportDefaultNode {
         node = check.node(node,"ExportDefault",1);
         const decl = DeclarationOrExpressionType.fromGeneric(node.children[0]);
@@ -509,6 +587,10 @@ export class ExportStarNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.from];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportStarNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ExportStarNode {
@@ -531,6 +613,10 @@ export class ExportPlainNode extends ExportNode {
         return [this.clause];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportPlainNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ExportPlainNode {
         node = check.node(node,"ExportPlain",1);
         const clause = ExportClauseNode.fromGeneric(node.children[0]);
@@ -551,6 +637,10 @@ export class ExportVariableNode extends ExportNode {
         return [this.variable];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportVariableNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ExportVariableNode {
         node = check.node(node,"ExportVariable",1);
         const variable = VarNode.fromGeneric(node.children[0]);
@@ -569,6 +659,10 @@ export class ExportDeclarationNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.decl];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportDeclarationNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ExportDeclarationNode {
@@ -597,6 +691,10 @@ export class ExportFromNode extends ExportNode {
         return [this.exportClause,this.fromClause];
     }
 
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportFromNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): ExportFromNode {
         node = check.node(node,"ExportFrom",2);
         const exportClause = ExportClauseNode.fromGeneric(node.children[0]);
@@ -616,6 +714,10 @@ export class ExportClauseNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.items];
+    }
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("ExportClauseNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): ExportClauseNode {
