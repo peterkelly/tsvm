@@ -33,13 +33,63 @@ import {
     ClassExpressionNode,
 } from "./functions";
 import {
-    Completion,
-    Reference,
     JSValue,
+    JSPropertyKey,
+    JSUndefined,
+    JSNull,
+    JSBoolean,
+    JSString,
+    JSSymbol,
+    JSNumber,
+    JSObject,
+    DataDescriptor,
+    Intrinsics,
+    Completion,
+    NormalCompletion,
+    BreakCompletion,
+    ContinueCompletion,
+    ReturnCompletion,
+    ThrowCompletion,
+    Reference,
+    AbstractReference,
+    PropertyReference,
+    Realm,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
+import {
+    RealmImpl,
+} from "../runtime/08-02-realm";
+import {
+    DeclarativeEnvironmentRecord,
+} from "../runtime/08-01-environment";
+import {
+    ToString,
+    ToNumber,
+    ToBoolean,
+} from "../runtime/07-01-conversion";
+import {
+    GetValue,
+} from "../runtime/06-02-03-reference";
+import {
+    ToPrimitive,
+} from "../runtime/07-01-conversion";
+import {
+    RequireObjectCoercible,
+    IsCallable,
+} from "../runtime/07-02-testcompare";
+import {
+    Call,
+} from "../runtime/07-03-objects";
+import {
+    pr_double_add,
+    pr_double_sub,
+    pr_double_mul,
+    pr_double_div,
+    pr_double_mod,
+    pr_string_concat,
+} from "../runtime/primitives";
 
 export function ExpressionNode_fromGeneric(node: ASTNode | null): ExpressionNode {
     if (node === null)
@@ -311,7 +361,7 @@ export class IdentifierReferenceNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("IdentifierReferenceNode.evaluate not implemented");
+        return ctx.ResolveBinding(this.value);
     }
 
     public static fromGeneric(node: ASTNode | null): IdentifierReferenceNode {
@@ -339,7 +389,7 @@ export class ThisNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("ThisNode.evaluate not implemented");
+        return ctx.ResolveThisBinding();
     }
 
     public static fromGeneric(node: ASTNode | null): ThisNode {
@@ -364,7 +414,7 @@ export class NullLiteralNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("NullLiteralNode.evaluate not implemented");
+        return new NormalCompletion(new JSNull());
     }
 
     public static fromGeneric(node: ASTNode | null): NullLiteralNode {
@@ -385,7 +435,7 @@ export class TrueNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("TrueNode.evaluate not implemented");
+        return new NormalCompletion(new JSBoolean(true));
     }
 
     public static fromGeneric(node: ASTNode | null): TrueNode {
@@ -406,7 +456,7 @@ export class FalseNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("FalseNode.evaluate not implemented");
+        return new NormalCompletion(new JSBoolean(false));
     }
 
     public static fromGeneric(node: ASTNode | null): FalseNode {
@@ -434,7 +484,7 @@ export class NumericLiteralNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("NumericLiteralNode.evaluate not implemented");
+        return new NormalCompletion(new JSNumber(this.value));
     }
 
     public static fromGeneric(node: ASTNode | null): NumericLiteralNode {
@@ -463,7 +513,7 @@ export class StringLiteralNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("StringLiteralNode.evaluate not implemented");
+        return new NormalCompletion(new JSString(this.value));
     }
 
     public static fromGeneric(node: ASTNode | null): StringLiteralNode {
@@ -724,8 +774,44 @@ export class MemberAccessIdentNode extends ExpressionNode {
         return [this.obj,this.ident];
     }
 
+    // ES6 Section 12.3.2.1: Property Accessors - Runtime Semantics: Evaluation
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("MemberAccessIdentNode.evaluate not implemented");
+        const leftNode = this.obj;
+        const rightNode = this.ident;
+
+        // 1. Let baseReference be the result of evaluating MemberExpression.
+        const baseReferenceComp = leftNode.evaluate(ctx);
+        if (!(baseReferenceComp instanceof NormalCompletion))
+            return baseReferenceComp;
+
+        // 2. Let baseValue be GetValue(baseReference).
+        // 3. ReturnIfAbrupt(baseValue).
+        const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+        if (!(baseValueComp instanceof NormalCompletion))
+            return baseValueComp;
+        const baseValue = baseValueComp.value;
+
+        // 4. Let bv be RequireObjectCoercible(baseValue).
+        // 5. ReturnIfAbrupt(bv).
+        const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+        if (!(bvComp instanceof NormalCompletion))
+            return bvComp;
+        const bv = bvComp.value;
+        if (!(bv instanceof JSObject))
+            throw new Error("FIXME: Need to support non-objects for MemberAccessIdent");
+
+        // 6. Let propertyNameString be StringValue of IdentifierName
+        const propertyNameString = rightNode.value;
+
+        // 7. If the code matched by the syntactic production that is being evaluated is strict mode
+        // code, let strict be true, else let strict be false.
+        const strict = true; // FIXME: This must be determined by the AST node
+
+        // 8. Return a value of type Reference whose base value is bv and whose referenced name is
+        // propertyNameString, and whose strict reference flag is strict.
+        const ref = new PropertyReference(bv,new JSString(propertyNameString),strict);
+        return new NormalCompletion(ref);
     }
 
     public static fromGeneric(node: ASTNode | null): MemberAccessIdentNode {
@@ -832,6 +918,46 @@ export class NewExpressionNode extends ExpressionNode {
     }
 }
 
+// ES6 Section 12.3.4.3: Function Call - Runtime Semantics:
+// EvaluateDirectCall (func, thisValue, arguments, tailPosition)
+
+function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSValue,
+                            args: ArgumentType[], tailPosition: boolean): Completion<JSValue> {
+    const argListComp = ArgumentListEvaluation(ctx,args);
+    if (!(argListComp instanceof NormalCompletion))
+        return argListComp;
+    const argList = argListComp.value;
+
+    if (!(func instanceof JSValue))
+        return ctx.realm.throwTypeError("Attempt to call a value that is not an object");
+
+    if (!IsCallable(ctx.realm,func))
+        return ctx.realm.throwTypeError("Object is not callable");
+
+    // FIXME: support tail calls
+    return Call(ctx.realm,func,thisValue,argList);
+}
+
+// ES6 Section 12.3.6.1: Argument Lists - Runtime Semantics: ArgumentListEvaluation
+
+function ArgumentListEvaluation(ctx: ExecutionContext, argNodes: ArgumentType[]): Completion<JSValue[]> {
+    // FIXME: This is just a temporary implementation to get basic functionality... need to look
+    // closer at the spec to ensure we're doing it correctly, and add support for spread arguments
+    const result: JSValue[] = [];
+    for (let i = 0; i < argNodes.length; i++) {
+        const argNode = argNodes[i];
+        if (argNode instanceof SpreadElementNode)
+            throw new Error("SpreadElementNode support not implemented");
+        const refComp = argNode.evaluate(ctx);
+        const argComp = GetValue(ctx.realm,refComp);
+        if (!(argComp instanceof NormalCompletion))
+            return argComp;
+        const arg = argComp.value;
+        result.push(arg);
+    }
+    return new NormalCompletion(result);
+}
+
 export class CallNode extends ExpressionNode {
     public _type_CallNode: any;
     public readonly fun: ExpressionNode;
@@ -847,8 +973,25 @@ export class CallNode extends ExpressionNode {
         return [this.fun,this.args];
     }
 
+    // ES6 Section 12.3.4.1: Function Calls - Runtime Semantics: Evaluation
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("CallNode.evaluate not implemented");
+        // A basic, incomplete implementation. Need to go through this and expand it to cover all
+        // steps given in the spec. For example we don't set the this value correctly.
+        // checkNode(node,"Call",2);
+        const funNode = this.fun; // checkNodeNotNull(node.children[0]);
+        const argsNode = this.args; // checkNode(node.children[1],"Arguments",1);
+        const argsListNode = this.args.items; // checkListNode(argsNode.children[0]);
+
+        const refComp = funNode.evaluate(ctx);
+        const funcComp = GetValue(ctx.realm,refComp);
+        if (!(funcComp instanceof NormalCompletion))
+            return funcComp;
+        const func = funcComp.value;
+
+        const thisValue = new JSUndefined(); // FIXME: temp
+
+        return EvaluateDirectCall(ctx,func,thisValue,argsListNode.elements,false);
     }
 
     public static fromGeneric(node: ASTNode | null): CallNode {
@@ -1195,15 +1338,60 @@ export class UnaryLogicalNotNode extends ExpressionNode {
 
 // ES6 Section 12.6: Multiplicative Operators
 
-export class MultiplyNode extends BinaryNode {
+export abstract class MultiplicativeNode extends BinaryNode {
+    public _type_MultiplicativeNode: any;
+
+    protected abstract primitiveEvaluate(a: number, b: number): number;
+
+    // ES6 Section 12.6.3: Multiplicative Operators - Runtime Semantics: Evaluation
+
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+        const leftNode = this.left;
+        const rightNode = this.right;
+
+        // 1. Let left be the result of evaluating MultiplicativeExpression.
+        const leftComp = leftNode.evaluate(ctx);
+
+        // 2. Let leftValue be GetValue(left).
+        // 3. ReturnIfAbrupt(leftValue).
+        const leftValueComp = GetValue(ctx.realm,leftComp);
+
+        // 4. Let right be the result of evaluating UnaryExpression.
+        const rightComp = rightNode.evaluate(ctx);
+
+        // 5. Let rightValue be GetValue(right).
+        const rightValueComp = GetValue(ctx.realm,rightComp);
+
+        // 6. Let lnum be ToNumber(leftValue).
+        // 7. ReturnIfAbrupt(lnum).
+        const lnumComp = ToNumber(ctx.realm,leftValueComp);
+        if (!(lnumComp instanceof NormalCompletion))
+            return lnumComp;
+        const lnum = lnumComp.value;
+
+        // 8. Let rnum be ToNumber(rightValue).
+        // 9. ReturnIfAbrupt(rnum).
+        const rnumComp = ToNumber(ctx.realm,rightValueComp);
+        if (!(rnumComp instanceof NormalCompletion))
+            return rnumComp;
+        const rnum = rnumComp.value;
+
+        // 10. Return the result of applying the MultiplicativeOperator (*, /, or %) to lnum and rnum
+        // as specified in 12.6.3.1, 12.6.3.2, or 12.6.3.3.
+        let resultNum = this.primitiveEvaluate(lnum.numberValue,rnum.numberValue);
+        return new NormalCompletion(new JSNumber(resultNum));
+    }
+}
+
+export class MultiplyNode extends MultiplicativeNode {
     public _type_MultiplyNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Multiply",left,right);
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("MultiplyNode.evaluate not implemented");
+    protected primitiveEvaluate(leftValue: number, rightValue: number): number {
+        return pr_double_mul(leftValue,rightValue);
     }
 
     public static fromGeneric(node: ASTNode | null): MultiplyNode {
@@ -1214,15 +1402,15 @@ export class MultiplyNode extends BinaryNode {
     }
 }
 
-export class DivideNode extends BinaryNode {
+export class DivideNode extends MultiplicativeNode {
     public _type_DivideNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Divide",left,right);
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("DivideNode.evaluate not implemented");
+    protected primitiveEvaluate(leftValue: number, rightValue: number): number {
+        return pr_double_div(leftValue,rightValue);
     }
 
     public static fromGeneric(node: ASTNode | null): DivideNode {
@@ -1233,15 +1421,15 @@ export class DivideNode extends BinaryNode {
     }
 }
 
-export class ModuloNode extends BinaryNode {
+export class ModuloNode extends MultiplicativeNode {
     public _type_ModuloNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Modulo",left,right);
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("ModuloNode.evaluate not implemented");
+    protected primitiveEvaluate(leftValue: number, rightValue: number): number {
+        return pr_double_mod(leftValue,rightValue);
     }
 
     public static fromGeneric(node: ASTNode | null): ModuloNode {
@@ -1261,8 +1449,86 @@ export class AddNode extends BinaryNode {
         super(range,"Add",left,right);
     }
 
+    // ES6 Section 12.7.3.1: The Addition operator ( + ) - Runtime Semantics: Evaluation
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("AddNode.evaluate not implemented");
+        const left = this.left;
+        const right = this.right;
+
+        // 1. Let lref be the result of evaluating AdditiveExpression.
+        const lrefComp = left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        // 3. ReturnIfAbrupt(lval).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating MultiplicativeExpression.
+        const rrefComp = right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        // 6. ReturnIfAbrupt(rval).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 7. Let lprim be ToPrimitive(lval).
+        // 8. ReturnIfAbrupt(lprim).
+        const lprimComp = ToPrimitive(ctx.realm,lval);
+        if (!(lprimComp instanceof NormalCompletion))
+            return lprimComp;
+        const lprim = lprimComp.value;
+
+        // 9. Let rprim be ToPrimitive(rval).
+        // 10. ReturnIfAbrupt(rprim).
+        const rprimComp = ToPrimitive(ctx.realm,rval);
+        if (!(rprimComp instanceof NormalCompletion))
+            return rprimComp;
+        const rprim = rprimComp.value;
+
+        // 11. If Type(lprim) is String or Type(rprim) is String, then
+        if ((lprim instanceof JSString) || (rprim instanceof JSString)) {
+            // a. Let lstr be ToString(lprim).
+            // b. ReturnIfAbrupt(lstr).
+            const lstrComp = ToString(ctx.realm,lprim);
+            if (!(lstrComp instanceof NormalCompletion))
+                return lstrComp;
+            const lstr = lstrComp.value;
+
+            // c. Let rstr be ToString(rprim).
+            // d. ReturnIfAbrupt(rstr).
+            const rstrComp = ToString(ctx.realm,rprim);
+            if (!(rstrComp instanceof NormalCompletion))
+                return rstrComp;
+            const rstr = rstrComp.value;
+
+            // e. Return the String that is the result of concatenating lstr and rstr.
+            const resultStr = pr_string_concat(lstr.stringValue,rstr.stringValue);
+            const result = new JSString(resultStr);
+            return new NormalCompletion(result);
+        }
+
+        // 12. Let lnum be ToNumber(lprim).
+        // 13. ReturnIfAbrupt(lnum).
+        const lnumComp = ToNumber(ctx.realm,lprim);
+        if (!(lnumComp instanceof NormalCompletion))
+            return lnumComp;
+        const lnum = lnumComp.value;
+
+        // 14. Let rnum be ToNumber(rprim).
+        // 15. ReturnIfAbrupt(rnum).
+        const rnumComp = ToNumber(ctx.realm,rprim);
+        if (!(rnumComp instanceof NormalCompletion))
+            return rnumComp;
+        const rnum = rnumComp.value;
+
+        // 16. Return the result of applying the addition operation to lnum and rnum.
+        const resultNum = pr_double_add(lnum.numberValue,rnum.numberValue);
+        const result = new JSNumber(resultNum);
+        return new NormalCompletion(result);
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {
@@ -1280,8 +1546,50 @@ export class SubtractNode extends BinaryNode {
         super(range,"Subtract",left,right);
     }
 
+    // ES6 Section 12.7.4.1: The Subtraction Operator ( - ) - Runtime Semantics: Evaluation
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("SubtractNode.evaluate not implemented");
+        const left = this.left;
+        const right = this.right;
+
+        // 1. Let lref be the result of evaluating AdditiveExpression.
+        const lrefComp = left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        // 3. ReturnIfAbrupt(lval).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating MultiplicativeExpression.
+        const rrefComp = right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        // 6. ReturnIfAbrupt(rval).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 7. Let lnum be ToNumber(lval).
+        // 8. ReturnIfAbrupt(lnum).
+        const lnumComp = ToNumber(ctx.realm,lval);
+        if (!(lnumComp instanceof NormalCompletion))
+            return lnumComp;
+        const lnum = lnumComp.value;
+
+        // 9. Let rnum be ToNumber(rval).
+        // 10. ReturnIfAbrupt(rnum).
+        const rnumComp = ToNumber(ctx.realm,rval);
+        if (!(rnumComp instanceof NormalCompletion))
+            return rnumComp;
+        const rnum = rnumComp.value;
+
+        // 1. Return the result of applying the subtraction operation to lnum and rnum.
+        const resultNum = pr_double_sub(lnum.numberValue,rnum.numberValue);
+        const result = new JSNumber(resultNum);
+        return new NormalCompletion(result);
     }
 
     public static fromGeneric(node: ASTNode | null): SubtractNode {
@@ -1613,8 +1921,40 @@ export class LogicalANDNode extends BinaryNode {
         super(range,"LogicalAND",left,right);
     }
 
+    // ES6 Section 12.12.3: Binary Logical Operators: Runtime Semantics: Evaluation
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("LogicalANDNode.evaluate not implemented");
+        const leftNode = this.left;
+        const rightNode = this.right;
+
+        // 1. Let lref be the result of evaluating LogicalANDExpression.
+        const lrefComp = leftNode.evaluate(ctx);
+        if (!(lrefComp instanceof NormalCompletion))
+            return lrefComp;
+        const lref = lrefComp.value;
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 3. Let lbool be ToBoolean(lval).
+        // 4. ReturnIfAbrupt(lbool).
+        const lboolComp = ToBoolean(ctx.realm,lvalComp);
+        if (!(lboolComp instanceof NormalCompletion))
+            return lboolComp;
+        const lbool = lboolComp.value;
+
+        // 5. If lbool is false, return lval.
+        if (lbool.booleanValue === false)
+            return new NormalCompletion(lval);
+
+        // 6. Let rref be the result of evaluating BitwiseORExpression.
+        const rrefComp = rightNode.evaluate(ctx);
+
+        // 7. Return GetValue(rref).
+        return GetValue(ctx.realm,rrefComp);
     }
 
     public static fromGeneric(node: ASTNode | null): LogicalANDNode {
@@ -1633,7 +1973,37 @@ export class LogicalORNode extends BinaryNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("LogicalORNode.evaluate not implemented");
+        const leftNode = this.left;
+        const rightNode = this.right;
+
+        // 1. Let lref be the result of evaluating LogicalORExpression.
+        const lrefComp = leftNode.evaluate(ctx);
+        if (!(lrefComp instanceof NormalCompletion))
+            return lrefComp;
+        const lref = lrefComp.value;
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lref);
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 3. Let lbool be ToBoolean(lval).
+        // 4. ReturnIfAbrupt(lbool).
+        const lboolComp = ToBoolean(ctx.realm,lval);
+        if (!(lboolComp instanceof NormalCompletion))
+            return lboolComp;
+        const lbool = lboolComp.value;
+
+        // 5. If lbool is true, return lval.
+        if (lbool.booleanValue === true)
+            return new NormalCompletion(lval);
+
+        // 6. Let rref be the result of evaluating LogicalANDExpression.
+        const rrefComp = rightNode.evaluate(ctx);
+
+        // 7. Return GetValue(rref).
+        return GetValue(ctx.realm,rrefComp);
     }
 
     public static fromGeneric(node: ASTNode | null): LogicalORNode {

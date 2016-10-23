@@ -34,14 +34,35 @@ import {
     ClassDeclarationNode,
 } from "./functions";
 import {
+    JSValue,
+    JSPropertyKey,
+    JSUndefined,
+    JSNull,
+    JSBoolean,
+    JSString,
+    JSSymbol,
+    JSNumber,
+    JSObject,
+    DataDescriptor,
+    Intrinsics,
     Empty,
     Completion,
+    NormalCompletion,
+    BreakCompletion,
+    ContinueCompletion,
+    ReturnCompletion,
+    ThrowCompletion,
     Reference,
-    JSValue,
+    AbstractReference,
+    PropertyReference,
+    Realm,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
+import {
+    GetValue,
+} from "../runtime/06-02-03-reference";
 
 export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNode {
     if (node === null)
@@ -820,7 +841,14 @@ export class ExpressionStatementNode extends StatementNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("ExpressionStatementNode.evaluate not implemented");
+        const resultComp = this.expr.evaluate(ctx);
+        if (!(resultComp instanceof NormalCompletion))
+            return resultComp;
+        const result = resultComp.value;
+        if (result instanceof AbstractReference)
+            return GetValue(ctx.realm,result);
+        else
+            return new NormalCompletion(result);
     }
 
     public static fromGeneric(node: ASTNode | null): ExpressionStatementNode {
