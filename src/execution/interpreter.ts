@@ -513,7 +513,7 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
                 if (!(strComp instanceof NormalCompletion))
                     return strComp;
                 const str = strComp.value;
-                console.log("ExpressionStatement returned "+str.stringValue);
+                // console.log("ExpressionStatement returned "+str.stringValue);
                 break;
             }
             default:
@@ -523,12 +523,25 @@ function evalStatementList(ctx: ExecutionContext, statements: ListNode): Complet
     return new NormalCompletion(undefined);
 }
 
+export interface ExecutionCallbacks {
+    log(message: string): void;
+    success(): void;
+    failure(reason: string): void;
+}
+
 class ConsoleLogFunction extends JSObject {
+    private callbacks: ExecutionCallbacks;
+
+    public constructor(prototype: JSObject | JSNull, callbacks: ExecutionCallbacks) {
+        super(prototype);
+        this.callbacks = callbacks;
+    }
+
     public get implementsCall(): boolean {
         return true;
     }
+
     public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        console.log("ConsoleLogFunction.__Call__ begin");
         const strings: string[] = [];
         for (const arg of args) {
             const strComp = ToString(realm,arg);
@@ -537,12 +550,12 @@ class ConsoleLogFunction extends JSObject {
             const str = strComp.value;
             strings.push(str.stringValue);
         }
-        console.log("==== "+strings.join(" "));
+        this.callbacks.log(strings.join(" "));
         return new NormalCompletion(new JSUndefined());
     }
 }
 
-export function evalModule(node: ASTNode): void {
+export function evalModule(node: ASTNode, callbacks: ExecutionCallbacks): void {
     const realm = new RealmImpl();
     const envRec = new DeclarativeEnvironmentRecord(realm);
     const lexEnv = { record: envRec, outer: null };
@@ -554,28 +567,29 @@ export function evalModule(node: ASTNode): void {
         enumerable: true,
         configurable: true,
         writable: true,
-        value: new ConsoleLogFunction(realm.intrinsics.FunctionPrototype)
+        value: new ConsoleLogFunction(realm.intrinsics.FunctionPrototype,callbacks)
     }));
     envRec.InitializeBinding("console",consoleObject);
 
     checkNode(node,"Module",1);
     const statements = checkListNode(node.children[0]);
     const resultComp = evalStatementList(ctx,statements);
-    if (!(resultComp instanceof NormalCompletion)) {
-        if (resultComp instanceof ThrowCompletion) {
-            console.log("JS code threw exception");
-            const strComp = ToString(realm,resultComp.exceptionValue);
-            if (!(strComp instanceof NormalCompletion)) {
-                console.log("toString() on exception object failed");
-            }
-            else {
-                const str = strComp.value;
-                console.log(str.stringValue);
-            }
-        }
-        else {
-            console.log("Got some other completion");
-        }
+    if (resultComp instanceof NormalCompletion) {
+        callbacks.success();
+        return;
     }
-    console.log("Execution completed normally");
+
+    try {
+        if (!(resultComp instanceof ThrowCompletion))
+            throw new Error("Completion type not Normal or Throw");
+
+        const strComp = ToString(realm,resultComp.exceptionValue);
+        if (!(strComp instanceof NormalCompletion))
+            throw new Error("toString() on exception object failed");
+
+        callbacks.failure("Exception: "+strComp.value);
+    }
+    catch (e) {
+        callbacks.failure("Exception (internal): "+e);
+    }
 }
