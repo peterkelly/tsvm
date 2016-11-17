@@ -29,7 +29,7 @@ export class Parser {
     public pos: number;
     public len: number;
 
-    public get cur(): string | null {
+    public current(): string | null {
         if (this.pos < this.len)
             return this.text[this.pos];
         else
@@ -39,7 +39,7 @@ export class Parser {
     public next(): string | null {
         if (this.pos < this.len)
             this.pos++;
-        return this.cur;
+        return this.current();
     }
 
     public constructor(text: string) {

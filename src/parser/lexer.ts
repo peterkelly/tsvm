@@ -133,10 +133,11 @@ export function upcomingKeyword(p: Parser): Token | null {
 
 export function lexIdent(p: Parser): Token | null {
     const start = p.pos;
-    if ((p.cur != null) && isIdStart(p.cur)) {
-        p.next();
-        while ((p.cur != null) && isIdChar(p.cur))
-            p.next();
+    let current = p.current();
+    if ((current != null) && isIdStart(current)) {
+        current = p.next();
+        while ((current != null) && isIdChar(current))
+            current = p.next();
         const range = new Range(start,p.pos);
         const value = p.text.substring(range.start,range.end);
         if (isKeyword(value)) {
@@ -153,14 +154,14 @@ export function lexIdent(p: Parser): Token | null {
 export function lexNumber(p: Parser): Token | null {
     // TODO: Complete numeric literal syntax according to spec
     const start = p.pos;
-    while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
+    while ((p.current() != null) && (p.current() >= "0") && (p.current() <= "9"))
         p.next();
     if (p.pos == start)
         return null;
-    if (p.cur == ".") {
+    if (p.current() == ".") {
         p.next();
         const postDecimal = p.pos;
-        while ((p.cur != null) && (p.cur >= "0") && (p.cur <= "9"))
+        while ((p.current() != null) && (p.current() >= "0") && (p.current() <= "9"))
             p.next();
         if (p.pos == postDecimal) {
             p.pos = start;
@@ -174,8 +175,8 @@ export function lexNumber(p: Parser): Token | null {
 export function lexString(p: Parser): Token | null {
     // TODO: Complete string literal syntax according to spec
     const start = p.pos;
-    if ((p.cur == "\"") || (p.cur == "'")) {
-        const quote = p.cur;
+    if ((p.current() == "\"") || (p.current() == "'")) {
+        const quote = p.current();
         p.next();
         let value = "";
         while (true) {
