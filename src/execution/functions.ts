@@ -40,11 +40,21 @@ import {
     ExecutionContext,
 } from "../runtime/08-03-context";
 
-export type ClassElementType = MethodDefinitionNode | StaticMethodDefinitionNode | EmptyClassElementNode;
-export const ClassElementType = {
-    fromGeneric(node: ASTNode | null): ClassElementType {
+export type FormalParameterListItemType = BindingElementType | BindingRestElementNode;
+export const FormalParameterListItemType = {
+    fromGeneric(node: ASTNode | null): FormalParameterListItemType {
+        try { return BindingElementType.fromGeneric(node); } catch (e) {}
+        try { return BindingRestElementNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("FormalParameterListItemType",node);
+    }
+};
+
+export abstract class ClassElementNode extends ASTNode {
+    public _type_ClassElementNode: any;
+
+    public static fromGeneric(node: ASTNode | null): ClassElementNode {
         if (node === null)
-            throw new CannotConvertError("ClassElementType",node);
+            throw new CannotConvertError("ClassElementNode",node);
         switch (node.kind) {
             case "Method":
             case "Getter":
@@ -56,19 +66,10 @@ export const ClassElementType = {
             case "EmptyClassElement":
                 return EmptyClassElementNode.fromGeneric(node);
             default:
-                throw new CannotConvertError("ClassElementType",node);
+                throw new CannotConvertError("ClassElementNode",node);
         }
     }
-};
-
-export type FormalParameterListItemType = BindingElementType | BindingRestElementNode;
-export const FormalParameterListItemType = {
-    fromGeneric(node: ASTNode | null): FormalParameterListItemType {
-        try { return BindingElementType.fromGeneric(node); } catch (e) {}
-        try { return BindingRestElementNode.fromGeneric(node); } catch (e) {}
-        throw new CannotConvertError("FormalParameterListItemType",node);
-    }
-};
+}
 
 // ES6 Chapter 14: ECMAScript Language: Functions and Classes
 
@@ -320,7 +321,7 @@ export class ArrowFunctionNode extends ExpressionNode {
 
 // ES6 Section 14.3: Method Definitions
 
-export abstract class MethodDefinitionNode extends ASTNode {
+export abstract class MethodDefinitionNode extends ClassElementNode {
     public _type_MethodDefinitionNode: any;
 
     public static fromGeneric(node: ASTNode | null): MethodDefinitionNode {
@@ -629,9 +630,9 @@ export class YieldNothingNode extends ExpressionNode {
 
 export class ClassElementListNode extends ASTNode {
     public _type_ClassElementListNode: any;
-    public readonly elements: ClassElementType[];
+    public readonly elements: ClassElementNode[];
 
-    public constructor(range: Range, elements: ClassElementType[]) {
+    public constructor(range: Range, elements: ClassElementNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -642,9 +643,9 @@ export class ClassElementListNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): ClassElementListNode {
         const list = check.list(node);
-        const elements: ClassElementType[] = [];
+        const elements: ClassElementNode[] = [];
         for (const listElement of list.elements)
-            elements.push(ClassElementType.fromGeneric(listElement));
+            elements.push(ClassElementNode.fromGeneric(listElement));
         return new ClassElementListNode(list.range,elements);
     }
 }
@@ -746,7 +747,7 @@ export class ExtendsNode extends ASTNode {
     }
 }
 
-export class StaticMethodDefinitionNode extends ASTNode {
+export class StaticMethodDefinitionNode extends ClassElementNode {
     public _type_StaticMethodDefinitionNode: any;
     public readonly method: MethodDefinitionNode;
 
@@ -766,7 +767,7 @@ export class StaticMethodDefinitionNode extends ASTNode {
     }
 }
 
-export class EmptyClassElementNode extends ASTNode {
+export class EmptyClassElementNode extends ClassElementNode {
     public _type_EmptyClassElementNode: any;
 
     public constructor(range: Range) {

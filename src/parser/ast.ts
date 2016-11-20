@@ -64,7 +64,13 @@ export abstract class ExpressionNode extends ASTNode {
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
 }
 
-export abstract class DeclarationNode extends ASTNode {
+export abstract class StatementListItemNode extends ASTNode {
+    public _type_StatementListItemNode: any;
+
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+}
+
+export abstract class DeclarationNode extends StatementListItemNode {
     public _type_DeclarationNode: any;
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
