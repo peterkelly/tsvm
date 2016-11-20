@@ -16,6 +16,7 @@ import {
     Range,
     ASTNode,
     ExpressionNode,
+    StatementListItemNode,
     DeclarationNode,
     IdentifierNode,
     BindingIdentifierNode,
@@ -28,7 +29,7 @@ import {
 } from "./expressions";
 import {
     DeclarationNode_fromGeneric,
-    StatementListItemType,
+    StatementListItemNode_fromGeneric,
     VarNode,
 } from "./statements";
 import {
@@ -65,7 +66,7 @@ import {
     DeclarativeEnvironmentRecord,
 } from "../runtime/08-01-environment";
 
-export type ModuleItemType = ImportNode | ExportNode | StatementListItemType;
+export type ModuleItemType = ImportNode | ExportNode | StatementListItemNode;
 export const ModuleItemType = {
     fromGeneric(node: ASTNode | null): ModuleItemType {
         if (node === null)
@@ -83,28 +84,10 @@ export const ModuleItemType = {
             case "ExportClause":
                 return ExportNode.fromGeneric(node);
             default:
-                return StatementListItemType.fromGeneric(node);
+                return StatementListItemNode_fromGeneric(node);
         }
     }
 };
-
-export type ImportListItemType = ImportAsSpecifierNode | ImportSpecifierNode;
-export const ImportListItemType = {
-    fromGeneric(node: ASTNode | null): ImportListItemType {
-        try { return ImportAsSpecifierNode.fromGeneric(node); } catch (e) {}
-        try { return ImportSpecifierNode.fromGeneric(node); } catch (e) {}
-        throw new CannotConvertError("ImportListItemType",node);
-    }
-}
-
-export type ExportsListItemType = ExportAsSpecifierNode | ExportNormalSpecifierNode;
-export const ExportsListItemType = {
-    fromGeneric(node: ASTNode | null): ExportsListItemType {
-        try { return ExportAsSpecifierNode.fromGeneric(node); } catch (e) {}
-        try { return ExportNormalSpecifierNode.fromGeneric(node); } catch (e) {}
-        throw new CannotConvertError("ExportsListItemType",node);
-    }
-}
 
 // ES6 Chapter 15: ECMAScript Language: Scripts and Modules
 
@@ -209,9 +192,9 @@ export class ModuleNode extends ASTNode {
 
 export class ImportsListNode extends ASTNode {
     public _type_ImportsListNode: any;
-    public readonly elements: ImportListItemType[];
+    public readonly elements: ImportListItemNode[];
 
-    public constructor(range: Range, elements: ImportListItemType[]) {
+    public constructor(range: Range, elements: ImportListItemNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -222,9 +205,9 @@ export class ImportsListNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): ImportsListNode {
         const list = check.list(node);
-        const elements: ImportListItemType[] = [];
+        const elements: ImportListItemNode[] = [];
         for (const listElement of list.elements)
-            elements.push(ImportListItemType.fromGeneric(listElement));
+            elements.push(ImportListItemNode.fromGeneric(listElement));
         return new ImportsListNode(list.range,elements);
     }
 }
@@ -437,7 +420,17 @@ export class NamedImportsNode extends ImportClauseNode {
     }
 }
 
-export class ImportSpecifierNode extends ASTNode {
+export abstract class ImportListItemNode extends ASTNode {
+    public _type_ImportListItemNode: any;
+
+    public static fromGeneric(node: ASTNode | null): ImportListItemNode {
+        try { return ImportAsSpecifierNode.fromGeneric(node); } catch (e) {}
+        try { return ImportSpecifierNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ImportListItemNode",node);
+    }
+}
+
+export class ImportSpecifierNode extends ImportListItemNode {
     public _type_ImportSpecifierNode: any;
     public readonly binding: BindingIdentifierNode;
 
@@ -457,7 +450,7 @@ export class ImportSpecifierNode extends ASTNode {
     }
 }
 
-export class ImportAsSpecifierNode extends ASTNode {
+export class ImportAsSpecifierNode extends ImportListItemNode {
     public _type_ImportAsSpecifierNode: any;
     public readonly name: IdentifierNode;
     public readonly binding: BindingIdentifierNode;
@@ -484,9 +477,9 @@ export class ImportAsSpecifierNode extends ASTNode {
 
 export class ExportsListNode extends ASTNode {
     public _type_ExportsListNode: any;
-    public readonly elements: ExportsListItemType[];
+    public readonly elements: ExportsListItemNode[];
 
-    public constructor(range: Range, elements: ExportsListItemType[]) {
+    public constructor(range: Range, elements: ExportsListItemNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -497,9 +490,9 @@ export class ExportsListNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): ExportsListNode {
         const list = check.list(node);
-        const elements: ExportsListItemType[] = [];
+        const elements: ExportsListItemNode[] = [];
         for (const listElement of list.elements)
-            elements.push(ExportsListItemType.fromGeneric(listElement));
+            elements.push(ExportsListItemNode.fromGeneric(listElement));
         return new ExportsListNode(list.range,elements);
     }
 }
@@ -727,7 +720,17 @@ export class ExportClauseNode extends ExportNode {
     }
 }
 
-export class ExportNormalSpecifierNode extends ASTNode {
+export abstract class ExportsListItemNode extends ASTNode {
+    public _type_ExportsListItemNode: any;
+
+    public static fromGeneric(node: ASTNode | null): ExportsListItemNode {
+        try { return ExportAsSpecifierNode.fromGeneric(node); } catch (e) {}
+        try { return ExportNormalSpecifierNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("ExportsListItemNode",node);
+    }
+}
+
+export class ExportNormalSpecifierNode extends ExportsListItemNode {
     public _type_ExportNormalSpecifierNode: any;
     public readonly ident: IdentifierNode;
 
@@ -747,7 +750,7 @@ export class ExportNormalSpecifierNode extends ASTNode {
     }
 }
 
-export class ExportAsSpecifierNode extends ASTNode {
+export class ExportAsSpecifierNode extends ExportsListItemNode {
     public _type_ExportAsSpecifierNode: any;
     public readonly ident: IdentifierNode;
     public readonly asIdent: IdentifierNode;

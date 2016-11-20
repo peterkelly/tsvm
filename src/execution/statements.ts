@@ -16,6 +16,7 @@ import {
     Range,
     ASTNode,
     ExpressionNode,
+    StatementListItemNode,
     DeclarationNode,
     BindingIdentifierNode,
     GenericStringNode,
@@ -170,53 +171,25 @@ export const BindingPropertyType = {
     }
 };
 
-export type StatementListItemType = StatementNode | DeclarationNode;
-export const StatementListItemType = {
-    fromGeneric(node: ASTNode | null): StatementListItemType {
-        if (node === null)
-            throw new CannotConvertError("StatementListItemType",node);
-        switch (node.kind) {
-            case "FunctionDeclaration":
-            case "GeneratorDeclaration":
-            case "DefaultGeneratorDeclaration":
-            case "ClassDeclaration":
-            case "Let":
-            case "Const":
-                return DeclarationNode_fromGeneric(node);
-            default:
-                return StatementNode.fromGeneric(node);
-        }
-    }
-};
-
-export type VariableDeclarationListItemType = VarIdentifierNode | VarPatternNode;
-export const VariableDeclarationListItemType = {
-    fromGeneric(node: ASTNode | null): VariableDeclarationListItemType {
-        if (node === null)
-            throw new CannotConvertError("VariableDeclarationListItemType",node);
-        switch (node.kind) {
-            case "VarIdentifier":
-                return VarIdentifierNode.fromGeneric(node);
-            case "VarPattern":
-                return VarPatternNode.fromGeneric(node);
-            default:
-                throw new CannotConvertError("VariableDeclarationListItemType",node);
-        }
-    }
-}
-
-export type CaseClauseListItemType = CaseClauseNode | DefaultClauseNode;
-export const CaseClauseListItemType = {
-    fromGeneric(node: ASTNode | null): CaseClauseListItemType {
-        try { return CaseClauseNode.fromGeneric(node); } catch (e) {}
-        try { return DefaultClauseNode.fromGeneric(node); } catch (e) {}
-        throw new CannotConvertError("CaseClauseListItemType",node);
+export function StatementListItemNode_fromGeneric(node: ASTNode | null): StatementListItemNode {
+    if (node === null)
+        throw new CannotConvertError("StatementListItemNode",node);
+    switch (node.kind) {
+        case "FunctionDeclaration":
+        case "GeneratorDeclaration":
+        case "DefaultGeneratorDeclaration":
+        case "ClassDeclaration":
+        case "Let":
+        case "Const":
+            return DeclarationNode_fromGeneric(node);
+        default:
+            return StatementNode.fromGeneric(node);
     }
 }
 
 // ES6 Chapter 13: ECMAScript Language: Statements and Declarations
 
-export abstract class StatementNode extends ASTNode {
+export abstract class StatementNode extends StatementListItemNode {
     public _type_StatementNode: any;
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
@@ -271,9 +244,9 @@ export abstract class StatementNode extends ASTNode {
 
 export class StatementListNode extends ASTNode {
     public _type_StatementListNode: any;
-    public readonly elements: StatementListItemType[];
+    public readonly elements: StatementListItemNode[];
 
-    public constructor(range: Range, elements: StatementListItemType[]) {
+    public constructor(range: Range, elements: StatementListItemNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -284,9 +257,9 @@ export class StatementListNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): StatementListNode {
         const list = check.list(node);
-        const elements: StatementListItemType[] = [];
+        const elements: StatementListItemNode[] = [];
         for (const listElement of list.elements)
-            elements.push(StatementListItemType.fromGeneric(listElement));
+            elements.push(StatementListItemNode_fromGeneric(listElement));
         return new StatementListNode(list.range,elements);
     }
 }
@@ -378,17 +351,25 @@ export class BindingListNode extends ASTNode {
     }
 }
 
-export class LetNode extends DeclarationNode {
-    public _type_LetNode: any;
+export abstract class LexicalDeclarationNode extends DeclarationNode {
+    public _type_LexicalDeclarationNode: any;
     public bindings: BindingListNode;
 
-    public constructor(range: Range, bindings: BindingListNode) {
-        super(range,"Let");
+    public constructor(range: Range, kind: string, bindings: BindingListNode) {
+        super(range,kind);
         this.bindings = bindings;
     }
 
     public get children(): (ASTNode | null)[] {
         return [this.bindings];
+    }
+}
+
+export class LetNode extends LexicalDeclarationNode {
+    public _type_LetNode: any;
+
+    public constructor(range: Range, bindings: BindingListNode) {
+        super(range,"Let",bindings);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -402,17 +383,11 @@ export class LetNode extends DeclarationNode {
     }
 }
 
-export class ConstNode extends DeclarationNode {
+export class ConstNode extends LexicalDeclarationNode {
     public _type_ConstNode: any;
-    public bindings: BindingListNode;
 
     public constructor(range: Range, bindings: BindingListNode) {
-        super(range,"Const");
-        this.bindings = bindings;
-    }
-
-    public get children(): (ASTNode | null)[] {
-        return [this.bindings];
+        super(range,"Const",bindings);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -501,9 +476,9 @@ export class LexicalPatternBindingNode extends LexicalBindingNode {
 
 export class VariableDeclarationListNode extends ASTNode {
     public _type_VariableDeclarationListNode: any;
-    public readonly elements: VariableDeclarationListItemType[];
+    public readonly elements: VarBindingNode[];
 
-    public constructor(range: Range, elements: VariableDeclarationListItemType[]) {
+    public constructor(range: Range, elements: VarBindingNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -514,9 +489,9 @@ export class VariableDeclarationListNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): VariableDeclarationListNode {
         const list = check.list(node);
-        const elements: VariableDeclarationListItemType[] = [];
+        const elements: VarBindingNode[] = [];
         for (const listElement of list.elements)
-            elements.push(VariableDeclarationListItemType.fromGeneric(listElement));
+            elements.push(VarBindingNode.fromGeneric(listElement));
         return new VariableDeclarationListNode(list.range,elements);
     }
 }
@@ -545,7 +520,24 @@ export class VarNode extends StatementNode {
     }
 }
 
-export class VarIdentifierNode extends ASTNode {
+export abstract class VarBindingNode extends ASTNode {
+    public _type_VarBindingNode: any;
+
+    public static fromGeneric(node: ASTNode | null): VarBindingNode {
+        if (node === null)
+            throw new CannotConvertError("VarBindingNode",node);
+        switch (node.kind) {
+            case "VarIdentifier":
+                return VarIdentifierNode.fromGeneric(node);
+            case "VarPattern":
+                return VarPatternNode.fromGeneric(node);
+            default:
+                throw new CannotConvertError("VarBindingNode",node);
+        }
+    }
+}
+
+export class VarIdentifierNode extends VarBindingNode {
     public _type_VarIdentifierNode: any;
     public identifier: BindingIdentifierNode;
     public initializer: ExpressionNode | null;
@@ -572,7 +564,7 @@ export class VarIdentifierNode extends ASTNode {
     }
 }
 
-export class VarPatternNode extends ASTNode {
+export class VarPatternNode extends VarBindingNode {
     public _type_VarPatternNode: any;
     public pattern: BindingPatternNode;
     public initializer: ExpressionNode;
@@ -1268,9 +1260,9 @@ export class SwitchStatementNode extends BreakableStatementNode {
 
 export class CaseClauseListNode extends ASTNode {
     public _type_CaseClauseListNode: any;
-    public readonly elements: CaseClauseListItemType[];
+    public readonly elements: CaseClauseListItemNode[];
 
-    public constructor(range: Range, elements: CaseClauseListItemType[]) {
+    public constructor(range: Range, elements: CaseClauseListItemNode[]) {
         super(range,"[]");
         this.elements = elements;
     }
@@ -1281,9 +1273,9 @@ export class CaseClauseListNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): CaseClauseListNode {
         const list = check.list(node);
-        const elements: CaseClauseListItemType[] = [];
+        const elements: CaseClauseListItemNode[] = [];
         for (const listElement of list.elements)
-            elements.push(CaseClauseListItemType.fromGeneric(listElement));
+            elements.push(CaseClauseListItemNode.fromGeneric(listElement));
         return new CaseClauseListNode(list.range,elements);
     }
 }
@@ -1357,7 +1349,17 @@ export class CaseBlock2Node extends CaseBlockNode {
     }
 }
 
-export class CaseClauseNode extends ASTNode {
+export abstract class CaseClauseListItemNode extends ASTNode {
+    public _type_CaseClauseListItemNode: any;
+
+    public static fromGeneric(node: ASTNode | null): CaseClauseListItemNode {
+        try { return CaseClauseNode.fromGeneric(node); } catch (e) {}
+        try { return DefaultClauseNode.fromGeneric(node); } catch (e) {}
+        throw new CannotConvertError("CaseClauseListItemNode",node);
+    }
+}
+
+export class CaseClauseNode extends CaseClauseListItemNode {
     public _type_CaseClauseNode: any;
     public readonly expr: ExpressionNode;
     public readonly statements: StatementListNode;
@@ -1380,7 +1382,7 @@ export class CaseClauseNode extends ASTNode {
     }
 }
 
-export class DefaultClauseNode extends ASTNode {
+export class DefaultClauseNode extends CaseClauseListItemNode {
     public _type_DefaultClauseNode: any;
     public readonly statements: StatementListNode;
 
