@@ -2605,9 +2605,9 @@ grm.define("GeneratorMethod",
         spliceNode(16,"GeneratorMethod",16,0,[13,9,3]),
     ]));
 
-// GeneratorDeclaration_1
+// GeneratorDeclaration_named
 
-grm.define("GeneratorDeclaration_1",
+grm.define("GeneratorDeclaration_named",
     sequence([
         pos,                      // 18 = start
         keyword("function"),      // 17
@@ -2631,17 +2631,18 @@ grm.define("GeneratorDeclaration_1",
         spliceNode(18,"GeneratorDeclaration",18,0,[13,9,3]),
     ]));
 
-// GeneratorDeclaration_2
+// GeneratorDeclaration_unnamed
 
-grm.define("GeneratorDeclaration_2",
+grm.define("GeneratorDeclaration_unnamed",
     sequence([
-        pos,                     // 16 = start
-        keyword("function"),     // 15
-        whitespace,              // 14
-        keyword("*"),            // 13
-        whitespace,              // 12
-        keyword("("),            // 11
-        whitespace,              // 10
+        pos,                     // 17 = start
+        keyword("function"),     // 16
+        whitespace,              // 15
+        keyword("*"),            // 14
+        whitespace,              // 13
+        keyword("("),            // 12
+        whitespace,              // 11
+        value(null),             // 10 = null
         ref("FormalParameters"), // 9 = params
         whitespace,              // 8
         keyword(")"),            // 7
@@ -2652,15 +2653,15 @@ grm.define("GeneratorDeclaration_2",
         whitespace,              // 2
         keyword("}"),            // 1
         pos,                     // 0 = end
-        spliceNode(16,"DefaultGeneratorDeclaration",16,0,[9,3]),
+        spliceNode(17,"GeneratorDeclaration",17,0,[10,9,3]),
     ]));
 
 // GeneratorDeclaration
 
 grm.define("GeneratorDeclaration",
     choice([
-        ref("GeneratorDeclaration_1"),
-        ref("GeneratorDeclaration_2"),
+        ref("GeneratorDeclaration_named"),
+        ref("GeneratorDeclaration_unnamed"),
     ]));
 
 // GeneratorExpression

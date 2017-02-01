@@ -534,7 +534,6 @@ const DeclarationOrExpressionType = {
         switch (node.kind) {
             case "FunctionDeclaration":
             case "GeneratorDeclaration":
-            case "DefaultGeneratorDeclaration":
             case "ClassDeclaration":
             case "Let":
             case "Const":
