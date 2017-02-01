@@ -18,6 +18,7 @@ import {
     ExpressionNode,
     StatementListItemNode,
     DeclarationNode,
+    HoistableDeclarationNode,
     BindingIdentifierNode,
     GenericStringNode,
     check,
@@ -69,9 +70,8 @@ export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNo
         throw new CannotConvertError("DeclarationNode",node);
     switch (node.kind) {
         case "FunctionDeclaration":
-            return FunctionDeclarationNode.fromGeneric(node);
         case "GeneratorDeclaration":
-            return GeneratorDeclarationNode.fromGeneric(node);
+            return HoistableDeclarationNode_fromGeneric(node);
         case "ClassDeclaration":
             return ClassDeclarationNode.fromGeneric(node);
         case "Let":
@@ -80,6 +80,19 @@ export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNo
             return ConstNode.fromGeneric(node);
         default:
             throw new CannotConvertError("DeclarationNode",node);
+    }
+}
+
+export function HoistableDeclarationNode_fromGeneric(node: ASTNode | null): HoistableDeclarationNode {
+    if (node === null)
+        throw new CannotConvertError("HoistableDeclarationNode",node);
+    switch (node.kind) {
+        case "FunctionDeclaration":
+            return FunctionDeclarationNode.fromGeneric(node);
+        case "GeneratorDeclaration":
+            return GeneratorDeclarationNode.fromGeneric(node);
+        default:
+            throw new CannotConvertError("HoistableDeclarationNode",node);
     }
 }
 

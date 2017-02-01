@@ -76,6 +76,10 @@ export abstract class DeclarationNode extends StatementListItemNode {
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 }
 
+export abstract class HoistableDeclarationNode extends DeclarationNode {
+    public _type_HoistableDeclarationNode: any;
+}
+
 export class BindingIdentifierNode extends ASTNode {
     public _type_BindingIdentifierNode: any;
     public readonly value: string;

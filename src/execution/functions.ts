@@ -17,6 +17,7 @@ import {
     ASTNode,
     ExpressionNode,
     DeclarationNode,
+    HoistableDeclarationNode,
     BindingIdentifierNode,
     check,
     CannotConvertError,
@@ -97,7 +98,7 @@ export class FormalParameterListNode extends ASTNode {
     }
 }
 
-export class FunctionDeclarationNode extends DeclarationNode {
+export class FunctionDeclarationNode extends HoistableDeclarationNode {
     public _type_FunctionDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
@@ -460,7 +461,7 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
     }
 }
 
-export class GeneratorDeclarationNode extends DeclarationNode {
+export class GeneratorDeclarationNode extends HoistableDeclarationNode {
     public _type_GeneratorDeclarationNode: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
