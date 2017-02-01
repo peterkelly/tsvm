@@ -462,13 +462,13 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
 
 export class GeneratorDeclarationNode extends DeclarationNode {
     public _type_GeneratorDeclarationNode: any;
-    public readonly ident: BindingIdentifierNode;
+    public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
 
     public constructor(
         range: Range,
-        ident: BindingIdentifierNode,
+        ident: BindingIdentifierNode | null,
         params: FormalParametersNode,
         body: StatementListNode
     ) {
@@ -488,37 +488,10 @@ export class GeneratorDeclarationNode extends DeclarationNode {
 
     public static fromGeneric(node: ASTNode | null): GeneratorDeclarationNode {
         node = check.node(node,"GeneratorDeclaration",3);
-        const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
+        const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
         const params = FormalParametersNode.fromGeneric(node.children[1]);
         const body = StatementListNode.fromGeneric(node.children[2]);
         return new GeneratorDeclarationNode(node.range,ident,params,body);
-    }
-}
-
-export class DefaultGeneratorDeclarationNode extends DeclarationNode {
-    public _type_DefaultGeneratorDeclarationNode: any;
-    public readonly params: FormalParametersNode;
-    public readonly body: StatementListNode;
-
-    public constructor(range: Range, params: FormalParametersNode, body: StatementListNode) {
-        super(range,"DefaultGeneratorDeclaration");
-        this.params = params;
-        this.body = body;
-    }
-
-    public get children(): (ASTNode | null)[] {
-        return [this.params,this.body];
-    }
-
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("DefaultGeneratorDeclarationNode.evaluate not implemented");
-    }
-
-    public static fromGeneric(node: ASTNode | null): DefaultGeneratorDeclarationNode {
-        node = check.node(node,"DefaultGeneratorDeclaration",2);
-        const params = FormalParametersNode.fromGeneric(node.children[0]);
-        const body = StatementListNode.fromGeneric(node.children[1]);
-        return new DefaultGeneratorDeclarationNode(node.range,params,body);
     }
 }
 

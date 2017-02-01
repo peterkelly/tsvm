@@ -31,7 +31,6 @@ import {
 import {
     FunctionDeclarationNode,
     GeneratorDeclarationNode,
-    DefaultGeneratorDeclarationNode,
     ClassDeclarationNode,
 } from "./functions";
 import {
@@ -73,8 +72,6 @@ export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNo
             return FunctionDeclarationNode.fromGeneric(node);
         case "GeneratorDeclaration":
             return GeneratorDeclarationNode.fromGeneric(node);
-        case "DefaultGeneratorDeclaration":
-            return DefaultGeneratorDeclarationNode.fromGeneric(node);
         case "ClassDeclaration":
             return ClassDeclarationNode.fromGeneric(node);
         case "Let":
@@ -177,7 +174,6 @@ export function StatementListItemNode_fromGeneric(node: ASTNode | null): Stateme
     switch (node.kind) {
         case "FunctionDeclaration":
         case "GeneratorDeclaration":
-        case "DefaultGeneratorDeclaration":
         case "ClassDeclaration":
         case "Let":
         case "Const":
