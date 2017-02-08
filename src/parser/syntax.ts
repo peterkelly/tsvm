@@ -2897,6 +2897,7 @@ grm.define("ClassElement",
 grm.define("Script",
     sequence([
         pos,
+        whitespace,
         choice([
             ref("ScriptBody"),
             sequence([
@@ -2905,7 +2906,7 @@ grm.define("Script",
             ]),
         ]),
         pos,
-        spliceNode(2,"Script",2,0,[1]),
+        spliceNode(3,"Script",3,0,[1]),
     ]));
 
 // ScriptBody
@@ -2920,6 +2921,7 @@ grm.define("ScriptBody",
 grm.define("Module",
     sequence([
         pos,
+        whitespace,
         choice([
             ref("ModuleBody"),
             sequence([
@@ -2928,7 +2930,7 @@ grm.define("Module",
             ]),
         ]),
         pos,
-        spliceNode(2,"Module",2,0,[1]),
+        spliceNode(3,"Module",3,0,[1]),
     ]));
 
 // ModuleBody
