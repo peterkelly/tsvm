@@ -66,6 +66,9 @@ import {
     NewDeclarativeEnvironment,
 } from "../runtime/08-01-environment";
 import {
+    ToBoolean,
+} from "../runtime/07-01-conversion";
+import {
     ExecutionContext,
 } from "../runtime/08-03-context";
 import {
@@ -1481,7 +1484,74 @@ export class IfStatementNode extends StatementNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("IfStatementNode.evaluate not implemented");
+        if (this.falseBranch != null) {
+            // 1. Let exprRef be the result of evaluating Expression.
+            const exprRefComp = this.condition.evaluate(ctx);
+
+            // 2. Let exprValue be ToBoolean(GetValue(exprRef)).
+            const exprValueComp = ToBoolean(ctx.realm,GetValue(ctx.realm,exprRefComp));
+
+            // 3. ReturnIfAbrupt(exprValue).
+            if (!(exprValueComp instanceof NormalCompletion))
+                return exprValueComp;
+            const exprValue = exprValueComp.value.booleanValue;
+
+            // 4. If exprValue is true, then
+            let stmtCompletion: Completion<JSValue | Reference | Empty>;
+            if (exprValue) {
+                // a. Let stmtCompletion be the result of evaluating the first Statement.
+                stmtCompletion = this.trueBranch.evaluate(ctx);
+            }
+            // 5. Else,
+            else {
+                // a. Let stmtCompletion be the result of evaluating the second Statement.
+                stmtCompletion = this.falseBranch.evaluate(ctx);
+            }
+            // 6. ReturnIfAbrupt(stmtCompletion).
+            if (!(stmtCompletion instanceof NormalCompletion))
+                return stmtCompletion;
+
+            // 7. If stmtCompletion.[[value]] is not empty, return stmtCompletion.
+            if (!(stmtCompletion.value instanceof Empty))
+                return stmtCompletion;
+
+            // 8. Return NormalCompletion(undefined).
+            return new NormalCompletion(new JSUndefined());
+        }
+        else {
+            // 1. Let exprRef be the result of evaluating Expression.
+            const exprRefComp = this.condition.evaluate(ctx);
+
+            // 2. Let exprValue be ToBoolean(GetValue(exprRef)).
+            const exprValueComp = ToBoolean(ctx.realm,GetValue(ctx.realm,exprRefComp));
+
+            // 3. ReturnIfAbrupt(exprValue).
+            if (!(exprValueComp instanceof NormalCompletion))
+                return exprValueComp;
+            const exprValue = exprValueComp.value.booleanValue;
+
+            // 4. If exprValue is false, then
+            if (!exprValue) {
+                // a. Return NormalCompletion(undefined).
+                return new NormalCompletion(new JSUndefined());
+            }
+            // 5. Else,
+            else {
+                // a. Let stmtCompletion be the result of evaluating Statement.
+                const stmtCompletion = this.trueBranch.evaluate(ctx);
+
+                // b. ReturnIfAbrupt(stmtCompletion).
+                if (!(stmtCompletion instanceof NormalCompletion))
+                    return stmtCompletion;
+
+                // c. If stmtCompletion.[[value]] is not empty, return stmtCompletion.
+                if (!(stmtCompletion.value instanceof Empty))
+                    return stmtCompletion;
+
+                // d. Return NormalCompletion(undefined).
+                return new NormalCompletion(new JSUndefined());
+            }
+        }
     }
 
     public static fromGeneric(node: ASTNode | null): IfStatementNode {
