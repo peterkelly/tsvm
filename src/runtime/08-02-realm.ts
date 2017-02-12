@@ -40,7 +40,7 @@ import {
     HasProperty,
 } from "./07-03-objects";
 import {
-    NewDeclarativeEnvironment,
+    NewGlobalEnvironment,
     GetIdentifierReference,
     FunctionEnvironmentRecord,
     GlobalEnvironmentRecord,
@@ -86,7 +86,7 @@ export class RealmImpl implements Realm {
     public constructor() {
         this.intrinsics = CreateIntrinsics();
         this.globalThis = new JSObject(this.intrinsics.ObjectPrototype);
-        this.globalEnv = NewDeclarativeEnvironment(this,null); // FIXME
+        this.globalEnv = NewGlobalEnvironment(this,this.globalThis);
         this.templateMap = [];
         SetDefaultGlobalBindings(this);
         setupIntrinsicObjects(this);
