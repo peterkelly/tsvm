@@ -48,7 +48,7 @@ export function pr_double_abstractRelationalComparison(x: number, y: number): bo
         return false;
     if (pr_double_isNegativeInfinity(x))
         return true;
-    const result = (x < y);
+    return (x < y);
 }
 
 export function pr_double_equalsExact(x: number, y: number): boolean {
@@ -106,6 +106,10 @@ export function pr_Infinity(): number {
 
 export function pr_NaN(): number {
     return NaN;
+}
+
+export function pr_double_negate(a: number) {
+    return -a;
 }
 
 export function pr_double_add(a: number, b: number) {

@@ -78,11 +78,17 @@ import {
 import {
     RequireObjectCoercible,
     IsCallable,
+    abstractRelationalComparison,
+    abstractEqualityComparison,
+    strictEqualityComparison,
 } from "../runtime/07-02-testcompare";
 import {
     Call,
 } from "../runtime/07-03-objects";
 import {
+    pr_double_isNaN,
+    pr_NaN,
+    pr_double_negate,
     pr_double_add,
     pr_double_sub,
     pr_double_mul,
@@ -1253,8 +1259,13 @@ export class UnaryPlusNode extends ExpressionNode {
         return [this.expr];
     }
 
+    // ES6 Section 12.5.9.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("UnaryPlusNode.evaluate not implemented");
+        // 1. Let expr be the result of evaluating UnaryExpression.
+        const exprComp = this.expr.evaluate(ctx);
+
+        // 2. Return ToNumber(GetValue(expr)).
+        return ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryPlusNode {
@@ -1278,7 +1289,24 @@ export class UnaryMinusNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("UnaryMinusNode.evaluate not implemented");
+        // 1. Let expr be the result of evaluating UnaryExpression.
+        const exprComp = this.expr.evaluate(ctx);
+
+        // 2. Let oldValue be ToNumber(GetValue(expr)).
+        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+
+        // 3. ReturnIfAbrupt(oldValue).
+        if (!(oldValueComp instanceof NormalCompletion))
+            return oldValueComp;
+        const oldValue = oldValueComp.value;
+
+        // 4. If oldValue is NaN, return NaN.
+        if (pr_double_isNaN(oldValue.numberValue))
+            return new NormalCompletion(new JSNumber(pr_NaN()));
+
+        // 5. Return the result of negating oldValue; that is, compute a Number with the same magnitude but opposite sign.
+        const result = pr_double_negate(oldValue.numberValue);
+        return new NormalCompletion(new JSNumber(result));
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryMinusNode {
@@ -1668,8 +1696,41 @@ export class LessThanNode extends BinaryNode {
         super(range,"LessThan",left,right);
     }
 
+    // ES6 Section 12.9.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("LessThanNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating RelationalExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating ShiftExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 6. Let r be the result of performing Abstract Relational Comparison lval < rval. (see 7.2.11)
+        const rComp = abstractRelationalComparison(ctx.realm,lval,rval,true);
+
+        // 7. ReturnIfAbrupt(r).
+        if (!(rComp instanceof NormalCompletion))
+            return rComp;
+        const r = rComp.value;
+
+        // 8. If r is undefined, return false. Otherwise, return r.
+        if (r instanceof JSUndefined)
+            return new NormalCompletion(new JSBoolean(false));
+        else
+            return new NormalCompletion(r);
     }
 
     public static fromGeneric(node: ASTNode | null): LessThanNode {
@@ -1687,8 +1748,41 @@ export class GreaterThanNode extends BinaryNode {
         super(range,"GreaterThan",left,right);
     }
 
+    // ES6 Section 12.9.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("GreaterThanNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating RelationalExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating ShiftExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 6. Let r be the result of performing Abstract Relational Comparison rval < lval with LeftFirst equal to false.
+        const rComp = abstractRelationalComparison(ctx.realm,rval,lval,false);
+
+        // 7. ReturnIfAbrupt(r).
+        if (!(rComp instanceof NormalCompletion))
+            return rComp;
+        const r = rComp.value;
+
+        // 8. If r is undefined, return false. Otherwise, return r.
+        if (r instanceof JSUndefined)
+            return new NormalCompletion(new JSBoolean(false));
+        else
+            return new NormalCompletion(r);
     }
 
     public static fromGeneric(node: ASTNode | null): GreaterThanNode {
@@ -1706,8 +1800,43 @@ export class LessEqualNode extends BinaryNode {
         super(range,"LessEqual",left,right);
     }
 
+    // ES6 Section 12.9.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("LessEqualNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating RelationalExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating ShiftExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 6. Let r be the result of performing Abstract Relational Comparison rval < lval with LeftFirst equal to false.
+        const rComp = abstractRelationalComparison(ctx.realm,rval,lval,false);
+
+        // 7. ReturnIfAbrupt(r).
+        if (!(rComp instanceof NormalCompletion))
+            return rComp;
+        const r = rComp.value;
+
+        // 8. If r is true or undefined, return false. Otherwise, return true.
+        if ((r instanceof JSBoolean) && (r.booleanValue === true))
+            return new NormalCompletion(new JSBoolean(false));
+        else if (r instanceof JSUndefined)
+            return new NormalCompletion(new JSBoolean(false));
+        else
+            return new NormalCompletion(new JSBoolean(true));
     }
 
     public static fromGeneric(node: ASTNode | null): LessEqualNode {
@@ -1725,8 +1854,43 @@ export class GreaterEqualNode extends BinaryNode {
         super(range,"GreaterEqual",left,right);
     }
 
+    // ES6 Section 12.9.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("GreaterEqualNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating RelationalExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating ShiftExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 6. Let r be the result of performing Abstract Relational Comparison lval < rval.
+        const rComp = abstractRelationalComparison(ctx.realm,lval,rval,true);
+
+        // 7. ReturnIfAbrupt(r).
+        if (!(rComp instanceof NormalCompletion))
+            return rComp;
+        const r = rComp.value;
+
+        // 8. If r is true or undefined, return false. Otherwise, return true.
+        if ((r instanceof JSBoolean) && (r.booleanValue === true))
+            return new NormalCompletion(new JSBoolean(false));
+        else if (r instanceof JSUndefined)
+            return new NormalCompletion(new JSBoolean(false));
+        else
+            return new NormalCompletion(new JSBoolean(true));
     }
 
     public static fromGeneric(node: ASTNode | null): GreaterEqualNode {
@@ -1784,8 +1948,37 @@ export class AbstractEqualsNode extends BinaryNode {
         super(range,"AbstractEquals",left,right);
     }
 
+    // ES6 Section 12.10.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("AbstractEqualsNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating EqualityExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating RelationalExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+
+        // 6. ReturnIfAbrupt(rval).
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 7. Return the result of performing Abstract Equality Comparison rval == lval.
+        const resultComp = abstractEqualityComparison(ctx.realm,rval,lval);
+        if (!(resultComp instanceof NormalCompletion))
+            return resultComp;
+        const result = resultComp.value;
+
+        return new NormalCompletion(new JSBoolean(result));
     }
 
     public static fromGeneric(node: ASTNode | null): AbstractEqualsNode {
@@ -1803,8 +1996,41 @@ export class AbstractNotEqualsNode extends BinaryNode {
         super(range,"AbstractNotEquals",left,right);
     }
 
+    // ES6 Section 12.10.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("AbstractNotEqualsNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating EqualityExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating RelationalExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+
+        // 6. ReturnIfAbrupt(rval).
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 7. Let r be the result of performing Abstract Equality Comparison rval == lval.
+        const rComp = abstractEqualityComparison(ctx.realm,rval,lval);
+        if (!(rComp instanceof NormalCompletion))
+            return rComp;
+        const r = rComp.value;
+
+        // 8. If r is true, return false. Otherwise, return true.
+        if (r === true)
+            return new NormalCompletion(new JSBoolean(false));
+        else
+            return new NormalCompletion(new JSBoolean(true));
     }
 
     public static fromGeneric(node: ASTNode | null): AbstractNotEqualsNode {
@@ -1822,8 +2048,33 @@ export class StrictEqualsNode extends BinaryNode {
         super(range,"StrictEquals",left,right);
     }
 
+    // ES6 Section 12.10.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("StrictEqualsNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating EqualityExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval)
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating RelationalExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+
+        // 6. ReturnIfAbrupt(rval).
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 7. Return the result of performing Strict Equality Comparison rval === lval.
+        const result = strictEqualityComparison(ctx.realm,rval,lval);
+        return new NormalCompletion(new JSBoolean(result));
     }
 
     public static fromGeneric(node: ASTNode | null): StrictEqualsNode {
@@ -1841,8 +2092,35 @@ export class StrictNotEqualsNode extends BinaryNode {
         super(range,"StrictNotEquals",left,right);
     }
 
+    // ES6 Section 12.10.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("StrictNotEqualsNode.evaluate not implemented");
+        // 1. Let lref be the result of evaluating EqualityExpression.
+        const lrefComp = this.left.evaluate(ctx);
+
+        // 2. Let lval be GetValue(lref).
+        const lvalComp = GetValue(ctx.realm,lrefComp);
+
+        // 3. ReturnIfAbrupt(lval).
+        if (!(lvalComp instanceof NormalCompletion))
+            return lvalComp;
+        const lval = lvalComp.value;
+
+        // 4. Let rref be the result of evaluating RelationalExpression.
+        const rrefComp = this.right.evaluate(ctx);
+
+        // 5. Let rval be GetValue(rref).
+        const rvalComp = GetValue(ctx.realm,rrefComp);
+
+        // 6. ReturnIfAbrupt(rval).
+        if (!(rvalComp instanceof NormalCompletion))
+            return rvalComp;
+        const rval = rvalComp.value;
+
+        // 7. Let r be the result of performing Strict Equality Comparison rval === lval.
+        const r = strictEqualityComparison(ctx.realm,rval,lval);
+
+        // 8. If r is true, return false. Otherwise, return true.
+        return new NormalCompletion(new JSBoolean(!r));
     }
 
     public static fromGeneric(node: ASTNode | null): StrictNotEqualsNode {

@@ -204,33 +204,73 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
 // ES6 Section 7.2.11: Abstract Relational Comparison
 
 export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValue, leftFirst: boolean = true): Completion<JSBoolean | JSUndefined> {
+    // 1. ReturnIfAbrupt(x).
+    // (implicit in parameter type)
+
+    // 2. ReturnIfAbrupt(y).
+    // (implicit in parameter type)
+
     let px: JSValue;
     let py: JSValue;
+
+    // 3. If the LeftFirst flag is true, then
     if (leftFirst) {
+        // a. Let px be ToPrimitive(x, hint Number).
+        // b. ReturnIfAbrupt(px).
         const pxComp = ToPrimitive(realm,x,ValueType.Number);
         if (!(pxComp instanceof NormalCompletion))
             return pxComp;
         px = pxComp.value;
+        // c. Let py be ToPrimitive(y, hint Number).
+        // d. ReturnIfAbrupt(py).
         const pyComp = ToPrimitive(realm,y,ValueType.Number);
         if (!(pyComp instanceof NormalCompletion))
             return pyComp;
         py = pyComp.value;
     }
+    // 4. Else the order of evaluation needs to be reversed to preserve left to right evaluation
     else {
+        // a. Let py be ToPrimitive(y, hint Number).
+        // b. ReturnIfAbrupt(py).
         const pyComp = ToPrimitive(realm,y,ValueType.Number);
         if (!(pyComp instanceof NormalCompletion))
             return pyComp;
         py = pyComp.value;
+        // c. Let px be ToPrimitive(x, hint Number).
+        // d. ReturnIfAbrupt(px).
         const pxComp = ToPrimitive(realm,x,ValueType.Number);
         if (!(pxComp instanceof NormalCompletion))
             return pxComp;
         px = pxComp.value;
     }
+
+    // 5. If both px and py are Strings, then
     if ((px instanceof JSString) && (py instanceof JSString)) {
+        // a. If py is a prefix of px, return false. (A String value p is a prefix of String value q if q can be the result of concatenating p and some other String r. Note that any String is a prefix of itself, because r may be the empty String.)
+        // b. If px is a prefix of py, return true.
+        // c. Let k be the smallest nonnegative integer such that the code unit at index k within px is different from the code unit at index k within py. (There must be such a k, for neither String is a prefix of the other.)
+        // d. Let m be the integer that is the code unit value at index k within px.
+        // e. Let n be the integer that is the code unit value at index k within py.
+        // f. If m < n, return true. Otherwise, return false.
         const result = pr_string_lessThan(px.stringValue,py.stringValue);
         return new NormalCompletion(new JSBoolean(result));
     }
+    // 6. Else,
     else {
+        // a. Let nx be ToNumber(px). Because px and py are primitive values evaluation order is not important.
+        // b. ReturnIfAbrupt(nx).
+        // c. Let ny be ToNumber(py).
+        // d. ReturnIfAbrupt(ny).
+        // e. If nx is NaN, return undefined.
+        // f. If ny is NaN, return undefined.
+        // g. If nx and ny are the same Number value, return false.
+        // h. If nx is +0 and ny is −0, return false.
+        // i. If nx is −0 and ny is +0, return false.
+        // j. If nx is +∞, return false.
+        // k. If ny is +∞, return true.
+        // l. If ny is −∞, return false.
+        // m. If nx is −∞, return true.
+        // n. If the mathematical value of nx is less than the mathematical value of ny —note that these mathematical values are both finite and not both zero—return true. Otherwise, return false.
         const nxComp = ToNumber(realm,px);
         if (!(nxComp instanceof NormalCompletion))
             return nxComp;
