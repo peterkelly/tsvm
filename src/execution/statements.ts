@@ -77,6 +77,13 @@ import {
     InitializeReferencedBinding,
 } from "../runtime/06-02-03-reference";
 
+// TODO
+export class LabelSet {
+    public contains(name: string): boolean {
+        return false;
+    }
+}
+
 export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNode {
     if (node === null)
         throw new CannotConvertError("DeclarationNode",node);
@@ -1633,8 +1640,51 @@ export class WhileStatementNode extends BreakableStatementNode {
         this.body.varScopedDeclarations(out);
     }
 
+    // ES6 Section 13.7.3.6 Runtime Semantics: LabelledEvaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("WhileStatementNode.evaluate not implemented");
+        const labelSet = new LabelSet();
+
+        // 1. Let V = undefined.
+        let V: JSValue | Reference | Empty = new JSUndefined();
+
+        // 2. Repeat
+        while (true) {
+            // a. Let exprRef be the result of evaluating Expression.
+            const exprRefComp = this.condition.evaluate(ctx);
+
+            // b. Let exprValue be GetValue(exprRef).
+            const exprValueComp = GetValue(ctx.realm,exprRefComp);
+
+            // c. ReturnIfAbrupt(exprValue).
+            if (!(exprValueComp instanceof NormalCompletion))
+                return exprValueComp;
+
+            // d. If ToBoolean(exprValue) is false, return NormalCompletion(V).
+            const boolValueComp = ToBoolean(ctx.realm,exprValueComp);
+            if (!(boolValueComp instanceof NormalCompletion))
+                return boolValueComp;
+            if (!boolValueComp.value.booleanValue)
+                return new NormalCompletion(V);
+
+            // e. Let stmt be the result of evaluating Statement.
+            const stmtComp = this.body.evaluate(ctx);
+
+            // f. If LoopContinues (stmt, labelSet) is false, return Completion(UpdateEmpty(stmt, V)).
+            if (stmtComp instanceof NormalCompletion) {
+                // return true
+            }
+            else if ((stmtComp instanceof ContinueCompletion) &&
+                    ((stmtComp.target instanceof Empty) || labelSet.contains(stmtComp.target))) {
+                // return true
+            }
+            else {
+                // return false
+                return stmtComp;
+            }
+
+            // g. If stmt.[[value]] is not empty, let V = stmt.[[value]].
+            // TODO
+        }
     }
 
     public static fromGeneric(node: ASTNode | null): WhileStatementNode {

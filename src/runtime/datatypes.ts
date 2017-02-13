@@ -536,16 +536,16 @@ export class NormalCompletion<T> {
 
 export class BreakCompletion {
     public _nominal_type_BreakCompletion: any;
-    public target: string;
-    public constructor(target: string) {
+    public target: string | Empty;
+    public constructor(target: string | Empty) {
         this.target = target;
     }
 }
 
 export class ContinueCompletion {
     public _nominal_type_ContinueCompletion: any;
-    public target: string;
-    public constructor(target: string) {
+    public target: string | Empty;
+    public constructor(target: string | Empty) {
         this.target = target;
     }
 }
