@@ -1602,7 +1602,40 @@ export class DoStatementNode extends BreakableStatementNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("DoStatementNode.evaluate not implemented");
+        // 1. Let V = undefined.
+        let V: JSValue | Reference | Empty = new JSUndefined();
+
+        // 2. Repeat
+        while (true) {
+            // a. Let stmt be the result of evaluating Statement.
+            const stmtComp = this.body.evaluate(ctx);
+
+            // b. If LoopContinues(stmt, labelSet) is false, return Completion(UpdateEmpty(stmt, V)).
+            // TODO
+            if (!(stmtComp instanceof NormalCompletion))
+                return stmtComp;
+
+            // c. If stmt.[[value]] is not empty, let V = stmt.[[value]].
+            if (!(stmtComp.value instanceof Empty))
+                V = stmtComp.value;
+
+            // d. Let exprRef be the result of evaluating Expression.
+            const exprRefComp = this.condition.evaluate(ctx);
+
+            // e. Let exprValue be GetValue(exprRef).
+            const exprValueComp = GetValue(ctx.realm,exprRefComp);
+
+            // f. ReturnIfAbrupt(exprValue).
+            if (!(exprValueComp instanceof NormalCompletion))
+                return exprValueComp;
+
+            // g. If ToBoolean(exprValue) is false, return NormalCompletion(V).
+            const boolValueComp = ToBoolean(ctx.realm,exprValueComp);
+            if (!(boolValueComp instanceof NormalCompletion))
+                return boolValueComp;
+            if (!(boolValueComp.value.booleanValue))
+                return new NormalCompletion(V);
+        }
     }
 
     public static fromGeneric(node: ASTNode | null): DoStatementNode {
