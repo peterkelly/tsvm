@@ -115,7 +115,7 @@ export function HoistableDeclarationNode_fromGeneric(node: ASTNode | null): Hois
     }
 }
 
-export type ForCInitType = ExpressionNode | VarNode | LetNode | ConstNode | null;
+export type ForCInitType = ExpressionNode | VarNode | LexicalDeclarationNode | null;
 export const ForCInitType = {
     fromGeneric(node: ASTNode | null): ForCInitType {
         try { return ExpressionNode_fromGeneric(node); } catch (e) {}
@@ -1730,6 +1730,127 @@ export class WhileStatementNode extends BreakableStatementNode {
 
 // ES6 Section 13.7.4: The for Statement
 
+function CreatePerIterationEnvironment(ctx: ExecutionContext, perIterationBindings: string[]): Completion<void> {
+    // 1. If perIterationBindings has any elements, then
+    if (perIterationBindings.length > 0) {
+        // a. Let lastIterationEnv be the running execution context’s LexicalEnvironment.
+        const lastIterationEnv = ctx.lexicalEnvironment;
+
+        // b. Let outer be lastIterationEnv’s outer environment reference.
+        const outer = lastIterationEnv.outer;
+
+        // c. Assert: outer is not null.
+        if (outer == null)
+            return ctx.realm.throwReferenceError("Assertion failure: outer should not be null");
+
+        // d. Let thisIterationEnv be NewDeclarativeEnvironment(outer).
+        const thisIterationEnv = NewDeclarativeEnvironment(ctx.realm,outer);
+
+        // e. For each element bn of perIterationBindings do,
+        for (const bn of perIterationBindings) {
+            // i. Let status be thisIterationEnv.CreateMutableBinding(bn, false).
+            const statusComp = thisIterationEnv.record.CreateMutableBinding(bn,false);
+
+            // ii. Assert: status is never an abrupt completion.
+            if (!(statusComp instanceof NormalCompletion))
+                return ctx.realm.throwReferenceError("Assertion failed: CreateMutableBinding for "+bn+" failed");
+
+            // iii. Let lastValue be lastIterationEnv.GetBindingValue(bn, true).
+            const lastValueComp = lastIterationEnv.record.GetBindingValue(bn,true);
+
+            // iv. ReturnIfAbrupt(lastValue).
+            if (!(lastValueComp instanceof NormalCompletion))
+                return lastValueComp;
+            const lastValue = lastValueComp.value;
+
+            // v. Perform thisIterationEnv.InitializeBinding(bn, lastValue).
+            const initComp = thisIterationEnv.record.InitializeBinding(bn,lastValue);
+            if (!(initComp instanceof NormalCompletion))
+                return initComp;
+        }
+
+        // f. Set the running execution context’s LexicalEnvironment to thisIterationEnv.
+        ctx.lexicalEnvironment = thisIterationEnv;
+    }
+
+    // 2. Return undefined
+    // (implicit)
+
+    return new NormalCompletion(undefined);
+}
+
+function ForBodyEvaluation(ctx: ExecutionContext,
+    test: ExpressionNode | null,
+    increment: ExpressionNode | null,
+    stmt: StatementNode,
+    perIterationBindings: string[],
+    labelSet: LabelSet | null): Completion<JSValue | Reference | Empty> {
+
+    // 1. Let V = undefined.
+    let V: JSValue | Reference | Empty = new JSUndefined();
+
+    // 2. Let status be CreatePerIterationEnvironment(perIterationBindings).
+    let statusComp = CreatePerIterationEnvironment(ctx,perIterationBindings);
+
+    // 3. ReturnIfAbrupt(status).
+    if (!(statusComp instanceof NormalCompletion))
+        return statusComp;
+
+    // 4. Repeat
+    while (true) {
+        // a. If test is not [empty], then
+        if (test != null) {
+            // i. Let testRef be the result of evaluating test.
+            const testRefComp = test.evaluate(ctx);
+
+            // ii. Let testValue be GetValue(testRef).
+            const testValueComp = GetValue(ctx.realm,testRefComp);
+
+            // iii. ReturnIfAbrupt(testValue).
+            if (!(testValueComp instanceof NormalCompletion))
+                return testValueComp;
+
+            // iv. If ToBoolean(testValue) is false, return NormalCompletion(V).
+            const boolValueComp = ToBoolean(ctx.realm,testValueComp);
+            if (!(boolValueComp instanceof NormalCompletion))
+                return boolValueComp;
+            if (!boolValueComp.value.booleanValue)
+                return new NormalCompletion(V);
+        }
+
+        // b. Let result be the result of evaluating stmt.
+        const resultComp = stmt.evaluate(ctx);
+        // c. If LoopContinues(result, labelSet) is false, return Completion(UpdateEmpty(result, V)).
+        // TODO
+        if (!(resultComp instanceof NormalCompletion))
+            return resultComp;
+
+        // d. If result.[[value]] is not empty, let V = result.[[value]].
+        if (!(resultComp.value instanceof Empty))
+            V = resultComp.value;
+
+        // e. Let status be CreatePerIterationEnvironment(perIterationBindings).
+        statusComp = CreatePerIterationEnvironment(ctx,perIterationBindings);
+
+        // f. ReturnIfAbrupt(status).
+        if (!(statusComp instanceof NormalCompletion))
+            return statusComp;
+
+        // g. If increment is not [empty], then
+        if (increment != null) {
+            // i. Let incRef be the result of evaluating increment.
+            const incRefComp = increment.evaluate(ctx);
+
+            // ii. Let incValue be GetValue(incRef).
+            const incValueComp = GetValue(ctx.realm,incRefComp);
+
+            // iii. ReturnIfAbrupt(incValue).
+            if (!(incValueComp instanceof NormalCompletion))
+                return incValueComp;
+        }
+    }
+}
+
 export class ForCNode extends BreakableStatementNode {
     public _type_ForCNode: any;
     public readonly init: ForCInitType;
@@ -1769,8 +1890,105 @@ export class ForCNode extends BreakableStatementNode {
         this.body.varScopedDeclarations(out);
     }
 
+    // ES6 Section 13.7.4.7 Runtime Semantics: LabelledEvaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("ForCNode.evaluate not implemented");
+        const labelSet: LabelSet | null = null;
+
+        if (this.init instanceof LexicalDeclarationNode) {
+            // IterationStatement : for ( LexicalDeclaration Expressionopt ; Expressionopt ) Statement
+
+            // 1. Let oldEnv be the running execution context’s LexicalEnvironment.
+            const oldEnv = ctx.lexicalEnvironment;
+
+            // 2. Let loopEnv be NewDeclarativeEnvironment(oldEnv).
+            const loopEnv = NewDeclarativeEnvironment(ctx.realm,oldEnv);
+
+            // 3. Let isConst be the result of performing IsConstantDeclaration of LexicalDeclaration.
+            const isConst = this.init.isConstantDeclaration();
+
+            // 4. Let boundNames be the BoundNames of LexicalDeclaration.
+            const boundNames: string[] = [];
+            this.init.boundNames(boundNames);
+
+            // 5. For each element dn of boundNames do
+            for (const dn of boundNames) {
+                // a. If isConst is true, then
+                if (isConst) {
+                    // i. Perform loopEnv.CreateImmutableBinding(dn, true).
+                    const createComp = loopEnv.record.CreateImmutableBinding(dn,true);
+                    if (!(createComp instanceof NormalCompletion))
+                        return createComp; // Shouldn't happen
+                }
+                // b. Else,
+                else {
+                    // i. Perform loopEnv.CreateMutableBinding(dn, false).
+                    const createComp = loopEnv.record.CreateMutableBinding(dn,false);
+
+                    // ii. Assert: The above call to CreateMutableBinding will never return an abrupt completion.
+                    if (!(createComp instanceof NormalCompletion))
+                        return createComp; // Shouldn't happen
+                }
+            }
+
+            // 6. Set the running execution context’s LexicalEnvironment to loopEnv.
+            ctx.lexicalEnvironment = loopEnv;
+
+            // 7. Let forDcl be the result of evaluating LexicalDeclaration.
+            const forDclComp = this.init.evaluate(ctx);
+
+            // 8. If forDcl is an abrupt completion, then
+            if (!(forDclComp instanceof NormalCompletion)) {
+                // a. Set the running execution context’s LexicalEnvironment to oldEnv.
+                ctx.lexicalEnvironment = oldEnv;
+
+                // b. Return Completion(forDcl).
+                return forDclComp;
+            }
+
+            // 9. If isConst is false, let perIterationLets be boundNames otherwise let perIterationLets be « ».
+            const perIterationLets = !isConst ? boundNames : [];
+
+            // 10. Let bodyResult be ForBodyEvaluation(the first Expression, the second Expression, Statement, perIterationLets, labelSet).
+            const bodyResult = ForBodyEvaluation(ctx,this.condition,this.update,this.body,perIterationLets,labelSet);
+
+            // 11. Set the running execution context’s LexicalEnvironment to oldEnv.
+            ctx.lexicalEnvironment = oldEnv;
+
+            // 12. Return Completion(bodyResult).
+            return bodyResult;
+        }
+        else if (this.init instanceof VarNode) {
+            // IterationStatement : for ( var VariableDeclarationList ; Expressionopt ; Expressionopt ) Statement
+
+            // 1. Let varDcl be the result of evaluating VariableDeclarationList.
+            const varDclComp = this.init.evaluate(ctx);
+
+            // 2. ReturnIfAbrupt(varDcl).
+            if (!(varDclComp instanceof NormalCompletion))
+                return varDclComp;
+
+            // 3. Return ForBodyEvaluation(the first Expression, the second Expression, Statement, « », labelSet).
+            return ForBodyEvaluation(ctx,this.condition,this.update,this.body,[],labelSet);
+        }
+        else {
+            // IterationStatement : for ( Expressionopt ; Expressionopt ; Expressionopt ) Statement
+
+            // 1. If the first Expression is present, then
+            if (this.init != null) {
+                // a. Let exprRef be the result of evaluating the first Expression.
+                const exprRefComp = this.init.evaluate(ctx);
+
+                // b. Let exprValue be GetValue(exprRef).
+                const exprValueComp = GetValue(ctx.realm,exprRefComp);
+
+                // c. ReturnIfAbrupt(exprValue).
+                if (!(exprValueComp instanceof NormalCompletion))
+                    return exprValueComp;
+            }
+
+            // 2. Return ForBodyEvaluation(the second Expression, the third Expression, Statement, « », labelSet).
+            return ForBodyEvaluation(ctx,this.condition,this.update,this.body,[],labelSet);
+        }
     }
 
     public static fromGeneric(node: ASTNode | null): ForCNode {
