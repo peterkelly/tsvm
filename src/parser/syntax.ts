@@ -1748,7 +1748,7 @@ grm.define("IterationStatement_for_c",
             sequence([
                 not(keyword("let")), // FIXME: need tests for this
                 not(keyword("[")), // FIXME: need tests for this
-                ref("Expression"),              // 3 = expr
+                opt(ref("Expression")),         // 3 = expr
                 whitespace,                     // 2
                 keyword(";"),                   // 1
                 whitespace,                     // 0
