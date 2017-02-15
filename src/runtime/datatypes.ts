@@ -573,6 +573,11 @@ export type PropertyReferenceBase = JSObject | PrimitiveReferenceBase;
 export type ReferenceBase = JSUndefined | PropertyReferenceBase | EnvironmentRecord;
 
 export type Reference = UnresolvableReference | PropertyReference | EnvironmentReference;
+export function TypeIsReference(ref: any): ref is Reference {
+    return ((ref instanceof UnresolvableReference) ||
+            (ref instanceof PropertyReference) ||
+            (ref instanceof EnvironmentReference));
+}
 
 export abstract class AbstractReference {
     public _type_Reference: any;

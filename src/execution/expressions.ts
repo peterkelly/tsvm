@@ -51,9 +51,11 @@ import {
     ReturnCompletion,
     ThrowCompletion,
     Reference,
+    UnresolvableReference,
     AbstractReference,
     PropertyReference,
     Realm,
+    TypeIsReference,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
@@ -1187,8 +1189,46 @@ export class TypeOfNode extends ExpressionNode {
         return [this.expr];
     }
 
+    // 12.5.6.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("TypeOfNode.evaluate not implemented");
+        // 1. Let val be the result of evaluating UnaryExpression.
+        const val1Comp = this.expr.evaluate(ctx);
+        if (!(val1Comp instanceof NormalCompletion))
+            return val1Comp;
+        const val1 = val1Comp.value;
+
+        // 2. If Type(val) is Reference, then
+        if (TypeIsReference(val1)) {
+            // a. If IsUnresolvableReference(val) is true, return "undefined".
+            if (val1 instanceof UnresolvableReference)
+                return new NormalCompletion(new JSString("undefined"));
+        }
+
+        // 3. Let val be GetValue(val).
+        const val2Comp = GetValue(ctx.realm,val1);
+
+        // 4. ReturnIfAbrupt(val).
+        if (!(val2Comp instanceof NormalCompletion))
+            return val2Comp;
+        const val2 = val2Comp.value;
+
+        // 5. Return a String according to Table 35.
+        if (val2 instanceof JSUndefined)
+            return new NormalCompletion(new JSString("undefined"));
+        else if (val2 instanceof JSNull)
+            return new NormalCompletion(new JSString("object"));
+        else if (val2 instanceof JSBoolean)
+            return new NormalCompletion(new JSString("boolean"));
+        else if (val2 instanceof JSNumber)
+            return new NormalCompletion(new JSString("number"));
+        else if (val2 instanceof JSString)
+            return new NormalCompletion(new JSString("string"));
+        else if (val2 instanceof JSSymbol)
+            return new NormalCompletion(new JSString("symbol"));
+        else if ((val2 instanceof JSObject) && val2.implementsCall)
+            return new NormalCompletion(new JSString("function"));
+        else
+            return new NormalCompletion(new JSString("object"));
     }
 
     public static fromGeneric(node: ASTNode | null): TypeOfNode {
