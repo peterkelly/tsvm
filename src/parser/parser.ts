@@ -81,8 +81,12 @@ export class Parser {
                         }
                     }
                     else if (this.text[this.pos+1] == "/") {
+                        // Note: This implicitly handles windows-style newlines (\r\n) because \r
+                        // is skipped over just like any other character
                         this.pos += 2;
-                        while (this.text[this.pos] != "\n")
+                        while ((this.pos < this.len) && this.text[this.pos] != "\n")
+                            this.pos++;
+                        if ((this.pos < this.len) && this.text[this.pos] == "\n")
                             this.pos++;
                     }
                     else {
