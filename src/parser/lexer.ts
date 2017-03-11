@@ -154,15 +154,21 @@ export function lexIdent(p: Parser): Token | null {
 export function lexNumber(p: Parser): Token | null {
     // TODO: Complete numeric literal syntax according to spec
     const start = p.pos;
-    while ((p.current() != null) && (p.current() >= "0") && (p.current() <= "9"))
+    let current = p.current();
+    while ((current != null) && (current >= "0") && (current <= "9")) {
         p.next();
+        current = p.current();
+    }
     if (p.pos == start)
         return null;
     if (p.current() == ".") {
         p.next();
         const postDecimal = p.pos;
-        while ((p.current() != null) && (p.current() >= "0") && (p.current() <= "9"))
+        current = p.current();
+        while ((current != null) && (current >= "0") && (current <= "9")) {
             p.next();
+            current = p.current();
+        }
         if (p.pos == postDecimal) {
             p.pos = start;
             throw new ParseError(p,p.pos,"Invalid number");
