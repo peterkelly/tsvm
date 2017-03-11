@@ -16,8 +16,7 @@ import { Range } from "./ast";
 import {
     Token,
     upcomingKeyword,
-    isIdStart,
-    lexIdent,
+    lexIdentOrKeyword,
     lexNumber,
     lexString,
  } from "./lexer";
@@ -108,18 +107,14 @@ export class Parser {
     public nextToken(): Token | null {
         if (this.pos >= this.len)
             return null;
-        const token = upcomingKeyword(this);
-        if (token != null) {
-            this.pos = token.range.end;
-            return token;
-        }
         const c = this.text[this.pos];
-        if ((c == "\"") || (c == "'"))
+        const token = lexIdentOrKeyword(this);
+        if (token != null)
+            return token;
+        else if ((c == "\"") || (c == "'"))
             return lexString(this);
         else if ((c >= "0") && (c <= "9"))
             return lexNumber(this);
-        else if (isIdStart(c))
-            return lexIdent(this);
         else
             return null;
     }

@@ -131,7 +131,7 @@ export function upcomingKeyword(p: Parser): Token | null {
     return new Token(new Range(p.pos,p.pos+longest.length),keywordSet[longest],longest);
 }
 
-export function lexIdent(p: Parser): Token | null {
+export function lexIdentOrKeyword(p: Parser): Token | null {
     const start = p.pos;
     let current = p.current();
     if ((current != null) && isIdStart(current)) {
@@ -140,14 +140,16 @@ export function lexIdent(p: Parser): Token | null {
             current = p.next();
         const range = new Range(start,p.pos);
         const value = p.text.substring(range.start,range.end);
-        if (isKeyword(value)) {
-            p.pos = start;
-            throw new ParseError(p,p.pos,"Keyword "+JSON.stringify(value)+" used where identifier expected");
-        }
-        return new Token(new Range(start,p.pos),TokenKind.IDENT,value);
+        if (isKeyword(value))
+            return new Token(new Range(start,p.pos),keywordSet[value],value);
+        else
+            return new Token(new Range(start,p.pos),TokenKind.IDENT,value);
     }
     else {
-        return null;
+        const token = upcomingKeyword(p);
+        if (token != null)
+            p.pos = token.range.end;
+        return token;
     }
 }
 
