@@ -20,6 +20,7 @@ import { ASTNode } from "./parser/ast";
 import { ModuleNode } from "./execution/modules";
 // import { compileModule } from "./parser/compiler";
 import { evalModule } from "./execution/interpreter";
+import { RealmImpl } from "./runtime/08-02-realm";
 
 type CommandFunction = (input: string) => string;
 type CommandSet = { [name: string]: CommandFunction };
@@ -94,7 +95,8 @@ const commands: CommandSet = {
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
-        const typedRoot = ModuleNode.fromGeneric(root);
+        const realm = new RealmImpl();
+        const typedRoot = ModuleNode.fromGeneric(root,realm);
         return nodeToPlainTree(typedRoot,p);
     },
 
@@ -104,7 +106,8 @@ const commands: CommandSet = {
         p.skipWhitespace();
         if (p.pos < p.len)
             throw new ParseError(p,p.pos,"Expected end of file");
-            const typedRoot = ModuleNode.fromGeneric(root);
+        const realm = new RealmImpl();
+        const typedRoot = ModuleNode.fromGeneric(root,realm);
 
         const outputLines: string[] = [];
         evalModule(typedRoot,{

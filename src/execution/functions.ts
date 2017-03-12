@@ -37,6 +37,9 @@ import {
     Completion,
     Reference,
     JSValue,
+    JSObject,
+    LexicalEnvironment,
+    Realm,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
@@ -149,6 +152,11 @@ export class FunctionDeclarationNode extends HoistableDeclarationNode implements
     // ES6 Section 14.1.10: Static Semantics: IsConstantDeclaration
     public isConstantDeclaration(): boolean {
         return false;
+    }
+
+    // ES6 Section 14.1.19 Runtime Semantics: InstantiateFunctionObject
+    public instantiateFunctionObject(realm: Realm, scope: LexicalEnvironment): Completion<JSObject> {
+        throw new Error("FunctionDeclarationNode.instantiateFunctionObject not implemented");
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -555,6 +563,11 @@ export class GeneratorDeclarationNode extends HoistableDeclarationNode implement
     // ES6 Section 14.4.8: Static Semantics: IsConstantDeclaration
     public isConstantDeclaration(): boolean {
         return false;
+    }
+
+    // ES6 Section 14.4.12 Runtime Semantics: InstantiateFunctionObject
+    public instantiateFunctionObject(realm: Realm, scope: LexicalEnvironment): Completion<JSObject> {
+        throw new Error("GeneratorDeclarationNode.instantiateFunctionObject not implemented");
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
