@@ -69,12 +69,21 @@ export abstract class StatementListItemNode extends ASTNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
+    // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
+    public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
+
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 }
 
-export abstract class DeclarationNode extends StatementListItemNode {
+export abstract class DeclarationNode extends StatementListItemNode implements LexicallyScopedDeclaration {
     public _type_DeclarationNode: any;
+    public _interface_LexicallyScopedDeclaration: any;
+
+    // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        out.push(this);
+    }
 
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
@@ -293,4 +302,8 @@ export class CannotConvertError {
 
 export interface VarScopedDeclaration {
     _interface_VarScopedDeclaration: any;
+}
+
+export interface LexicallyScopedDeclaration {
+    _interface_LexicallyScopedDeclaration: any;
 }
