@@ -22,6 +22,7 @@ import {
     BindingIdentifierNode,
     check,
     CannotConvertError,
+    VarScopedDeclaration,
 } from "../parser/ast";
 import {
     ExpressionNode_fromGeneric,
@@ -106,6 +107,12 @@ export class ScriptNode extends ASTNode {
         return [this.body];
     }
 
+    // ES6 Section 15.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // FIXME: Return TopLevelVarScopedDeclarations of StatementList.
+        throw new Error('ScriptNode.varScopedDeclarations not implemented');
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ScriptNode.evaluate not implemented");
     }
@@ -132,6 +139,13 @@ export class ModuleItemListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        for (const element of this.elements) {
+            element.varScopedDeclarations(out);
+        }
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -175,6 +189,11 @@ export class ModuleNode extends ASTNode {
         return [this.body];
     }
 
+    // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.body.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         return this.body.evaluate(ctx);
     }
@@ -214,6 +233,11 @@ export class ImportsListNode extends ASTNode {
 
 export abstract class ImportNode extends ASTNode {
     public _type_ImportNode: any;
+
+    // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
+    }
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
@@ -500,6 +524,12 @@ export class ExportsListNode extends ASTNode {
 export abstract class ExportNode extends ASTNode {
     public _type_ExportNode: any;
 
+    // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type, except for ExportVariableNode, which
+        // overrides this method.
+    }
+
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
     public static fromGeneric(node: ASTNode | null): ExportNode {
@@ -627,6 +657,11 @@ export class ExportVariableNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.variable];
+    }
+
+    // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.variable.varScopedDeclarations(out);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {

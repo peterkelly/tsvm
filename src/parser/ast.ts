@@ -68,10 +68,18 @@ export abstract class StatementListItemNode extends ASTNode {
     public _type_StatementListItemNode: any;
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+
+    // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
+    public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 }
 
 export abstract class DeclarationNode extends StatementListItemNode {
     public _type_DeclarationNode: any;
+
+    // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
+    }
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 }
@@ -281,4 +289,8 @@ export class CannotConvertError {
         else
             return "Cannot convert "+this.node.kind+" to "+this.desiredType;
     }
+}
+
+export interface VarScopedDeclaration {
+    _interface_VarScopedDeclaration: any;
 }

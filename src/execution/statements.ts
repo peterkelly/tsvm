@@ -23,6 +23,7 @@ import {
     GenericStringNode,
     check,
     CannotConvertError,
+    VarScopedDeclaration,
 } from "../parser/ast";
 import {
     ExpressionNode_fromGeneric,
@@ -206,6 +207,9 @@ export abstract class StatementNode extends StatementListItemNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
+
     public static fromGeneric(node: ASTNode | null): StatementNode {
         if (node === null)
             throw new CannotConvertError("StatementNode",node);
@@ -267,6 +271,13 @@ export class StatementListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        for (const element of this.elements) {
+            element.varScopedDeclarations(out);
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): StatementListNode {
         const list = check.list(node);
         const elements: StatementListItemNode[] = [];
@@ -324,6 +335,11 @@ export class BlockNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+
+    // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.statements.varScopedDeclarations(out);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -569,6 +585,12 @@ export class VariableDeclarationListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.3.2.3 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        for (const element of this.elements)
+            out.push(element);
+    }
+
     // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         // Note: The spec discusses VariableDeclarationList in terms of a cons-like list. Here
@@ -609,6 +631,11 @@ export class VarNode extends StatementNode {
         return [this.declarations];
     }
 
+    // ES6 Section 13.3.2.3 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.declarations.varScopedDeclarations(out);
+    }
+
     // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         // 1. Let next be the result of evaluating VariableDeclarationList.
@@ -629,8 +656,9 @@ export class VarNode extends StatementNode {
     }
 }
 
-export abstract class VarBindingNode extends ASTNode {
+export abstract class VarBindingNode extends ASTNode implements VarScopedDeclaration {
     public _type_VarBindingNode: any;
+    public _interface_VarScopedDeclaration: any;
 
     // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
@@ -968,6 +996,11 @@ export class EmptyStatementNode extends StatementNode {
         return [];
     }
 
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("EmptyStatementNode.evaluate not implemented");
     }
@@ -991,6 +1024,11 @@ export class ExpressionStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -1035,6 +1073,14 @@ export class IfStatementNode extends StatementNode {
         return [this.condition,this.trueBranch,this.falseBranch];
     }
 
+    // ES6 Section 13.6.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.trueBranch.varScopedDeclarations(out);
+        if (this.falseBranch != null) {
+            this.falseBranch.varScopedDeclarations(out);
+        }
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("IfStatementNode.evaluate not implemented");
     }
@@ -1069,6 +1115,11 @@ export class DoStatementNode extends BreakableStatementNode {
         return [this.body,this.condition];
     }
 
+    // ES6 Section 13.7.2.5 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.body.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("DoStatementNode.evaluate not implemented");
     }
@@ -1096,6 +1147,11 @@ export class WhileStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.body];
+    }
+
+    // ES6 Section 13.7.3.5 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.body.varScopedDeclarations(out);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -1137,6 +1193,13 @@ export class ForCNode extends BreakableStatementNode {
         return [this.init,this.condition,this.update,this.body];
     }
 
+    // ES6 Section 13.7.4.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        if (this.init instanceof VarNode)
+            this.init.varScopedDeclarations(out);
+        this.body.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ForCNode.evaluate not implemented");
     }
@@ -1175,6 +1238,13 @@ export class ForInNode extends BreakableStatementNode {
         return [this.binding,this.expr,this.body];
     }
 
+    // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        if (this.binding instanceof VarForDeclarationNode)
+            this.binding.varScopedDeclarations(out);
+        this.body.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ForInNode.evaluate not implemented");
     }
@@ -1210,6 +1280,13 @@ export class ForOfNode extends BreakableStatementNode {
         return [this.binding,this.expr,this.body];
     }
 
+    // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        if (this.binding instanceof VarForDeclarationNode)
+            this.binding.varScopedDeclarations(out);
+        this.body.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ForOfNode.evaluate not implemented");
     }
@@ -1234,6 +1311,11 @@ export class VarForDeclarationNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+
+    // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        throw new Error("VarForDeclarationNode.varScopedDeclarations not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): VarForDeclarationNode {
@@ -1298,6 +1380,11 @@ export class ContinueStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ContinueStatementNode.evaluate not implemented");
     }
@@ -1322,6 +1409,11 @@ export class BreakStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.labelIdentifier];
+    }
+
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -1350,6 +1442,11 @@ export class ReturnStatementNode extends StatementNode {
         return [this.expr];
     }
 
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ReturnStatementNode.evaluate not implemented");
     }
@@ -1376,6 +1473,11 @@ export class WithStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.body];
+    }
+
+    // ES6 Section 13.11.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.body.varScopedDeclarations(out);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -1407,6 +1509,11 @@ export class SwitchStatementNode extends BreakableStatementNode {
         return [this.expr,this.cases];
     }
 
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.cases.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("SwitchStatementNode.evaluate not implemented");
     }
@@ -1432,6 +1539,12 @@ export class CaseClauseListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        for (const element of this.elements)
+            element.varScopedDeclarations(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): CaseClauseListNode {
         const list = check.list(node);
         const elements: CaseClauseListItemNode[] = [];
@@ -1443,6 +1556,9 @@ export class CaseClauseListNode extends ASTNode {
 
 export abstract class CaseBlockNode extends ASTNode {
     public _type_CaseBlockNode: any;
+
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 
     public static fromGeneric(node: ASTNode | null): CaseBlockNode {
         if (node === null)
@@ -1469,6 +1585,11 @@ export class CaseBlock1Node extends CaseBlockNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.caseClauses];
+    }
+
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.caseClauses.varScopedDeclarations(out);
     }
 
     public static fromGeneric(node: ASTNode | null): CaseBlock1Node {
@@ -1501,6 +1622,15 @@ export class CaseBlock2Node extends CaseBlockNode {
         return [this.caseClauses1,this.defaultClause,this.caseClauses2];
     }
 
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        if (this.caseClauses1 != null)
+            this.caseClauses1.varScopedDeclarations(out);
+        this.defaultClause.varScopedDeclarations(out);
+        if (this.caseClauses2 != null)
+            this.caseClauses2.varScopedDeclarations(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): CaseBlock2Node {
         node = check.node(node,"CaseBlock2",3);
         const caseClauses1 = (node.children[0] === null) ? null : CaseClauseListNode.fromGeneric(node.children[0]);
@@ -1512,6 +1642,9 @@ export class CaseBlock2Node extends CaseBlockNode {
 
 export abstract class CaseClauseListItemNode extends ASTNode {
     public _type_CaseClauseListItemNode: any;
+
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 
     public static fromGeneric(node: ASTNode | null): CaseClauseListItemNode {
         try { return CaseClauseNode.fromGeneric(node); } catch (e) {}
@@ -1535,6 +1668,11 @@ export class CaseClauseNode extends CaseClauseListItemNode {
         return [this.expr,this.statements];
     }
 
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.statements.varScopedDeclarations(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): CaseClauseNode {
         node = check.node(node,"CaseClause",2);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -1554,6 +1692,11 @@ export class DefaultClauseNode extends CaseClauseListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+
+    // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.statements.varScopedDeclarations(out);
     }
 
     public static fromGeneric(node: ASTNode | null): DefaultClauseNode {
@@ -1593,6 +1736,11 @@ export class LabelledStatementNode extends StatementNode {
         return [this.ident,this.item];
     }
 
+    // ES6 Section 13.13.13 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.item.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("LabelledStatementNode.evaluate not implemented");
     }
@@ -1618,6 +1766,11 @@ export class ThrowStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -1655,6 +1808,15 @@ export class TryStatementNode extends StatementNode {
         return [this.tryNode,this.catchNode,this.finallyNode];
     }
 
+    // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.tryNode.varScopedDeclarations(out);
+        if (this.catchNode != null)
+            this.catchNode.varScopedDeclarations(out);
+        if (this.finallyNode != null)
+            this.finallyNode.varScopedDeclarations(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("TryStatementNode.evaluate not implemented");
     }
@@ -1683,6 +1845,11 @@ export class CatchNode extends ASTNode {
         return [this.param,this.block];
     }
 
+    // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.block.varScopedDeclarations(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): CatchNode {
         node = check.node(node,"Catch",2);
         const param = CatchParameterType.fromGeneric(node.children[0]);
@@ -1702,6 +1869,11 @@ export class FinallyNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.block];
+    }
+
+    // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.block.varScopedDeclarations(out);
     }
 
     public static fromGeneric(node: ASTNode | null): FinallyNode {
@@ -1726,6 +1898,11 @@ export class DebuggerStatementNode extends StatementNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("DebuggerStatementNode.evaluate not implemented");
+    }
+
+    // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
     }
 
     public static fromGeneric(node: ASTNode | null): DebuggerStatementNode {
