@@ -447,6 +447,11 @@ export class LetNode extends LexicalDeclarationNode {
         super(range,"Let",bindings);
     }
 
+    // ES6 Section 13.3.1.3: Static Semantics: IsConstantDeclaration
+    public isConstantDeclaration(): boolean {
+        return false;
+    }
+
     public static fromGeneric(node: ASTNode | null): LetNode {
         node = check.node(node,"Let",1);
         const bindings = BindingListNode.fromGeneric(node.children[0]);
@@ -459,6 +464,11 @@ export class ConstNode extends LexicalDeclarationNode {
 
     public constructor(range: Range, bindings: BindingListNode) {
         super(range,"Const",bindings);
+    }
+
+    // ES6 Section 13.3.1.3: Static Semantics: IsConstantDeclaration
+    public isConstantDeclaration(): boolean {
+        return true;
     }
 
     public static fromGeneric(node: ASTNode | null): ConstNode {
@@ -680,6 +690,10 @@ export class VarNode extends StatementNode {
 export abstract class VarBindingNode extends ASTNode implements VarScopedDeclaration {
     public _type_VarBindingNode: any;
     public _interface_VarScopedDeclaration: any;
+
+    public isConstantDeclaration(): boolean {
+        return false;
+    }
 
     // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
