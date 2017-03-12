@@ -92,6 +92,8 @@ export abstract class DeclarationNode extends StatementListItemNode implements L
 
     public abstract isConstantDeclaration(): boolean;
 
+    public abstract boundNames(out: string[]): void;
+
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 }
 
@@ -115,6 +117,11 @@ export class BindingIdentifierNode extends ASTNode {
     public get label(): string {
         return "BindingIdentifier("+JSON.stringify(this.value)+")";
         // return this.value;
+    }
+
+    // ES6 Section 12.1.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        out.push(this.value);
     }
 
     public static fromGeneric(node: ASTNode | null): BindingIdentifierNode {
@@ -304,10 +311,12 @@ export class CannotConvertError {
 
 export interface VarScopedDeclaration {
     _interface_VarScopedDeclaration: any;
+    boundNames(out: string[]): void;
     isConstantDeclaration(): boolean;
 }
 
 export interface LexicallyScopedDeclaration {
     _interface_LexicallyScopedDeclaration: any;
+    boundNames(out: string[]): void;
     isConstantDeclaration(): boolean;
 }
