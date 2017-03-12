@@ -56,6 +56,7 @@ import {
     Reference,
     AbstractReference,
     PropertyReference,
+    EnvironmentReference,
     Realm,
 } from "../runtime/datatypes";
 import {
@@ -63,6 +64,8 @@ import {
 } from "../runtime/08-03-context";
 import {
     GetValue,
+    PutValue,
+    InitializeReferencedBinding,
 } from "../runtime/06-02-03-reference";
 
 export function DeclarationNode_fromGeneric(node: ASTNode | null): DeclarationNode {
@@ -351,6 +354,21 @@ export class BindingListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        // 1. Let next be the result of evaluating BindingList.
+        // 2. ReturnIfAbrupt(next).
+        // 3. Return the result of evaluating LexicalBinding.
+        let result: Completion<JSValue | Reference | Empty>;
+        result = new NormalCompletion(new Empty());
+        for (const element of this.elements) {
+            result = element.evaluate(ctx);
+            if (!(result instanceof NormalCompletion))
+                return result;
+        }
+        return result;
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingListNode {
         const list = check.list(node);
         const elements: LexicalBindingNode[] = [];
@@ -372,6 +390,17 @@ export abstract class LexicalDeclarationNode extends DeclarationNode {
     public get children(): (ASTNode | null)[] {
         return [this.bindings];
     }
+
+    // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        // 1. Let next be the result of evaluating BindingList.
+        const nextComp = this.bindings.evaluate(ctx);
+        // 2. ReturnIfAbrupt(next).
+        if (!(nextComp instanceof NormalCompletion))
+            return nextComp;
+        // 3. Return NormalCompletion(empty).
+        return new NormalCompletion(new Empty());
+    }
 }
 
 export class LetNode extends LexicalDeclarationNode {
@@ -379,10 +408,6 @@ export class LetNode extends LexicalDeclarationNode {
 
     public constructor(range: Range, bindings: BindingListNode) {
         super(range,"Let",bindings);
-    }
-
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("LetNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): LetNode {
@@ -399,10 +424,6 @@ export class ConstNode extends LexicalDeclarationNode {
         super(range,"Const",bindings);
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("ConstNode.evaluate not implemented");
-    }
-
     public static fromGeneric(node: ASTNode | null): ConstNode {
         node = check.node(node,"Const",1);
         const bindings = BindingListNode.fromGeneric(node.children[0]);
@@ -412,6 +433,9 @@ export class ConstNode extends LexicalDeclarationNode {
 
 export abstract class LexicalBindingNode extends ASTNode {
     public _type_LexicalBindingNode: any;
+
+    // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
     public static fromGeneric(node: ASTNode | null): LexicalBindingNode {
         if (node === null)
@@ -446,6 +470,50 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
         return [this.identifier,this.initializer];
     }
 
+    // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        if (this.initializer == null) {
+            const lhsComp = ctx.ResolveBinding(this.identifier.value);
+            if (!(lhsComp instanceof NormalCompletion))
+                return lhsComp;
+            const lhs = lhsComp.value;
+            if (!(lhs instanceof EnvironmentReference))
+                return ctx.realm.throwTypeError("Attempt to initialize a non-environment refrence");
+            return InitializeReferencedBinding(ctx.realm,lhs,new JSUndefined());
+        }
+        else {
+            // 1. Let bindingId be StringValue of BindingIdentifier.
+            const bindingId = this.identifier.value;
+
+            // 2. Let lhs be ResolveBinding(bindingId).
+            const lhsComp = ctx.ResolveBinding(this.identifier.value);
+            if (!(lhsComp instanceof NormalCompletion))
+                return lhsComp;
+            const lhs = lhsComp.value;
+
+            // 3. Let rhs be the result of evaluating Initializer.
+            // 4. Let value be GetValue(rhs).
+            // 5. ReturnIfAbrupt(value).
+            const rhsComp = this.initializer.evaluate(ctx);
+            const valueComp = GetValue(ctx.realm, rhsComp);
+            if (!(valueComp instanceof NormalCompletion))
+                return valueComp;
+            const value = valueComp.value;
+
+            // 6. If IsAnonymousFunctionDefinition(Initializer) is true, then
+            // TODO...
+                // a. Let hasNameProperty be HasOwnProperty(value, "name").
+                // b. ReturnIfAbrupt(hasNameProperty).
+                // c. If hasNameProperty is false, perform SetFunctionName(value, bindingId).
+
+            // 7. Return InitializeReferencedBinding(lhs, value).
+            if (!(lhs instanceof EnvironmentReference))
+                return ctx.realm.throwTypeError("Attempt to initialize a non-environment refrence");
+
+            return InitializeReferencedBinding(ctx.realm,lhs,value);
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): LexicalIdentifierBindingNode {
         node = check.node(node,"LexicalIdentifierBinding",2);
         const identifier = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -473,6 +541,11 @@ export class LexicalPatternBindingNode extends LexicalBindingNode {
         return [this.pattern,this.initializer];
     }
 
+    // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("LexicalPatternBindingNode.evaluate not implemented");
+    }
+
     public static fromGeneric(node: ASTNode | null): LexicalPatternBindingNode {
         node = check.node(node,"LexicalPatternBinding",2);
         const pattern = BindingPatternNode.fromGeneric(node.children[0]);
@@ -494,6 +567,24 @@ export class VariableDeclarationListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        // Note: The spec discusses VariableDeclarationList in terms of a cons-like list. Here
+        // we use a normal array. The grammar requires there is at least one element in the array,
+        // so the initial next value of undefined should never actually be returned in practice.
+        let next: Completion<JSValue | Reference | Empty> = new NormalCompletion(new JSUndefined());
+
+        // 1. Let next be the result of evaluating VariableDeclarationList.
+        // 2. ReturnIfAbrupt(next).
+        // 3. Return the result of evaluating VariableDeclaration.
+        for (const element of this.elements) {
+            next = element.evaluate(ctx);
+            if (!(next instanceof NormalCompletion))
+                return next;
+        }
+        return next;
     }
 
     public static fromGeneric(node: ASTNode | null): VariableDeclarationListNode {
@@ -518,8 +609,17 @@ export class VarNode extends StatementNode {
         return [this.declarations];
     }
 
+    // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("VarNode.evaluate not implemented");
+        // 1. Let next be the result of evaluating VariableDeclarationList.
+        const next = this.declarations.evaluate(ctx);
+
+        // 2. ReturnIfAbrupt(next).
+        if (!(next instanceof NormalCompletion))
+            return next;
+
+        // 3. Return NormalCompletion( empty).
+        return new NormalCompletion(new Empty());
     }
 
     public static fromGeneric(node: ASTNode | null): VarNode {
@@ -531,6 +631,9 @@ export class VarNode extends StatementNode {
 
 export abstract class VarBindingNode extends ASTNode {
     public _type_VarBindingNode: any;
+
+    // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
     public static fromGeneric(node: ASTNode | null): VarBindingNode {
         if (node === null)
@@ -565,6 +668,50 @@ export class VarIdentifierNode extends VarBindingNode {
         return [this.identifier,this.initializer];
     }
 
+    // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        if (this.initializer === null)
+            return new NormalCompletion(new Empty());
+
+        // 1. Let bindingId be StringValue of BindingIdentifier.
+        const bindingId = this.identifier.value;
+
+        // 2. Let lhs be ResolveBinding(bindingId)
+        // 3. ReturnIfAbrupt(lhs).
+        const lhsComp = ctx.ResolveBinding(bindingId);
+        if (!(lhsComp instanceof NormalCompletion))
+            return lhsComp;
+        const lhs = lhsComp.value;
+
+        // 4. Let rhs be the result of evaluating Initializer.
+        const rhsComp = this.initializer.evaluate(ctx);
+
+        // 5. Let value be GetValue(rhs).
+        // 6. ReturnIfAbrupt(value).
+        const valueComp = GetValue(ctx.realm, rhsComp);
+
+        if (!(valueComp instanceof NormalCompletion))
+            return valueComp;
+        const value = valueComp.value;
+
+        // 7. If IsAnonymousFunctionDefinition(Initializer) is true, then
+        // TODO...
+            // a. Let hasNameProperty be HasOwnProperty(value, "name").
+            // b. ReturnIfAbrupt(hasNameProperty).
+            // c. If hasNameProperty is false, perform SetFunctionName(value, bindingId).
+
+        // 8. Return PutValue(lhs, value).
+        const putValueComp = PutValue(ctx.realm,lhsComp,valueComp);
+        if (!(putValueComp instanceof NormalCompletion))
+            return putValueComp;
+        return new NormalCompletion(new Empty());
+
+        // NOTE If a VariableDeclaration is nested within a with statement and the BindingIdentifier
+        // in the VariableDeclaration is the same as a property name of the binding object of the
+        // with statement’s object Environment Record, then step 7 will assign value to the property
+        // instead of assigning to the VariableEnvironment binding of the Identifier.
+    }
+
     public static fromGeneric(node: ASTNode | null): VarIdentifierNode {
         node = check.node(node,"VarIdentifier",2);
         const identifier = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -590,6 +737,11 @@ export class VarPatternNode extends VarBindingNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.pattern,this.initializer];
+    }
+
+    // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        throw new Error("VarPatternNode.evaluate not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): VarPatternNode {
