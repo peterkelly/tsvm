@@ -42,6 +42,11 @@ import {
     ExecutionContext,
 } from "../runtime/08-03-context";
 
+// ES6 Section 14.1.3 Static Semantics: BoundNames
+// "*default*" is used within this specification as a synthetic name for hoistable anonymous
+// functions that are defined using export declarations.
+export const DEFAULT_FUNCTION_NAME = "*default*";
+
 export type FormalParameterListItemType = BindingElementType | BindingRestElementNode;
 export const FormalParameterListItemType = {
     fromGeneric(node: ASTNode | null): FormalParameterListItemType {
@@ -90,6 +95,12 @@ export class FormalParameterListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 14.1.3 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        for (const element of this.elements)
+            element.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameterListNode {
         const list = check.list(node);
         const elements: FormalParameterListItemType[] = [];
@@ -125,6 +136,14 @@ export class FunctionDeclarationNode extends HoistableDeclarationNode implements
     // ES6 Section 13.13.13 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // No var scoped declarations for this node type
+    }
+
+    // ES6 Section 14.1.3: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        if (this.ident != null)
+            this.ident.boundNames(out);
+        else
+            out.push(DEFAULT_FUNCTION_NAME);
     }
 
     // ES6 Section 14.1.10: Static Semantics: IsConstantDeclaration
@@ -183,6 +202,9 @@ export class FunctionExpressionNode extends ExpressionNode {
 export abstract class FormalParametersNode extends ASTNode {
     public _type_FormalParametersNode: any;
 
+    // ES6 Section 14.1.3 Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
+
     public static fromGeneric(node: ASTNode | null): FormalParametersNode {
         if (node === null)
             throw new CannotConvertError("FormalParametersNode",node);
@@ -212,6 +234,11 @@ export class FormalParameters1Node extends FormalParametersNode {
         return [];
     }
 
+    // ES6 Section 14.1.3 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        // No bound names for this node type
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters1Node {
         node = check.node(node,"FormalParameters1",0);
         return new FormalParameters1Node(node.range);
@@ -229,6 +256,11 @@ export class FormalParameters2Node extends FormalParametersNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.rest];
+    }
+
+    // ES6 Section 14.1.3 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.rest.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters2Node {
@@ -251,6 +283,11 @@ export class FormalParameters3Node extends FormalParametersNode {
         return [this.elements];
     }
 
+    // ES6 Section 14.1.3 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.elements.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters3Node {
         node = check.node(node,"FormalParameters3",1);
         const elements = FormalParameterListNode.fromGeneric(node.children[0]);
@@ -271,6 +308,12 @@ export class FormalParameters4Node extends FormalParametersNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.elements,this.rest];
+    }
+
+    // ES6 Section 14.1.3 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.elements.boundNames(out);
+        this.rest.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters4Node {
@@ -318,6 +361,11 @@ export class ArrowFunctionNode extends ExpressionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.params,this.body];
+    }
+
+    // ES6 Section 14.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.params.boundNames(out);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -496,6 +544,14 @@ export class GeneratorDeclarationNode extends HoistableDeclarationNode implement
         return [this.ident,this.params,this.body];
     }
 
+    // ES6 Section 14.4.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        if (this.ident != null)
+            this.ident.boundNames(out);
+        else
+            out.push(DEFAULT_FUNCTION_NAME);
+    }
+
     // ES6 Section 14.4.8: Static Semantics: IsConstantDeclaration
     public isConstantDeclaration(): boolean {
         return false;
@@ -655,6 +711,14 @@ export class ClassDeclarationNode extends DeclarationNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
+    }
+
+    // ES6 Section 14.5.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        if (this.ident != null)
+            this.ident.boundNames(out);
+        else
+            out.push(DEFAULT_FUNCTION_NAME);
     }
 
     // ES6 Section 14.5.7: Static Semantics: IsConstantDeclaration

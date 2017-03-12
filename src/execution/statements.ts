@@ -391,6 +391,12 @@ export class BindingListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.3.1.2 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        for (const element of this.elements)
+            element.boundNames(out);
+    }
+
     // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         // 1. Let next be the result of evaluating BindingList.
@@ -426,6 +432,11 @@ export abstract class LexicalDeclarationNode extends DeclarationNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.bindings];
+    }
+
+    // ES6 Section 13.3.1.2 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.bindings.boundNames(out);
     }
 
     // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
@@ -481,6 +492,9 @@ export class ConstNode extends LexicalDeclarationNode {
 export abstract class LexicalBindingNode extends ASTNode {
     public _type_LexicalBindingNode: any;
 
+    // ES6 Section 13.3.1.2 Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
+
     // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
@@ -515,6 +529,11 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.identifier,this.initializer];
+    }
+
+    // ES6 Section 13.3.1.2 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.identifier.boundNames(out);
     }
 
     // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
@@ -588,6 +607,11 @@ export class LexicalPatternBindingNode extends LexicalBindingNode {
         return [this.pattern,this.initializer];
     }
 
+    // ES6 Section 13.3.1.2 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.pattern.boundNames(out);
+    }
+
     // ES6 Section 13.3.1.4 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("LexicalPatternBindingNode.evaluate not implemented");
@@ -614,6 +638,12 @@ export class VariableDeclarationListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 13.3.2.1 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        for (const element of this.elements)
+            element.boundNames(out);
     }
 
     // ES6 Section 13.3.2.3 Static Semantics: VarScopedDeclarations
@@ -662,6 +692,11 @@ export class VarNode extends StatementNode {
         return [this.declarations];
     }
 
+    // ES6 Section 13.3.2.1 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.declarations.boundNames(out);
+    }
+
     // ES6 Section 13.3.2.3 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.declarations.varScopedDeclarations(out);
@@ -690,6 +725,9 @@ export class VarNode extends StatementNode {
 export abstract class VarBindingNode extends ASTNode implements VarScopedDeclaration {
     public _type_VarBindingNode: any;
     public _interface_VarScopedDeclaration: any;
+
+    // ES6 Section 13.3.2.1 Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
 
     public isConstantDeclaration(): boolean {
         return false;
@@ -729,6 +767,11 @@ export class VarIdentifierNode extends VarBindingNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.identifier,this.initializer];
+    }
+
+    // ES6 Section 13.3.2.1 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.identifier.boundNames(out);
     }
 
     // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
@@ -802,6 +845,11 @@ export class VarPatternNode extends VarBindingNode {
         return [this.pattern,this.initializer];
     }
 
+    // ES6 Section 13.3.2.1 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.pattern.boundNames(out);
+    }
+
     // ES6 Section 13.3.2.4 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("VarPatternNode.evaluate not implemented");
@@ -830,6 +878,12 @@ export class BindingPropertyListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        for (const element of this.elements)
+            element.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingPropertyListNode {
         const list = check.list(node);
         const elements: BindingPropertyType[] = [];
@@ -841,6 +895,9 @@ export class BindingPropertyListNode extends ASTNode {
 
 export abstract class BindingPatternNode extends ASTNode {
     public _type_BindingPatternNode: any;
+
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
 
     public static fromGeneric(node: ASTNode | null): BindingPatternNode {
         if (node === null)
@@ -869,6 +926,11 @@ export class ObjectBindingPatternNode extends BindingPatternNode {
         return [this.properties];
     }
 
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.properties.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): ObjectBindingPatternNode {
         node = check.node(node,"ObjectBindingPattern",1);
         const properties = BindingPropertyListNode.fromGeneric(node.children[0]);
@@ -887,6 +949,12 @@ export class BindingElementListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        for (const element of this.elements)
+            element.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): BindingElementListNode {
@@ -917,6 +985,13 @@ export class ArrayBindingPatternNode extends BindingPatternNode {
         return [this.elements,this.rest];
     }
 
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.elements.boundNames(out);
+        if (this.rest != null)
+            this.rest.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): ArrayBindingPatternNode {
         node = check.node(node,"ArrayBindingPattern",2);
         const elements = BindingElementListNode.fromGeneric(node.children[0]);
@@ -938,6 +1013,11 @@ export class BindingPropertyNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.name,this.element];
+    }
+
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.element.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): BindingPropertyNode {
@@ -967,6 +1047,11 @@ export class BindingPatternInitNode extends ASTNode {
         return [this.pattern,this.init];
     }
 
+    // ES6 Section 13.3.3.1 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.pattern.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingPatternInitNode {
         node = check.node(node,"BindingPatternInit",2);
         const pattern = BindingPatternNode.fromGeneric(node.children[0]);
@@ -990,6 +1075,11 @@ export class SingleNameBindingNode extends ASTNode {
         return [this.ident,this.init];
     }
 
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.ident.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): SingleNameBindingNode {
         node = check.node(node,"SingleNameBinding",2);
         const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -1009,6 +1099,11 @@ export class BindingRestElementNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident];
+    }
+
+    // ES6 Section 13.3.3.1: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.ident.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): BindingRestElementNode {
@@ -1273,6 +1368,12 @@ export class ForInNode extends BreakableStatementNode {
         return [this.binding,this.expr,this.body];
     }
 
+    // ES6 Section 13.7.5.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        if ((this.binding instanceof LetForDeclarationNode) || (this.binding instanceof ConstForDeclarationNode))
+            this.binding.boundNames(out);
+    }
+
     // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         if (this.binding instanceof VarForDeclarationNode)
@@ -1313,6 +1414,12 @@ export class ForOfNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
+    }
+
+    // ES6 Section 13.7.5.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        if ((this.binding instanceof LetForDeclarationNode) || (this.binding instanceof ConstForDeclarationNode))
+            this.binding.boundNames(out);
     }
 
     // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
@@ -1373,6 +1480,11 @@ export class LetForDeclarationNode extends ASTNode {
         return [this.binding];
     }
 
+    // ES6 Section 13.7.5.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.binding.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): LetForDeclarationNode {
         node = check.node(node,"LetForDeclaration",1);
         const binding = ForBindingType.fromGeneric(node.children[0]);
@@ -1391,6 +1503,11 @@ export class ConstForDeclarationNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+
+    // ES6 Section 13.7.5.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.binding.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): ConstForDeclarationNode {

@@ -590,6 +590,10 @@ export class ElisionNode extends ASTNode {
         return [];
     }
 
+    // This method is here because an ElisionNode can be present in a BindingElementList
+    public boundNames(out: string[]): void {
+    }
+
     public static fromGeneric(node: ASTNode | null): ElisionNode {
         node = check.node(node,"Elision",0);
         return new ElisionNode(node.range);

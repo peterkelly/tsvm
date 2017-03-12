@@ -245,6 +245,12 @@ export class ImportsListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        for (const element of this.elements)
+            element.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): ImportsListNode {
         const list = check.list(node);
         const elements: ImportListItemNode[] = [];
@@ -256,6 +262,9 @@ export class ImportsListNode extends ASTNode {
 
 export abstract class ImportNode extends ASTNode {
     public _type_ImportNode: any;
+
+    // ES6 Section 15.2.2.2 Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
 
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         // No lexcially scoped declarations for this node type (???)
@@ -296,6 +305,11 @@ export class ImportFromNode extends ImportNode {
         return [this.importClause,this.fromClause];
     }
 
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.importClause.boundNames(out);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         // Do nothing
         return new NormalCompletion(new Empty());
@@ -322,6 +336,11 @@ export class ImportModuleNode extends ImportNode {
         return [this.specifier];
     }
 
+    // ES6 Section 15.2.2.2 Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        // No bound names for this node type
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         // Do nothing
         return new NormalCompletion(new Empty());
@@ -336,6 +355,9 @@ export class ImportModuleNode extends ImportNode {
 
 export abstract class ImportClauseNode extends ASTNode {
     public _type_ImportClauseNode: any;
+
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
 
     public static fromGeneric(node: ASTNode | null): ImportClauseNode {
         if (node === null)
@@ -376,6 +398,12 @@ export class DefaultAndNameSpaceImportsNode extends ImportClauseNode {
         return [this.defaultBinding,this.nameSpaceImport];
     }
 
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.defaultBinding.boundNames(out);
+        this.nameSpaceImport.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): DefaultAndNameSpaceImportsNode {
         node = check.node(node,"DefaultAndNameSpaceImports",2);
         const defaultBinding = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -403,6 +431,12 @@ export class DefaultAndNamedImportsNode extends ImportClauseNode {
         return [this.defaultBinding,this.namedImports];
     }
 
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.defaultBinding.boundNames(out);
+        this.namedImports.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): DefaultAndNamedImportsNode {
         node = check.node(node,"DefaultAndNamedImports",2);
         const defaultBinding = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -422,6 +456,11 @@ export class DefaultImportNode extends ImportClauseNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.binding.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): DefaultImportNode {
@@ -444,6 +483,11 @@ export class NameSpaceImportNode extends ImportClauseNode {
         return [this.binding];
     }
 
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.binding.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): NameSpaceImportNode {
         node = check.node(node,"NameSpaceImport",1);
         const binding = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -464,6 +508,11 @@ export class NamedImportsNode extends ImportClauseNode {
         return [this.imports];
     }
 
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.imports.boundNames(out);
+    }
+
     public static fromGeneric(node: ASTNode | null): NamedImportsNode {
         node = check.node(node,"NamedImports",1);
         const imports = ImportsListNode.fromGeneric(node.children[0]);
@@ -473,6 +522,9 @@ export class NamedImportsNode extends ImportClauseNode {
 
 export abstract class ImportListItemNode extends ASTNode {
     public _type_ImportListItemNode: any;
+
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
 
     public static fromGeneric(node: ASTNode | null): ImportListItemNode {
         try { return ImportAsSpecifierNode.fromGeneric(node); } catch (e) {}
@@ -492,6 +544,11 @@ export class ImportSpecifierNode extends ImportListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.binding.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): ImportSpecifierNode {
@@ -514,6 +571,11 @@ export class ImportAsSpecifierNode extends ImportListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.name,this.binding];
+    }
+
+    // ES6 Section 15.2.2.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.binding.boundNames(out);
     }
 
     public static fromGeneric(node: ASTNode | null): ImportAsSpecifierNode {
@@ -550,6 +612,9 @@ export class ExportsListNode extends ASTNode {
 
 export abstract class ExportNode extends ASTNode {
     public _type_ExportNode: any;
+
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public abstract boundNames(out: string[]): void;
 
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
@@ -617,6 +682,12 @@ export class ExportDefaultNode extends ExportNode {
         return [this.decl];
     }
 
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        if (this.decl instanceof DeclarationNode)
+            this.decl.boundNames(out);
+    }
+
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         if (this.decl instanceof HoistableDeclarationNode)
@@ -649,6 +720,11 @@ export class ExportStarNode extends ExportNode {
         return [this.from];
     }
 
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        // No bound names for this node type
+    }
+
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         throw new Error("ExportStarNode.lexicallyScopedDeclarations not implemented");
@@ -678,6 +754,11 @@ export class ExportPlainNode extends ExportNode {
         return [this.clause];
     }
 
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        // No bound names for this node type
+    }
+
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         throw new Error("ExportPlainNode.lexicallyScopedDeclarations not implemented");
@@ -705,6 +786,11 @@ export class ExportVariableNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.variable];
+    }
+
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.variable.boundNames(out);
     }
 
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
@@ -739,6 +825,11 @@ export class ExportDeclarationNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.decl];
+    }
+
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        this.decl.boundNames(out);
     }
 
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
@@ -776,6 +867,11 @@ export class ExportFromNode extends ExportNode {
         return [this.exportClause,this.fromClause];
     }
 
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        // No bound names for this node type
+    }
+
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         throw new Error("ExportFromNode.lexicallyScopedDeclarations not implemented");
@@ -804,6 +900,11 @@ export class ExportClauseNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.items];
+    }
+
+    // ES6 Section 15.2.3.2: Static Semantics: BoundNames
+    public boundNames(out: string[]): void {
+        // No bound names for this node type
     }
 
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
