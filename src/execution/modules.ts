@@ -18,11 +18,13 @@ import {
     ExpressionNode,
     StatementListItemNode,
     DeclarationNode,
+    HoistableDeclarationNode,
     IdentifierNode,
     BindingIdentifierNode,
     check,
     CannotConvertError,
     VarScopedDeclaration,
+    LexicallyScopedDeclaration,
 } from "../parser/ast";
 import {
     ExpressionNode_fromGeneric,
@@ -33,6 +35,9 @@ import {
     StatementListItemNode_fromGeneric,
     VarNode,
 } from "./statements";
+import {
+    ClassDeclarationNode,
+} from "./functions";
 import {
     JSValue,
     JSPropertyKey,
@@ -107,6 +112,11 @@ export class ScriptNode extends ASTNode {
         return [this.body];
     }
 
+    // ES6 Section 15.1.4: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        throw new Error("ScriptNode.lexicallyScopedDeclarations not implemented");
+    }
+
     // ES6 Section 15.1.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // FIXME: Return TopLevelVarScopedDeclarations of StatementList.
@@ -139,6 +149,19 @@ export class ModuleItemListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 15.2.1.12 Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        // FIXME: This is not what the spec says (but it's close)
+        for (const element of this.elements) {
+            if (element instanceof ImportNode) {
+                // don't include in list
+            }
+            else if (element instanceof DeclarationNode) {
+                out.push(element);
+            }
+        }
     }
 
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
@@ -233,6 +256,10 @@ export class ImportsListNode extends ASTNode {
 
 export abstract class ImportNode extends ASTNode {
     public _type_ImportNode: any;
+
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        // No lexcially scoped declarations for this node type (???)
+    }
 
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
@@ -524,6 +551,9 @@ export class ExportsListNode extends ASTNode {
 export abstract class ExportNode extends ASTNode {
     public _type_ExportNode: any;
 
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
+
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // No var scoped declarations for this node type, except for ExportVariableNode, which
@@ -587,6 +617,14 @@ export class ExportDefaultNode extends ExportNode {
         return [this.decl];
     }
 
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        if (this.decl instanceof HoistableDeclarationNode)
+            out.push(this.decl);
+        else if (this.decl instanceof ClassDeclarationNode)
+            out.push(this.decl);
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ExportDefaultNode.evaluate not implemented");
     }
@@ -611,6 +649,11 @@ export class ExportStarNode extends ExportNode {
         return [this.from];
     }
 
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        throw new Error("ExportStarNode.lexicallyScopedDeclarations not implemented");
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ExportStarNode.evaluate not implemented");
     }
@@ -633,6 +676,11 @@ export class ExportPlainNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.clause];
+    }
+
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        throw new Error("ExportPlainNode.lexicallyScopedDeclarations not implemented");
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -664,6 +712,11 @@ export class ExportVariableNode extends ExportNode {
         this.variable.varScopedDeclarations(out);
     }
 
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        throw new Error("ExportVariableNode.lexicallyScopedDeclarations not implemented");
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ExportVariableNode.evaluate not implemented");
     }
@@ -686,6 +739,11 @@ export class ExportDeclarationNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.decl];
+    }
+
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        out.push(this.decl);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -718,6 +776,11 @@ export class ExportFromNode extends ExportNode {
         return [this.exportClause,this.fromClause];
     }
 
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        throw new Error("ExportFromNode.lexicallyScopedDeclarations not implemented");
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ExportFromNode.evaluate not implemented");
     }
@@ -741,6 +804,11 @@ export class ExportClauseNode extends ExportNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.items];
+    }
+
+    // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        throw new Error("ExportClauseNode.lexicallyScopedDeclarations not implemented");
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
