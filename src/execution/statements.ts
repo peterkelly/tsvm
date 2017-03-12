@@ -201,7 +201,7 @@ export function StatementListItemNode_fromGeneric(node: ASTNode | null): Stateme
 export abstract class StatementNode extends StatementListItemNode {
     public _type_StatementNode: any;
 
-    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
+    public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
     public static fromGeneric(node: ASTNode | null): StatementNode {
         if (node === null)
@@ -323,7 +323,7 @@ export class BlockNode extends StatementNode {
         return [this.statements];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("BlockNode.evaluate not implemented");
     }
 
@@ -518,7 +518,7 @@ export class VarNode extends StatementNode {
         return [this.declarations];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("VarNode.evaluate not implemented");
     }
 
@@ -816,7 +816,7 @@ export class EmptyStatementNode extends StatementNode {
         return [];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("EmptyStatementNode.evaluate not implemented");
     }
 
@@ -841,7 +841,7 @@ export class ExpressionStatementNode extends StatementNode {
         return [this.expr];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         const resultComp = this.expr.evaluate(ctx);
         if (!(resultComp instanceof NormalCompletion))
             return resultComp;
@@ -883,7 +883,7 @@ export class IfStatementNode extends StatementNode {
         return [this.condition,this.trueBranch,this.falseBranch];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("IfStatementNode.evaluate not implemented");
     }
 
@@ -917,7 +917,7 @@ export class DoStatementNode extends BreakableStatementNode {
         return [this.body,this.condition];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("DoStatementNode.evaluate not implemented");
     }
 
@@ -946,7 +946,7 @@ export class WhileStatementNode extends BreakableStatementNode {
         return [this.condition,this.body];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("WhileStatementNode.evaluate not implemented");
     }
 
@@ -985,7 +985,7 @@ export class ForCNode extends BreakableStatementNode {
         return [this.init,this.condition,this.update,this.body];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ForCNode.evaluate not implemented");
     }
 
@@ -1023,7 +1023,7 @@ export class ForInNode extends BreakableStatementNode {
         return [this.binding,this.expr,this.body];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ForInNode.evaluate not implemented");
     }
 
@@ -1058,7 +1058,7 @@ export class ForOfNode extends BreakableStatementNode {
         return [this.binding,this.expr,this.body];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ForOfNode.evaluate not implemented");
     }
 
@@ -1146,7 +1146,7 @@ export class ContinueStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ContinueStatementNode.evaluate not implemented");
     }
 
@@ -1172,7 +1172,7 @@ export class BreakStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("BreakStatementNode.evaluate not implemented");
     }
 
@@ -1198,7 +1198,7 @@ export class ReturnStatementNode extends StatementNode {
         return [this.expr];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ReturnStatementNode.evaluate not implemented");
     }
 
@@ -1226,7 +1226,7 @@ export class WithStatementNode extends StatementNode {
         return [this.expr,this.body];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("WithStatementNode.evaluate not implemented");
     }
 
@@ -1255,7 +1255,7 @@ export class SwitchStatementNode extends BreakableStatementNode {
         return [this.expr,this.cases];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("SwitchStatementNode.evaluate not implemented");
     }
 
@@ -1441,7 +1441,7 @@ export class LabelledStatementNode extends StatementNode {
         return [this.ident,this.item];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("LabelledStatementNode.evaluate not implemented");
     }
 
@@ -1468,7 +1468,7 @@ export class ThrowStatementNode extends StatementNode {
         return [this.expr];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("ThrowStatementNode.evaluate not implemented");
     }
 
@@ -1503,7 +1503,7 @@ export class TryStatementNode extends StatementNode {
         return [this.tryNode,this.catchNode,this.finallyNode];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("TryStatementNode.evaluate not implemented");
     }
 
@@ -1572,7 +1572,7 @@ export class DebuggerStatementNode extends StatementNode {
         return [];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("DebuggerStatementNode.evaluate not implemented");
     }
 
