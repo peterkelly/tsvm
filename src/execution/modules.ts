@@ -36,6 +36,8 @@ import {
     VarNode,
 } from "./statements";
 import {
+    FunctionDeclarationNode,
+    GeneratorDeclarationNode,
     ClassDeclarationNode,
 } from "./functions";
 import {
@@ -61,6 +63,7 @@ import {
     AbstractReference,
     PropertyReference,
     Realm,
+    LexicalEnvironment,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
@@ -70,6 +73,7 @@ import {
 } from "../runtime/08-02-realm";
 import {
     DeclarativeEnvironmentRecord,
+    NewModuleEnvironment,
 } from "../runtime/08-01-environment";
 
 export type ModuleItemType = ImportNode | ExportNode | StatementListItemNode;
@@ -201,11 +205,15 @@ export class ModuleItemListNode extends ASTNode {
 
 export class ModuleNode extends ASTNode {
     public _type_ModuleNode: any;
+    public realm: Realm;
     public readonly body: ModuleItemListNode;
+    public environment: LexicalEnvironment | undefined = undefined;
+    public evaluated: boolean = false;
 
-    public constructor(range: Range, body: ModuleItemListNode) {
+    public constructor(range: Range, body: ModuleItemListNode, realm: Realm) {
         super(range,"Module");
         this.body = body;
+        this.realm = realm;
     }
 
     public get children(): (ASTNode | null)[] {
@@ -217,14 +225,231 @@ export class ModuleNode extends ASTNode {
         this.body.varScopedDeclarations(out);
     }
 
+    // ES6 Section 15.2.1.16.4 ModuleDeclarationInstantiation( ) Concrete Method
+    private moduleDeclarationInstantiation(): Completion<JSValue | Reference | Empty> {
+
+        // 1. Let module be this Source Text Module Record.
+        const module = this;
+
+        // 2. Let realm be module.[[Realm]].
+        // 3. Assert: realm is not undefined.
+        const realm = module.realm;
+
+        // 4. Let code be module.[[ECMAScriptCode]].
+        const code = this.body;
+
+        // 5. If module.[[Environment]] is not undefined, return NormalCompletion(empty).
+        if (module.environment != null)
+            return new NormalCompletion(new Empty());
+
+        // 6. Let env be NewModuleEnvironment(realm.[[globalEnv]]).
+        const env = NewModuleEnvironment(realm, realm.globalEnv);
+
+        // 7. Set module.[[Environment]] to env.
+        module.environment = env;
+
+        // 8. For each String required that is an element of module.[[RequestedModules]] do,
+        // TODO...
+            // a. NOTE: Before instantiating a module, all of the modules it requested must be available. An implementation may perform this test at any time prior to this point,
+            // b. Let requiredModule be HostResolveImportedModule(module, required).
+            // c. ReturnIfAbrupt(requiredModule).
+            // d. Let status be requiredModule.ModuleDeclarationInstantiation().
+            // e. ReturnIfAbrupt(status).
+
+        // 9. For each ExportEntry Record e in module.[[IndirectExportEntries]], do
+        // TODO...
+            // a. Let resolution be module.ResolveExport(e.[[ExportName]], «‍ », «‍ »).
+            // b. ReturnIfAbrupt(resolution).
+            // c. If resolution is null or resolution is "ambiguous", throw a SyntaxError exception.
+
+        // 10. Assert: all named exports from module are resolvable.
+        // TODO
+
+        // 11. Let envRec be env’s EnvironmentRecord.
+        const envRec = env.record;
+
+        // 12. For each ImportEntry Record in in module.[[ImportEntries]], do
+        // TODO...
+            // a. Let importedModule be HostResolveImportedModule(module, in.[[ModuleRequest]]).
+            // b. ReturnIfAbrupt(importedModule).
+            // c. If in.[[ImportName]] is "*", then
+                // i. Let namespace be GetModuleNamespace(importedModule).
+                // ii. ReturnIfAbrupt(module).
+                // iii. Let status be envRec.CreateImmutableBinding(in.[[LocalName]], true).
+                // iv. Assert: status is not an abrupt completion.
+                // v. Call envRec.InitializeBinding(in.[[LocalName]], namespace).
+            // d. else,
+                // i. Let resolution be importedModule.ResolveExport(in.[[ImportName]], « », «‍ »).
+                // ii. ReturnIfAbrupt(resolution).
+                // iii. If resolution is null or resolution is "ambiguous", throw a SyntaxError exception.
+                // iv. Call envRec.CreateImportBinding(in.[[LocalName]], resolution.[[module]], resolution.[[bindingName]]).
+
+        // 13. Let varDeclarations be the VarScopedDeclarations of code.
+        const varDeclarations: VarScopedDeclaration[] = [];
+        code.varScopedDeclarations(varDeclarations);
+        // console.log("varDeclarations.length = "+varDeclarations.length);
+
+        // Note: For var-scoped declarations we use the portion of the algorithm from the ES7 spec,
+        // which corrects a defect in the ES6 spec which would fail when multiple variables or
+        // functions were declared with the same name
+        const declaredVarNames: string[] = [];
+
+        // 14. For each element d in varDeclarations do
+        for (const d of varDeclarations) {
+            const boundNames: string[] = [];
+            d.boundNames(boundNames);
+
+            // a. For each element dn of the BoundNames of d do
+            for (const dn of boundNames) {
+                if (declaredVarNames.indexOf(dn) < 0) {
+                    // console.log("variable name " + JSON.stringify(dn));
+                    // i. Let status be envRec.CreateMutableBinding(dn, false).
+                    // console.log("Creating mutable binding for "+dn);
+                    let status = envRec.CreateMutableBinding(dn, false);
+                    // envRec.print("");
+                    // ii. Assert: status is not an abrupt completion.
+                    if (!(status instanceof NormalCompletion))
+                        return status;
+                    // iii. Call envRec.InitializeBinding(dn, undefined).
+                    status = envRec.InitializeBinding(dn, new JSUndefined());
+                    if (!(status instanceof NormalCompletion))
+                        return status;
+
+                    declaredVarNames.push(dn);
+                }
+            }
+        }
+
+        // 15. Let lexDeclarations be the LexicallyScopedDeclarations of code.
+        const lexDeclarations: LexicallyScopedDeclaration[] = [];
+        code.lexicallyScopedDeclarations(lexDeclarations);
+        // console.log("lexDeclarations.length = "+lexDeclarations.length);
+
+        // 16. For each element d in lexDeclarations do
+        for (const d of lexDeclarations) {
+            const boundNames: string[] = [];
+            d.boundNames(boundNames);
+
+            // a. For each element dn of the BoundNames of d do
+            for (const dn of boundNames) {
+                // console.log("lexical name " + JSON.stringify(dn));
+                // i. If IsConstantDeclaration of d is true, then
+                let status: Completion<void>;
+                if (d.isConstantDeclaration()) {
+                    // 1. Let status be envRec.CreateImmutableBinding(dn, true).
+                    // console.log("Creating immutable binding for "+dn);
+                    status = envRec.CreateImmutableBinding(dn, true);
+                    // envRec.print("");
+                }
+                // ii. Else,
+                else {
+                    // 1. Let status be envRec.CreateMutableBinding(dn, false).
+                    // console.log("Creating mutable binding for "+dn);
+                    status = envRec.CreateMutableBinding(dn, false);
+                    // envRec.print("");
+                }
+
+                // iii. Assert: status is not an abrupt completion.
+                if (!(status instanceof NormalCompletion))
+                    return status;
+
+                // iv. If d is a GeneratorDeclaration production or a FunctionDeclaration production, then
+                if ((d instanceof GeneratorDeclarationNode) || (d instanceof FunctionDeclarationNode)) {
+                    // 1. Let fo be the result of performing InstantiateFunctionObject for d with argument env.
+                    const foComp = d.instantiateFunctionObject(realm,env);
+                    if (!(foComp instanceof NormalCompletion))
+                        return foComp;
+                    const fo = foComp.value;
+
+                    // 2. Call envRec.InitializeBinding(dn, fo).
+                    status = envRec.InitializeBinding(dn, fo);
+                    if (!(status instanceof NormalCompletion))
+                        return status;
+                }
+            }
+        }
+
+        // 17. Return NormalCompletion(empty).
+        return new NormalCompletion(new Empty());
+    }
+
+    // ES6 Section 15.2.1.16.5 ModuleEvaluation() Concrete Method
+    public moduleEvaluation(): Completion<JSValue | Reference | Empty> {
+        // 1. Let module be this Source Text Module Record.
+        const module = this;
+
+        // 2. Assert: ModuleDeclarationInstantiation has already been invoked on module and successfully completed.
+        // ---
+
+        // 3. Assert: module.[[Realm]] is not undefined.
+        // ---
+
+        // 4. If module.[[Evaluated]] is true, return undefined.
+        if (module.evaluated)
+            return new NormalCompletion(new JSUndefined());
+
+        // 5. Set module.[[Evaluated]] to true.
+        module.evaluated = true;
+
+        // 6. For each String required that is an element of module.[[RequestedModules]] do,
+        // TODO...
+            // a. Let requiredModule be HostResolveImportedModule(module, required).
+            // b. ReturnIfAbrupt(requiredModule).
+            // c. Let status be requiredModule.ModuleEvaluation().
+            // d. ReturnIfAbrupt(status).
+
+        // 7. Let moduleCxt be a new ECMAScript code execution context.
+        // 8. Set the Function of moduleCxt to null.
+        // 9. Set the Realm of moduleCxt to module.[[Realm]].
+        // 10. Assert: module has been linked and declarations in its module environment have been instantiated.
+        // 11. Set the VariableEnvironment of moduleCxt to module.[[Environment]].
+        // 12. Set the LexicalEnvironment of moduleCxt to module.[[Environment]].
+        if (module.environment === undefined) {
+            throw new Error("Module environment has not been initialized");
+        }
+        const moduleCxt = new ExecutionContext(module.realm,new JSNull(),module.environment);
+
+        // 13. Suspend the currently running execution context.
+        // 14. Push moduleCxt on to the execution context stack; moduleCxt is now the running execution context.
+        // TODO
+
+        // console.log("======== before evaluating module ========");
+        // for (let curEnv: LexicalEnvironment | null = module.environment; curEnv != null; curEnv = curEnv.outer) {
+        //     curEnv.record.print("");
+        //     if (curEnv.outer != null)
+        //         console.log("");
+        // }
+        // console.log("==========================================");
+
+        // 15. Let result be the result of evaluating module.[[ECMAScriptCode]].
+        const result = module.evaluate(moduleCxt);
+
+        // 16. Suspend moduleCxt and remove it from the execution context stack.
+        // 17. Resume the context that is now on the top of the execution context stack as the running execution context.
+        // TODO
+
+        // 18. Return Completion(result).
+        return result;
+    }
+
+    // ES6 Section 15.2.1.19 Runtime Semantics: TopLevelModuleEvaluationJob ( sourceText)
+    public topLevelModuleEvaluationJob(): Completion<JSValue | Reference | Empty> {
+        // FIXME: Implement based on spec
+        let status = this.moduleDeclarationInstantiation();
+        if (!(status instanceof NormalCompletion))
+            return status;
+        status = this.moduleEvaluation();
+        return status;
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         return this.body.evaluate(ctx);
     }
 
-    public static fromGeneric(node: ASTNode | null): ModuleNode {
+    public static fromGeneric(node: ASTNode | null, realm: Realm): ModuleNode {
         node = check.node(node,"Module",1);
         const body = ModuleItemListNode.fromGeneric(node.children[0]);
-        return new ModuleNode(node.range,body);
+        return new ModuleNode(node.range,body,realm);
     }
 }
 

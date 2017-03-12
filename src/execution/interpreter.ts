@@ -84,10 +84,8 @@ class ConsoleLogFunction extends JSObject {
 }
 
 export function evalModule(node: ModuleNode, callbacks: ExecutionCallbacks): void {
-    const realm = new RealmImpl();
-    const envRec = new DeclarativeEnvironmentRecord(realm);
-    const lexEnv = { record: envRec, outer: realm.globalEnv };
-    const ctx = new ExecutionContext(realm, new JSNull(),lexEnv);
+    const realm = node.realm;
+    const envRec = realm.globalEnv.record;
 
     envRec.CreateImmutableBinding("console",true);
     const consoleObject = new JSObject(realm.intrinsics.ObjectPrototype);
@@ -99,7 +97,7 @@ export function evalModule(node: ModuleNode, callbacks: ExecutionCallbacks): voi
     }));
     envRec.InitializeBinding("console",consoleObject);
 
-    const resultComp = node.evaluate(ctx);
+    const resultComp = node.topLevelModuleEvaluationJob();
     if (resultComp instanceof NormalCompletion) {
         callbacks.success();
         return;
