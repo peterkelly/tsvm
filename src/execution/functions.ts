@@ -17,6 +17,7 @@ import {
     ASTNode,
     ExpressionNode,
     DeclarationNode,
+    VarScopedDeclaration,
     HoistableDeclarationNode,
     BindingIdentifierNode,
     check,
@@ -98,8 +99,9 @@ export class FormalParameterListNode extends ASTNode {
     }
 }
 
-export class FunctionDeclarationNode extends HoistableDeclarationNode {
+export class FunctionDeclarationNode extends HoistableDeclarationNode implements VarScopedDeclaration {
     public _type_FunctionDeclarationNode: any;
+    public _interface_VarScopedDeclaration: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
@@ -118,6 +120,11 @@ export class FunctionDeclarationNode extends HoistableDeclarationNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
+    }
+
+    // ES6 Section 13.13.13 Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        // No var scoped declarations for this node type
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
@@ -461,8 +468,9 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
     }
 }
 
-export class GeneratorDeclarationNode extends HoistableDeclarationNode {
+export class GeneratorDeclarationNode extends HoistableDeclarationNode implements VarScopedDeclaration {
     public _type_GeneratorDeclarationNode: any;
+    public _interface_VarScopedDeclaration: any;
     public readonly ident: BindingIdentifierNode | null;
     public readonly params: FormalParametersNode;
     public readonly body: StatementListNode;
