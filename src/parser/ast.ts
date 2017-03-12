@@ -90,6 +90,8 @@ export abstract class DeclarationNode extends StatementListItemNode implements L
         // No var scoped declarations for this node type
     }
 
+    public abstract isConstantDeclaration(): boolean;
+
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 }
 
@@ -302,8 +304,10 @@ export class CannotConvertError {
 
 export interface VarScopedDeclaration {
     _interface_VarScopedDeclaration: any;
+    isConstantDeclaration(): boolean;
 }
 
 export interface LexicallyScopedDeclaration {
     _interface_LexicallyScopedDeclaration: any;
+    isConstantDeclaration(): boolean;
 }

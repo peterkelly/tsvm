@@ -127,6 +127,11 @@ export class FunctionDeclarationNode extends HoistableDeclarationNode implements
         // No var scoped declarations for this node type
     }
 
+    // ES6 Section 14.1.10: Static Semantics: IsConstantDeclaration
+    public isConstantDeclaration(): boolean {
+        return false;
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("FunctionDeclarationNode.evaluate not implemented");
     }
@@ -491,6 +496,11 @@ export class GeneratorDeclarationNode extends HoistableDeclarationNode implement
         return [this.ident,this.params,this.body];
     }
 
+    // ES6 Section 14.4.8: Static Semantics: IsConstantDeclaration
+    public isConstantDeclaration(): boolean {
+        return false;
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("GeneratorDeclarationNode.evaluate not implemented");
     }
@@ -645,6 +655,11 @@ export class ClassDeclarationNode extends DeclarationNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.tail];
+    }
+
+    // ES6 Section 14.5.7: Static Semantics: IsConstantDeclaration
+    public isConstantDeclaration(): boolean {
+        return false;
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
