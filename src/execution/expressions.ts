@@ -1096,8 +1096,32 @@ export class PostIncrementNode extends ExpressionNode {
         return [this.expr];
     }
 
+    // ES6 Section 12.4.4.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("PostIncrementNode.evaluate not implemented");
+        // 1. Let lhs be the result of evaluating LeftHandSideExpression.
+        const lhsComp = this.expr.evaluate(ctx);
+
+        // 2. Let oldValue be ToNumber(GetValue(lhs)).
+        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,lhsComp));
+
+        // 3. ReturnIfAbrupt(oldValue).
+        if (!(oldValueComp instanceof NormalCompletion))
+            return oldValueComp;
+        const oldValue = oldValueComp.value;
+
+        // 4. Let newValue be the result of adding the value 1 to oldValue, using the same
+        // rules as for the + operator (see 12.7.5).
+        const newValue = new JSNumber(pr_double_add(oldValue.numberValue,1));
+
+        // 5. Let status be PutValue(lhs, newValue).
+        const statusComp = PutValue(ctx.realm,lhsComp,newValue);
+
+        // 6. ReturnIfAbrupt(status).
+        if (!(statusComp instanceof NormalCompletion))
+            return statusComp;
+
+        // 7. Return oldValue.
+        return new NormalCompletion(oldValue);
     }
 
     public static fromGeneric(node: ASTNode | null): PostIncrementNode {
@@ -1120,8 +1144,32 @@ export class PostDecrementNode extends ExpressionNode {
         return [this.expr];
     }
 
+    // ES6 Section 12.4.5.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("PostDecrementNode.evaluate not implemented");
+        // 1. Let lhs be the result of evaluating LeftHandSideExpression.
+        const lhsComp = this.expr.evaluate(ctx);
+
+        // 2. Let oldValue be ToNumber(GetValue(lhs)).
+        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,lhsComp));
+
+        // 3. ReturnIfAbrupt(oldValue).
+        if (!(oldValueComp instanceof NormalCompletion))
+            return oldValueComp;
+        const oldValue = oldValueComp.value;
+
+        // 4. Let newValue be the result of subtracting the value 1 from oldValue, using the same
+        // rules as for the - operator (12.7.5).
+        const newValue = new JSNumber(pr_double_sub(oldValue.numberValue,1));
+
+        // 5. Let status be PutValue(lhs, newValue).
+        const statusComp = PutValue(ctx.realm,lhsComp,newValue);
+
+        // 6. ReturnIfAbrupt(status).
+        if (!(statusComp instanceof NormalCompletion))
+            return statusComp;
+
+        // 7. Return oldValue.
+        return new NormalCompletion(oldValue);
     }
 
     public static fromGeneric(node: ASTNode | null): PostDecrementNode {
@@ -1256,8 +1304,32 @@ export class PreIncrementNode extends ExpressionNode {
         return [this.expr];
     }
 
+    // ES6 Section 12.5.7.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("PreIncrementNode.evaluate not implemented");
+        // 1. Let expr be the result of evaluating UnaryExpression.
+        const exprComp = this.expr.evaluate(ctx);
+
+        // 2. Let oldValue be ToNumber(GetValue(expr)).
+        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+
+        // 3. ReturnIfAbrupt(oldValue).
+        if (!(oldValueComp instanceof NormalCompletion))
+            return oldValueComp;
+        const oldValue = oldValueComp.value;
+
+        // 4. Let newValue be the result of adding the value 1 to oldValue, using the same
+        // rules as for the + operator (see 12.7.5).
+        const newValue = new JSNumber(pr_double_add(oldValue.numberValue,1));
+
+        // 5. Let status be PutValue(expr, newValue).
+        const statusComp = PutValue(ctx.realm,exprComp,newValue);
+
+        // 6. ReturnIfAbrupt(status).
+        if (!(statusComp instanceof NormalCompletion))
+            return statusComp;
+
+        // 7. Return newValue.
+        return new NormalCompletion(newValue);
     }
 
     public static fromGeneric(node: ASTNode | null): PreIncrementNode {
@@ -1280,8 +1352,32 @@ export class PreDecrementNode extends ExpressionNode {
         return [this.expr];
     }
 
+    // ES6 Section 12.5.8.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("PreDecrementNode.evaluate not implemented");
+        // 1. Let expr be the result of evaluating UnaryExpression.
+        const exprComp = this.expr.evaluate(ctx);
+
+        // 2. Let oldValue be ToNumber(GetValue(expr)).
+        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+
+        // 3. ReturnIfAbrupt(oldValue).
+        if (!(oldValueComp instanceof NormalCompletion))
+            return oldValueComp;
+        const oldValue = oldValueComp.value;
+
+        // 4. Let newValue be the result of subtracting the value 1 from oldValue, using the same
+        // rules as for the - operator (see 12.7.5).
+        const newValue = new JSNumber(pr_double_sub(oldValue.numberValue,1));
+
+        // 5. Let status be PutValue(expr, newValue).
+        const statusComp = PutValue(ctx.realm,exprComp,newValue);
+
+        // 6. ReturnIfAbrupt(status).
+        if (!(statusComp instanceof NormalCompletion))
+            return statusComp;
+
+        // 7. Return newValue.
+        return new NormalCompletion(newValue);
     }
 
     public static fromGeneric(node: ASTNode | null): PreDecrementNode {
