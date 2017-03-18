@@ -72,6 +72,9 @@ export abstract class StatementListItemNode extends ASTNode {
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
 
+    // ES6 Section 13.2.11 Static Semantics: VarDeclaredNames
+    public abstract varDeclaredNames(out: string[]): void;
+
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 }
@@ -83,6 +86,11 @@ export abstract class DeclarationNode extends StatementListItemNode implements L
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         out.push(this);
+    }
+
+    // ES6 Section 13.2.11 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations

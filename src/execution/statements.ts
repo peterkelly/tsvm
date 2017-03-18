@@ -212,6 +212,9 @@ export abstract class StatementNode extends StatementListItemNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public abstract varDeclaredNames(out: string[]): void;
+
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 
@@ -288,6 +291,13 @@ export class StatementListNode extends ASTNode {
                 element.lexicallyScopedDeclarations(out);
             else if (element instanceof DeclarationNode)
                 out.push(element);
+        }
+    }
+
+    // ES6 Section 13.2.11 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        for (const element of this.elements) {
+            element.varDeclaredNames(out);
         }
     }
 
@@ -371,6 +381,11 @@ export class BlockNode extends StatementNode {
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         this.statements.lexicallyScopedDeclarations(out);
+    }
+
+    // ES6 Section 13.2.11 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.statements.varDeclaredNames(out);
     }
 
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
@@ -784,6 +799,11 @@ export class VarNode extends StatementNode {
 
     // ES6 Section 13.3.2.1 Static Semantics: BoundNames
     public boundNames(out: string[]): void {
+        this.declarations.boundNames(out);
+    }
+
+    // ES6 Section 13.3.2.2 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
         this.declarations.boundNames(out);
     }
 
@@ -1216,6 +1236,11 @@ export class EmptyStatementNode extends StatementNode {
         return [];
     }
 
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
+    }
+
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // No var scoped declarations for this node type
@@ -1244,6 +1269,11 @@ export class ExpressionStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
@@ -1293,6 +1323,13 @@ export class IfStatementNode extends StatementNode {
         return [this.condition,this.trueBranch,this.falseBranch];
     }
 
+    // ES6 Section 13.6.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.trueBranch.varDeclaredNames(out);
+        if (this.falseBranch != null)
+            this.falseBranch.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.6.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.trueBranch.varScopedDeclarations(out);
@@ -1335,6 +1372,11 @@ export class DoStatementNode extends BreakableStatementNode {
         return [this.body,this.condition];
     }
 
+    // ES6 Section 13.7.2.4 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.body.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.7.2.5 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.body.varScopedDeclarations(out);
@@ -1367,6 +1409,11 @@ export class WhileStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.body];
+    }
+
+    // ES6 Section 13.7.3.4 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.body.varDeclaredNames(out);
     }
 
     // ES6 Section 13.7.3.5 Static Semantics: VarScopedDeclarations
@@ -1411,6 +1458,13 @@ export class ForCNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.init,this.condition,this.update,this.body];
+    }
+
+    // ES6 Section 13.7.4.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        if (this.init instanceof VarNode)
+            this.init.varDeclaredNames(out);
+        this.body.varDeclaredNames(out);
     }
 
     // ES6 Section 13.7.4.6 Static Semantics: VarScopedDeclarations
@@ -1464,6 +1518,13 @@ export class ForInNode extends BreakableStatementNode {
             this.binding.boundNames(out);
     }
 
+    // ES6 Section 13.7.5.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        if (this.binding instanceof VarForDeclarationNode)
+            this.binding.varDeclaredNames(out);
+        this.body.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         if (this.binding instanceof VarForDeclarationNode)
@@ -1512,6 +1573,13 @@ export class ForOfNode extends BreakableStatementNode {
             this.binding.boundNames(out);
     }
 
+    // ES6 Section 13.7.5.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        if (this.binding instanceof VarForDeclarationNode)
+            this.binding.varDeclaredNames(out);
+        this.body.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         if (this.binding instanceof VarForDeclarationNode)
@@ -1543,6 +1611,11 @@ export class VarForDeclarationNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding];
+    }
+
+    // ES6 Section 13.7.5.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.binding.boundNames(out);
     }
 
     // ES6 Section 13.7.5.8 Static Semantics: VarScopedDeclarations
@@ -1622,6 +1695,11 @@ export class ContinueStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
+    }
+
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // No var scoped declarations for this node type
@@ -1653,6 +1731,11 @@ export class BreakStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
+    }
+
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // No var scoped declarations for this node type
@@ -1682,6 +1765,11 @@ export class ReturnStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
@@ -1717,6 +1805,11 @@ export class WithStatementNode extends StatementNode {
         return [this.expr,this.body];
     }
 
+    // ES6 Section 13.11.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.body.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.11.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.body.varScopedDeclarations(out);
@@ -1749,6 +1842,11 @@ export class SwitchStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.cases];
+    }
+
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.cases.varDeclaredNames(out);
     }
 
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
@@ -1786,6 +1884,13 @@ export class CaseClauseListNode extends ASTNode {
         throw new Error("CaseClauseListNode.lexicallyScopedDeclarations not implemented");
     }
 
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        for (const element of this.elements) {
+            element.varDeclaredNames(out);
+        }
+    }
+
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         for (const element of this.elements)
@@ -1806,6 +1911,9 @@ export abstract class CaseBlockNode extends ASTNode {
 
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
+
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public abstract varDeclaredNames(out: string[]): void;
 
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
@@ -1840,6 +1948,11 @@ export class CaseBlock1Node extends CaseBlockNode {
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         this.caseClauses.lexicallyScopedDeclarations(out);
+    }
+
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.caseClauses.varDeclaredNames(out);
     }
 
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
@@ -1886,6 +1999,15 @@ export class CaseBlock2Node extends CaseBlockNode {
             this.caseClauses2.lexicallyScopedDeclarations(out);
     }
 
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        if (this.caseClauses1 != null)
+            this.caseClauses1.varDeclaredNames(out);
+        this.defaultClause.varDeclaredNames(out);
+        if (this.caseClauses2 != null)
+            this.caseClauses2.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         if (this.caseClauses1 != null)
@@ -1909,6 +2031,9 @@ export abstract class CaseClauseListItemNode extends ASTNode {
 
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
+
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public abstract varDeclaredNames(out: string[]): void;
 
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
@@ -1940,6 +2065,11 @@ export class CaseClauseNode extends CaseClauseListItemNode {
         this.statements.lexicallyScopedDeclarations(out);
     }
 
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.statements.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.statements.varScopedDeclarations(out);
@@ -1969,6 +2099,11 @@ export class DefaultClauseNode extends CaseClauseListItemNode {
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         this.statements.lexicallyScopedDeclarations(out);
+    }
+
+    // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.statements.varDeclaredNames(out);
     }
 
     // ES6 Section 13.12.8 Static Semantics: VarScopedDeclarations
@@ -2019,6 +2154,12 @@ export class LabelledStatementNode extends StatementNode {
             out.push(this.item);
     }
 
+    // ES6 Section 13.13.12 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        if (!(this.item instanceof FunctionDeclarationNode))
+            this.item.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.13.13 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.item.varScopedDeclarations(out);
@@ -2049,6 +2190,11 @@ export class ThrowStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
@@ -2091,6 +2237,15 @@ export class TryStatementNode extends StatementNode {
         return [this.tryNode,this.catchNode,this.finallyNode];
     }
 
+    // ES6 Section 13.15.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.tryNode.varDeclaredNames(out);
+        if (this.catchNode != null)
+            this.catchNode.varDeclaredNames(out);
+        if (this.finallyNode != null)
+            this.finallyNode.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.tryNode.varScopedDeclarations(out);
@@ -2128,6 +2283,11 @@ export class CatchNode extends ASTNode {
         return [this.param,this.block];
     }
 
+    // ES6 Section 13.15.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.block.varDeclaredNames(out);
+    }
+
     // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.block.varScopedDeclarations(out);
@@ -2152,6 +2312,15 @@ export class FinallyNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.block];
+    }
+
+    // ES6 Section 13.15.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // FIXME: Not sure about this one. The spec doesn't explicitly say that we should include
+        // the varDeclaredNames of block, but there seems to be an implicit notion that if the
+        // RHS of a production consists of only one non-terminal, then you should apply the rule
+        // for that non-terminal (in this case, Block).
+        this.block.varDeclaredNames(out);
     }
 
     // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
@@ -2181,6 +2350,11 @@ export class DebuggerStatementNode extends StatementNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("DebuggerStatementNode.evaluate not implemented");
+    }
+
+    // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations

@@ -121,6 +121,12 @@ export class ScriptNode extends ASTNode {
         throw new Error("ScriptNode.lexicallyScopedDeclarations not implemented");
     }
 
+    // ES6 Section 15.1.5 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // FIXME: Return TopLevelVarDeclaredNames of StatementList
+        throw new Error("ScriptNode.varDeclaredNames not implemented");
+    }
+
     // ES6 Section 15.1.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // FIXME: Return TopLevelVarScopedDeclarations of StatementList.
@@ -166,6 +172,12 @@ export class ModuleItemListNode extends ASTNode {
                 out.push(element);
             }
         }
+    }
+
+    // ES6 Section 15.2.1.13 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        for (const element of this.elements)
+            element.varDeclaredNames(out);
     }
 
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
@@ -218,6 +230,11 @@ export class ModuleNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.body];
+    }
+
+    // ES6 Section 15.2.1.13 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
@@ -493,6 +510,11 @@ export abstract class ImportNode extends ASTNode {
 
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         // No lexcially scoped declarations for this node type (???)
+    }
+
+    // ES6 Section 15.2.1.13 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type
     }
 
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
@@ -844,6 +866,12 @@ export abstract class ExportNode extends ASTNode {
     // ES6 Section 15.2.3.8: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
 
+    // ES6 Section 15.2.1.13 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        // No var declared names for this node type, except for ExportVariableNode, which overrides
+        // this method.
+    }
+
     // ES6 Section 15.2.1.14 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // No var scoped declarations for this node type, except for ExportVariableNode, which
@@ -1015,6 +1043,11 @@ export class ExportVariableNode extends ExportNode {
 
     // ES6 Section 15.2.3.2: Static Semantics: BoundNames
     public boundNames(out: string[]): void {
+        this.variable.boundNames(out);
+    }
+
+    // ES6 Section 15.2.1.13 Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
         this.variable.boundNames(out);
     }
 
