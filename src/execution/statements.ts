@@ -218,6 +218,11 @@ export abstract class StatementNode extends StatementListItemNode {
     // ES6 Section 13.1.6 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 
+    // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        // No lexically declared names by default, unless explicitly overridden
+    }
+
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         // No lexically scoped declarations by default, unless explicitly overridden
@@ -282,6 +287,16 @@ export class StatementListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        for (const element of this.elements) {
+            if (element instanceof LabelledStatementNode)
+                element.lexicallyDeclaredNames(out);
+            else if (element instanceof DeclarationNode)
+                element.boundNames(out);
+        }
     }
 
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
@@ -376,6 +391,11 @@ export class BlockNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+
+    // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        this.statements.lexicallyDeclaredNames(out);
     }
 
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
@@ -1879,6 +1899,11 @@ export class CaseClauseListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        throw new Error("CaseClauseListNode.lexicallyDeclaredNames not implemented");
+    }
+
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         throw new Error("CaseClauseListNode.lexicallyScopedDeclarations not implemented");
@@ -1908,6 +1933,9 @@ export class CaseClauseListNode extends ASTNode {
 
 export abstract class CaseBlockNode extends ASTNode {
     public _type_CaseBlockNode: any;
+
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public abstract lexicallyDeclaredNames(out: string[]): void;
 
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
@@ -1943,6 +1971,11 @@ export class CaseBlock1Node extends CaseBlockNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.caseClauses];
+    }
+
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        this.caseClauses.lexicallyDeclaredNames(out);
     }
 
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
@@ -1990,6 +2023,15 @@ export class CaseBlock2Node extends CaseBlockNode {
         return [this.caseClauses1,this.defaultClause,this.caseClauses2];
     }
 
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        if (this.caseClauses1 != null)
+            this.caseClauses1.lexicallyDeclaredNames(out);
+        this.defaultClause.lexicallyDeclaredNames(out);
+        if (this.caseClauses2 != null)
+            this.caseClauses2.lexicallyDeclaredNames(out);
+    }
+
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         if (this.caseClauses1 != null)
@@ -2029,6 +2071,9 @@ export class CaseBlock2Node extends CaseBlockNode {
 export abstract class CaseClauseListItemNode extends ASTNode {
     public _type_CaseClauseListItemNode: any;
 
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public abstract lexicallyDeclaredNames(out: string[]): void;
+
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
 
@@ -2058,6 +2103,11 @@ export class CaseClauseNode extends CaseClauseListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.statements];
+    }
+
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        this.statements.lexicallyDeclaredNames(out);
     }
 
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
@@ -2094,6 +2144,11 @@ export class DefaultClauseNode extends CaseClauseListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+
+    // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        this.statements.lexicallyDeclaredNames(out);
     }
 
     // ES6 Section 13.12.6: Static Semantics: LexicallyScopedDeclarations
@@ -2146,6 +2201,12 @@ export class LabelledStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.item];
+    }
+
+    // ES6 Section 13.13.6: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        if (this.item instanceof FunctionDeclarationNode)
+            this.item.lexicallyDeclaredNames(out);
     }
 
     // ES6 Section 13.13.7: Static Semantics: LexicallyScopedDeclarations
