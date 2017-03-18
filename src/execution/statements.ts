@@ -1029,6 +1029,13 @@ export abstract class BindingPatternNode extends ASTNode {
     // ES6 Section 13.3.3.1: Static Semantics: BoundNames
     public abstract boundNames(out: string[]): void;
 
+    // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // BindingElement : BindingPattern
+        // 1. Return false.
+        return false;
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingPatternNode {
         if (node === null)
             throw new CannotConvertError("BindingPatternNode",node);
@@ -1182,6 +1189,13 @@ export class BindingPatternInitNode extends ASTNode {
         this.pattern.boundNames(out);
     }
 
+    // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // BindingElement : BindingPattern Initializer
+        // 1. Return false.
+        return false;
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingPatternInitNode {
         node = check.node(node,"BindingPatternInit",2);
         const pattern = BindingPatternNode.fromGeneric(node.children[0]);
@@ -1210,6 +1224,13 @@ export class SingleNameBindingNode extends ASTNode {
         this.ident.boundNames(out);
     }
 
+    // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // SingleNameBinding : BindingIdentifier Initializer
+        // 1. Return false.
+        return false;
+    }
+
     public static fromGeneric(node: ASTNode | null): SingleNameBindingNode {
         node = check.node(node,"SingleNameBinding",2);
         const ident = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -1234,6 +1255,11 @@ export class BindingRestElementNode extends ASTNode {
     // ES6 Section 13.3.3.1: Static Semantics: BoundNames
     public boundNames(out: string[]): void {
         this.ident.boundNames(out);
+    }
+
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        return false;
     }
 
     public static fromGeneric(node: ASTNode | null): BindingRestElementNode {
