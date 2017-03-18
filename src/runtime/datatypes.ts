@@ -41,6 +41,14 @@ export class GenericMap<T> {
         const fullKey = "prop_"+key;
         delete this.contents[fullKey];
     }
+    public keys(): string[] {
+        const result: string[] = [];
+        for (const key of Object.getOwnPropertyNames(this.contents)) {
+            if (key.match(/^prop_/))
+                result.push(key.substring(5));
+        }
+        return result;
+    }
 }
 
 export class PropertyKeyMap<T> {
@@ -63,6 +71,14 @@ export class PropertyKeyMap<T> {
     public remove(pkey: JSPropertyKey): void {
         const fullKey = "prop_"+pkey.stringRep;
         delete this.contents[fullKey];
+    }
+    public keys(): string[] {
+        const result: string[] = [];
+        for (const key of Object.getOwnPropertyNames(this.contents)) {
+            if (key.match(/^prop_/))
+                result.push(key.substring(5));
+        }
+        return result;
     }
 }
 

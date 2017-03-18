@@ -31,9 +31,12 @@ import {
     StringLiteralNode,
 } from "./expressions";
 import {
+    Label,
+    LabelSet,
     DeclarationNode_fromGeneric,
     HoistableDeclarationNode_fromGeneric,
     StatementListItemNode_fromGeneric,
+    StatementNode,
     VarNode,
 } from "./statements";
 import {
@@ -69,9 +72,6 @@ import {
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
-import {
-    RealmImpl,
-} from "../runtime/08-02-realm";
 import {
     DeclarativeEnvironmentRecord,
     NewModuleEnvironment,
@@ -167,6 +167,39 @@ export class ModuleItemListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 15.2.1.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        for (const element of this.elements) {
+            if ((element instanceof StatementNode)) {
+                if (element.containsDuplicateLabels(labelSet))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    // ES6 Section 15.2.1.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        for (const element of this.elements) {
+            if ((element instanceof StatementNode)) {
+                if (element.containsUndefinedBreakTarget(labelSet))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    // ES6 Section 15.2.1.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        for (const element of this.elements) {
+            if ((element instanceof StatementNode)) {
+                if (element.containsUndefinedContinueTarget(iterationSet,null))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     // ES6 Section 15.2.1.11 Static Semantics: LexicallyDeclaredNames
     public lexicallyDeclaredNames(out: string[]): void {
         // FIXME: This is not what the spec says (but it's close)
@@ -257,6 +290,21 @@ export class ModuleNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.body];
+    }
+
+    // ES6 Section 15.2.1.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 15.2.1.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 15.2.1.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 15.2.1.13 Static Semantics: VarDeclaredNames

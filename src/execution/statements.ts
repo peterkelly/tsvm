@@ -37,6 +37,7 @@ import {
     ClassDeclarationNode,
 } from "./functions";
 import {
+    GenericMap,
     JSValue,
     JSPropertyKey,
     JSUndefined,
@@ -63,11 +64,11 @@ import {
     LexicalEnvironment,
 } from "../runtime/datatypes";
 import {
-    NewDeclarativeEnvironment,
-} from "../runtime/08-01-environment";
-import {
     ToBoolean,
 } from "../runtime/07-01-conversion";
+import {
+    NewDeclarativeEnvironment,
+} from "../runtime/08-01-environment";
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
@@ -77,10 +78,49 @@ import {
     InitializeReferencedBinding,
 } from "../runtime/06-02-03-reference";
 
-// TODO
+export class Label {
+    public readonly name: string;
+    public readonly stmt: LabelledStatementNode;
+
+    public constructor(name: string, stmt: LabelledStatementNode) {
+        this.name = name;
+        this.stmt = stmt;
+    }
+}
+
 export class LabelSet {
+    private readonly elements = new GenericMap<Label>();
+
+    public constructor() {
+    }
+
+    public clone(): LabelSet {
+        const clone = new LabelSet();
+        for (const key of this.elements.keys()) {
+            const label = this.elements.get(key);
+            if (label !== undefined)
+                clone.add(label);
+        }
+        return clone;
+    }
+
+    public add(label: Label): void {
+        this.elements.put(label.name, label);
+    }
+
+    public toArray(): Label[] {
+        const array: Label[] = [];
+        const clone = new LabelSet();
+        for (const key of this.elements.keys()) {
+            const label = this.elements.get(key);
+            if (label !== undefined)
+                array.push(label);
+        }
+        return array;
+    }
+
     public contains(name: string): boolean {
-        return false;
+        return this.elements.contains(name);
     }
 }
 
@@ -178,14 +218,12 @@ export const SingleNameBindingType = {
 };
 
 export type BindingElementType = SingleNameBindingType | BindingPatternInitNode |
-                                 BindingPatternNode | BindingRestElementNode |
-                                 ElisionNode;
+                                 BindingPatternNode | ElisionNode;
 export const BindingElementType = {
     fromGeneric(node: ASTNode | null): BindingElementType {
         try { return SingleNameBindingType.fromGeneric(node); } catch (e) {}
         try { return BindingPatternInitNode.fromGeneric(node); } catch (e) {}
         try { return BindingPatternNode.fromGeneric(node); } catch (e) {}
-        try { return BindingRestElementNode.fromGeneric(node); } catch (e) {}
         try { return ElisionNode.fromGeneric(node); } catch (e) {}
         throw new CannotConvertError("BindingElementType",node);
     }
@@ -221,6 +259,15 @@ export abstract class StatementNode extends StatementListItemNode {
     public _type_StatementNode: any;
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public abstract containsDuplicateLabels(labelSet: LabelSet): boolean;
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public abstract containsUndefinedBreakTarget(labelSet: LabelSet): boolean;
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public abstract containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean;
 
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
     public abstract varDeclaredNames(out: string[]): void;
@@ -297,6 +344,35 @@ export class StatementListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 13.2.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        for (const element of this.elements) {
+            if ((element instanceof StatementNode) && element.containsDuplicateLabels(labelSet))
+                return true;
+        }
+        return false;
+    }
+
+    // ES6 Section 13.2.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        for (const element of this.elements) {
+            if ((element instanceof StatementNode) && element.containsUndefinedBreakTarget(labelSet))
+                return true;
+        }
+        return false;
+    }
+
+    // ES6 Section 13.2.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        for (const element of this.elements) {
+            if (element instanceof StatementNode) {
+                if (element.containsUndefinedContinueTarget(iterationSet,null))
+                    return true;
+            }
+        }
+        return false;
     }
 
     // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
@@ -450,6 +526,27 @@ export abstract class BreakableStatementNode extends StatementNode {
     }
 }
 
+export abstract class IterationStatementNode extends BreakableStatementNode {
+    public _type_IterationStatementNode: any;
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        const newIterationSet = iterationSet.clone();
+        if (labelSet != null) {
+            for (const label of labelSet.toArray())
+                newIterationSet.add(label);
+        }
+        return this.iterContainsUndefinedContinueTarget(newIterationSet,null);
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public abstract iterContainsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean;
+
+    public static fromGeneric(node: ASTNode | null): IterationStatementNode {
+        throw new Error("IterationStatementNode.fromGeneric not implemented");
+    }
+}
+
 // ES6 Section 13.1: Statement Semantics
 
 // ES6 Section 13.2: Block
@@ -465,6 +562,21 @@ export class BlockNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+
+    // ES6 Section 13.2.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.statements.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.2.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.statements.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.2.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.statements.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
@@ -899,6 +1011,21 @@ export class VarNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.declarations];
+    }
+
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
     }
 
     // ES6 Section 13.3.2.1 Static Semantics: BoundNames
@@ -1388,6 +1515,21 @@ export class EmptyStatementNode extends StatementNode {
         return [];
     }
 
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
+    }
+
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         // No var declared names for this node type
@@ -1421,6 +1563,21 @@ export class ExpressionStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
     }
 
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
@@ -1473,6 +1630,33 @@ export class IfStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.trueBranch,this.falseBranch];
+    }
+
+    // ES6 Section 13.6.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        if (this.trueBranch.containsDuplicateLabels(labelSet))
+            return true;
+        if ((this.falseBranch != null) && this.falseBranch.containsDuplicateLabels(labelSet))
+            return true;
+        return false;
+    }
+
+    // ES6 Section 13.6.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        if (this.trueBranch.containsUndefinedBreakTarget(labelSet))
+            return true;
+        if ((this.falseBranch != null) && this.falseBranch.containsUndefinedBreakTarget(labelSet))
+            return true;
+        return false;
+    }
+
+    // ES6 Section 13.6.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        if (this.trueBranch.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        if ((this.falseBranch != null) && this.falseBranch.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        return false;
     }
 
     // ES6 Section 13.6.5 Static Semantics: VarDeclaredNames
@@ -1576,7 +1760,7 @@ export class IfStatementNode extends StatementNode {
 
 // ES6 Section 13.7.2: The do-while Statement
 
-export class DoStatementNode extends BreakableStatementNode {
+export class DoStatementNode extends IterationStatementNode {
     public _type_DoStatementNode: any;
     public readonly body: StatementNode;
     public readonly condition: ExpressionNode;
@@ -1589,6 +1773,21 @@ export class DoStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.body,this.condition];
+    }
+
+    // ES6 Section 13.7.2.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.7.2.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.7.2.3 Static Semantics: ContainsUndefinedContinueTarget
+    public iterContainsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.7.2.4 Static Semantics: VarDeclaredNames
@@ -1648,7 +1847,7 @@ export class DoStatementNode extends BreakableStatementNode {
 
 // ES6 Section 13.7.3: The while Statement
 
-export class WhileStatementNode extends BreakableStatementNode {
+export class WhileStatementNode extends IterationStatementNode {
     public _type_WhileStatementNode: any;
     public readonly condition: ExpressionNode;
     public readonly body: StatementNode;
@@ -1661,6 +1860,21 @@ export class WhileStatementNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.condition,this.body];
+    }
+
+    // ES6 Section 13.7.3.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.7.3.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.7.3.3 Static Semantics: ContainsUndefinedContinueTarget
+    public iterContainsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.7.3.4 Static Semantics: VarDeclaredNames
@@ -1851,7 +2065,7 @@ function ForBodyEvaluation(ctx: ExecutionContext,
     }
 }
 
-export class ForCNode extends BreakableStatementNode {
+export class ForCNode extends IterationStatementNode {
     public _type_ForCNode: any;
     public readonly init: ForCInitType;
     public readonly condition: ExpressionNode | null;
@@ -1874,6 +2088,21 @@ export class ForCNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.init,this.condition,this.update,this.body];
+    }
+
+    // ES6 Section 13.7.4.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.7.4.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.7.4.4 Static Semantics: ContainsUndefinedContinueTarget
+    public iterContainsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.7.4.5 Static Semantics: VarDeclaredNames
@@ -2003,7 +2232,7 @@ export class ForCNode extends BreakableStatementNode {
 
 // ES6 Section 13.7.5: The for-in and for-of Statements
 
-export class ForInNode extends BreakableStatementNode {
+export class ForInNode extends IterationStatementNode {
     public _type_ForInNode: any;
     public readonly binding: ForInBindingType;
     public readonly expr: ExpressionNode;
@@ -2023,6 +2252,21 @@ export class ForInNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
+    }
+
+    // ES6 Section 13.7.5.3 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.7.5.4 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.7.5.5 Static Semantics: ContainsUndefinedContinueTarget
+    public iterContainsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.7.5.2: Static Semantics: BoundNames
@@ -2058,7 +2302,7 @@ export class ForInNode extends BreakableStatementNode {
     }
 }
 
-export class ForOfNode extends BreakableStatementNode {
+export class ForOfNode extends IterationStatementNode {
     public _type_ForOfNode: any;
     public readonly binding: ForOfBindingType;
     public readonly expr: ExpressionNode;
@@ -2078,6 +2322,21 @@ export class ForOfNode extends BreakableStatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.binding,this.expr,this.body];
+    }
+
+    // ES6 Section 13.7.5.3 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.7.5.4 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.7.5.5 Static Semantics: ContainsUndefinedContinueTarget
+    public iterContainsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.7.5.2: Static Semantics: BoundNames
@@ -2208,6 +2467,22 @@ export class ContinueStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.8.2 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return ((this.labelIdentifier != null) &&
+                !iterationSet.contains(this.labelIdentifier.value));
+    }
+
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         // No var declared names for this node type
@@ -2244,6 +2519,22 @@ export class BreakStatementNode extends StatementNode {
         return [this.labelIdentifier];
     }
 
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.9.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return ((this.labelIdentifier != null) &&
+                !labelSet.contains(this.labelIdentifier.value));
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
+    }
+
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         // No var declared names for this node type
@@ -2278,6 +2569,21 @@ export class ReturnStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
     }
 
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
@@ -2339,6 +2645,21 @@ export class WithStatementNode extends StatementNode {
         return [this.expr,this.body];
     }
 
+    // ES6 Section 13.11.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.body.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.11.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.body.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.11.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.body.containsUndefinedContinueTarget(iterationSet,null);
+    }
+
     // ES6 Section 13.11.5 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         this.body.varDeclaredNames(out);
@@ -2378,6 +2699,21 @@ export class SwitchStatementNode extends BreakableStatementNode {
         return [this.expr,this.cases];
     }
 
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.cases.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.cases.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.cases.containsUndefinedContinueTarget(iterationSet,null);
+    }
+
     // ES6 Section 13.12.7 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         this.cases.varDeclaredNames(out);
@@ -2411,6 +2747,33 @@ export class CaseClauseListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        for (const element of this.elements) {
+            if (element.containsDuplicateLabels(labelSet))
+                return true;
+        }
+        return false;
+    }
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        for (const element of this.elements) {
+            if (element.containsUndefinedBreakTarget(labelSet))
+                return true;
+        }
+        return false;
+    }
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        for (const element of this.elements) {
+            if (element.containsUndefinedContinueTarget(iterationSet,null))
+                return true;
+        }
+        return false;
     }
 
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
@@ -2447,6 +2810,15 @@ export class CaseClauseListNode extends ASTNode {
 
 export abstract class CaseBlockNode extends ASTNode {
     public _type_CaseBlockNode: any;
+
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public abstract containsDuplicateLabels(labelSet: LabelSet): boolean;
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public abstract containsUndefinedBreakTarget(labelSet: LabelSet): boolean;
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public abstract containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean;
 
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
     public abstract lexicallyDeclaredNames(out: string[]): void;
@@ -2485,6 +2857,21 @@ export class CaseBlock1Node extends CaseBlockNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.caseClauses];
+    }
+
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.caseClauses.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.caseClauses.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.caseClauses.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
@@ -2537,6 +2924,39 @@ export class CaseBlock2Node extends CaseBlockNode {
         return [this.caseClauses1,this.defaultClause,this.caseClauses2];
     }
 
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        if ((this.caseClauses1 != null) && this.caseClauses1.containsDuplicateLabels(labelSet))
+            return true;
+        if (this.defaultClause.containsDuplicateLabels(labelSet))
+            return true;
+        if ((this.caseClauses2 != null) && this.caseClauses2.containsDuplicateLabels(labelSet))
+            return true;
+        return false;
+    }
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        if ((this.caseClauses1 != null) && this.caseClauses1.containsUndefinedBreakTarget(labelSet))
+            return true;
+        if (this.defaultClause.containsUndefinedBreakTarget(labelSet))
+            return true;
+        if ((this.caseClauses2 != null) && this.caseClauses2.containsUndefinedBreakTarget(labelSet))
+            return true;
+        return false;
+    }
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        if ((this.caseClauses1 != null) && this.caseClauses1.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        if (this.defaultClause.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        if ((this.caseClauses2 != null) && this.caseClauses2.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        return false;
+    }
+
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
     public lexicallyDeclaredNames(out: string[]): void {
         if (this.caseClauses1 != null)
@@ -2585,6 +3005,15 @@ export class CaseBlock2Node extends CaseBlockNode {
 export abstract class CaseClauseListItemNode extends ASTNode {
     public _type_CaseClauseListItemNode: any;
 
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public abstract containsDuplicateLabels(labelSet: LabelSet): boolean;
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public abstract containsUndefinedBreakTarget(labelSet: LabelSet): boolean;
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public abstract containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean;
+
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
     public abstract lexicallyDeclaredNames(out: string[]): void;
 
@@ -2617,6 +3046,21 @@ export class CaseClauseNode extends CaseClauseListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr,this.statements];
+    }
+
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.statements.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.statements.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.statements.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
@@ -2658,6 +3102,21 @@ export class DefaultClauseNode extends CaseClauseListItemNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.statements];
+    }
+
+    // ES6 Section 13.12.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.statements.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.12.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.statements.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.12.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.statements.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.12.5: Static Semantics: LexicallyDeclaredNames
@@ -2715,6 +3174,46 @@ export class LabelledStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.item];
+    }
+
+    // ES6 Section 13.13.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        // 1. Let label be the StringValue of LabelIdentifier.
+        const label = this.ident.value;
+
+        // 2. If label is an element of labelSet, return true.
+        if (labelSet.contains(label))
+            return true;
+
+        // 3. Let newLabelSet be a copy of labelSet with label appended.
+        const newLabelSet = labelSet.clone();
+        newLabelSet.add(new Label(label,this));
+
+        // 4. Return ContainsDuplicateLabels of LabelledItem with argument newLabelSet.
+        if (this.item instanceof FunctionDeclarationNode)
+            return false;
+
+        return this.item.containsDuplicateLabels(newLabelSet);
+    }
+
+    // ES6 Section 13.13.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        const label = this.ident.value;
+        const newLabelSet = labelSet.clone();
+        newLabelSet.add(new Label(label,this));
+        if (this.item instanceof FunctionDeclarationNode)
+            return false;
+        return this.item.containsUndefinedBreakTarget(newLabelSet);
+    }
+
+    // ES6 Section 13.13.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        const label = this.ident.value;
+        const newLabelSet = (labelSet != null) ? labelSet.clone() : new LabelSet();
+        newLabelSet.add(new Label(label,this));
+        if (this.item instanceof FunctionDeclarationNode)
+            return false;
+        return this.item.containsUndefinedContinueTarget(iterationSet,newLabelSet);
     }
 
     // ES6 Section 13.13.6: Static Semantics: LexicallyDeclaredNames
@@ -2787,6 +3286,21 @@ export class ThrowStatementNode extends StatementNode {
         return [this.expr];
     }
 
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
+    }
+
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         // No var declared names for this node type
@@ -2830,6 +3344,39 @@ export class TryStatementNode extends StatementNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.tryNode,this.catchNode,this.finallyNode];
+    }
+
+    // ES6 Section 13.15.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        if (this.tryNode.containsDuplicateLabels(labelSet))
+            return true;
+        if ((this.catchNode != null) && this.catchNode.containsDuplicateLabels(labelSet))
+            return true;
+        if ((this.finallyNode != null) && this.finallyNode.containsDuplicateLabels(labelSet))
+            return true;
+        return false;
+    }
+
+    // ES6 Section 13.15.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        if (this.tryNode.containsUndefinedBreakTarget(labelSet))
+            return true;
+        if ((this.catchNode != null) && this.catchNode.containsUndefinedBreakTarget(labelSet))
+            return true;
+        if ((this.finallyNode != null) && this.finallyNode.containsUndefinedBreakTarget(labelSet))
+            return true;
+        return false;
+    }
+
+    // ES6 Section 13.15.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        if (this.tryNode.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        if ((this.catchNode != null) && this.catchNode.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        if ((this.finallyNode != null) && this.finallyNode.containsUndefinedContinueTarget(iterationSet,null))
+            return true;
+        return false;
     }
 
     // ES6 Section 13.15.5 Static Semantics: VarDeclaredNames
@@ -2878,6 +3425,21 @@ export class CatchNode extends ASTNode {
         return [this.param,this.block];
     }
 
+    // ES6 Section 13.15.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.block.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.15.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.block.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.15.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.block.containsUndefinedContinueTarget(iterationSet,null);
+    }
+
     // ES6 Section 13.15.5 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         this.block.varDeclaredNames(out);
@@ -2907,6 +3469,21 @@ export class FinallyNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.block];
+    }
+
+    // ES6 Section 13.15.2 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return this.block.containsDuplicateLabels(labelSet);
+    }
+
+    // ES6 Section 13.15.3 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return this.block.containsUndefinedBreakTarget(labelSet);
+    }
+
+    // ES6 Section 13.15.4 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return this.block.containsUndefinedContinueTarget(iterationSet,null);
     }
 
     // ES6 Section 13.15.5 Static Semantics: VarDeclaredNames
@@ -2945,6 +3522,21 @@ export class DebuggerStatementNode extends StatementNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         throw new Error("DebuggerStatementNode.evaluate not implemented");
+    }
+
+    // ES6 Section 13.1.1 Static Semantics: ContainsDuplicateLabels
+    public containsDuplicateLabels(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.2 Static Semantics: ContainsUndefinedBreakTarget
+    public containsUndefinedBreakTarget(labelSet: LabelSet): boolean {
+        return false;
+    }
+
+    // ES6 Section 13.1.3 Static Semantics: ContainsUndefinedContinueTarget
+    public containsUndefinedContinueTarget(iterationSet: LabelSet, labelSet: LabelSet | null): boolean {
+        return false;
     }
 
     // ES6 Section 13.1.5 Static Semantics: VarDeclaredNames
