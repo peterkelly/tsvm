@@ -116,6 +116,11 @@ export class ScriptNode extends ASTNode {
         return [this.body];
     }
 
+    // ES6 Section 15.1.3: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        throw new Error("ScriptNode.lexicallyDeclaredNames not implemented");
+    }
+
     // ES6 Section 15.1.4: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         throw new Error("ScriptNode.lexicallyScopedDeclarations not implemented");
@@ -159,6 +164,27 @@ export class ModuleItemListNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return this.elements;
+    }
+
+    // ES6 Section 15.2.1.11 Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        // FIXME: This is not what the spec says (but it's close)
+        for (const element of this.elements) {
+            if (element instanceof ImportNode) {
+                element.boundNames(out);
+            }
+            else if (element instanceof ExportNode) {
+                if (element instanceof ExportVariableNode) {
+                    // don't include in list
+                }
+                else {
+                    element.boundNames(out);
+                }
+            }
+            else if (element instanceof DeclarationNode) {
+                element.boundNames(out);
+            }
+        }
     }
 
     // ES6 Section 15.2.1.12 Static Semantics: LexicallyScopedDeclarations

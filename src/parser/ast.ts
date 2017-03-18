@@ -69,6 +69,9 @@ export abstract class StatementListItemNode extends ASTNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
+    // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
+    public abstract lexicallyDeclaredNames(out: string[]): void;
+
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public abstract lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void;
 
@@ -82,6 +85,11 @@ export abstract class StatementListItemNode extends ASTNode {
 export abstract class DeclarationNode extends StatementListItemNode implements LexicallyScopedDeclaration {
     public _type_DeclarationNode: any;
     public _interface_LexicallyScopedDeclaration: any;
+
+    // ES6 Section 13.2.5: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        this.boundNames(out);
+    }
 
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
