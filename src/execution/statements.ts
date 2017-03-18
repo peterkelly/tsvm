@@ -60,7 +60,11 @@ import {
     PropertyReference,
     EnvironmentReference,
     Realm,
+    LexicalEnvironment,
 } from "../runtime/datatypes";
+import {
+    NewDeclarativeEnvironment,
+} from "../runtime/08-01-environment";
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
@@ -294,6 +298,17 @@ export class StatementListNode extends ASTNode {
         }
     }
 
+    // ES6 Section 13.2.13 Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
+        for (const element of this.elements) {
+            const comp = element.evaluate(ctx);
+            if (!(comp instanceof NormalCompletion))
+                return comp;
+            // FIXME: Follow algorithm in spec and use UpdateEmpty
+        }
+        return new NormalCompletion(new Empty());
+    }
+
     public static fromGeneric(node: ASTNode | null): StatementListNode {
         const list = check.list(node);
         const elements: StatementListItemNode[] = [];
@@ -363,8 +378,30 @@ export class BlockNode extends StatementNode {
         this.statements.varScopedDeclarations(out);
     }
 
+    // ES6 Section 13.2.13 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("BlockNode.evaluate not implemented");
+        // 1. Let oldEnv be the running execution context’s LexicalEnvironment.
+        const oldEnv = ctx.lexicalEnvironment;
+
+        // 2. Let blockEnv be NewDeclarativeEnvironment(oldEnv).
+        const blockEnv = NewDeclarativeEnvironment(ctx.realm,oldEnv);
+
+        // 3. Perform BlockDeclarationInstantiation(StatementList, blockEnv).
+        const instComp = BlockDeclarationInstantiation(ctx.realm,this.statements,blockEnv);
+        if (!(instComp instanceof NormalCompletion))
+            return instComp;
+
+        // 4. Set the running execution context’s LexicalEnvironment to blockEnv.
+        ctx.lexicalEnvironment = blockEnv;
+
+        // 5. Let blockValue be the result of evaluating StatementList.
+        const blockValueComp = this.statements.evaluate(ctx);
+
+        // 6. Set the running execution context’s LexicalEnvironment to oldEnv.
+        ctx.lexicalEnvironment = oldEnv;
+
+        // 7. Return blockValue.
+        return blockValueComp;
     }
 
     public static fromGeneric(node: ASTNode | null): BlockNode {
@@ -372,6 +409,59 @@ export class BlockNode extends StatementNode {
         const statements = StatementListNode.fromGeneric(node.children[0]);
         return new BlockNode(node.range,statements);
     }
+}
+
+function BlockDeclarationInstantiation(realm: Realm, code: StatementListNode, env: LexicalEnvironment): Completion<void> {
+    // 1. Let declarations be the LexicallyScopedDeclarations of code.
+    const declarations: LexicallyScopedDeclaration[] = [];
+    code.lexicallyScopedDeclarations(declarations);
+
+    // 2. For each element d in declarations do
+    for (const d of declarations) {
+        const boundNames: string[] = [];
+        d.boundNames(boundNames);
+
+        // a. For each element dn of the BoundNames of d do
+        for (const dn of boundNames) {
+            // i. If IsConstantDeclaration of d is true, then
+            let status: Completion<void>;
+            if (d.isConstantDeclaration()) {
+                // 1. Let status be env.CreateImmutableBinding(dn, true).
+                status = env.record.CreateImmutableBinding(dn, true);
+            }
+            // ii. Else,
+            else {
+                // 1. Let status be env.CreateMutableBinding(dn, false).
+                status = env.record.CreateMutableBinding(dn, false);
+            }
+            // iii. Assert: status is never an abrupt completion.
+            if (!(status instanceof NormalCompletion)) {
+                throw new Error("Assertion failure: BlockDeclarationInstantiation: status should "+
+                                "never be an abrubt completion");
+            }
+        }
+
+        // b. If d is a GeneratorDeclaration production or a FunctionDeclaration production, then
+        if ((d instanceof GeneratorDeclarationNode) || (d instanceof FunctionDeclarationNode)) {
+            // i. Let fn be the sole element of the BoundNames of d
+            if (boundNames.length !== 1) {
+                throw new Error("Assertion failure: Should only have a single bound name for a "+
+                                "generator or function declaration");
+            }
+            const fn = boundNames[0];
+
+            // ii. Let fo be the result of performing InstantiateFunctionObject for d with argument env.
+            const foComp = d.instantiateFunctionObject(realm,env);
+            if (!(foComp instanceof NormalCompletion))
+                return foComp;
+            const fo = foComp.value;
+
+            // iii. Perform env.InitializeBinding(fn, fo).
+            env.record.InitializeBinding(fn, fo);
+        }
+    }
+
+    return new NormalCompletion(undefined);
 }
 
 // ES6 Section 13.3: Declarations and the Variable Statement
