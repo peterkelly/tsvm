@@ -104,6 +104,18 @@ export class FormalParameterListNode extends ASTNode {
             element.boundNames(out);
     }
 
+    // ES6 Section 14.1.5 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // FormalsList : FormalsList , FormalParameter
+        // 1. If ContainsExpression of FormalsList is true, return true.
+        // 2. Return ContainsExpression of FormalParameter.
+        for (const element of this.elements) {
+            if (element.containsExpression())
+                return true;
+        }
+        return false;
+    }
+
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
     public isSimpleParameterList(): boolean {
         // FormalsList : FormalsList , FormalParameter
@@ -225,6 +237,9 @@ export abstract class FormalParametersNode extends ASTNode {
     // ES6 Section 14.1.3 Static Semantics: BoundNames
     public abstract boundNames(out: string[]): void;
 
+    // ES6 Section 14.1.5 Static Semantics: ContainsExpression
+    public abstract containsExpression(): boolean;
+
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
     public abstract isSimpleParameterList(): boolean;
 
@@ -262,6 +277,13 @@ export class FormalParameters1Node extends FormalParametersNode {
         // No bound names for this node type
     }
 
+    // ES6 Section 14.1.5 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // FormalParameters : [empty]
+        // 1. Return false.
+        return false;
+    }
+
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
     public isSimpleParameterList(): boolean {
         // FormalParameters : [empty]
@@ -291,6 +313,13 @@ export class FormalParameters2Node extends FormalParametersNode {
     // ES6 Section 14.1.3 Static Semantics: BoundNames
     public boundNames(out: string[]): void {
         this.rest.boundNames(out);
+    }
+
+    // ES6 Section 14.1.5 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // FormalParameterList : FunctionRestParameter
+        // 1. Return false.
+        return false;
     }
 
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
@@ -323,6 +352,14 @@ export class FormalParameters3Node extends FormalParametersNode {
     // ES6 Section 14.1.3 Static Semantics: BoundNames
     public boundNames(out: string[]): void {
         this.elements.boundNames(out);
+    }
+
+    // ES6 Section 14.1.5 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // FormalsList : FormalsList , FormalParameter
+        // 1. If ContainsExpression of FormalsList is true, return true.
+        // 2. Return ContainsExpression of FormalParameter.
+        return this.elements.containsExpression();
     }
 
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
@@ -359,6 +396,13 @@ export class FormalParameters4Node extends FormalParametersNode {
     public boundNames(out: string[]): void {
         this.elements.boundNames(out);
         this.rest.boundNames(out);
+    }
+
+    // ES6 Section 14.1.5 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // FormalParameterList : FormalsList , FunctionRestParameter
+        // 1. Return ContainsExpression of FormalsList.
+        return this.elements.containsExpression();
     }
 
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList

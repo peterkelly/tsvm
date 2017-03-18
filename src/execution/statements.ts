@@ -1029,6 +1029,11 @@ export abstract class BindingPatternNode extends ASTNode {
     // ES6 Section 13.3.3.1: Static Semantics: BoundNames
     public abstract boundNames(out: string[]): void;
 
+    // ES6 Section 13.3.3.2 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        throw new Error("BindingPatternNode.containsExpression not implemented");
+    }
+
     // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
     public isSimpleParameterList(): boolean {
         // BindingElement : BindingPattern
@@ -1189,6 +1194,11 @@ export class BindingPatternInitNode extends ASTNode {
         this.pattern.boundNames(out);
     }
 
+    // ES6 Section 13.3.3.2 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        throw new Error("BindingPatternInitNode.containsExpression not implemented");
+    }
+
     // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
     public isSimpleParameterList(): boolean {
         // BindingElement : BindingPattern Initializer
@@ -1224,6 +1234,13 @@ export class SingleNameBindingNode extends ASTNode {
         this.ident.boundNames(out);
     }
 
+    // ES6 Section 13.3.3.2 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // SingleNameBinding : BindingIdentifier Initializer
+        // 1. Return true.
+        return true;
+    }
+
     // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
     public isSimpleParameterList(): boolean {
         // SingleNameBinding : BindingIdentifier Initializer
@@ -1255,6 +1272,11 @@ export class BindingRestElementNode extends ASTNode {
     // ES6 Section 13.3.3.1: Static Semantics: BoundNames
     public boundNames(out: string[]): void {
         this.ident.boundNames(out);
+    }
+
+    // ES6 Section 13.3.3.2 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        throw new Error("BindingRestElementNode.containsExpression not implemented");
     }
 
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
