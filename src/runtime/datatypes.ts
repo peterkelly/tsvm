@@ -699,3 +699,21 @@ export interface Realm {
     throwTypeError(message?: string): ThrowCompletion;
     throwURIError(message?: string): ThrowCompletion;
 }
+
+export class ValueIterator {
+    private values: JSValue[];
+    private index: number;
+
+    public constructor(values: JSValue[]) {
+        this.values = values;
+        this.index = 0;
+    }
+
+    public next(): JSValue | null {
+        if (this.index >= this.values.length)
+            return null;
+        const value = this.values[this.index];
+        this.index++;
+        return value;
+    }
+}

@@ -530,15 +530,30 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
     public homeObject: JSObject | JSUndefined;
     public newTarget: JSObject | JSUndefined;
 
+    // ES6 Section 8.1.2.4 NewFunctionEnvironment (F, newTarget)
+    // (part of the implementation; rest is in NewFunctionEnvironment)
     public constructor(realm: Realm, F: JSFunction, newTarget: JSUndefined | JSObject) {
         super(realm);
+
+        // 5. Set envRec.[[FunctionObject]] to F.
         this.functionObject = F;
+
+        // 6. If F’s [[ThisMode]] internal slot is lexical, set envRec.[[thisBindingStatus]] to "lexical".
         if (F.thisMode == ThisMode.Lexical)
             this.thisBindingStatus = BindingStatus.Lexical;
+
+        // 7. Else, Set envRec.[[thisBindingStatus]] to "uninitialized".
         else
             this.thisBindingStatus = BindingStatus.Uninitialized;
+
+        // 8. Let home be the value of F’s [[HomeObject]] internal slot.
+        // 9. Set envRec.[[HomeObject]] to home.
         this.homeObject = (F.homeObject === undefined) ? new JSUndefined() : F.homeObject;
+
+        // 10. Set envRec.[[NewTarget]] to newTarget.
         this.newTarget = newTarget;
+
+        // Not listed as a step in the algorithm, but implicit in the definition of the type
         this.thisValue = new JSUndefined();
     }
 
@@ -1322,17 +1337,28 @@ export function NewObjectEnvironment(realm: Realm, O: JSObject, E: LexicalEnviro
 }
 
 // ES6 Section 8.1.2.4: NewFunctionEnvironment (F, newTarget)
-
+// (part of the implementation; rest is in FunctionEnvironmentRecord constructor)
 export function NewFunctionEnvironment(realm: Realm, F: JSFunction, newTarget: JSUndefined | JSObject): LexicalEnvironment {
-    // FIXME: Assert: F is an ECMAScript function
-    const bindingStatus = (F.thisMode == ThisMode.Lexical) ?
-        BindingStatus.Lexical :
-        BindingStatus.Uninitialized;
+    // 1. Assert: F is an ECMAScript function.
+    // (implicit in parameter type)
+
+    // 2. Assert: Type(newTarget) is Undefined or Object.
+    // (implicit in parameter type)
+
+    // 3. Let env be a new Lexical Environment.
+    // (done right at the end)
+
+    // 4. Let envRec be a new function Environment Record containing no bindings.
+    // Steps 5-10 are done in the FunctionEnvironmentRecord constructor
     const envRec = new FunctionEnvironmentRecord(realm,F,newTarget);
-    if (F.environment === undefined)
-        return { record: envRec, outer: null };
+
+    // 11. Set env’s EnvironmentRecord to be envRec.
+    // 12. Set the outer lexical environment reference of env to the value of F’s [[Environment]] internal slot.
+    // 13. Return env.
+    if (F.environment === undefined) // FIXME: Can this ever happen?
+        return new LexicalEnvironment(envRec,null);
     else
-        return { record: envRec, outer: F.environment };
+        return new LexicalEnvironment(envRec,F.environment);
 }
 
 // ES6 Section 8.1.2.5: NewGlobalEnvironment (G)

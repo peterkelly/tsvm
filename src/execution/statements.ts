@@ -309,6 +309,70 @@ export class StatementListNode extends ASTNode {
         }
     }
 
+    // ES6 Section 13.2.7: Static Semantics: TopLevelLexicallyDeclaredNames
+    public topLevelLexicallyDeclaredNames(out: string[]): void {
+        for (const element of this.elements) {
+            if (element instanceof StatementNode) {
+            }
+            else if (element instanceof DeclarationNode) {
+                if (!(element instanceof FunctionDeclarationNode) &&
+                    !(element instanceof GeneratorDeclarationNode)) {
+                    element.boundNames(out);
+                }
+            }
+            else {
+                throw new Error("StatementListNode contains item that is not a Statement "+
+                                "or Declaration: "+element.kind);
+            }
+        }
+    }
+
+    // ES6 Section 13.2.8: Static Semantics: TopLevelLexicallyScopedDeclarations
+    public topLevelLexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        for (const element of this.elements) {
+            if (element instanceof StatementNode) {
+            }
+            else if (element instanceof DeclarationNode) {
+                if (!(element instanceof FunctionDeclarationNode) &&
+                    !(element instanceof GeneratorDeclarationNode)) {
+                    out.push(element);
+                }
+            }
+            else {
+                throw new Error("StatementListNode contains item that is not a Statement "+
+                                "or Declaration: "+element.kind);
+            }
+        }
+    }
+
+    // ES6 Section 13.2.9: Static Semantics: TopLevelVarDeclaredNames
+    public topLevelVarDeclaredNames(out: string[]): void {
+        for (const element of this.elements) {
+            if (element instanceof FunctionDeclarationNode)
+                element.boundNames(out);
+            else if (element instanceof GeneratorDeclarationNode)
+                element.boundNames(out);
+            else if (element instanceof LabelledStatementNode)
+                element.topLevelVarDeclaredNames(out);
+            else
+                element.varDeclaredNames(out);
+        }
+    }
+
+    // ES6 Section 13.2.10: Static Semantics: TopLevelVarScopedDeclarations
+    public topLevelVarScopedDeclarations(out: VarScopedDeclaration[]): void {
+        for (const element of this.elements) {
+            if (element instanceof FunctionDeclarationNode)
+                out.push(element);
+            else if (element instanceof GeneratorDeclarationNode)
+                out.push(element);
+            else if (element instanceof LabelledStatementNode)
+                element.topLevelVarScopedDeclarations(out);
+            else
+                element.varScopedDeclarations(out);
+        }
+    }
+
     // ES6 Section 13.2.11 Static Semantics: VarDeclaredNames
     public varDeclaredNames(out: string[]): void {
         for (const element of this.elements) {
@@ -401,6 +465,16 @@ export class BlockNode extends StatementNode {
     // ES6 Section 13.2.6: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         this.statements.lexicallyScopedDeclarations(out);
+    }
+
+    // ES6 Section 13.2.9: Static Semantics: TopLevelVarDeclaredNames
+    public topLevelVarDeclaredNames(out: string[]): void {
+        this.statements.topLevelVarDeclaredNames(out);
+    }
+
+    // ES6 Section 13.2.10: Static Semantics: TopLevelVarScopedDeclarations
+    public topLevelVarScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.statements.topLevelVarScopedDeclarations(out);
     }
 
     // ES6 Section 13.2.11 Static Semantics: VarDeclaredNames
@@ -2260,6 +2334,26 @@ export class LabelledStatementNode extends StatementNode {
     // ES6 Section 13.13.7: Static Semantics: LexicallyScopedDeclarations
     public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
         if (this.item instanceof FunctionDeclarationNode)
+            out.push(this.item);
+    }
+
+    // ES6 Section 13.13.10: Static Semantics: TopLevelVarDeclaredNames
+    public topLevelVarDeclaredNames(out: string[]): void {
+        if (this.item instanceof LabelledStatementNode)
+            this.item.topLevelVarDeclaredNames(out);
+        else if (this.item instanceof StatementNode)
+            this.item.varDeclaredNames(out);
+        else if (this.item instanceof FunctionDeclarationNode)
+            this.item.boundNames(out);
+    }
+
+    // ES6 Section 13.13.11: Static Semantics: TopLevelVarScopedDeclarations
+    public topLevelVarScopedDeclarations(out: VarScopedDeclaration[]): void {
+        if (this.item instanceof LabelledStatementNode)
+            this.item.topLevelVarScopedDeclarations(out);
+        else if (this.item instanceof StatementNode)
+            this.item.varScopedDeclarations(out);
+        else if (this.item instanceof FunctionDeclarationNode)
             out.push(this.item);
     }
 
