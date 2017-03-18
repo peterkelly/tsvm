@@ -1919,8 +1919,29 @@ export class ReturnStatementNode extends StatementNode {
         // No var scoped declarations for this node type
     }
 
+    // ES6 Section 13.10.1 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("ReturnStatementNode.evaluate not implemented");
+        // ReturnStatement : return ;
+        if (this.expr === null) {
+            // 1. Return Completion{[[type]]: return, [[value]]: undefined, [[target]]: empty}.
+            return new ReturnCompletion(new JSUndefined());
+        }
+        // ReturnStatement : return Expression ;
+        else {
+            // 1. Let exprRef be the result of evaluating Expression.
+            const exprRefComp = this.expr.evaluate(ctx);
+
+            // 2. Let exprValue be GetValue(exprRef).
+            const exprValueComp = GetValue(ctx.realm,exprRefComp);
+
+            // 3. ReturnIfAbrupt(exprValue).
+            if (!(exprValueComp instanceof NormalCompletion))
+                return exprValueComp;
+            const exprValue = exprValueComp.value;
+
+            // 4. Return Completion{[[type]]: return, [[value]]: exprValue, [[target]]: empty}.
+            return new ReturnCompletion(exprValue);
+        }
     }
 
     public static fromGeneric(node: ASTNode | null): ReturnStatementNode {
