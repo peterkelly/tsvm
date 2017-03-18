@@ -596,6 +596,11 @@ export class ElisionNode extends ASTNode {
     }
 
     // This method is here because an ElisionNode can be present in a BindingElementList
+    public containsExpression(): boolean {
+        return false;
+    }
+
+    // This method is here because an ElisionNode can be present in a BindingElementList
     public isSimpleParameterList(): boolean {
         return false;
     }

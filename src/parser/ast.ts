@@ -140,6 +140,13 @@ export class BindingIdentifierNode extends ASTNode {
         out.push(this.value);
     }
 
+    // ES6 Section 13.3.3.2 Static Semantics: ContainsExpression
+    public containsExpression(): boolean {
+        // SingleNameBinding : BindingIdentifier
+        // 1. Return false.
+        return false;
+    }
+
     // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
     public isSimpleParameterList(): boolean {
         // SingleNameBinding : BindingIdentifier
