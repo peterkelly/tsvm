@@ -18,6 +18,7 @@ import {
     ExpressionNode,
     DeclarationNode,
     VarScopedDeclaration,
+    LexicallyScopedDeclaration,
     HoistableDeclarationNode,
     BindingIdentifierNode,
     check,
@@ -35,15 +36,25 @@ import {
 import {
     Empty,
     Completion,
+    NormalCompletion,
     Reference,
     JSValue,
+    JSUndefined,
+    JSString,
     JSObject,
     LexicalEnvironment,
     Realm,
+    ValueIterator,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
+import {
+    InitializeKind,
+    FunctionCreate,
+    MakeConstructor,
+    SetFunctionName,
+} from "../runtime/09-02-function";
 
 // ES6 Section 14.1.3 Static Semantics: BoundNames
 // "*default*" is used within this specification as a synthetic name for hoistable anonymous
@@ -128,12 +139,61 @@ export class FormalParameterListNode extends ASTNode {
         return true;
     }
 
+    // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
+    public iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void> {
+        // TODO: This is just a quick-and-dirty implementation that only handles BindingIdnetifiers
+        for (const element of this.elements) {
+            if (element instanceof BindingIdentifierNode) {
+                const value = iterator.next();
+                if (value === null)
+                    env.record.InitializeBinding(element.value,new JSUndefined());
+                else
+                    env.record.InitializeBinding(element.value,value);
+            }
+        }
+        return new NormalCompletion(undefined);
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameterListNode {
         const list = check.list(node);
         const elements: FormalParameterListItemType[] = [];
         for (const listElement of list.elements)
             elements.push(FormalParameterListItemType.fromGeneric(listElement));
         return new FormalParameterListNode(list.range,elements);
+    }
+}
+
+// This class exists to get around the fact that we don't actually represent the
+// FunctionStatementList grammar production in the AST, instead directly referencing a
+// StatementListNode from the function declaration classes. Certain algorithms must behave
+// differently for the former however, and where these need to be used, an instance of this
+// class should be created to get the right behaviour.
+export class FunctionStatementList {
+    public _type_FunctionStatementList: any;
+    public statements: StatementListNode;
+
+    public constructor(statements: StatementListNode) {
+        this.statements = statements;
+    }
+
+    // ES6 Section 14.1.13: Static Semantics: LexicallyDeclaredNames
+    public lexicallyDeclaredNames(out: string[]): void {
+        this.statements.topLevelLexicallyDeclaredNames(out);
+    }
+
+    // ES6 Section 14.1.14: Static Semantics: LexicallyScopedDeclarations
+    public lexicallyScopedDeclarations(out: LexicallyScopedDeclaration[]): void {
+        this.statements.topLevelLexicallyScopedDeclarations(out);
+    }
+
+    // ES6 Section 14.1.15: Static Semantics: VarDeclaredNames
+    public varDeclaredNames(out: string[]): void {
+        this.statements.topLevelVarDeclaredNames(out);
+    }
+
+    // ES6 Section 14.1.16: Static Semantics: VarScopedDeclarations
+    public varScopedDeclarations(out: VarScopedDeclaration[]): void {
+        this.statements.topLevelVarScopedDeclarations(out);
     }
 }
 
@@ -180,11 +240,66 @@ export class FunctionDeclarationNode extends HoistableDeclarationNode implements
 
     // ES6 Section 14.1.19 Runtime Semantics: InstantiateFunctionObject
     public instantiateFunctionObject(realm: Realm, scope: LexicalEnvironment): Completion<JSObject> {
-        throw new Error("FunctionDeclarationNode.instantiateFunctionObject not implemented");
+        if (this.ident != null) {
+            // 1. If the function code for FunctionDeclaration is strict mode code, let strict be true.
+            // Otherwise let strict be false.
+            // TODO: Not sure how to determine this. Do we need to look at the body and check for
+            // a "use strict" directive?
+            const strict = true;
+
+            // 2. Let name be StringValue of BindingIdentifier.
+            const name = this.ident.value;
+
+            // 3. Let F be FunctionCreate(Normal, FormalParameters, FunctionBody, scope, strict).
+            const FComp = FunctionCreate(realm,InitializeKind.Normal,this.params,this.body,scope,strict);
+            if (!(FComp instanceof NormalCompletion))
+                return FComp;
+            const F = FComp.value;
+
+            // 4. Perform MakeConstructor(F).
+            const makeComp = MakeConstructor(realm,F); // this function returns void
+            if (!(makeComp instanceof NormalCompletion))
+                return makeComp;
+
+            // 5. Perform SetFunctionName(F, name).
+            const setComp = SetFunctionName(realm,F,new JSString(name));
+            if (!(setComp instanceof NormalCompletion))
+                return setComp;
+
+            // 6. Return F.
+            return new NormalCompletion(F);
+        }
+        else {
+            // 1. If the function code for FunctionDeclaration is strict mode code, let strict be true.
+            // Otherwise let strict be false.
+            // TODO: Not sure how to determine this. Do we need to look at the body and check for
+            // a "use strict" directive?
+            const strict = true;
+
+            // 2. Let F be FunctionCreate(Normal, FormalParameters, FunctionBody, scope, strict).
+            const FComp = FunctionCreate(realm,InitializeKind.Normal,this.params,this.body,scope,strict);
+            if (!(FComp instanceof NormalCompletion))
+                return FComp;
+            const F = FComp.value;
+
+            // 3. Perform MakeConstructor(F).
+            const makeComp = MakeConstructor(realm,F); // this function returns void
+            if (!(makeComp instanceof NormalCompletion))
+                return makeComp;
+
+            // 4. Perform SetFunctionName(F, "default").
+            const setComp = SetFunctionName(realm,F,new JSString("default"));
+            if (!(setComp instanceof NormalCompletion))
+                return setComp;
+
+            // 5. Return F.
+            return new NormalCompletion(F);
+        }
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
-        throw new Error("FunctionDeclarationNode.evaluate not implemented");
+        // 1. Return NormalCompletion(empty).
+        return new NormalCompletion(new Empty());
     }
 
     public static fromGeneric(node: ASTNode | null): FunctionDeclarationNode {
@@ -243,6 +358,9 @@ export abstract class FormalParametersNode extends ASTNode {
     // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
     public abstract isSimpleParameterList(): boolean;
 
+    // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
+    public abstract iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void>;
+
     public static fromGeneric(node: ASTNode | null): FormalParametersNode {
         if (node === null)
             throw new CannotConvertError("FormalParametersNode",node);
@@ -291,6 +409,11 @@ export class FormalParameters1Node extends FormalParametersNode {
         return true;
     }
 
+    // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
+    public iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void> {
+        return new NormalCompletion(undefined);
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters1Node {
         node = check.node(node,"FormalParameters1",0);
         return new FormalParameters1Node(node.range);
@@ -327,6 +450,11 @@ export class FormalParameters2Node extends FormalParametersNode {
         // FormalParameterList : FunctionRestParameter
         // 1. Return false.
         return false;
+    }
+
+    // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
+    public iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void> {
+        throw new Error("FormalParameters2Node.iteratorBindingInitialization not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters2Node {
@@ -370,6 +498,11 @@ export class FormalParameters3Node extends FormalParametersNode {
         return this.elements.isSimpleParameterList();
     }
 
+    // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
+    public iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void> {
+        return this.elements.iteratorBindingInitialization(iterator,env);
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters3Node {
         node = check.node(node,"FormalParameters3",1);
         const elements = FormalParameterListNode.fromGeneric(node.children[0]);
@@ -410,6 +543,11 @@ export class FormalParameters4Node extends FormalParametersNode {
         // FormalParameterList : FormalsList , FunctionRestParameter
         // 1. Return false.
         return false;
+    }
+
+    // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
+    public iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void> {
+        throw new Error("FormalParameters4Node.iteratorBindingInitialization not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters4Node {
