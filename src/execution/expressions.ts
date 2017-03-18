@@ -73,6 +73,7 @@ import {
 } from "../runtime/07-01-conversion";
 import {
     GetValue,
+    PutValue,
 } from "../runtime/06-02-03-reference";
 import {
     ToPrimitive,
@@ -2383,7 +2384,48 @@ export class AssignNode extends BinaryNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("AssignNode.evaluate not implemented");
+        // 1. If LeftHandSideExpression is neither an ObjectLiteral nor an ArrayLiteral, then
+        if (!(this.left instanceof ObjectLiteralNode) && !(this.left instanceof ArrayLiteralNode)) {
+            // a. Let lref be the result of evaluating LeftHandSideExpression.
+            // b. ReturnIfAbrupt(lref).
+            const lrefComp = this.left.evaluate(ctx);
+            if (!(lrefComp instanceof NormalCompletion))
+                return lrefComp;
+
+            // c. Let rref be the result of evaluating AssignmentExpression.
+            // d. Let rval be GetValue(rref).
+            const rrefComp = this.right.evaluate(ctx);
+            const rvalComp = GetValue(ctx.realm,rrefComp);
+            if (!(rvalComp instanceof NormalCompletion))
+                return rvalComp;
+            const rval = rvalComp.value;
+
+            // e. If IsAnonymousFunctionDefinition(AssignmentExpression) and IsIdentifierRef of LeftHandSideExpression are both true, then
+            // TODO...
+                // i. Let hasNameProperty be HasOwnProperty(rval, "name").
+                // ii. ReturnIfAbrupt(hasNameProperty).
+                // iii. If hasNameProperty is false, perform SetFunctionName(rval, GetReferencedName(lref)).
+
+            // f. Let status be PutValue(lref, rval).
+            // g. ReturnIfAbrupt(status).
+            const status = PutValue(ctx.realm,lrefComp,rvalComp);
+            if (!(status instanceof NormalCompletion))
+                return status;
+
+            // h. Return rval.
+            return new NormalCompletion(rval);
+        }
+
+        // TODO...
+        // 2. Let assignmentPattern be the parse of the source text corresponding to LeftHandSideExpression using AssignmentPattern[?Yield] as the goal symbol.
+        // 3. Let rref be the result of evaluating AssignmentExpression.
+        // 4. Let rval be GetValue(rref).
+        // 5. ReturnIfAbrupt(rval).
+        // 6. Let status be the result of performing DestructuringAssignmentEvaluation of assignmentPattern using rval as the argument.
+        // 7. ReturnIfAbrupt(status).
+        // 8. Return rval.
+
+        throw new Error("AssignNode.evaluate: object/array destructuring not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): AssignNode {
