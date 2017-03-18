@@ -104,6 +104,18 @@ export class FormalParameterListNode extends ASTNode {
             element.boundNames(out);
     }
 
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // FormalsList : FormalsList , FormalParameter
+        // 1. If IsSimpleParameterList of FormalsList is false, return false.
+        // 2. Return IsSimpleParameterList of FormalParameter.
+        for (const element of this.elements) {
+            if (!element.isSimpleParameterList())
+                return false;
+        }
+        return true;
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameterListNode {
         const list = check.list(node);
         const elements: FormalParameterListItemType[] = [];
@@ -213,6 +225,9 @@ export abstract class FormalParametersNode extends ASTNode {
     // ES6 Section 14.1.3 Static Semantics: BoundNames
     public abstract boundNames(out: string[]): void;
 
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public abstract isSimpleParameterList(): boolean;
+
     public static fromGeneric(node: ASTNode | null): FormalParametersNode {
         if (node === null)
             throw new CannotConvertError("FormalParametersNode",node);
@@ -247,6 +262,13 @@ export class FormalParameters1Node extends FormalParametersNode {
         // No bound names for this node type
     }
 
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // FormalParameters : [empty]
+        // 1. Return true.
+        return true;
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters1Node {
         node = check.node(node,"FormalParameters1",0);
         return new FormalParameters1Node(node.range);
@@ -269,6 +291,13 @@ export class FormalParameters2Node extends FormalParametersNode {
     // ES6 Section 14.1.3 Static Semantics: BoundNames
     public boundNames(out: string[]): void {
         this.rest.boundNames(out);
+    }
+
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // FormalParameterList : FunctionRestParameter
+        // 1. Return false.
+        return false;
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters2Node {
@@ -294,6 +323,14 @@ export class FormalParameters3Node extends FormalParametersNode {
     // ES6 Section 14.1.3 Static Semantics: BoundNames
     public boundNames(out: string[]): void {
         this.elements.boundNames(out);
+    }
+
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // FormalsList : FormalsList , FormalParameter
+        // 1. If IsSimpleParameterList of FormalsList is false, return false.
+        // 2. Return IsSimpleParameterList of FormalParameter.
+        return this.elements.isSimpleParameterList();
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters3Node {
@@ -322,6 +359,13 @@ export class FormalParameters4Node extends FormalParametersNode {
     public boundNames(out: string[]): void {
         this.elements.boundNames(out);
         this.rest.boundNames(out);
+    }
+
+    // ES6 Section 14.1.12 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // FormalParameterList : FormalsList , FunctionRestParameter
+        // 1. Return false.
+        return false;
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters4Node {

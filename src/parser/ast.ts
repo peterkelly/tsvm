@@ -140,6 +140,13 @@ export class BindingIdentifierNode extends ASTNode {
         out.push(this.value);
     }
 
+    // ES6 Section 13.3.3.4 Static Semantics: IsSimpleParameterList
+    public isSimpleParameterList(): boolean {
+        // SingleNameBinding : BindingIdentifier
+        // 1. Return true.
+        return true;
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingIdentifierNode {
         if ((node === null) || (node.kind !== "BindingIdentifier") || !(node instanceof GenericStringNode))
             throw new CannotConvertError("BindingIdentifier",node);
