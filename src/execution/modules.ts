@@ -32,6 +32,7 @@ import {
 } from "./expressions";
 import {
     DeclarationNode_fromGeneric,
+    HoistableDeclarationNode_fromGeneric,
     StatementListItemNode_fromGeneric,
     VarNode,
 } from "./statements";
@@ -930,18 +931,17 @@ export abstract class ExportNode extends ASTNode {
     }
 }
 
-type DeclarationOrExpressionType = DeclarationNode | ExpressionNode;
-const DeclarationOrExpressionType = {
-    fromGeneric(node: ASTNode | null): DeclarationOrExpressionType {
+type DefaultExportType = HoistableDeclarationNode | ClassDeclarationNode | ExpressionNode;
+const DefaultExportType = {
+    fromGeneric(node: ASTNode | null): DefaultExportType {
         if (node === null)
             throw new CannotConvertError("DeclarationOrExpressionType",node);
         switch (node.kind) {
             case "FunctionDeclaration":
             case "GeneratorDeclaration":
+                return HoistableDeclarationNode_fromGeneric(node);
             case "ClassDeclaration":
-            case "Let":
-            case "Const":
-                return DeclarationNode_fromGeneric(node);
+                return ClassDeclarationNode.fromGeneric(node);
             default:
                 return ExpressionNode_fromGeneric(node);
         }
@@ -950,9 +950,9 @@ const DeclarationOrExpressionType = {
 
 export class ExportDefaultNode extends ExportNode {
     public _type_ExportDefaultNode: any;
-    public readonly decl: DeclarationOrExpressionType;
+    public readonly decl: DefaultExportType;
 
-    public constructor(range: Range, decl: DeclarationOrExpressionType) {
+    public constructor(range: Range, decl: DefaultExportType) {
         super(range,"ExportDefault");
         this.decl = decl;
     }
@@ -981,7 +981,7 @@ export class ExportDefaultNode extends ExportNode {
 
     public static fromGeneric(node: ASTNode | null): ExportDefaultNode {
         node = check.node(node,"ExportDefault",1);
-        const decl = DeclarationOrExpressionType.fromGeneric(node.children[0]);
+        const decl = DefaultExportType.fromGeneric(node.children[0]);
         return new ExportDefaultNode(node.range,decl);
     }
 }
