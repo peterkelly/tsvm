@@ -164,10 +164,7 @@ export function PutValue(realm: Realm, Vcomp: Completion<JSValue | Reference>, W
         // a. If IsStrictReference(V) is true, then
         if (V.strict) {
             // i. Throw ReferenceError exception.
-            if (V.name instanceof JSString)
-                return realm.throwReferenceError(V.name.stringValue+" is not defined");
-            else
-                return realm.throwReferenceError(V.name.stringRep+" is not defined");
+            return realm.throwReferenceError();
         }
 
         // b. Let globalObj be GetGlobalObject().
