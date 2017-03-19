@@ -37,11 +37,14 @@ import {
     Realm,
 } from "./datatypes";
 import {
+    pr_double_isPositiveInfinity,
+    pr_double_isNegativeInfinity,
     pr_double_isPositiveZero,
     pr_double_isNegativeZero,
     pr_double_isNaN,
     pr_double_to_string,
     pr_string_to_double,
+    pr_double_positive_mod,
 } from "./primitives";
 import {
     IsCallable,
@@ -265,7 +268,32 @@ export function ToInt32(realm: Realm, argument: JSValue | Completion<JSValue>): 
 // ES6 Section 7.1.6: ToUint32 (argument)
 
 export function ToUint32(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSUInt32> {
-    throw new Error("ToUint32 not implemented");
+    // 1. Let number be ToNumber(argument).
+    const numberComp = ToNumber(realm,argument);
+
+    // 2. ReturnIfAbrupt(number).
+    if (!(numberComp instanceof NormalCompletion))
+        return numberComp;
+    const number = numberComp.value;
+
+    // 3. If number is NaN, +0, −0, +∞, or −∞, return +0.
+    if (pr_double_isNaN(number.numberValue) ||
+        pr_double_isPositiveZero(number.numberValue) ||
+        pr_double_isNegativeZero(number.numberValue) ||
+        pr_double_isPositiveInfinity(number.numberValue) ||
+        pr_double_isNegativeInfinity(number.numberValue))
+        return new NormalCompletion(new JSUInt32(0));
+
+    // 4. Let int be the mathematical value that is the same sign as number and whose magnitude is floor(abs(number)).
+    let int: number;
+    if (number.numberValue < 0)
+        int = -Math.floor(Math.abs(number.numberValue));
+    else
+        int = Math.floor(Math.abs(number.numberValue));
+
+    // 5. Let int32bit be int modulo 2^32.
+    const int32bit = pr_double_positive_mod(int,Math.pow(2,32));
+    return new NormalCompletion(new JSUInt32(int32bit));
 }
 
 // ES6 Section 7.1.7: ToInt16 (argument)

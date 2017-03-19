@@ -26,6 +26,7 @@ import {
     JSSymbol,
     JSNumber,
     JSObject,
+    PropertyReferenceBase,
     Completion,
     NormalCompletion,
 } from "./datatypes";
@@ -69,14 +70,20 @@ import {
 
 // ES6 Section 7.2.1: RequireObjectCoercible (argument)
 
-export function RequireObjectCoercible(realm: Realm, argument: JSValue): Completion<JSValue> {
+export function RequireObjectCoercible(realm: Realm, argument: JSValue): Completion<PropertyReferenceBase> {
+    if ((argument instanceof JSObject) ||
+        (argument instanceof JSPropertyKey) ||
+        (argument instanceof JSBoolean) ||
+        (argument instanceof JSNumber)) {
+        return new NormalCompletion(argument);
+    }
     switch (argument.type) {
         case ValueType.Undefined:
             return realm.throwTypeError("undefined is not coercible");
         case ValueType.Null:
             return realm.throwTypeError("null is not coercible");
         default:
-            return new NormalCompletion(argument);
+            return realm.throwTypeError("value is not coercible");
     }
 }
 

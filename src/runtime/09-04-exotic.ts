@@ -37,6 +37,12 @@ import {
     Realm,
 } from "./datatypes";
 import {
+    pr_double_isArrayIndex,
+} from "./primitives";
+import {
+    ToUint32,
+} from "./07-01-conversion";
+import {
     ExecutionContext,
 } from "./08-03-context";
 import {
@@ -49,6 +55,10 @@ import {
     Call,
     CreateDataProperty,
 } from "./07-03-objects";
+import {
+    OrdinaryGetOwnProperty,
+    OrdinaryDefineOwnProperty,
+} from "./09-01-ordinary";
 
 // ES6 Section 9.3: Built-in Function Objects
 
@@ -106,16 +116,133 @@ export function BoundFunctionCreate(realm: Realm, targetFunction: JSObject, boun
 
 export class ArrayExoticObject extends JSObject {
     public _type_ArrayExoticObject: any;
+
+    // ES6 Section 9.4.2.1: [[DefineOwnProperty]] (P, Desc)
+    public __DefineOwnProperty__(realm: Realm, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<boolean> {
+        const A = this;
+        let Pnumber: number | null = null;
+        if (P instanceof JSString) {
+            const pn = parseInt(P.stringValue);
+            if (!isNaN(pn))
+                Pnumber = pn;
+        }
+
+        // 1. Assert: IsPropertyKey(P) is true.
+        // (implicit in type)
+
+        // 2. If P is "length", then
+        if ((P instanceof JSString) && (P.stringValue === "length")) {
+            // a. Return ArraySetLength(A, Desc).
+        }
+        // 3. Else if P is an array index, then
+        // else if ((P instanceof JSNumber) && pr_double_isArrayIndex(P.numberValue)) {
+        else if ((Pnumber != null) && pr_double_isArrayIndex(Pnumber)) {
+            // a. Let oldLenDesc be OrdinaryGetOwnProperty(A, "length").
+            const oldLenDesc = OrdinaryGetOwnProperty(realm,A,new JSString("length"));
+
+            // b. Assert: oldLenDesc will never be undefined or an accessor descriptor because Array
+            // objects are created with a length data property that cannot be deleted or reconfigured.
+            if (!(oldLenDesc instanceof DataDescriptor))
+                throw new Error("Assertion failure: length should be a data descriptor");
+
+            // c. Let oldLen be oldLenDesc.[[Value]].
+            const oldLen = oldLenDesc.value;
+
+            if (!(oldLen instanceof JSNumber)) {
+                throw new Error("Expected oldLen to be a number");
+            }
+
+            // d. Let index be ToUint32(P).
+            const indexComp = ToUint32(realm,new JSString(""+Pnumber));
+
+            // e. Assert: index will never be an abrupt completion.
+            if (!(indexComp instanceof NormalCompletion))
+                throw new Error("Assertion failure: ToUint32 should not throw");
+            const index = indexComp.value;
+
+            // f. If index ≥ oldLen and oldLenDesc.[[Writable]] is false, return false.
+            if ((index.numberValue >= oldLen.numberValue) && !oldLenDesc.writable)
+                return new NormalCompletion(false);
+
+            // g. Let succeeded be OrdinaryDefineOwnProperty(A, P, Desc).
+            const succeeded = OrdinaryDefineOwnProperty(realm,A,P,Desc);
+
+            // h. Assert: succeeded is not an abrupt completion.
+            if (!(succeeded instanceof NormalCompletion))
+                throw new Error("Assertion failure: OrdinaryDefineOwnProperty should not throw");
+
+            // i. If succeeded is false, return false.
+            if (!succeeded)
+                return new NormalCompletion(false);
+
+            // j. If index ≥ oldLen
+            if (index.numberValue >= oldLen.numberValue) {
+                // i. Set oldLenDesc.[[Value]] to index + 1.
+                oldLenDesc.value = new JSNumber(index.numberValue + 1);
+                // ii. Let succeeded be OrdinaryDefineOwnProperty(A, "length", oldLenDesc).
+                const lengthSucceededComp = OrdinaryDefineOwnProperty(realm,A,new JSString("length"),oldLenDesc);
+                if (!(lengthSucceededComp instanceof NormalCompletion))
+                    return lengthSucceededComp;
+                const lengthSucceeded = lengthSucceededComp.value;
+                // iii. Assert: succeeded is true.
+                if (!lengthSucceeded)
+                    throw new Error("Assertion failure: OrdinaryDefineOwnProperty (length) should return true");
+            }
+
+            // k. Return true.
+            return new NormalCompletion(true);
+        }
+
+        // 4. Return OrdinaryDefineOwnProperty(A, P, Desc).
+        return OrdinaryDefineOwnProperty(realm,A,P,Desc);
+    }
 }
-
-// ES6 Section 9.4.2.1: [[DefineOwnProperty]] (P, Desc)
-
-// TODO
 
 // ES6 Section 9.4.2.2: ArrayCreate(length, proto)
 
-export function ArrayCreate(realm: Realm, length: any, proto: any): Completion<UnknownType> {
-    throw new Error("ArrayCreate not implemented");
+export function ArrayCreate(realm: Realm, length: number, proto?: JSObject | JSNull): Completion<JSObject> {
+    // 1. Assert: length is an integer Number >= 0.
+    // TODO
+    // 2. If length is −0, let length be +0.
+    // TODO
+    // 3. If length>2^32-1, throw a RangeError exception.
+    // TODO
+
+    // 4. If the proto argument was not passed, let proto be the intrinsic object %ArrayPrototype%.
+    if (proto === undefined) {
+        proto = realm.intrinsics.ArrayPrototype;
+    }
+
+    // 5. Let A be a newly created Array exotic object.
+    const A = new ArrayExoticObject();
+
+    // 6. Set A’s essential internal methods except for [[DefineOwnProperty]] to the default ordinary object definitions specified in 9.1.
+    // (implicit in class ArrayExoticObject definition)
+
+    // 7. Set the [[DefineOwnProperty]] internal method of A as specified in 9.4.2.1.
+    // (implicit in class ArrayExoticObject definition)
+
+    // 8. Set the [[Prototype]] internal slot of A to proto.
+    A.__prototype__ = proto;
+
+    // 9. Set the [[Extensible]] internal slot of A to true.
+    A.__extensible__ = true;
+
+    // 10. Perform OrdinaryDefineOwnProperty(A, "length", PropertyDescriptor{[[Value]]: length,
+    // [[Writable]]: true, [[Enumerable]]: false, [[Configurable]]: false}).
+    const defineComp = OrdinaryDefineOwnProperty(realm,A,new JSString("length"),new DataDescriptor({
+        value: new JSNumber(length),
+        writable: true,
+        enumerable: false,
+        configurable: false,
+    }));
+
+    // 11. Assert: the preceding step never produces an abrupt completion.
+    if (!(defineComp instanceof NormalCompletion))
+        throw new Error("Assertion failure OrdinaryDefineOwnProperty in ArrayCreate should now throw");
+
+    // 12. Return A.
+    return new NormalCompletion(A);
 }
 
 // ES6 Section 9.4.2.3: ArraySpeciesCreate(originalArray, length)

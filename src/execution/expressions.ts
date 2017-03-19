@@ -70,6 +70,7 @@ import {
     ToString,
     ToNumber,
     ToBoolean,
+    ToPropertyKey,
 } from "../runtime/07-01-conversion";
 import {
     GetValue,
@@ -86,8 +87,12 @@ import {
     strictEqualityComparison,
 } from "../runtime/07-02-testcompare";
 import {
+    CreateDataProperty,
     Call,
 } from "../runtime/07-03-objects";
+import {
+    ArrayCreate,
+} from "../runtime/09-04-exotic";
 import {
     pr_double_isNaN,
     pr_NaN,
@@ -569,8 +574,41 @@ export class ArrayLiteralNode extends ExpressionNode {
         return [this.elements];
     }
 
+    // ES6 Section 12.2.5.3: Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("ArrayLiteralNode.evaluate not implemented");
+        // ElisionNode | SpreadElementNode | ExpressionNode
+        const arrayComp = ArrayCreate(ctx.realm,0);
+        if (!(arrayComp instanceof NormalCompletion))
+            return arrayComp;
+        const array = arrayComp.value;
+        let nextIndex = 0;
+
+        for (const element of this.elements.elements) {
+            if (element instanceof ElisionNode) {
+                throw new Error("Elisions not implemented");
+            }
+            else if (element instanceof SpreadElementNode) {
+                throw new Error("Spread elements not implemented");
+            }
+            else if (element instanceof ExpressionNode) {
+                const initResultComp = element.evaluate(ctx);
+                const initValueComp = GetValue(ctx.realm,initResultComp);
+                if (!(initValueComp instanceof NormalCompletion))
+                    return initValueComp;
+                const initValue = initValueComp.value;
+                const createdComp = CreateDataProperty(ctx.realm,array,new JSString(''+nextIndex),initValue);
+                if (!(createdComp instanceof NormalCompletion))
+                    return createdComp;
+                const created = createdComp.value;
+                if (created === false)
+                    throw new Error("Assertion failure: CreateDataProperty should return true");
+                nextIndex++;
+            }
+            else {
+                throw new Error("Unexpected case in ArrayLiteralNode.evaluate()");
+            }
+        }
+        return new NormalCompletion(array);
     }
 
     public static fromGeneric(node: ASTNode | null): ArrayLiteralNode {
@@ -771,7 +809,52 @@ export class MemberAccessExprNode extends ExpressionNode {
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("MemberAccessExprNode.evaluate not implemented");
+        // 1. Let baseReference be the result of evaluating MemberExpression.
+        const baseReferenceComp = this.obj.evaluate(ctx);
+
+        // 2. Let baseValue be GetValue(baseReference).
+        const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+
+        // 3. ReturnIfAbrupt(baseValue).
+        if (!(baseValueComp instanceof NormalCompletion))
+            return baseValueComp;
+        const baseValue = baseValueComp.value;
+
+        // 4. Let propertyNameReference be the result of evaluating Expression.
+        const propertyNameReferenceComp = this.expr.evaluate(ctx);
+
+        // 5. Let propertyNameValue be GetValue(propertyNameReference).
+        const propertyNameValueComp = GetValue(ctx.realm,propertyNameReferenceComp);
+
+        // 6. ReturnIfAbrupt(propertyNameValue).
+        if (!(propertyNameValueComp instanceof NormalCompletion))
+            return propertyNameValueComp;
+        const propertyNameValue = propertyNameValueComp.value;
+
+        // 7. Let bv be RequireObjectCoercible(baseValue).
+        const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+
+        // 8. ReturnIfAbrupt(bv).
+        if (!(bvComp instanceof NormalCompletion))
+            return bvComp;
+        const bv = bvComp.value;
+
+        // 9. Let propertyKey be ToPropertyKey(propertyNameValue).
+        const propertyKeyComp = ToPropertyKey(ctx.realm,propertyNameValue);
+
+        // 10. ReturnIfAbrupt(propertyKey).
+        if (!(propertyKeyComp instanceof NormalCompletion))
+            return propertyKeyComp;
+        const propertyKey = propertyKeyComp.value;
+
+        // 11. If the code matched by the syntactic production that is being evaluated is strict
+        // mode code, let strict be true, else let strict be false.
+        const strict = true; // FIXME: This must be determined by the AST node
+
+        // 12. Return a value of type Reference whose base value is bv and whose referenced name is
+        // propertyKey, and whose strict reference flag is strict.
+        const ref = new PropertyReference(bv,propertyKey,strict);
+        return new NormalCompletion(ref);
     }
 
     public static fromGeneric(node: ASTNode | null): MemberAccessExprNode {
