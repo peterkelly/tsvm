@@ -89,13 +89,18 @@ import {
 import {
     CreateDataProperty,
     Call,
+    CreateDataPropertyOrThrow,
 } from "../runtime/07-03-objects";
+import {
+    ObjectCreate,
+} from "../runtime/09-01-ordinary";
 import {
     ArrayCreate,
 } from "../runtime/09-04-exotic";
 import {
     pr_double_isNaN,
     pr_NaN,
+    pr_double_to_string,
     pr_double_negate,
     pr_double_add,
     pr_double_sub,
@@ -684,12 +689,48 @@ export class PropertyDefinitionListNode extends ASTNode {
         return this.elements;
     }
 
+    // ES6 Section 12.2.6.9: Runtime Semantics: PropertyDefinitionEvaluation
+    public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
+        let resultComp: Completion<boolean> = new NormalCompletion(true);
+        for (const element of this.elements) {
+            if (element instanceof MethodDefinitionNode)
+                throw new Error("method properties in object literals not implemented");
+            else if (element instanceof IdentifierReferenceNode)
+                throw new Error("identifier references in object literals not implemented");
+            else if (element instanceof CoverInitializedNameNode)
+                throw new Error("CoverInitializedName properties object literals not implemented");
+            const statusComp = element.propertyDefinitionEvaluation(ctx,object,enumerable);
+            if (!(statusComp instanceof NormalCompletion))
+                return statusComp;
+            resultComp = statusComp;
+        }
+        return resultComp;
+    }
+
     public static fromGeneric(node: ASTNode | null): PropertyDefinitionListNode {
         const list = check.list(node);
         const elements: PropertyDefinitionType[] = [];
         for (const listElement of list.elements)
             elements.push(PropertyDefinitionType.fromGeneric(listElement));
         return new PropertyDefinitionListNode(list.range,elements);
+    }
+}
+
+function evaluatePropertyName(ctx: ExecutionContext, name: PropertyNameType): Completion<JSPropertyKey> {
+    if (name instanceof ComputedPropertyNameNode) {
+        return name.evaluate(ctx);
+    }
+    else if (name instanceof IdentifierNode) {
+        return new NormalCompletion(new JSString(name.value));
+    }
+    else if (name instanceof StringLiteralNode) {
+        return new NormalCompletion(new JSString(name.value));
+    }
+    else if (name instanceof NumericLiteralNode) {
+        return new NormalCompletion(new JSString(pr_double_to_string(name.value)));
+    }
+    else {
+        throw new Error("Unexpected case in evaluatePropertyName");
     }
 }
 
@@ -706,8 +747,18 @@ export class ObjectLiteralNode extends ExpressionNode {
         return [this.properties];
     }
 
-    public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        throw new Error("ObjectLiteralNode.evaluate not implemented");
+    // ES6 Section 12.2.6.8: Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSObject> {
+        // 1. Let obj be ObjectCreate(%ObjectPrototype%).
+        const obj = ObjectCreate(ctx.realm,ctx.realm.intrinsics.ObjectPrototype);
+        // 2. Let status be the result of performing PropertyDefinitionEvaluation of
+        // PropertyDefinitionList with arguments obj and true.
+        const status = this.properties.propertyDefinitionEvaluation(ctx,obj,true);
+        // 3. ReturnIfAbrupt(status).
+        if (!(status instanceof NormalCompletion))
+            return status;
+        // 4. Return obj.
+        return new NormalCompletion(obj);
     }
 
     public static fromGeneric(node: ASTNode | null): ObjectLiteralNode {
@@ -732,6 +783,42 @@ export class ColonPropertyDefinitionNode extends ASTNode {
         return [this.name,this.init];
     }
 
+    // ES6 Section 12.2.6.9: Runtime Semantics: PropertyDefinitionEvaluation
+    public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
+        // 1. Let propKey be the result of evaluating PropertyName.
+        const propKeyComp = evaluatePropertyName(ctx,this.name);
+
+        // 2. ReturnIfAbrupt(propKey).
+        if (!(propKeyComp instanceof NormalCompletion))
+            return propKeyComp;
+        const propKey = propKeyComp.value;
+
+        // 3. Let exprValueRef be the result of evaluating AssignmentExpression.
+        const exprValueRefComp = this.init.evaluate(ctx);
+
+        // 4. Let propValue be GetValue(exprValueRef).
+        const propValueComp = GetValue(ctx.realm,exprValueRefComp);
+
+        // 5. ReturnIfAbrupt(propValue).
+        if (!(propValueComp instanceof NormalCompletion))
+            return propValueComp;
+        const propValue = propValueComp.value;
+
+        // 6. If IsAnonymousFunctionDefinition(AssignmentExpression) is true, then
+        // TODO...
+            // a. Let hasNameProperty be HasOwnProperty(propValue, "name").
+            // b. ReturnIfAbrupt(hasNameProperty).
+            // c. If hasNameProperty is false, perform SetFunctionName(propValue, propKey).
+
+        // 7. Assert: enumerable is true.
+        if (!enumerable) {
+            throw new Error("Assertion failure: enumerable should be true");
+        }
+
+        // 8. Return CreateDataPropertyOrThrow(object, propKey, propValue).
+        return CreateDataPropertyOrThrow(ctx.realm,object,propKey,propValue);
+    }
+
     public static fromGeneric(node: ASTNode | null): ColonPropertyDefinitionNode {
         node = check.node(node,"ColonPropertyDefinition",2);
         const name = PropertyNameType.fromGeneric(node.children[0]);
@@ -751,6 +838,23 @@ export class ComputedPropertyNameNode extends ASTNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.expr];
+    }
+
+    // ES6 Section 12.2.6.8: Runtime Semantics: Evaluation
+    public evaluate(ctx: ExecutionContext): Completion<JSPropertyKey> {
+        // 1. Let exprValue be the result of evaluating AssignmentExpression.
+        const exprValueComp = this.expr.evaluate(ctx);
+
+        // 2. Let propName be GetValue(exprValue).
+        const propNameComp = GetValue(ctx.realm,exprValueComp);
+
+        // 3. ReturnIfAbrupt(propName).
+        if (!(propNameComp instanceof NormalCompletion))
+            return propNameComp;
+        const propName = propNameComp.value;
+
+        // 4. Return ToPropertyKey(propName).
+        return ToPropertyKey(ctx.realm,propName);
     }
 
     public static fromGeneric(node: ASTNode | null): ComputedPropertyNameNode {
