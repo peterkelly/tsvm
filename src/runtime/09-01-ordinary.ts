@@ -322,27 +322,30 @@ export function ValidateAndApplyPropertyDescriptor(
 
     // 10. If O is not undefined, then
     if (O !== undefined) {
+        const existingDesc = O.properties.get(P);
+        if (existingDesc === undefined)
+            throw new Error("Expected existing property descriptor for "+P.stringRep);
+
         // a. For each field of Desc that is present, set the corresponding attribute of the
         // property named P of object O to the value of the field.
 
         if (Desc.enumerable !== undefined)
-            current.enumerable = Desc.enumerable;
+            existingDesc.enumerable = Desc.enumerable;
         if (Desc.configurable !== undefined)
-            current.configurable = Desc.configurable;
+            existingDesc.configurable = Desc.configurable;
 
-        // Note: I assume here they mean current
-        if (current instanceof DataDescriptor) {
+        if (existingDesc instanceof DataDescriptor) {
             if (Desc.value !== undefined)
-                current.value = Desc.value;
+                existingDesc.value = Desc.value;
             if (Desc.writable !== undefined)
-                current.writable = Desc.writable;
+                existingDesc.writable = Desc.writable;
         }
         else {
-            // current is an AccessorDescriptor
+            // existingDesc is an AccessorDescriptor
             if (Desc.__get__ !== undefined)
-                current.__get__ = Desc.__get__;
+                existingDesc.__get__ = Desc.__get__;
             if (Desc.__set__ !== undefined)
-                current.__set__ = Desc.__set__;
+                existingDesc.__set__ = Desc.__set__;
         }
     }
 
