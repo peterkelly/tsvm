@@ -88,6 +88,10 @@ export function pr_double_isInteger(value: number): boolean {
     return (Math.floor(Math.abs(value)) === Math.abs(value));
 }
 
+export function pr_double_isArrayIndex(value: number): boolean {
+    return ((value >= 0) && (value <= 0xFFFFFFFF));
+}
+
 export function pr_double_to_string(value: number): string {
     return ""+value;
 }
@@ -130,6 +134,11 @@ export function pr_double_div(a: number, b: number) {
 
 export function pr_double_mod(a: number, b: number) {
     return a % b;
+}
+
+export function pr_double_positive_mod(a: number, b: number) {
+    const result = a % b;
+    return (result < 0) ? (result + b) : result;
 }
 
 export function pr_string_concat(s1: string, s2: string): string {
