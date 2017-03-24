@@ -575,7 +575,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         envRec.thisValue = V;
 
         // 5. Set envRec.[[thisBindingStatus]] to "initialized".
-        envRec.thisBindingStatus = BindingStatus.Lexical;
+        envRec.thisBindingStatus = BindingStatus.Initialized;
 
         // 6. Return V.
         return new NormalCompletion(V);

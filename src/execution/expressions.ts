@@ -56,6 +56,7 @@ import {
     PropertyReference,
     Realm,
     TypeIsReference,
+    EnvironmentRecord,
 } from "../runtime/datatypes";
 import {
     ExecutionContext,
@@ -75,6 +76,9 @@ import {
 import {
     GetValue,
     PutValue,
+    IsPropertyReference,
+    GetThisValue,
+    GetBase,
 } from "../runtime/06-02-03-reference";
 import {
     ToPrimitive,
@@ -1186,22 +1190,77 @@ export class CallNode extends ExpressionNode {
     // ES6 Section 12.3.4.1: Function Calls - Runtime Semantics: Evaluation
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
-        // A basic, incomplete implementation. Need to go through this and expand it to cover all
-        // steps given in the spec. For example we don't set the this value correctly.
-        // checkNode(node,"Call",2);
-        const funNode = this.fun; // checkNodeNotNull(node.children[0]);
-        const argsNode = this.args; // checkNode(node.children[1],"Arguments",1);
-        const argsListNode = this.args.items; // checkListNode(argsNode.children[0]);
+        // 1. Let ref be the result of evaluating MemberExpression.
+        const refComp = this.fun.evaluate(ctx);
+        if (!(refComp instanceof NormalCompletion))
+            return refComp;
+        const ref = refComp.value;
 
-        const refComp = funNode.evaluate(ctx);
-        const funcComp = GetValue(ctx.realm,refComp);
+        // 2. Let func be GetValue(ref).
+        const funcComp = GetValue(ctx.realm, ref);
+
+        // 3. ReturnIfAbrupt(func).
         if (!(funcComp instanceof NormalCompletion))
             return funcComp;
         const func = funcComp.value;
 
-        const thisValue = new JSUndefined(); // FIXME: temp
+        // FIXME: Following is required only for eval()
+        // 4. If Type(ref) is Reference and IsPropertyReference(ref) is false and
+        // GetReferencedName(ref) is "eval", then
+        // if (TypeIsReference(ref) && IsPropertyReference(ctx.realm,ref) && (GetReferencedName(ctx.realm,ref) === "eval")) {
+        //
+        //     // a. If SameValue(func, %eval%) is true, then
+        //         // i. Let argList be ArgumentListEvaluation(Arguments).
+        //         // ii. ReturnIfAbrupt(argList).
+        //         // iii. If argList has no elements, return undefined.
+        //         // iv. Let evalText be the first element of argList.
+        //         // v. If the source code matching this CallExpression is strict code, let
+        //         // strictCaller be true. Otherwise let strictCaller be false.
+        //         // vi. Let evalRealm be the running execution context’s Realm.
+        //         // vii. Return PerformEval(evalText, evalRealm, strictCaller, true). .
+        // }
 
-        return EvaluateDirectCall(ctx,func,thisValue,argsListNode.elements,false);
+        let thisValue: JSValue;
+
+        // 5. If Type(ref) is Reference, then
+        if (TypeIsReference(ref)) {
+            // a. If IsPropertyReference(ref) is true, then
+            if (IsPropertyReference(ctx.realm,ref)) {
+                // i. Let thisValue be GetThisValue(ref).
+                const thisValueComp = GetThisValue(ctx.realm,ref);
+                if (!(thisValueComp instanceof NormalCompletion))
+                    return thisValueComp;
+                thisValue = thisValueComp.value;
+            }
+            // b. Else, the base of ref is an Environment Record
+            else {
+                // i. Let refEnv be GetBase(ref).
+                const refEnv = GetBase(ctx.realm,ref);
+                if (!(refEnv instanceof EnvironmentRecord)) {
+                    return ctx.realm.throwTypeError("Expected refEnv to be an EnvironmentRecord");
+                }
+                // ii. Let thisValue be refEnv.WithBaseObject().
+                const thisValueComp = refEnv.WithBaseObject();
+                if (!(thisValueComp instanceof NormalCompletion))
+                    return thisValueComp;
+                thisValue = thisValueComp.value;
+            }
+        }
+        // 6. Else Type(ref) is not Reference,
+        else {
+            // a. Let thisValue be undefined.
+            thisValue = new JSUndefined();
+        }
+
+        // 7. Let thisCall be this CallExpression.
+        const thisCall = this;
+
+        // 8. Let tailCall be IsInTailPosition(thisCall). (See 14.6.1)
+        const tailCall = false; // FIXME: Support tail calls
+
+        // 9. Return EvaluateDirectCall(func, thisValue, Arguments, tailCall).
+        const args = this.args.items.elements;
+        return EvaluateDirectCall(ctx, func, thisValue, args, tailCall);
     }
 
     public static fromGeneric(node: ASTNode | null): CallNode {
