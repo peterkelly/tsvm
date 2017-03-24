@@ -697,9 +697,7 @@ export class PropertyDefinitionListNode extends ASTNode {
     public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
         let resultComp: Completion<boolean> = new NormalCompletion(true);
         for (const element of this.elements) {
-            if (element instanceof MethodDefinitionNode)
-                throw new Error("method properties in object literals not implemented");
-            else if (element instanceof IdentifierReferenceNode)
+            if (element instanceof IdentifierReferenceNode)
                 throw new Error("identifier references in object literals not implemented");
             else if (element instanceof CoverInitializedNameNode)
                 throw new Error("CoverInitializedName properties object literals not implemented");
@@ -720,7 +718,7 @@ export class PropertyDefinitionListNode extends ASTNode {
     }
 }
 
-function evaluatePropertyName(ctx: ExecutionContext, name: PropertyNameType): Completion<JSPropertyKey> {
+export function evaluatePropertyName(ctx: ExecutionContext, name: PropertyNameType): Completion<JSPropertyKey> {
     if (name instanceof ComputedPropertyNameNode) {
         return name.evaluate(ctx);
     }

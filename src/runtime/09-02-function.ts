@@ -591,8 +591,18 @@ export function MakeClassConstructor(F: JSFunction): Completion<void> {
 
 // ES6 Section 9.2.10: MakeMethod (F, homeObject)
 
-export function MakeMethod(F: JSFunction, homeObject: JSObject): Completion<void> {
-    throw new Error("MakeMethod not implemented");
+export function MakeMethod(F: JSFunction, homeObject: JSObject): void {
+    // 1. Assert: F is an ECMAScript function object.
+    // (implicit in parameter type)
+
+    // 2. Assert: Type(homeObject) is Object.
+    // (implicit in parameter type)
+
+    // 3. Set the [[HomeObject]] internal slot of F to homeObject.
+    F.homeObject = homeObject;
+
+    // 4. Return NormalCompletion(undefined).
+    // (just return void, since this function can never throw)
 }
 
 // ES6 Section 9.2.11: SetFunctionName (F, name, prefix)

@@ -27,6 +27,7 @@ import {
 import {
     ExpressionNode_fromGeneric,
     PropertyNameType,
+    evaluatePropertyName,
 } from "./expressions";
 import {
     StatementListNode,
@@ -40,12 +41,17 @@ import {
     Reference,
     JSValue,
     JSUndefined,
+    JSPropertyKey,
     JSString,
     JSObject,
     LexicalEnvironment,
     Realm,
     ValueIterator,
+    DataDescriptor,
 } from "../runtime/datatypes";
+import {
+    DefinePropertyOrThrow,
+} from "../runtime/07-03-objects";
 import {
     ExecutionContext,
 } from "../runtime/08-03-context";
@@ -53,6 +59,7 @@ import {
     InitializeKind,
     FunctionCreate,
     MakeConstructor,
+    MakeMethod,
     SetFunctionName,
 } from "../runtime/09-02-function";
 
@@ -619,6 +626,9 @@ export class ArrowFunctionNode extends ExpressionNode {
 export abstract class MethodDefinitionNode extends ClassElementNode {
     public _type_MethodDefinitionNode: any;
 
+    // ES6 Section 14.3.9: Runtime Semantics: PropertyDefinitionEvaluation
+    public abstract propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean>;
+
     public static fromGeneric(node: ASTNode | null): MethodDefinitionNode {
         if (node === null)
             throw new CannotConvertError("MethodDefinitionNode",node);
@@ -635,6 +645,11 @@ export abstract class MethodDefinitionNode extends ClassElementNode {
                 throw new CannotConvertError("MethodDefinitionNode",node);
         }
     }
+}
+
+export interface DefineMethodResult {
+    key: JSPropertyKey;
+    closure: JSObject;
 }
 
 export class MethodNode extends MethodDefinitionNode {
@@ -659,6 +674,68 @@ export class MethodNode extends MethodDefinitionNode {
         return [this.name,this.params,this.body];
     }
 
+    // ES6 Section 14.3.8: Runtime Semantics: DefineMethod
+    public defineMethod(ctx: ExecutionContext, object: JSObject, functionPrototype?: JSObject): Completion<DefineMethodResult> {
+        // 1. Let propKey be the result of evaluating PropertyName.
+        const propKeyComp = evaluatePropertyName(ctx,this.name);
+
+        // 2. ReturnIfAbrupt(propKey).
+        if (!(propKeyComp instanceof NormalCompletion))
+            return propKeyComp;
+        const propKey = propKeyComp.value;
+
+        // 3. If the function code for this MethodDefinition is strict mode code, let strict be true. Otherwise let strict be false.
+        const strict = this.strict;
+
+        // 4. Let scope be the running execution context’s LexicalEnvironment.
+        const scope = ctx.lexicalEnvironment;
+
+        // 5. If functionPrototype was passed as a parameter, let kind be Normal; otherwise let kind be Method.
+        const kind = (functionPrototype !== undefined) ? InitializeKind.Normal : InitializeKind.Method;
+
+        // 6. Let closure be FunctionCreate(kind, StrictFormalParameters, FunctionBody, scope, strict).
+        // If functionPrototype was passed as a parameter then pass its value as the functionPrototype
+        // optional argument of FunctionCreate.
+        const closureComp = FunctionCreate(ctx.realm,kind,this.params,this.body,scope,strict,functionPrototype);
+        if (!(closureComp instanceof NormalCompletion))
+            return closureComp;
+        const closure = closureComp.value;
+
+        // 7. Perform MakeMethod(closure, object).
+        MakeMethod(closure,object);
+
+        // 8. Return the Record{[[key]]: propKey, [[closure]]: closure}.
+        return new NormalCompletion({ key: propKey, closure: closure });
+    }
+
+    // ES6 Section 14.3.9: Runtime Semantics: PropertyDefinitionEvaluation
+    public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
+        // 1. Let methodDef be DefineMethod of MethodDefinition with argument object.
+        const methodDefComp = this.defineMethod(ctx,object);
+
+        // 2. ReturnIfAbrupt(methodDef).
+        if (!(methodDefComp instanceof NormalCompletion))
+            return methodDefComp;
+        const methodDef = methodDefComp.value;
+
+        // 3. Perform SetFunctionName(methodDef.[[closure]], methodDef.[[key]]).
+        const nameComp = SetFunctionName(ctx.realm,methodDef.closure,methodDef.key);
+        if (!(nameComp instanceof NormalCompletion))
+            return nameComp;
+
+        // 4. Let desc be the Property Descriptor{[[Value]]: methodDef.[[closure]], [[Writable]]:
+        // true, [[Enumerable]]: enumerable, [[Configurable]]: true}.
+        const desc = new DataDescriptor({
+            value: methodDef.closure,
+            writable: true,
+            enumerable: enumerable,
+            configurable: true,
+        });
+
+        // 5. Return DefinePropertyOrThrow(object, methodDef.[[key]], desc).
+        return DefinePropertyOrThrow(ctx.realm,object,methodDef.key,desc);
+    }
+
     public static fromGeneric(node: ASTNode | null): MethodNode {
         node = check.node(node,"Method",3);
         const name = PropertyNameType.fromGeneric(node.children[0]);
@@ -681,6 +758,11 @@ export class GetterNode extends MethodDefinitionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.name,this.body];
+    }
+
+    // ES6 Section 14.3.9: Runtime Semantics: PropertyDefinitionEvaluation
+    public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
+        throw new Error("GetterNode.propertyDefinitionEvaluation() not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): GetterNode {
@@ -711,6 +793,11 @@ export class SetterNode extends MethodDefinitionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.name,this.param,this.body];
+    }
+
+    // ES6 Section 14.3.9: Runtime Semantics: PropertyDefinitionEvaluation
+    public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
+        throw new Error("SetterNode.propertyDefinitionEvaluation() not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): SetterNode {
@@ -744,6 +831,11 @@ export class GeneratorMethodNode extends MethodDefinitionNode {
 
     public get children(): (ASTNode | null)[] {
         return [this.name,this.params,this.body];
+    }
+
+    // ES6 Section 14.4.13: Runtime Semantics: PropertyDefinitionEvaluation
+    public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
+        throw new Error("GeneratorMethodNode.propertyDefinitionEvaluation() not implemented");
     }
 
     public static fromGeneric(node: ASTNode | null): GeneratorMethodNode {
