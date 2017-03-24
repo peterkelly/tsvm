@@ -49,6 +49,7 @@ export class Range {
 export abstract class ASTNode {
     public range: Range;
     public readonly kind: string;
+    public strict: boolean = false;
 
     public constructor(range: Range, kind: string) {
         this.range = range;
