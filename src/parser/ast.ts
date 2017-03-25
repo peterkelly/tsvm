@@ -63,6 +63,7 @@ export abstract class ExpressionNode extends ASTNode {
     public _type_ExpressionNode: any;
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
+    public abstract get precedence(): number;
 }
 
 export abstract class StatementListItemNode extends ASTNode {
