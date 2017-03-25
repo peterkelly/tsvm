@@ -629,6 +629,29 @@ export class ArrowFunctionNode extends ExpressionNode {
 
     public level(): number { return 2; }
 
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
+        let prec = this.precedence;
+        if (this.precedence < outerPrecedence) {
+            output.push("(");
+            prec = 0;
+        }
+
+        output.push("(");
+        this.params.prettyPrint("",indent,output);
+        output.push(") => ");
+        if (this.body instanceof StatementListNode) {
+            output.push("{\n");
+            this.body.prettyPrint(indent,indent,output);
+            output.push("}");
+        }
+        else {
+            this.body.prettyPrintExpr(0,indent,output);
+        }
+
+        if (this.precedence < outerPrecedence)
+            output.push(")");
+    }
+
     public constructor(
         range: Range,
         params: ArrowFunctionParamsType,

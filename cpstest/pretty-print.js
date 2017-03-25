@@ -23,3 +23,4 @@ function other() {
 }
 try {print("yes");}catch(e){print(e);}finally{print("end");}
 
+const arrow = (a,b) => { print(a+b); };

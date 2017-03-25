@@ -1513,8 +1513,8 @@ export class ExpressionStatementNode extends StatementNode {
             return new NormalCompletion(result);
     }
 
-    public cpsTransform(labels: string[]): ExpressionStatementNode {
-        const transformedExpr = this.expr.cpsTransform(labels);
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ExpressionStatementNode {
+        const transformedExpr = this.expr.cpsTransform(throwCont,returnCont);
         return new ExpressionStatementNode(new Range(0,0),transformedExpr);
     }
 

@@ -162,10 +162,10 @@ export class ModuleItemListNode extends ASTNode {
         this.elements = elements;
     }
 
-    public cpsTransform(labels: string[]): ModuleItemListNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ModuleItemListNode {
         const transformedElements: ModuleItemType[] = [];
         for (const element of this.elements) {
-            transformedElements.push(element.cpsTransform(labels));
+            transformedElements.push(element.cpsTransform(throwCont,returnCont));
         }
         return new ModuleItemListNode(new Range(0,0),transformedElements);
     }
@@ -269,8 +269,8 @@ export class ModuleNode extends ASTNode {
         this.realm = realm;
     }
 
-    public cpsTransform(labels: string[]): ModuleNode {
-        const transformedBody = this.body.cpsTransform(labels);
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ModuleNode {
+        const transformedBody = this.body.cpsTransform(throwCont,returnCont);
         return new ModuleNode(new Range(0,0),transformedBody,this.realm);
     }
 
@@ -574,7 +574,7 @@ export abstract class ImportNode extends ASTNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
-    public cpsTransform(labels: string[]): ImportNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ImportNode {
         throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
     }
 
@@ -934,7 +934,7 @@ export abstract class ExportNode extends ASTNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
 
-    public cpsTransform(labels: string[]): ExportNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ExportNode {
         throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
     }
 

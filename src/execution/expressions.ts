@@ -136,6 +136,22 @@ export enum Precedence {
     Primary        = 19,
 }
 
+export function makeCall(name: string, exprs: ExpressionNode[]): CallNode {
+    const returnContFun = new IdentifierReferenceNode(new Range(0,0),name);
+    const argsList = new ArgumentListNode(new Range(0,0),exprs);
+    const args = new ArgumentsNode(new Range(0,0),argsList);
+    const call = new CallNode(new Range(0,0),returnContFun,args);
+    return call;
+}
+
+export function makeReturnContCall(arg: ExpressionNode): CallNode {
+    return makeCall("returnCont",[arg]);
+}
+
+export function makeErrorContCall(arg: ExpressionNode): CallNode {
+    return makeCall("errorCont",[arg]);
+}
+
 export function ExpressionNode_fromGeneric(node: ASTNode | null): ExpressionNode {
     if (node === null)
         throw new CannotConvertError("ExpressionNode",node);
@@ -386,15 +402,15 @@ export abstract class BinaryNode extends ExpressionNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         let prec = this.precedence;
         if (this.precedence < outerPrecedence) {
             output.push("(");
             prec = 0;
         }
-        this.left.prettyPrintExpr(prec,output);
+        this.left.prettyPrintExpr(prec,indent,output);
         output.push(" "+this.operator+" ");
-        this.right.prettyPrintExpr(prec,output);
+        this.right.prettyPrintExpr(prec,indent,output);
         if (this.precedence < outerPrecedence)
             output.push(")");
     }
@@ -428,7 +444,7 @@ export class IdentifierReferenceNode extends ExpressionNode {
         return ctx.ResolveBinding(this.value);
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push(this.value);
     }
 
@@ -493,7 +509,7 @@ export class NullLiteralNode extends ExpressionNode {
         return new NormalCompletion(new JSNull());
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push("null");
     }
 
@@ -522,7 +538,7 @@ export class TrueNode extends ExpressionNode {
         return new NormalCompletion(new JSBoolean(true));
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push("true");
     }
 
@@ -551,7 +567,7 @@ export class FalseNode extends ExpressionNode {
         return new NormalCompletion(new JSBoolean(false));
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push("false");
     }
 
@@ -587,15 +603,11 @@ export class NumericLiteralNode extends ExpressionNode {
         return new NormalCompletion(new JSNumber(this.value));
     }
 
-    public cpsTransform(labels: string[]): CallNode {
-        const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
-        const argsList = new ArgumentListNode(new Range(0,0),[this]);
-        const args = new ArgumentsNode(new Range(0,0),argsList);
-        const call = new CallNode(new Range(0,0),returnContFun,args);
-        return call;
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
+        return makeReturnContCall(this);
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push(""+this.value);
     }
 
@@ -632,7 +644,7 @@ export class StringLiteralNode extends ExpressionNode {
         return new NormalCompletion(new JSString(this.value));
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push(JSON.stringify(this.value));
     }
 
@@ -1394,20 +1406,20 @@ export class CallNode extends ExpressionNode {
         return EvaluateDirectCall(ctx, func, thisValue, args, tailCall);
     }
 
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         let prec = this.precedence;
         if (this.precedence < outerPrecedence) {
             output.push("(");
             prec = 0;
         }
-        this.fun.prettyPrintExpr(this.precedence,output);
+        this.fun.prettyPrintExpr(this.precedence,indent,output);
         // this.args.prettyPrint(output);
         output.push("(");
         for (let i = 0; i < this.args.items.elements.length; i++) {
             const element = this.args.items.elements[i];
             if (element instanceof SpreadElementNode)
                 throw new Error("Pretty printing not implemented for SpreadElementNode");
-            element.prettyPrintExpr(Precedence.Assignment,output);
+            element.prettyPrintExpr(Precedence.Assignment,indent,output);
             if (i+1 < this.args.items.elements.length)
                 output.push(",");
         }
@@ -2181,7 +2193,7 @@ export class AddNode extends BinaryNode {
         return new NormalCompletion(result);
     }
 
-    public cpsTransform(labels: string[]): CallNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
         const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
         const argsList = new ArgumentListNode(new Range(0,0),[this]);
         const args = new ArgumentsNode(new Range(0,0),argsList);

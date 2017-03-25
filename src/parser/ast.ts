@@ -58,7 +58,7 @@ export abstract class ASTNode {
     public abstract get children(): (ASTNode | null)[];
     public get label(): string { return this.kind; }
 
-    public cpsTransform(labels: string[]): ASTNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ASTNode {
         throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
     }
 
@@ -72,16 +72,16 @@ export abstract class ExpressionNode extends ASTNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
     public abstract get precedence(): number;
-    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+    public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         throw new Error((<any>this).constructor.name+".prettyPrintExpr() not implemented");
     }
 
-    public cpsTransform(labels: string[]): ExpressionNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ExpressionNode {
         throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
     }
 
     public prettyPrint(prefix: string, indent: string, output: string[]) {
-        this.prettyPrintExpr(0,output);
+        this.prettyPrintExpr(0,indent,output);
     }
 }
 
@@ -102,7 +102,7 @@ export abstract class StatementListItemNode extends ASTNode {
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
 
-    public cpsTransform(labels: string[]): StatementListItemNode {
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): StatementListItemNode {
         throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
     }
 }
