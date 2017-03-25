@@ -25,6 +25,7 @@ import {
     CannotConvertError,
 } from "../parser/ast";
 import {
+    Precedence,
     ExpressionNode_fromGeneric,
     PropertyNameType,
     evaluatePropertyName,
@@ -337,6 +338,10 @@ export class FunctionExpressionNode extends ExpressionNode {
         this.body = body;
     }
 
+    public get precedence(): number {
+        return Precedence.Primary;
+    }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
@@ -591,6 +596,8 @@ export class ArrowFunctionNode extends ExpressionNode {
     public readonly params: ArrowFunctionParamsType;
     public readonly body: ArrowFunctionBodyType;
 
+    public level(): number { return 2; }
+
     public constructor(
         range: Range,
         params: ArrowFunctionParamsType,
@@ -599,6 +606,10 @@ export class ArrowFunctionNode extends ExpressionNode {
         super(range,"ArrowFunction");
         this.params = params;
         this.body = body;
+    }
+
+    public get precedence(): number {
+        return Precedence.Assignment;
     }
 
     public get children(): (ASTNode | null)[] {
@@ -999,6 +1010,10 @@ export class GeneratorExpressionNode extends ExpressionNode {
         this.body = body;
     }
 
+    public get precedence(): number {
+        return Precedence.Primary;
+    }
+
     public get children(): (ASTNode | null)[] {
         return [this.ident,this.params,this.body];
     }
@@ -1020,9 +1035,15 @@ export class YieldExprNode extends ExpressionNode {
     public _type_YieldExprNode: any;
     public readonly expr: ExpressionNode;
 
+    public level(): number { return 2; }
+
     public constructor(range: Range, expr: ExpressionNode) {
         super(range,"YieldExpr");
         this.expr = expr;
+    }
+
+    public get precedence(): number {
+        return Precedence.Assignment;
     }
 
     public get children(): (ASTNode | null)[] {
@@ -1049,6 +1070,10 @@ export class YieldStarNode extends ExpressionNode {
         this.expr = expr;
     }
 
+    public get precedence(): number {
+        return Precedence.Assignment;
+    }
+
     public get children(): (ASTNode | null)[] {
         return [this.expr];
     }
@@ -1069,6 +1094,10 @@ export class YieldNothingNode extends ExpressionNode {
 
     public constructor(range: Range) {
         super(range,"YieldNothing");
+    }
+
+    public get precedence(): number {
+        return Precedence.Assignment;
     }
 
     public get children(): (ASTNode | null)[] {
@@ -1158,6 +1187,10 @@ export class ClassExpressionNode extends ExpressionNode {
         super(range,"ClassExpression");
         this.ident = ident;
         this.tail = tail;
+    }
+
+    public get precedence(): number {
+        return Precedence.Primary;
     }
 
     public get children(): (ASTNode | null)[] {
