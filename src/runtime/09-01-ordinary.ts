@@ -342,9 +342,13 @@ export function ValidateAndApplyPropertyDescriptor(
         }
         else {
             // existingDesc is an AccessorDescriptor
-            if (Desc.__get__ !== undefined)
+            // FIXME: Not sure about the way we're checking undefinedness here. It seems the type
+            // should allow either undefined or JSUndefined only. Also, how does one clear the get or
+            // set attribute of a property descriptor, if called from JS using
+            // Object.defineProperty()?
+            if ((Desc.__get__ !== undefined) && !(Desc.__get__ instanceof JSUndefined))
                 existingDesc.__get__ = Desc.__get__;
-            if (Desc.__set__ !== undefined)
+            if ((Desc.__set__ !== undefined) && !(Desc.__set__ instanceof JSUndefined))
                 existingDesc.__set__ = Desc.__set__;
         }
     }
@@ -395,7 +399,7 @@ function JSObject_Get(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSV
     }
     else {
         const getter = desc.__get__;
-        if (getter === undefined)
+        if (getter instanceof JSUndefined)
             return new NormalCompletion(new JSUndefined());
         return Call(realm,getter,Receiver,[]);
     }
@@ -454,7 +458,7 @@ function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, R
     }
     else {
         const setter = ownDesc.__set__;
-        if (setter === undefined)
+        if (setter instanceof JSUndefined)
             return new NormalCompletion(false);
         const setterResultComp = Call(realm,setter,Receiver,[V]);
         if (!(setterResultComp instanceof NormalCompletion))
