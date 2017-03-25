@@ -2232,10 +2232,12 @@ export class AddNode extends BinaryNode {
         const leftSymRef = new IdentifierReferenceNode(new Range(0,0),leftSym);
         const rightSymRef = new IdentifierReferenceNode(new Range(0,0),rightSym);
 
+        // const rightTransform = this.right.cpsTransform(throwCont,)
+
         const contExpr = new AddNode(new Range(0,0),leftSymRef,rightSymRef);
-        const contExprStmt = new ExpressionStatementNode(new Range(0,0),contExpr);
-        const contStmtList = new StatementListNode(new Range(0,0),[contExprStmt]);
-        const result1 = makeCall("lift", [this.right, makeArrow([rightSym], contStmtList)]);
+        // const contExprStmt = new ExpressionStatementNode(new Range(0,0),contExpr);
+        // const contStmtList = new StatementListNode(new Range(0,0),[contExprStmt]);
+        const result1 = makeCall("lift", [this.right, makeArrow([rightSym], contExpr)]);
 
 
 
