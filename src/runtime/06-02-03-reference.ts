@@ -211,7 +211,7 @@ export function PutValue(realm: Realm, Vcomp: Completion<JSValue | Reference>, W
 
         // d. If succeeded is false and IsStrictReference(V) is true, throw a TypeError exception.
         if (!succeeded && IsStrictReference(realm,V))
-            return realm.throwTypeError();
+            return realm.throwTypeError("Cannot set property which only has a getter");
 
         // e. Return.
         return new NormalCompletion(undefined);

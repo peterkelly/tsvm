@@ -48,6 +48,7 @@ import {
     Realm,
     ValueIterator,
     DataDescriptor,
+    AccessorDescriptor,
 } from "../runtime/datatypes";
 import {
     DefinePropertyOrThrow,
@@ -762,7 +763,47 @@ export class GetterNode extends MethodDefinitionNode {
 
     // ES6 Section 14.3.9: Runtime Semantics: PropertyDefinitionEvaluation
     public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
-        throw new Error("GetterNode.propertyDefinitionEvaluation() not implemented");
+        // 1. Let propKey be the result of evaluating PropertyName.
+        const propKeyComp = evaluatePropertyName(ctx,this.name);
+
+        // 2. ReturnIfAbrupt(propKey).
+        if (!(propKeyComp instanceof NormalCompletion))
+            return propKeyComp;
+        const propKey = propKeyComp.value;
+
+        // 3. If the function code for this MethodDefinition is strict mode code, let strict be true. Otherwise let strict be false.
+        const strict = this.body.strict;
+
+        // 4. Let scope be the running execution context’s LexicalEnvironment.
+        const scope = ctx.lexicalEnvironment;
+
+        // 5. Let formalParameterList be the production FormalParameters : [empty]
+        const formalParameterList = new FormalParameters1Node(new Range(0,0));
+
+        // 6. Let closure be FunctionCreate(Method, formalParameterList, FunctionBody, scope, strict).
+        const closureComp = FunctionCreate(ctx.realm,InitializeKind.Method,formalParameterList,this.body,scope,strict);
+        if (!(closureComp instanceof NormalCompletion))
+            return closureComp;
+        const closure = closureComp.value;
+
+        // 7. Perform MakeMethod(closure, object).
+        MakeMethod(closure,object);
+
+        // 8. Perform SetFunctionName(closure, propKey, "get").
+        const setComp = SetFunctionName(ctx.realm,closure,propKey,"get");
+        if (!(setComp instanceof NormalCompletion))
+            return setComp;
+
+        // 9. Let desc be the PropertyDescriptor{[[Get]]: closure, [[Enumerable]]: enumerable, [[Configurable]]: true}
+        const desc = new AccessorDescriptor({
+            enumerable: enumerable,
+            configurable: true,
+            __get__: closure,
+            __set__: new JSUndefined(),
+        });
+
+        // 10. Return DefinePropertyOrThrow(object, propKey, desc).
+        return DefinePropertyOrThrow(ctx.realm,object,propKey,desc);
     }
 
     public static fromGeneric(node: ASTNode | null): GetterNode {
@@ -797,7 +838,46 @@ export class SetterNode extends MethodDefinitionNode {
 
     // ES6 Section 14.3.9: Runtime Semantics: PropertyDefinitionEvaluation
     public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
-        throw new Error("SetterNode.propertyDefinitionEvaluation() not implemented");
+        // 1. Let propKey be the result of evaluating PropertyName.
+        const propKeyComp = evaluatePropertyName(ctx,this.name);
+
+        // 2. ReturnIfAbrupt(propKey).
+        if (!(propKeyComp instanceof NormalCompletion))
+            return propKeyComp;
+        const propKey = propKeyComp.value;
+
+        // 3. If the function code for this MethodDefinition is strict mode code, let strict be true. Otherwise let strict be false.
+        const strict = this.body.strict;
+
+        // 4. Let scope be the running execution context’s LexicalEnvironment.
+        const scope = ctx.lexicalEnvironment;
+
+        // 5. Let closure be FunctionCreate(Method, PropertySetParameterList, FunctionBody, scope, strict).
+        const list = new FormalParameterListNode(this.name.range,[this.param]);
+        const params = new FormalParameters3Node(list.range,list);
+        const closureComp = FunctionCreate(ctx.realm,InitializeKind.Method,params,this.body,scope,strict);
+        if (!(closureComp instanceof NormalCompletion))
+            return closureComp;
+        const closure = closureComp.value;
+
+        // 6. Perform MakeMethod(closure, object).
+        MakeMethod(closure,object);
+
+        // 7. Perform SetFunctionName(closure, propKey, "set").
+        const setComp = SetFunctionName(ctx.realm,closure,propKey,"set");
+        if (!(setComp instanceof NormalCompletion))
+            return setComp;
+
+        // 8. Let desc be the PropertyDescriptor{[[Set]]: closure, [[Enumerable]]: enumerable, [[Configurable]]: true}
+        const desc = new AccessorDescriptor({
+            enumerable: enumerable,
+            configurable: true,
+            __get__: new JSUndefined(),
+            __set__: closure,
+        });
+
+        // 9. Return DefinePropertyOrThrow(object, propKey, desc).
+        return DefinePropertyOrThrow(ctx.realm,object,propKey,desc);
     }
 
     public static fromGeneric(node: ASTNode | null): SetterNode {
