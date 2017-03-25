@@ -21,6 +21,7 @@ import {
     GenericNumberNode,
     check,
     CannotConvertError,
+    BindingIdentifierNode,
 } from "../parser/ast";
 import {
     MethodDefinitionNode,
@@ -31,7 +32,14 @@ import {
     YieldStarNode,
     YieldNothingNode,
     ClassExpressionNode,
+    FormalParametersNode,
+    FormalParameters3Node,
+    FormalParameterListNode,
 } from "./functions";
+import {
+    StatementListNode,
+    ExpressionStatementNode,
+} from "./statements";
 import {
     JSValue,
     JSPropertyKey,
@@ -134,6 +142,26 @@ export enum Precedence {
     NewOrCall      = 17,
     Member         = 18,
     Primary        = 19,
+}
+
+let nextSymId = 0;
+export function gensym(): string {
+    return "S"+nextSymId++;
+}
+
+export function makeArrow(paramNames: string[], body: ExpressionNode | StatementListNode): ArrowFunctionNode {
+    const paramNodes: BindingIdentifierNode[] = [];
+    for (const name of paramNames)
+        paramNodes.push(new BindingIdentifierNode(new Range(0,0),name));
+    const paramsList = new FormalParameterListNode(new Range(0,0),paramNodes);
+    const paramsNode = new FormalParameters3Node(new Range(0,0),paramsList);
+
+    if (body instanceof ExpressionNode) {
+        const contExprStmt = new ExpressionStatementNode(new Range(0,0),body);
+        body = new StatementListNode(new Range(0,0),[contExprStmt]);
+    }
+
+    return new ArrowFunctionNode(new Range(0,0),paramsNode,body);
 }
 
 export function makeCall(name: string, exprs: ExpressionNode[]): CallNode {
@@ -2194,11 +2222,31 @@ export class AddNode extends BinaryNode {
     }
 
     public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
-        const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
-        const argsList = new ArgumentListNode(new Range(0,0),[this]);
-        const args = new ArgumentsNode(new Range(0,0),argsList);
-        const call = new CallNode(new Range(0,0),returnContFun,args);
-        return call;
+        const leftSym = gensym();
+        const rightSym = gensym();
+
+        const leftSymRef = new IdentifierReferenceNode(new Range(0,0),leftSym);
+        const rightSymRef = new IdentifierReferenceNode(new Range(0,0),rightSym);
+
+        const contExpr = new AddNode(new Range(0,0),leftSymRef,rightSymRef);
+        const contExprStmt = new ExpressionStatementNode(new Range(0,0),contExpr);
+        const contStmtList = new StatementListNode(new Range(0,0),[contExprStmt]);
+        const result1 = makeCall("lift", [this.right, makeArrow([rightSym], contStmtList)]);
+
+
+
+        const result2 = makeCall("lift", [this.left, makeArrow([leftSym], result1)]);
+        return result2;
+
+        // const contBody2 = new AddNode(new Range(0,0),leftSymRef,rightSymRef);
+        // const contArrow2 = makeCall("returnCont",[contBody2]);
+        // return contArrow2;
+
+        // const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
+        // const argsList = new ArgumentListNode(new Range(0,0),[this]);
+        // const args = new ArgumentsNode(new Range(0,0),argsList);
+        // const call = new CallNode(new Range(0,0),returnContFun,args);
+        // return call;
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {

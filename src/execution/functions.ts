@@ -641,8 +641,8 @@ export class ArrowFunctionNode extends ExpressionNode {
         output.push(") => ");
         if (this.body instanceof StatementListNode) {
             output.push("{\n");
-            this.body.prettyPrint(indent,indent,output);
-            output.push("}");
+            this.body.prettyPrint(indent+"    ",indent+"    ",output);
+            output.push(indent+"}");
         }
         else {
             this.body.prettyPrintExpr(0,indent,output);
