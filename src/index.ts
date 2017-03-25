@@ -21,6 +21,7 @@ import { ModuleNode } from "./execution/modules";
 // import { compileModule } from "./parser/compiler";
 import { evalModule } from "./execution/interpreter";
 import { RealmImpl } from "./runtime/08-02-realm";
+import { cpsTransform } from "./cps";
 
 type CommandFunction = (input: string) => string;
 type CommandSet = { [name: string]: CommandFunction };
@@ -321,6 +322,20 @@ function execute(relFilename: string) {
     }
 }
 
+function cps(relFilename: string) {
+    const absFilename = path.resolve(process.cwd(),relFilename);
+    const content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
+    const { input } = splitTestData(content);
+    const p = new Parser(input);
+    const root = parseModule(p);
+    p.skipWhitespace();
+    if (p.pos < p.len)
+        throw new ParseError(p,p.pos,"Expected end of file");
+    const realm = new RealmImpl();
+    const typedRoot = ModuleNode.fromGeneric(root,realm);
+    cpsTransform(typedRoot);
+}
+
 function printGrammar(): void {
     const components: string[] = [];
     grm.dump((str: string) => components.push(str));
@@ -341,6 +356,10 @@ function main(): void {
     else if ((i < argc) && (argv[i] == "execute")) {
         i++;
         execute(argv[i]);
+    }
+    else if ((i < argc) && (argv[i] == "cps")) {
+        i++;
+        cps(argv[i]);
     }
     else if ((i < argc) && (argv[i] == "gentest")) {
         i++;

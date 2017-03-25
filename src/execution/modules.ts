@@ -232,6 +232,13 @@ export class ModuleItemListNode extends ASTNode {
         return new NormalCompletion(value);
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        for (const element of this.elements) {
+            element.prettyPrint(prefix,indent,output);
+            prefix = indent;
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): ModuleItemListNode {
         const list = check.list(node);
         const elements: ModuleItemType[] = [];
@@ -487,6 +494,10 @@ export class ModuleNode extends ASTNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
         return this.body.evaluate(ctx);
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        this.body.prettyPrint(prefix,indent,output);
     }
 
     public static fromGeneric(node: ASTNode | null, realm: Realm): ModuleNode {

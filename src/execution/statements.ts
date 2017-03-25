@@ -408,6 +408,13 @@ export class StatementListNode extends ASTNode {
         return new NormalCompletion(new Empty());
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        for (const element of this.elements) {
+            element.prettyPrint(prefix,indent,output);
+            prefix = indent;
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): StatementListNode {
         const list = check.list(node);
         const elements: StatementListItemNode[] = [];
@@ -523,6 +530,12 @@ export class BlockNode extends StatementNode {
         return blockValueComp;
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+"{\n");
+        this.statements.prettyPrint(indent+"    ",indent+"    ",output);
+        output.push(indent+"}\n");
+    }
+
     public static fromGeneric(node: ASTNode | null): BlockNode {
         node = check.node(node,"Block",1);
         const statements = StatementListNode.fromGeneric(node.children[0]);
@@ -621,6 +634,17 @@ export class BindingListNode extends ASTNode {
         return result;
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        for (let i = 0; i < this.elements.length; i++) {
+            const element = this.elements[i];
+            element.prettyPrint(prefix,indent,output);
+            prefix = indent;
+            if (i+1 < this.elements.length)
+                output.push(", ");
+            prefix = "";
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): BindingListNode {
         const list = check.list(node);
         const elements: LexicalBindingNode[] = [];
@@ -677,6 +701,12 @@ export class LetNode extends LexicalDeclarationNode {
         const bindings = BindingListNode.fromGeneric(node.children[0]);
         return new LetNode(node.range,bindings);
     }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+"let ");
+        this.bindings.prettyPrint("",indent+"    ",output);
+        output.push(";\n");
+    }
 }
 
 export class ConstNode extends LexicalDeclarationNode {
@@ -689,6 +719,12 @@ export class ConstNode extends LexicalDeclarationNode {
     // ES6 Section 13.3.1.3: Static Semantics: IsConstantDeclaration
     public isConstantDeclaration(): boolean {
         return true;
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+"const ");
+        this.bindings.prettyPrint("",indent+"    ",output);
+        output.push(";\n");
     }
 
     public static fromGeneric(node: ASTNode | null): ConstNode {
@@ -789,6 +825,14 @@ export class LexicalIdentifierBindingNode extends LexicalBindingNode {
         }
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+this.identifier.value);
+        if (this.initializer != null) {
+            output.push(" = ");
+            this.initializer.prettyPrint("",indent,output);
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): LexicalIdentifierBindingNode {
         node = check.node(node,"LexicalIdentifierBinding",2);
         const identifier = BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -879,6 +923,17 @@ export class VariableDeclarationListNode extends ASTNode {
         return next;
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        for (let i = 0; i < this.elements.length; i++) {
+            const element = this.elements[i];
+            element.prettyPrint(prefix,indent,output);
+            prefix = indent;
+            if (i+1 < this.elements.length)
+                output.push(", ");
+            prefix = "";
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): VariableDeclarationListNode {
         const list = check.list(node);
         const elements: VarBindingNode[] = [];
@@ -927,6 +982,12 @@ export class VarNode extends StatementNode {
 
         // 3. Return NormalCompletion( empty).
         return new NormalCompletion(new Empty());
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+"var ");
+        this.declarations.prettyPrint("",indent+"    ",output);
+        output.push(";\n");
     }
 
     public static fromGeneric(node: ASTNode | null): VarNode {
@@ -1030,6 +1091,14 @@ export class VarIdentifierNode extends VarBindingNode {
         // in the VariableDeclaration is the same as a property name of the binding object of the
         // with statement’s object Environment Record, then step 7 will assign value to the property
         // instead of assigning to the VariableEnvironment binding of the Identifier.
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+this.identifier.value);
+        if (this.initializer != null) {
+            output.push(" = ");
+            this.initializer.prettyPrint("",indent,output);
+        }
     }
 
     public static fromGeneric(node: ASTNode | null): VarIdentifierNode {
@@ -1444,6 +1513,12 @@ export class ExpressionStatementNode extends StatementNode {
             return new NormalCompletion(result);
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix);
+        this.expr.prettyPrint(prefix,indent,output);
+        output.push(";\n");
+    }
+
     public static fromGeneric(node: ASTNode | null): ExpressionStatementNode {
         node = check.node(node,"ExpressionStatement",1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
@@ -1561,6 +1636,29 @@ export class IfStatementNode extends StatementNode {
         }
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+"if (");
+        this.condition.prettyPrint("",indent+"    ",output);
+        if (this.trueBranch instanceof BlockNode) {
+            output.push(") ");
+            this.trueBranch.prettyPrint("",indent,output);
+        }
+        else {
+            output.push(")\n");
+            this.trueBranch.prettyPrint(indent+"    ",indent+"    ",output);
+        }
+        if (this.falseBranch != null) {
+            if (this.falseBranch instanceof BlockNode) {
+                output.push(indent+"else ");
+                this.falseBranch.prettyPrint("",indent,output);
+            }
+            else {
+                output.push(indent+"else\n");
+                this.falseBranch.prettyPrint(indent+"    ",indent+"    ",output);
+            }
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): IfStatementNode {
         node = check.node(node,"IfStatement",3);
         const condition = ExpressionNode_fromGeneric(node.children[0]);
@@ -1636,6 +1734,20 @@ export class DoStatementNode extends BreakableStatementNode {
             if (!(boolValueComp.value.booleanValue))
                 return new NormalCompletion(V);
         }
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        if (this.body instanceof BlockNode) {
+            output.push("do ");
+            this.body.prettyPrint("",indent,output);
+        }
+        else {
+            output.push("do\n");
+            this.body.prettyPrint(indent+"    ",indent+"    ",output);
+        }
+        output.push(prefix+"while (");
+        this.condition.prettyPrint("",indent+"    ",output);
+        output.push(");\n");
     }
 
     public static fromGeneric(node: ASTNode | null): DoStatementNode {
@@ -1717,6 +1829,19 @@ export class WhileStatementNode extends BreakableStatementNode {
 
             // g. If stmt.[[value]] is not empty, let V = stmt.[[value]].
             // TODO
+        }
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+"while (");
+        this.condition.prettyPrint("",indent+"    ",output);
+        if (this.body instanceof BlockNode) {
+            output.push(") ");
+            this.body.prettyPrint("",indent,output);
+        }
+        else {
+            output.push(")\n");
+            this.body.prettyPrint(indent+"    ",indent+"    ",output);
         }
     }
 
@@ -2315,6 +2440,17 @@ export class ReturnStatementNode extends StatementNode {
         }
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        if (this.expr != null) {
+            output.push(prefix+"return ");
+            this.expr.prettyPrint(prefix,indent+"    ",output);
+            output.push(";\n");
+        }
+        else {
+            output.push(prefix+"return;\n");
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): ReturnStatementNode {
         node = check.node(node,"ReturnStatement",1);
         const expr = (node.children[0] === null) ? null : ExpressionNode_fromGeneric(node.children[0]);
@@ -2854,6 +2990,14 @@ export class TryStatementNode extends StatementNode {
         throw new Error("TryStatementNode.evaluate not implemented");
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        this.tryNode.prettyPrint(prefix+"try ",indent,output);
+        if (this.catchNode != null)
+            this.catchNode.prettyPrint(indent,indent,output);
+        if (this.finallyNode != null)
+            this.finallyNode.prettyPrint(indent,indent,output);
+    }
+
     public static fromGeneric(node: ASTNode | null): TryStatementNode {
         node = check.node(node,"TryStatement",3);
         const tryNode = BlockNode.fromGeneric(node.children[0]);
@@ -2886,6 +3030,11 @@ export class CatchNode extends ASTNode {
     // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.block.varScopedDeclarations(out);
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        this.param.prettyPrint("catch (",indent,output);
+        this.block.prettyPrint(") ",indent,output);
     }
 
     public static fromGeneric(node: ASTNode | null): CatchNode {
@@ -2921,6 +3070,10 @@ export class FinallyNode extends ASTNode {
     // ES6 Section 13.15.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         this.block.varScopedDeclarations(out);
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        this.block.prettyPrint("finally ",indent,output);
     }
 
     public static fromGeneric(node: ASTNode | null): FinallyNode {

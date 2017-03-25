@@ -378,11 +378,26 @@ export abstract class BinaryNode extends ExpressionNode {
         this._children = [left,right];
     }
 
+    public abstract get operator(): string;
+
     public get children(): (ASTNode | null)[] {
         return this._children;
     }
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
+
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        let prec = this.precedence;
+        if (this.precedence < outerPrecedence) {
+            output.push("(");
+            prec = 0;
+        }
+        this.left.prettyPrintExpr(prec,output);
+        output.push(" "+this.operator+" ");
+        this.right.prettyPrintExpr(prec,output);
+        if (this.precedence < outerPrecedence)
+            output.push(")");
+    }
 }
 
 // ES6 Section 12.1: Identifiers
@@ -411,6 +426,10 @@ export class IdentifierReferenceNode extends ExpressionNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         return ctx.ResolveBinding(this.value);
+    }
+
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        output.push(this.value);
     }
 
     public static fromGeneric(node: ASTNode | null): IdentifierReferenceNode {
@@ -474,6 +493,10 @@ export class NullLiteralNode extends ExpressionNode {
         return new NormalCompletion(new JSNull());
     }
 
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        output.push("null");
+    }
+
     public static fromGeneric(node: ASTNode | null): NullLiteralNode {
         node = check.node(node,"NullLiteral",0);
         return new NullLiteralNode(node.range);
@@ -499,6 +522,10 @@ export class TrueNode extends ExpressionNode {
         return new NormalCompletion(new JSBoolean(true));
     }
 
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        output.push("true");
+    }
+
     public static fromGeneric(node: ASTNode | null): TrueNode {
         node = check.node(node,"True",0);
         return new TrueNode(node.range);
@@ -522,6 +549,10 @@ export class FalseNode extends ExpressionNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         return new NormalCompletion(new JSBoolean(false));
+    }
+
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        output.push("false");
     }
 
     public static fromGeneric(node: ASTNode | null): FalseNode {
@@ -556,6 +587,10 @@ export class NumericLiteralNode extends ExpressionNode {
         return new NormalCompletion(new JSNumber(this.value));
     }
 
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        output.push(""+this.value);
+    }
+
     public static fromGeneric(node: ASTNode | null): NumericLiteralNode {
         if ((node === null) || (node.kind !== "NumericLiteral") || !(node instanceof GenericNumberNode))
             throw new CannotConvertError("NumericLiteral",node);
@@ -587,6 +622,10 @@ export class StringLiteralNode extends ExpressionNode {
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         return new NormalCompletion(new JSString(this.value));
+    }
+
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        output.push(JSON.stringify(this.value));
     }
 
     public static fromGeneric(node: ASTNode | null): StringLiteralNode {
@@ -1347,6 +1386,28 @@ export class CallNode extends ExpressionNode {
         return EvaluateDirectCall(ctx, func, thisValue, args, tailCall);
     }
 
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        let prec = this.precedence;
+        if (this.precedence < outerPrecedence) {
+            output.push("(");
+            prec = 0;
+        }
+        this.fun.prettyPrintExpr(this.precedence,output);
+        // this.args.prettyPrint(output);
+        output.push("(");
+        for (let i = 0; i < this.args.items.elements.length; i++) {
+            const element = this.args.items.elements[i];
+            if (element instanceof SpreadElementNode)
+                throw new Error("Pretty printing not implemented for SpreadElementNode");
+            element.prettyPrintExpr(Precedence.Assignment,output);
+            if (i+1 < this.args.items.elements.length)
+                output.push(",");
+        }
+        output.push(")");
+        if (this.precedence < outerPrecedence)
+            output.push(")");
+    }
+
     public static fromGeneric(node: ASTNode | null): CallNode {
         node = check.node(node,"Call",2);
         const fun = ExpressionNode_fromGeneric(node.children[0]);
@@ -1951,6 +2012,10 @@ export class MultiplyNode extends MultiplicativeNode {
         super(range,"Multiply",left,right);
     }
 
+    public get operator(): string {
+        return "*";
+    }
+
     protected primitiveEvaluate(leftValue: number, rightValue: number): number {
         return pr_double_mul(leftValue,rightValue);
     }
@@ -1970,6 +2035,10 @@ export class DivideNode extends MultiplicativeNode {
         super(range,"Divide",left,right);
     }
 
+    public get operator(): string {
+        return "/";
+    }
+
     protected primitiveEvaluate(leftValue: number, rightValue: number): number {
         return pr_double_div(leftValue,rightValue);
     }
@@ -1987,6 +2056,10 @@ export class ModuloNode extends MultiplicativeNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"Modulo",left,right);
+    }
+
+    public get operator(): string {
+        return "%";
     }
 
     protected primitiveEvaluate(leftValue: number, rightValue: number): number {
@@ -2012,6 +2085,10 @@ export class AddNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Additive;
+    }
+
+    public get operator(): string {
+        return "+";
     }
 
     // ES6 Section 12.7.3.1: The Addition operator ( + ) - Runtime Semantics: Evaluation
@@ -2115,6 +2192,10 @@ export class SubtractNode extends BinaryNode {
         return Precedence.Additive;
     }
 
+    public get operator(): string {
+        return "-";
+    }
+
     // ES6 Section 12.7.4.1: The Subtraction Operator ( - ) - Runtime Semantics: Evaluation
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -2182,6 +2263,10 @@ export class LeftShiftNode extends BinaryNode {
         return Precedence.Shift;
     }
 
+    public get operator(): string {
+        return "<<";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("LeftShiftNode.evaluate not implemented");
     }
@@ -2203,6 +2288,10 @@ export class SignedRightShiftNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Shift;
+    }
+
+    public get operator(): string {
+        return ">>";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -2228,6 +2317,10 @@ export class UnsignedRightShiftNode extends BinaryNode {
         return Precedence.Shift;
     }
 
+    public get operator(): string {
+        return ">>>";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("UnsignedRightShiftNode.evaluate not implemented");
     }
@@ -2251,6 +2344,10 @@ export class LessThanNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Relational;
+    }
+
+    public get operator(): string {
+        return "<";
     }
 
     // ES6 Section 12.9.3 Runtime Semantics: Evaluation
@@ -2309,6 +2406,10 @@ export class GreaterThanNode extends BinaryNode {
         return Precedence.Relational;
     }
 
+    public get operator(): string {
+        return ">";
+    }
+
     // ES6 Section 12.9.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         // 1. Let lref be the result of evaluating RelationalExpression.
@@ -2363,6 +2464,10 @@ export class LessEqualNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Relational;
+    }
+
+    public get operator(): string {
+        return "<=";
     }
 
     // ES6 Section 12.9.3 Runtime Semantics: Evaluation
@@ -2423,6 +2528,10 @@ export class GreaterEqualNode extends BinaryNode {
         return Precedence.Relational;
     }
 
+    public get operator(): string {
+        return ">=";
+    }
+
     // ES6 Section 12.9.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         // 1. Let lref be the result of evaluating RelationalExpression.
@@ -2481,6 +2590,10 @@ export class InstanceOfNode extends BinaryNode {
         return Precedence.Relational;
     }
 
+    public get operator(): string {
+        return "instanceof";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("InstanceOfNode.evaluate not implemented");
     }
@@ -2502,6 +2615,10 @@ export class InNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Relational;
+    }
+
+    public get operator(): string {
+        return "in";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -2527,6 +2644,10 @@ export class AbstractEqualsNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Equality;
+    }
+
+    public get operator(): string {
+        return "==";
     }
 
     // ES6 Section 12.10.3 Runtime Semantics: Evaluation
@@ -2579,6 +2700,10 @@ export class AbstractNotEqualsNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Equality;
+    }
+
+    public get operator(): string {
+        return "!=";
     }
 
     // ES6 Section 12.10.3 Runtime Semantics: Evaluation
@@ -2637,6 +2762,10 @@ export class StrictEqualsNode extends BinaryNode {
         return Precedence.Equality;
     }
 
+    public get operator(): string {
+        return "===";
+    }
+
     // ES6 Section 12.10.3 Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         // 1. Let lref be the result of evaluating EqualityExpression.
@@ -2683,6 +2812,10 @@ export class StrictNotEqualsNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Equality;
+    }
+
+    public get operator(): string {
+        return "!==";
     }
 
     // ES6 Section 12.10.3 Runtime Semantics: Evaluation
@@ -2737,6 +2870,10 @@ export class BitwiseANDNode extends BinaryNode {
         return Precedence.BitwiseAND;
     }
 
+    public get operator(): string {
+        return "&";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("BitwiseANDNode.evaluate not implemented");
     }
@@ -2758,6 +2895,10 @@ export class BitwiseXORNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.BitwiseXOR;
+    }
+
+    public get operator(): string {
+        return "^";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -2783,6 +2924,10 @@ export class BitwiseORNode extends BinaryNode {
         return Precedence.BitwiseOR;
     }
 
+    public get operator(): string {
+        return "|";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("BitwiseORNode.evaluate not implemented");
     }
@@ -2806,6 +2951,10 @@ export class LogicalANDNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.LogicalAND;
+    }
+
+    public get operator(): string {
+        return "&&";
     }
 
     // ES6 Section 12.12.3: Binary Logical Operators: Runtime Semantics: Evaluation
@@ -2861,6 +3010,10 @@ export class LogicalORNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.LogicalOR;
+    }
+
+    public get operator(): string {
+        return "||";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -2959,6 +3112,10 @@ export class AssignNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return "=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         // 1. If LeftHandSideExpression is neither an ObjectLiteral nor an ArrayLiteral, then
         if (!(this.left instanceof ObjectLiteralNode) && !(this.left instanceof ArrayLiteralNode)) {
@@ -3023,6 +3180,10 @@ export class AssignMultiplyNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return "*=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("AssignMultiplyNode.evaluate not implemented");
     }
@@ -3044,6 +3205,10 @@ export class AssignDivideNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Assignment;
+    }
+
+    public get operator(): string {
+        return "/=";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -3069,6 +3234,10 @@ export class AssignModuloNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return "%=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("AssignModuloNode.evaluate not implemented");
     }
@@ -3090,6 +3259,10 @@ export class AssignAddNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Assignment;
+    }
+
+    public get operator(): string {
+        return "+=";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -3115,6 +3288,10 @@ export class AssignSubtractNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return "-=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("AssignSubtractNode.evaluate not implemented");
     }
@@ -3136,6 +3313,10 @@ export class AssignLeftShiftNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Assignment;
+    }
+
+    public get operator(): string {
+        return "<<=";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -3161,6 +3342,10 @@ export class AssignSignedRightShiftNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return ">>=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("AssignSignedRightShiftNode.evaluate not implemented");
     }
@@ -3182,6 +3367,10 @@ export class AssignUnsignedRightShiftNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Assignment;
+    }
+
+    public get operator(): string {
+        return ">>>=";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -3207,6 +3396,10 @@ export class AssignBitwiseANDNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return "&=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("AssignBitwiseANDNode.evaluate not implemented");
     }
@@ -3228,6 +3421,10 @@ export class AssignBitwiseXORNode extends BinaryNode {
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
         super(range,"AssignBitwiseXOR",left,right);
+    }
+
+    public get operator(): string {
+        return "^=";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -3253,6 +3450,10 @@ export class AssignBitwiseORNode extends BinaryNode {
         return Precedence.Assignment;
     }
 
+    public get operator(): string {
+        return "|=";
+    }
+
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         throw new Error("AssignBitwiseORNode.evaluate not implemented");
     }
@@ -3276,6 +3477,10 @@ export class CommaNode extends BinaryNode {
 
     public get precedence(): number {
         return Precedence.Comma;
+    }
+
+    public get operator(): string {
+        return ",";
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {

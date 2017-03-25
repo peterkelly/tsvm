@@ -57,6 +57,10 @@ export abstract class ASTNode {
     }
     public abstract get children(): (ASTNode | null)[];
     public get label(): string { return this.kind; }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        throw new Error((<any>this).constructor.name+".prettyPrint() not implemented");
+    }
 }
 
 export abstract class ExpressionNode extends ASTNode {
@@ -64,6 +68,13 @@ export abstract class ExpressionNode extends ASTNode {
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference>;
     public abstract get precedence(): number;
+    public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
+        throw new Error((<any>this).constructor.name+".prettyPrintExpr() not implemented");
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        this.prettyPrintExpr(0,output);
+    }
 }
 
 export abstract class StatementListItemNode extends ASTNode {
@@ -154,6 +165,10 @@ export class BindingIdentifierNode extends ASTNode {
         // SingleNameBinding : BindingIdentifier
         // 1. Return true.
         return true;
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix+this.value);
     }
 
     public static fromGeneric(node: ASTNode | null): BindingIdentifierNode {

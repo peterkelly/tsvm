@@ -163,6 +163,18 @@ export class FormalParameterListNode extends ASTNode {
         return new NormalCompletion(undefined);
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        for (let i = 0; i < this.elements.length; i++) {
+            const element = this.elements[i];
+            if (!(element instanceof BindingIdentifierNode)) {
+                throw new Error("Pretty printing non-identifier parameters not supported");
+            }
+            output.push(element.value);
+            if (i+1 < this.elements.length)
+                output.push(",");
+        }
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameterListNode {
         const list = check.list(node);
         const elements: FormalParameterListItemType[] = [];
@@ -311,6 +323,17 @@ export class FunctionDeclarationNode extends HoistableDeclarationNode implements
         return new NormalCompletion(new Empty());
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        if (this.ident != null)
+            output.push(prefix+"function "+this.ident.value+"(");
+        else
+            output.push(prefix+"function(\n");
+        this.params.prettyPrint("","",output);
+        output.push(") {\n");
+        this.body.prettyPrint(indent+"    ",indent+"    ",output);
+        output.push(indent+"}\n");
+    }
+
     public static fromGeneric(node: ASTNode | null): FunctionDeclarationNode {
         node = check.node(node,"FunctionDeclaration",3);
         const ident = (node.children[0] === null) ? null : BindingIdentifierNode.fromGeneric(node.children[0]);
@@ -427,6 +450,10 @@ export class FormalParameters1Node extends FormalParametersNode {
         return new NormalCompletion(undefined);
     }
 
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        output.push(prefix);
+    }
+
     public static fromGeneric(node: ASTNode | null): FormalParameters1Node {
         node = check.node(node,"FormalParameters1",0);
         return new FormalParameters1Node(node.range);
@@ -514,6 +541,10 @@ export class FormalParameters3Node extends FormalParametersNode {
     // ES6 Section 14.1.18 Runtime Semantics: IteratorBindingInitialization
     public iteratorBindingInitialization(iterator: ValueIterator, env: LexicalEnvironment): Completion<void> {
         return this.elements.iteratorBindingInitialization(iterator,env);
+    }
+
+    public prettyPrint(prefix: string, indent: string, output: string[]) {
+        this.elements.prettyPrint("",indent,output);
     }
 
     public static fromGeneric(node: ASTNode | null): FormalParameters3Node {
