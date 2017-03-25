@@ -162,6 +162,14 @@ export class ModuleItemListNode extends ASTNode {
         this.elements = elements;
     }
 
+    public cpsTransform(labels: string[]): ModuleItemListNode {
+        const transformedElements: ModuleItemType[] = [];
+        for (const element of this.elements) {
+            transformedElements.push(element.cpsTransform(labels));
+        }
+        return new ModuleItemListNode(new Range(0,0),transformedElements);
+    }
+
     public get children(): (ASTNode | null)[] {
         return this.elements;
     }
@@ -259,6 +267,11 @@ export class ModuleNode extends ASTNode {
         super(range,"Module");
         this.body = body;
         this.realm = realm;
+    }
+
+    public cpsTransform(labels: string[]): ModuleNode {
+        const transformedBody = this.body.cpsTransform(labels);
+        return new ModuleNode(new Range(0,0),transformedBody,this.realm);
     }
 
     public get children(): (ASTNode | null)[] {
@@ -560,6 +573,10 @@ export abstract class ImportNode extends ASTNode {
     }
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+
+    public cpsTransform(labels: string[]): ImportNode {
+        throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
+    }
 
     public static fromGeneric(node: ASTNode | null): ImportNode {
         node = check.nodeNotNull(node);
@@ -916,6 +933,10 @@ export abstract class ExportNode extends ASTNode {
     }
 
     public abstract evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty>;
+
+    public cpsTransform(labels: string[]): ExportNode {
+        throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
+    }
 
     public static fromGeneric(node: ASTNode | null): ExportNode {
         if (node === null)

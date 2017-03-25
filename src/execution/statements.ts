@@ -1513,6 +1513,11 @@ export class ExpressionStatementNode extends StatementNode {
             return new NormalCompletion(result);
     }
 
+    public cpsTransform(labels: string[]): ExpressionStatementNode {
+        const transformedExpr = this.expr.cpsTransform(labels);
+        return new ExpressionStatementNode(new Range(0,0),transformedExpr);
+    }
+
     public prettyPrint(prefix: string, indent: string, output: string[]) {
         output.push(prefix);
         this.expr.prettyPrint(prefix,indent,output);

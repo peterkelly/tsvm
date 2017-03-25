@@ -58,6 +58,10 @@ export abstract class ASTNode {
     public abstract get children(): (ASTNode | null)[];
     public get label(): string { return this.kind; }
 
+    public cpsTransform(labels: string[]): ASTNode {
+        throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
+    }
+
     public prettyPrint(prefix: string, indent: string, output: string[]) {
         throw new Error((<any>this).constructor.name+".prettyPrint() not implemented");
     }
@@ -70,6 +74,10 @@ export abstract class ExpressionNode extends ASTNode {
     public abstract get precedence(): number;
     public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
         throw new Error((<any>this).constructor.name+".prettyPrintExpr() not implemented");
+    }
+
+    public cpsTransform(labels: string[]): ExpressionNode {
+        throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
     }
 
     public prettyPrint(prefix: string, indent: string, output: string[]) {
@@ -93,6 +101,10 @@ export abstract class StatementListItemNode extends ASTNode {
 
     // ES6 Section 13.2.12 Static Semantics: VarScopedDeclarations
     public abstract varScopedDeclarations(out: VarScopedDeclaration[]): void;
+
+    public cpsTransform(labels: string[]): StatementListItemNode {
+        throw new Error((<any>this).constructor.name+".cpsTransform() not implemented");
+    }
 }
 
 export abstract class DeclarationNode extends StatementListItemNode implements LexicallyScopedDeclaration {

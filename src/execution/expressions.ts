@@ -587,6 +587,14 @@ export class NumericLiteralNode extends ExpressionNode {
         return new NormalCompletion(new JSNumber(this.value));
     }
 
+    public cpsTransform(labels: string[]): CallNode {
+        const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
+        const argsList = new ArgumentListNode(new Range(0,0),[this]);
+        const args = new ArgumentsNode(new Range(0,0),argsList);
+        const call = new CallNode(new Range(0,0),returnContFun,args);
+        return call;
+    }
+
     public prettyPrintExpr(outerPrecedence: number, output: string[]): void {
         output.push(""+this.value);
     }
@@ -2171,6 +2179,14 @@ export class AddNode extends BinaryNode {
         const resultNum = pr_double_add(lnum.numberValue,rnum.numberValue);
         const result = new JSNumber(resultNum);
         return new NormalCompletion(result);
+    }
+
+    public cpsTransform(labels: string[]): CallNode {
+        const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
+        const argsList = new ArgumentListNode(new Range(0,0),[this]);
+        const args = new ArgumentsNode(new Range(0,0),argsList);
+        const call = new CallNode(new Range(0,0),returnContFun,args);
+        return call;
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {
