@@ -1434,6 +1434,10 @@ export class CallNode extends ExpressionNode {
         return EvaluateDirectCall(ctx, func, thisValue, args, tailCall);
     }
 
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
+        return makeCall("lift", [this, returnCont]);
+    }
+
     public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         let prec = this.precedence;
         if (this.precedence < outerPrecedence) {
