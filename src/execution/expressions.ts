@@ -2238,27 +2238,11 @@ export class AddNode extends BinaryNode {
         const leftSymRef = new IdentifierReferenceNode(new Range(0,0),leftSym);
         const K = gencont();
 
-        // return this.left.cpsTransform(throwCont,makeArrow([leftSym],
-        //     this.right.cpsTransform(throwCont,makeArrow([rightSym],
-        //         makeCall("returnCont",[new AddNode(new Range(0,0),leftSymRef,rightSymRef)])
-        //     ))
-        // ));
-
-
         return this.left.cpsTransform(throwCont,makeArrow([leftSym],
             this.right.cpsTransform(throwCont,makeArrow([rightSym],
-                // makeCall("returnCont",[new AddNode(new Range(0,0),leftSymRef,rightSymRef)])
-                // new StatementListNode(new Range(0,0),[
-                //     new ExpressionStatementNode(new Range(0,0),
-                //         makeCall("returnCont",[new AddNode(new Range(0,0),leftSymRef,rightSymRef)])),
-                //     new ExpressionStatementNode(new Range(0,0),
-                //         returnCont),
-                // ])
                 makeCall("add",[leftSymRef,rightSymRef,returnCont])
             ))
         ));
-
-
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {
