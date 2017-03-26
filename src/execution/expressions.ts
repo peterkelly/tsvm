@@ -637,11 +637,15 @@ export class NumericLiteralNode extends ExpressionNode {
     }
 
     public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
-        return makeReturnContCall(this);
+        return makeCall("lift",[this,returnCont]);
     }
 
     public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
         output.push(""+this.value);
+    }
+
+    public isSimpleNumeric(): boolean {
+        return true;
     }
 
     public static fromGeneric(node: ASTNode | null): NumericLiteralNode {
@@ -2240,9 +2244,17 @@ export class AddNode extends BinaryNode {
 
         return this.left.cpsTransform(throwCont,makeArrow([leftSym],
             this.right.cpsTransform(throwCont,makeArrow([rightSym],
-                makeCall("add",[leftSymRef,rightSymRef,returnCont])
+                // makeCall("add",[leftSymRef,rightSymRef,returnCont])
+                makeCall("lift",[
+                    new AddNode(new Range(0,0),leftSymRef,rightSymRef),
+                    returnCont,
+                ])
             ))
         ));
+    }
+
+    public isSimpleNumeric(): boolean {
+        return this.left.isSimpleNumeric() && this.right.isSimpleNumeric();
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {

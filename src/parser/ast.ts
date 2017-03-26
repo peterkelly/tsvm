@@ -83,6 +83,10 @@ export abstract class ExpressionNode extends ASTNode {
     public prettyPrint(prefix: string, indent: string, output: string[]) {
         this.prettyPrintExpr(0,indent,output);
     }
+
+    public isSimpleNumeric(): boolean {
+        return false;
+    }
 }
 
 export abstract class StatementListItemNode extends ASTNode {
