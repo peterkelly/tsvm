@@ -481,6 +481,10 @@ export class IdentifierReferenceNode extends ExpressionNode {
         output.push(this.value);
     }
 
+    public isSimpleNumeric(): boolean {
+        return true;
+    }
+
     public static fromGeneric(node: ASTNode | null): IdentifierReferenceNode {
         if ((node === null) || (node.kind !== "IdentifierReference") || !(node instanceof GenericStringNode))
             throw new CannotConvertError("IdentifierReference",node);
@@ -2235,22 +2239,69 @@ export class AddNode extends BinaryNode {
     }
 
     public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ExpressionNode {
+        const leftOutput: string[] = [];
+        const rightOutput: string[] = [];
+        this.left.prettyPrintExpr(0,"",leftOutput);
+        this.right.prettyPrintExpr(0,"",rightOutput);
+        const leftStr = leftOutput.join("");
+        const rightStr = rightOutput.join("");
+
+        const leftType = this.left.isSimpleNumeric() ? "(simple)" : "(complex)";
+        const rightType = this.right.isSimpleNumeric() ? "(simple)" : "(complex)";
+
+        console.log("AddNode cps");
+        console.log("    left = "+leftType+" "+leftStr);
+        console.log("    right = "+rightType+" "+rightStr);
+
+
+
+        let rightExpr: ExpressionNode;
+        let leftExpr: ExpressionNode;
+
+
         const rightSym = gensym();
         const leftSym = gensym();
 
-        const rightSymRef = new IdentifierReferenceNode(new Range(0,0),rightSym);
-        const leftSymRef = new IdentifierReferenceNode(new Range(0,0),leftSym);
+        if (this.right.isSimpleNumeric())
+            rightExpr = this.right;
+        else
+            rightExpr = new IdentifierReferenceNode(new Range(0,0),rightSym);
+
+        if (this.left.isSimpleNumeric())
+            leftExpr = this.left;
+        else
+            leftExpr = new IdentifierReferenceNode(new Range(0,0),leftSym);
+
         const K = gencont();
 
-        return this.left.cpsTransform(throwCont,makeArrow([leftSym],
-            this.right.cpsTransform(throwCont,makeArrow([rightSym],
-                // makeCall("add",[leftSymRef,rightSymRef,returnCont])
-                makeCall("lift",[
-                    new AddNode(new Range(0,0),leftSymRef,rightSymRef),
-                    returnCont,
-                ])
-            ))
-        ));
+        let expr3: ExpressionNode;
+        let expr2: ExpressionNode;
+        let expr1: ExpressionNode;
+
+        expr3 = makeCall("lift",[
+            new AddNode(new Range(0,0),leftExpr,rightExpr),
+            returnCont,
+        ])
+
+        if (!this.right.isSimpleNumeric()) {
+            expr2 = this.right.cpsTransform(throwCont,makeArrow([rightSym],
+                expr3
+            ));
+        }
+        else {
+            expr2 = expr3;
+        }
+
+        if (!this.left.isSimpleNumeric()) {
+            expr1 = this.left.cpsTransform(throwCont,makeArrow([leftSym],
+                expr2
+            ));
+        }
+        else {
+            expr1 = expr2;
+        }
+
+        return expr1;
     }
 
     public isSimpleNumeric(): boolean {
