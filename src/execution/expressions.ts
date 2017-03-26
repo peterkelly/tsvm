@@ -149,6 +149,11 @@ export function gensym(): string {
     return "S"+nextSymId++;
 }
 
+let nextContId = 0;
+export function gencont(): string {
+    return "K"+nextContId++;
+}
+
 export function makeArrow(paramNames: string[], body: ExpressionNode | StatementListNode): ArrowFunctionNode {
     const paramNodes: BindingIdentifierNode[] = [];
     for (const name of paramNames)
@@ -1435,7 +1440,7 @@ export class CallNode extends ExpressionNode {
     }
 
     public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
-        return makeCall("lift", [this, returnCont]);
+        return makeCall("lift",[this,returnCont]);
     }
 
     public prettyPrintExpr(outerPrecedence: number, indent: string, output: string[]): void {
@@ -2225,34 +2230,35 @@ export class AddNode extends BinaryNode {
         return new NormalCompletion(result);
     }
 
-    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): CallNode {
-        const leftSym = gensym();
+    public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ExpressionNode {
         const rightSym = gensym();
+        const leftSym = gensym();
 
-        const leftSymRef = new IdentifierReferenceNode(new Range(0,0),leftSym);
         const rightSymRef = new IdentifierReferenceNode(new Range(0,0),rightSym);
+        const leftSymRef = new IdentifierReferenceNode(new Range(0,0),leftSym);
+        const K = gencont();
 
-        // const rightTransform = this.right.cpsTransform(throwCont,)
-
-        const contExpr = new AddNode(new Range(0,0),leftSymRef,rightSymRef);
-        // const contExprStmt = new ExpressionStatementNode(new Range(0,0),contExpr);
-        // const contStmtList = new StatementListNode(new Range(0,0),[contExprStmt]);
-        const result1 = makeCall("lift", [this.right, makeArrow([rightSym], contExpr)]);
-
+        // return this.left.cpsTransform(throwCont,makeArrow([leftSym],
+        //     this.right.cpsTransform(throwCont,makeArrow([rightSym],
+        //         makeCall("returnCont",[new AddNode(new Range(0,0),leftSymRef,rightSymRef)])
+        //     ))
+        // ));
 
 
-        const result2 = makeCall("lift", [this.left, makeArrow([leftSym], result1)]);
-        return result2;
+        return this.left.cpsTransform(throwCont,makeArrow([leftSym],
+            this.right.cpsTransform(throwCont,makeArrow([rightSym],
+                // makeCall("returnCont",[new AddNode(new Range(0,0),leftSymRef,rightSymRef)])
+                // new StatementListNode(new Range(0,0),[
+                //     new ExpressionStatementNode(new Range(0,0),
+                //         makeCall("returnCont",[new AddNode(new Range(0,0),leftSymRef,rightSymRef)])),
+                //     new ExpressionStatementNode(new Range(0,0),
+                //         returnCont),
+                // ])
+                makeCall("add",[leftSymRef,rightSymRef,returnCont])
+            ))
+        ));
 
-        // const contBody2 = new AddNode(new Range(0,0),leftSymRef,rightSymRef);
-        // const contArrow2 = makeCall("returnCont",[contBody2]);
-        // return contArrow2;
 
-        // const returnContFun = new IdentifierReferenceNode(new Range(0,0),"returnCont");
-        // const argsList = new ArgumentListNode(new Range(0,0),[this]);
-        // const args = new ArgumentsNode(new Range(0,0),argsList);
-        // const call = new CallNode(new Range(0,0),returnContFun,args);
-        // return call;
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {
