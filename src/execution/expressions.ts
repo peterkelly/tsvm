@@ -2239,15 +2239,17 @@ export class AddNode extends BinaryNode {
     }
 
     public cpsTransform(throwCont: ExpressionNode, returnCont: ExpressionNode): ExpressionNode {
+        const right = this.right;
+        const left = this.left;
         const leftOutput: string[] = [];
         const rightOutput: string[] = [];
-        this.left.prettyPrintExpr(0,"",leftOutput);
-        this.right.prettyPrintExpr(0,"",rightOutput);
+        left.prettyPrintExpr(0,"",leftOutput);
+        right.prettyPrintExpr(0,"",rightOutput);
         const leftStr = leftOutput.join("");
         const rightStr = rightOutput.join("");
 
-        const leftType = this.left.isSimpleNumeric() ? "(simple)" : "(complex)";
-        const rightType = this.right.isSimpleNumeric() ? "(simple)" : "(complex)";
+        const leftType = left.isSimpleNumeric() ? "(simple)" : "(complex)";
+        const rightType = right.isSimpleNumeric() ? "(simple)" : "(complex)";
 
         console.log("AddNode cps");
         console.log("    left = "+leftType+" "+leftStr);
@@ -2262,13 +2264,20 @@ export class AddNode extends BinaryNode {
         const rightSym = gensym();
         const leftSym = gensym();
 
-        if (this.right.isSimpleNumeric())
-            rightExpr = this.right;
+        if (right.isSimpleNumeric())
+            rightExpr = right;
         else
             rightExpr = new IdentifierReferenceNode(new Range(0,0),rightSym);
 
-        if (this.left.isSimpleNumeric())
-            leftExpr = this.left;
+        if (left.isSimpleNumeric())
+            leftExpr = left;
+        else if (
+            (left instanceof AddNode) &&
+            left.left.isSimpleNumeric() &&
+            left.right.isSimpleNumeric
+        ) {
+            
+        }
         else
             leftExpr = new IdentifierReferenceNode(new Range(0,0),leftSym);
 
@@ -2278,13 +2287,14 @@ export class AddNode extends BinaryNode {
         let expr2: ExpressionNode;
         let expr1: ExpressionNode;
 
+
         expr3 = makeCall("lift",[
             new AddNode(new Range(0,0),leftExpr,rightExpr),
             returnCont,
         ])
 
-        if (!this.right.isSimpleNumeric()) {
-            expr2 = this.right.cpsTransform(throwCont,makeArrow([rightSym],
+        if (!right.isSimpleNumeric()) {
+            expr2 = right.cpsTransform(throwCont,makeArrow([rightSym],
                 expr3
             ));
         }
@@ -2292,8 +2302,8 @@ export class AddNode extends BinaryNode {
             expr2 = expr3;
         }
 
-        if (!this.left.isSimpleNumeric()) {
-            expr1 = this.left.cpsTransform(throwCont,makeArrow([leftSym],
+        if (!left.isSimpleNumeric()) {
+            expr1 = left.cpsTransform(throwCont,makeArrow([leftSym],
                 expr2
             ));
         }
