@@ -14,7 +14,7 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "build",
+        "outDir": "dist",
         "sourceMap": true,
         "strictNullChecks": true
     },
