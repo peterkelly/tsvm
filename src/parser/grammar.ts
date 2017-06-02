@@ -201,9 +201,13 @@ export abstract class Action {
         this.offset = offset;
     }
 
+    public execute(b: Builder): void {
+        this.executeImpl(b);
+    }
+
     public abstract equals(other: Action): boolean;
 
-    public abstract execute(b: Builder): void;
+    public abstract executeImpl(b: Builder): void;
 
     public abstract dump(prefix: string, indent: string, output: (str: string) => void): void;
 }
@@ -227,7 +231,7 @@ class ProductionAction extends Action {
                 (this.name == other.name));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.attempt((): void => {
             const oldLength = b.length;
             this.child.execute(b);
@@ -252,7 +256,7 @@ class EmptyAction extends LeafAction {
         return (other instanceof EmptyAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         // Do nothing; just succeed
     }
 
@@ -278,7 +282,7 @@ class NotAction extends Action {
                 this.child.equals(other.child));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const start = b.parser.pos;
         const length = b.stack.length;
 
@@ -325,7 +329,7 @@ class RefAction extends Action {
                 (this.name == other.name));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const production = b.grammar.lookup(this.name);
         if (production == null)
             throw new Error("Production "+this.name+" not defined");
@@ -357,7 +361,7 @@ class ListAction extends Action {
                 this.rest.equals(other.rest));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.attempt(() => {
             const start = b.parser.pos;
             const elements: ASTNode[] = [];
@@ -412,7 +416,7 @@ class SequenceAction extends Action {
                 actionArrayEquals(this.actions,other.actions));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         for (const act of this.actions)
             act.execute(b);
     }
@@ -444,7 +448,7 @@ class SpliceNullAction extends LeafAction {
                 (this.index == other.index));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.splice(this.index,null);
     }
 
@@ -473,7 +477,7 @@ class SpliceReplaceAction extends LeafAction {
                 (this.srcIndex == other.srcIndex));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.splice(this.index,b.get(this.srcIndex));
     }
 
@@ -511,7 +515,7 @@ class SpliceNodeAction extends LeafAction {
                 numberArrayEquals(this.childIndices,other.childIndices));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
         const children: (ASTNode | null)[] = [];
@@ -563,7 +567,7 @@ class SpliceStringNodeAction extends LeafAction {
                 (this.valueIndex == other.valueIndex));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
         const range = new Range(start,end);
@@ -613,7 +617,7 @@ class SpliceNumberNodeAction extends LeafAction {
                 (this.valueIndex == other.valueIndex));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
         const range = new Range(start,end);
@@ -657,7 +661,7 @@ class SpliceEmptyListNodeAction extends LeafAction {
                 (this.endIndex == other.endIndex));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
         b.splice(this.index,new ListNode(new Range(start,end),[]));
@@ -681,7 +685,7 @@ class PopAction extends LeafAction {
         return (other instanceof PopAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         if (b.stack.length == 0)
             throw new Error("Attempt to pop past end of stack");
         b.stack.length--;
@@ -709,7 +713,7 @@ class OptAction extends Action {
                 this.child.equals(other.child));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         // child must either throw an exception or result in exactly one extra item on the stack
         try {
             b.attempt(() => {
@@ -749,7 +753,7 @@ class ChoiceAction extends Action {
                 actionArrayEquals(this.actions,other.actions));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const start = b.parser.pos;
         const length = b.stack.length;
         for (const act of this.actions) {
@@ -794,7 +798,7 @@ class RepeatAction extends Action {
                 this.child.equals(other.child));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.repeat((b: Builder) => {
             this.child.execute(b);
         });
@@ -820,7 +824,7 @@ class PosAction extends LeafAction {
         return (other instanceof PosAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.push(b.parser.pos);
     }
 
@@ -846,7 +850,7 @@ class ValueAction extends LeafAction {
                 (this.value == other.value));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.push(this.value);
     }
 
@@ -872,7 +876,7 @@ class KeywordAction extends LeafAction {
                 (this.str == other.str));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
@@ -904,7 +908,7 @@ class IdentifierAction extends LeafAction {
                 (this.str == other.str));
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.attempt((): void => {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
@@ -935,7 +939,7 @@ class WhitespaceAction extends LeafAction {
         return (other instanceof WhitespaceAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.parser.skipWhitespace();
         b.push(null);
     }
@@ -958,7 +962,7 @@ class WhitespaceNoNewlineAction extends LeafAction {
         return (other instanceof WhitespaceNoNewlineAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         b.parser.skipWhitespaceNoNewline();
         b.push(null);
     }
@@ -981,7 +985,7 @@ class IdentifierTokenAction extends LeafAction {
         return (other instanceof IdentifierTokenAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
@@ -1009,7 +1013,7 @@ class NumericLiteralTokenAction extends LeafAction {
         return (other instanceof NumericLiteralTokenAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
@@ -1038,7 +1042,7 @@ class StringLiteralTokenAction extends LeafAction {
         return (other instanceof StringLiteralTokenAction);
     }
 
-    public execute(b: Builder): void {
+    public executeImpl(b: Builder): void {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
