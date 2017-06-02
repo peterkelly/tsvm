@@ -31,6 +31,9 @@ import {
     GenericStringNode,
     GenericNumberNode,
 } from "./ast";
+import { leftpad } from "../util";
+
+const PROFILE_WIDTH = 24;
 
 export class Grammar {
     public productions: { [name: string]: Action } = {};
@@ -195,6 +198,8 @@ function actionsSameOffset(actions: Action[]): number {
 export abstract class Action {
     public readonly kind: string;
     public readonly offset: number;
+    public started = 0;
+    public finished = 0;
 
     public constructor(kind: string, offset: number) {
         this.kind = kind;
@@ -202,7 +207,20 @@ export abstract class Action {
     }
 
     public execute(b: Builder): void {
+        this.started++;
         this.executeImpl(b);
+        this.finished++;
+    }
+
+    public stats(): string {
+        if (this.started === 0)
+            return this.space();
+        const pct = (this.started > 0) ? (Math.round(100*(this.finished/this.started))+"%") : "0%";
+        return leftpad(this.started,7)+" "+leftpad(this.finished,7)+" "+leftpad(pct,4)+"    ";
+    }
+
+    public space(): string {
+        return leftpad("",PROFILE_WIDTH);
     }
 
     public abstract equals(other: Action): boolean;
@@ -241,7 +259,7 @@ class ProductionAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output("grm.define("+JSON.stringify(this.name)+",\n");
+        output(this.stats()+"grm.define("+JSON.stringify(this.name)+",\n");
         this.child.dump(indent+"    ",indent+"    ",output);
         output(");\n\n");
     }
@@ -261,7 +279,7 @@ class EmptyAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(indent+"empty");
+        output(this.stats()+indent+"empty");
     }
 }
 
@@ -306,7 +324,7 @@ class NotAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(indent+"not(");
+        output(this.stats()+indent+"not(");
         this.child.dump("",indent,output);
         output(")");
     }
@@ -337,7 +355,7 @@ class RefAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"ref("+JSON.stringify(this.name)+")");
+        output(this.stats()+prefix+"ref("+JSON.stringify(this.name)+")");
     }
 }
 
@@ -391,11 +409,11 @@ class ListAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"list(\n");
+        output(this.stats()+prefix+"list(\n");
         this.first.dump(indent+"    ",indent+"    ",output);
         output(",\n");
         this.rest.dump(indent+"    ",indent+"    ",output);
-        output("\n"+indent+")");
+        output("\n"+this.space()+indent+")");
     }
 }
 
@@ -422,12 +440,12 @@ class SequenceAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"sequence([\n");
+        output(this.stats()+prefix+"sequence([\n");
         for (const act of this.actions) {
             act.dump(indent+"    ",indent+"    ",output);
             output(",\n");
         }
-        output(indent+"])");
+        output(this.space()+indent+"])");
     }
 }
 
@@ -453,7 +471,7 @@ class SpliceNullAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"spliceNull("+this.index+")");
+        output(this.stats()+prefix+"spliceNull("+this.index+")");
     }
 }
 
@@ -482,7 +500,7 @@ class SpliceReplaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"spliceReplace("+this.index+","+this.srcIndex+")");
+        output(this.stats()+prefix+"spliceReplace("+this.index+","+this.srcIndex+")");
     }
 }
 
@@ -527,6 +545,7 @@ class SpliceNodeAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
+            this.stats()+
             prefix+
             "spliceNode("+
             this.index+","+
@@ -580,6 +599,7 @@ class SpliceStringNodeAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
+            this.stats()+
             prefix+"spliceStringNode("+this.index+","+
             JSON.stringify(this.nodeName)+","+
             this.startIndex+","+
@@ -630,6 +650,7 @@ class SpliceNumberNodeAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
+            this.stats()+
             prefix+"spliceNumberNode("+this.index+","+
             JSON.stringify(this.nodeName)+","+
             this.startIndex+","+
@@ -668,7 +689,7 @@ class SpliceEmptyListNodeAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"spliceEmptyListNode("+this.index+","+this.startIndex+","+this.endIndex+")");
+        output(this.stats()+prefix+"spliceEmptyListNode("+this.index+","+this.startIndex+","+this.endIndex+")");
     }
 }
 
@@ -692,7 +713,7 @@ class PopAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"pop");
+        output(this.stats()+prefix+"pop");
     }
 }
 
@@ -730,7 +751,7 @@ class OptAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(indent+"opt(");
+        output(this.stats()+indent+"opt(");
         this.child.dump("",indent,output);
         output(")");
     }
@@ -772,12 +793,12 @@ class ChoiceAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"choice([\n");
+        output(this.stats()+prefix+"choice([\n");
         for (const act of this.actions) {
             act.dump(indent+"    ",indent+"    ",output);
             output(",\n");
         }
-        output(indent+"])");
+        output(this.stats()+indent+"])");
     }
 }
 
@@ -805,7 +826,7 @@ class RepeatAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(indent+"repeat(");
+        output(this.stats()+indent+"repeat(");
         this.child.dump("",indent,output);
         output(")");
     }
@@ -829,7 +850,7 @@ class PosAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"pos");
+        output(this.stats()+prefix+"pos");
     }
 }
 
@@ -855,7 +876,7 @@ class ValueAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"value("+JSON.stringify(this.value)+")");
+        output(this.stats()+prefix+"value("+JSON.stringify(this.value)+")");
     }
 }
 
@@ -887,7 +908,7 @@ class KeywordAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"keyword("+JSON.stringify(this.str)+")");
+        output(this.stats()+prefix+"keyword("+JSON.stringify(this.str)+")");
     }
 }
 
@@ -922,7 +943,7 @@ class IdentifierAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"identifier("+JSON.stringify(this.str)+")");
+        output(this.stats()+prefix+"identifier("+JSON.stringify(this.str)+")");
     }
 }
 
@@ -945,7 +966,7 @@ class WhitespaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"whitespace");
+        output(this.stats()+prefix+"whitespace");
     }
 }
 
@@ -968,7 +989,7 @@ class WhitespaceNoNewlineAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"whitespaceNoNewline");
+        output(this.stats()+prefix+"whitespaceNoNewline");
     }
 }
 
@@ -996,7 +1017,7 @@ class IdentifierTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"identifier_token");
+        output(this.stats()+prefix+"identifier_token");
     }
 }
 
@@ -1025,7 +1046,7 @@ class NumericLiteralTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"numeric_literal_token");
+        output(this.stats()+prefix+"numeric_literal_token");
     }
 }
 
@@ -1053,7 +1074,7 @@ class StringLiteralTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(prefix+"string_literal_token");
+        output(this.stats()+prefix+"string_literal_token");
     }
 }
 
