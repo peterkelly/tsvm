@@ -21,6 +21,7 @@ import { ModuleNode } from "./execution/modules";
 // import { compileModule } from "./parser/compiler";
 import { evalModule } from "./execution/interpreter";
 import { RealmImpl } from "./runtime/08-02-realm";
+import { repeatString } from "./util";
 
 type CommandFunction = (input: string) => string;
 type CommandSet = { [name: string]: CommandFunction };
@@ -327,6 +328,55 @@ function printGrammar(): void {
     console.log(components.join(""));
 }
 
+function perftest(): void {
+    run();
+
+    function run(): void {
+        const sampleCode = `
+        for (let i = 0; i < 10; i++) {
+            try {
+                (a + ((b * c) / d) ^ e);
+            }
+            catch (e) {
+            }
+            finally {
+            }
+        }
+        `;
+
+        // Warm up
+        // console.log("Warming up");
+        timeParse(sampleCode, 100, 1);
+
+        // Actual test
+        // console.log("Timing");
+        // const time = timeParse(sampleCode, 100, 10);
+        // console.log(time + " ms");
+
+        const output: string[] = [];
+        grm.dump(s => output.push(s));
+        console.log(output.join(""));
+    }
+
+    function timeParse(sampleCode: string, size: number, iterations: number): number {
+        const allCode = repeatString(sampleCode, size);
+        const start = new Date().getTime();
+        for (let i = 0; i < iterations; i++) {
+            const root = parseOne(allCode);
+        }
+        const end = new Date().getTime();
+        return (end - start) / 1000;
+    }
+
+    function parseOne(input: string): void {
+        const p = new Parser(input);
+        const root = parseModule(p);
+        p.skipWhitespace();
+        if (p.pos < p.len)
+            throw new ParseError(p,p.pos,"Expected end of file");
+    }
+}
+
 function main(): void {
     let i = 2;
     const argv = process.argv;
@@ -362,6 +412,9 @@ function main(): void {
             showUsageAndExit();
 
         genTest(command,filename,write);
+    }
+    else if ((i < argc) && (argv[i] == "perftest")) {
+        perftest();
     }
     else {
         showUsageAndExit();
