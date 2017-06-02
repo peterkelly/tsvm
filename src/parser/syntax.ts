@@ -65,9 +65,9 @@ export const grm = new Grammar();
 
 grm.define("IdentifierReference",
     sequence([
-        pos,
+        pos(),
         ref("Identifier"),
-        pos,
+        pos(),
         spliceStringNode(2,"IdentifierReference",2,0,1),
     ]));
 
@@ -75,9 +75,9 @@ grm.define("IdentifierReference",
 
 grm.define("BindingIdentifier",
     sequence([
-        pos,
+        pos(),
         ref("Identifier"),
-        pos,
+        pos(),
         spliceStringNode(2,"BindingIdentifier",2,0,1),
     ]));
 
@@ -85,9 +85,9 @@ grm.define("BindingIdentifier",
 
 grm.define("LabelIdentifier",
     sequence([
-        pos,
+        pos(),
         ref("Identifier"),
-        pos,
+        pos(),
         spliceStringNode(2,"LabelIdentifier",2,0,1),
     ]));
 
@@ -99,7 +99,7 @@ grm.define("IdentifierName",
 // Identifier
 
 grm.define("Identifier",
-    identifier_token);
+    identifier_token());
 
 // Section 12.2
 
@@ -107,9 +107,9 @@ grm.define("Identifier",
 
 grm.define("This",
     sequence([
-        pos,
+        pos(),
         keyword("this"),
-        pos,
+        pos(),
         spliceNode(2,"This",2,0,[]),
     ]));
 
@@ -136,9 +136,9 @@ grm.define("PrimaryExpression",
 grm.define("ParenthesizedExpression",
     sequence([
         keyword("("),      // 4
-        whitespace,        // 3
+        whitespace(),      // 3
         ref("Expression"), // 2 = expr
-        whitespace,        // 1
+        whitespace(),      // 1
         keyword(")"),      // 0
         spliceReplace(4,2),
     ]));
@@ -159,9 +159,9 @@ grm.define("Literal",
 
 grm.define("NullLiteral",
     sequence([
-        pos,
+        pos(),
         identifier("null"),
-        pos,
+        pos(),
         spliceNode(2,"NullLiteral",2,0,[]),
     ]));
 
@@ -170,15 +170,15 @@ grm.define("NullLiteral",
 grm.define("BooleanLiteral",
     choice([
         sequence([
-            pos,
+            pos(),
             identifier("true"),
-            pos,
+            pos(),
             spliceNode(2,"True",2,0,[]),
         ]),
         sequence([
-            pos,
+            pos(),
             identifier("false"),
-            pos,
+            pos(),
             spliceNode(2,"False",2,0,[]),
         ]),
     ]));
@@ -187,12 +187,12 @@ grm.define("BooleanLiteral",
 // NumericLiteral
 
 grm.define("NumericLiteral",
-    numeric_literal_token);
+    numeric_literal_token());
 
 // StringLiteral
 
 grm.define("StringLiteral",
-    string_literal_token);
+    string_literal_token());
 
 // Section 12.2.5
 
@@ -200,43 +200,43 @@ grm.define("StringLiteral",
 
 grm.define("ArrayLiteral",
     sequence([
-        pos,             // 5 = start
+        pos(),           // 5 = start
         keyword("["),    // 4
-        whitespace,      // 3
+        whitespace(),    // 3
         list(            // 2 = list
             value(null),
             choice([
                 sequence([
-                    pos,          // 3 = before
+                    pos(),        // 3 = before
                     keyword(","), // 2
-                    pos,          // 1 = after
-                    whitespace,   // 0
+                    pos(),        // 1 = after
+                    whitespace(), // 0
                     spliceNode(3,"Elision",3,1,[]),
                 ]),
                 sequence([
                     ref("AssignmentExpression"),
-                    whitespace,
+                    whitespace(),
                     opt(sequence([
                         keyword(","),
-                        whitespace,
-                        pop,
+                        whitespace(),
+                        pop(),
                     ])),
                     spliceReplace(2,2),
                 ]),
                 sequence([
                     ref("SpreadElement"),
-                    whitespace,
+                    whitespace(),
                     opt(sequence([
                         keyword(","),
-                        whitespace,
-                        pop,
+                        whitespace(),
+                        pop(),
                     ])),
                     spliceReplace(2,2),
                 ]),
             ])
         ),
         keyword("]"),    // 1
-        pos,             // 0 = end
+        pos(),           // 0 = end
         spliceNode(5,"ArrayLiteral",5,0,[2]),
     ]));
 
@@ -244,11 +244,11 @@ grm.define("ArrayLiteral",
 
 grm.define("SpreadElement",
     sequence([
-        pos,
+        pos(),
         keyword("..."),
-        whitespace,
+        whitespace(),
         ref("AssignmentExpression"),
-        pos,
+        pos(),
         spliceNode(4,"SpreadElement",4,0,[1]),
     ]));
 
@@ -258,27 +258,27 @@ grm.define("SpreadElement",
 
 grm.define("ObjectLiteral",
     sequence([
-        pos,              // 5
+        pos(),            // 5
         keyword("{"),     // 4
-        whitespace,       // 3
+        whitespace(),     // 3
         choice([          // 2 = properties
             sequence([
                 ref("PropertyDefinitionList"),
-                whitespace,
+                whitespace(),
                 opt(sequence([
                     keyword(","),
-                    whitespace,
+                    whitespace(),
                     spliceNull(1),
                 ])),
                 spliceReplace(2,2),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
         keyword("}"),     // 1
-        pos,              // 0 = end
+        pos(),            // 0 = end
         spliceNode(5,"ObjectLiteral",5,0,[2]),
     ]));
 
@@ -288,9 +288,9 @@ grm.define("PropertyDefinitionList",
     list(
         ref("PropertyDefinition"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("PropertyDefinition"),
             spliceReplace(3,0),
         ])
@@ -300,13 +300,13 @@ grm.define("PropertyDefinitionList",
 
 grm.define("PropertyDefinition_colon",
     sequence([
-        pos,                         // 6 = start
+        pos(),                       // 6 = start
         ref("PropertyName"),         // 5 = name
-        whitespace,                  // 4
+        whitespace(),                // 4
         keyword(":"),                // 3
-        whitespace,                  // 2
+        whitespace(),                // 2
         ref("AssignmentExpression"), // 1 = init
-        pos,                         // 0 = end
+        pos(),                       // 0 = end
         spliceNode(6,"ColonPropertyDefinition",6,0,[5,1]),
     ]));
 
@@ -341,13 +341,13 @@ grm.define("LiteralPropertyName",
 
 grm.define("ComputedPropertyName",
     sequence([
-        pos,                         // 6 = start
+        pos(),                       // 6 = start
         keyword("["),                // 5
-        whitespace,                  // 4
+        whitespace(),                // 4
         ref("AssignmentExpression"), // 3 = expr
-        whitespace,                  // 2
+        whitespace(),                // 2
         keyword("]"),                // 1
-        pos,                         // 0 = end
+        pos(),                       // 0 = end
         spliceNode(6,"ComputedPropertyName",6,0,[3]),
     ]));
 
@@ -355,11 +355,11 @@ grm.define("ComputedPropertyName",
 
 grm.define("CoverInitializedName",
     sequence([
-        pos,                        // 4 = start
+        pos(),                      // 4 = start
         ref("IdentifierReference"), // 3 = ident
-        whitespace,                 // 2
+        whitespace(),               // 2
         ref("Initializer"),         // 1 = init
-        pos,                        // 0 = end
+        pos(),                      // 0 = end
         spliceNode(4,"CoverInitializedName",4,0,[3,1]),
     ]));
 
@@ -368,7 +368,7 @@ grm.define("CoverInitializedName",
 grm.define("Initializer",
     sequence([
         keyword("="),
-        whitespace,
+        whitespace(),
         ref("AssignmentExpression"),
         spliceReplace(2,0),
     ]));
@@ -393,13 +393,13 @@ function TemplateMiddleList(b: Builder): void { throw new ParseError(b.parser,b.
 
 grm.define("MemberExpression_new",
     sequence([
-        pos,                     // 6 = start
+        pos(),                   // 6 = start
         keyword("new"),          // 5
-        whitespace,              // 4
+        whitespace(),            // 4
         ref("MemberExpression"), // 3 = expr
-        whitespace,              // 2
+        whitespace(),            // 2
         ref("Arguments"),        // 1 = args
-        pos,                     // 0 = end
+        pos(),                   // 0 = end
         spliceNode(6,"NewExpression",6,0,[3,1]),
     ]));
 
@@ -417,26 +417,26 @@ grm.define("MemberExpression_start",
 
 grm.define("MemberExpression",
     sequence([
-        pos,
+        pos(),
         ref("MemberExpression_start"),
         repeat(choice([
             sequence([
-                whitespace,            // 6
+                whitespace(),          // 6
                 keyword("["),          // 5
-                whitespace,            // 4
+                whitespace(),          // 4
                 ref("Expression"),     // 3 = expr
-                whitespace,            // 2
+                whitespace(),          // 2
                 keyword("]"),          // 1
-                pos,                   // 0 = end
+                pos(),                 // 0 = end
                 spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
             ]),
             sequence([
-                whitespace,            // 5
+                whitespace(),          // 5
                 keyword("."),          // 4
-                whitespace,            // 3
+                whitespace(),          // 3
                 ref("IdentifierName"), // 2 = ident
-                pos,                   // 1 = end
-                whitespace,            // 0
+                pos(),                 // 1 = end
+                whitespace(),          // 0
                 spliceNode(6,"MemberAccessIdent",7,1,[6,2]),
             ]),
         ])),
@@ -448,25 +448,25 @@ grm.define("MemberExpression",
 grm.define("SuperProperty",
     choice([
         sequence([
-            pos,               // 8 = start
+            pos(),             // 8 = start
             keyword("super"),  // 7
-            whitespace,        // 6
+            whitespace(),      // 6
             keyword("["),      // 5
-            whitespace,        // 4
+            whitespace(),      // 4
             ref("Expression"), // 3 = expr
-            whitespace,        // 2
+            whitespace(),      // 2
             keyword("]"),      // 1
-            pos,               // 0 = end
+            pos(),             // 0 = end
             spliceNode(8,"SuperPropertyExpr",8,0,[3]),
         ]),
         sequence([
-            pos,               // 6 = start
+            pos(),             // 6 = start
             keyword("super"),  // 5
-            whitespace,        // 4
+            whitespace(),      // 4
             keyword("."),      // 3
-            whitespace,        // 2
+            whitespace(),      // 2
             ref("Identifier"), // 1 = ident
-            pos,               // 0 = end
+            pos(),             // 0 = end
             spliceNode(6,"SuperPropertyIdent",6,0,[1]),
         ]),
     ]));
@@ -480,13 +480,13 @@ grm.define("MetaProperty",
 
 grm.define("NewTarget",
     sequence([
-        pos,                  // 6
+        pos(),                // 6
         keyword("new"),       // 5
-        whitespace,           // 4
+        whitespace(),         // 4
         keyword("."),         // 3
-        whitespace,           // 2
+        whitespace(),         // 2
         identifier("target"), // 1 ("target" is not a reserved word, so we can't use keyword here)
-        pos,                  // 0
+        pos(),                // 0
         spliceNode(6,"NewTarget",6,0,[]),
     ]));
 
@@ -496,12 +496,12 @@ grm.define("NewExpression",
     choice([
         ref("MemberExpression"),
         sequence([
-            pos,                  // 5 = start
+            pos(),                // 5 = start
             keyword("new"),       // 4
-            whitespace,           // 3
+            whitespace(),         // 3
             ref("NewExpression"), // 2 = expr
             value(null),          // 1 = args
-            pos,                  // 0 = end
+            pos(),                // 0 = end
             spliceNode(5,"NewExpression",5,0,[2,1]),
         ]),
     ]));
@@ -512,11 +512,11 @@ grm.define("CallExpression_start",
     choice([
         ref("SuperCall"),
         sequence([
-            pos,                     // 4 = start
+            pos(),                   // 4 = start
             ref("MemberExpression"), // 3 = fun
-            whitespace,              // 2
+            whitespace(),            // 2
             ref("Arguments"),        // 1 = args
-            pos,                     // 0 = end
+            pos(),                   // 0 = end
             spliceNode(4,"Call",4,0,[3,1]),
         ]),
     ]));
@@ -525,31 +525,31 @@ grm.define("CallExpression_start",
 
 grm.define("CallExpression",
     sequence([
-        pos,
+        pos(),
         ref("CallExpression_start"),
         repeat(choice([
             sequence([
-                whitespace,            // 2
+                whitespace(),          // 2
                 ref("Arguments"),      // 1
-                pos,                   // 0
+                pos(),                 // 0
                 spliceNode(3,"Call",4,0,[3,1]),
             ]),
             sequence([
-                whitespace,            // 6
+                whitespace(),          // 6
                 keyword("["),          // 5
-                whitespace,            // 4
+                whitespace(),          // 4
                 ref("Expression"),     // 3 = expr
-                whitespace,            // 2
+                whitespace(),          // 2
                 keyword("]"),          // 1
-                pos,                   // 0 = end
+                pos(),                 // 0 = end
                 spliceNode(7,"MemberAccessExpr",8,0,[7,3]),
             ]),
             sequence([
-                whitespace,            // 4
+                whitespace(),          // 4
                 keyword("."),          // 3
-                whitespace,            // 2
+                whitespace(),          // 2
                 ref("IdentifierName"), // 1 = idname
-                pos,                   // 0 = end
+                pos(),                 // 0 = end
                 spliceNode(5,"MemberAccessIdent",6,0,[5,1]),
             ]),
             // () => {
@@ -564,11 +564,11 @@ grm.define("CallExpression",
 
 grm.define("SuperCall",
     sequence([
-        pos,              // 4 = start
+        pos(),            // 4 = start
         keyword("super"), // 3
-        whitespace,       // 2
+        whitespace(),     // 2
         ref("Arguments"), // 1 = args
-        pos,              // 0 = end
+        pos(),            // 0 = end
         spliceNode(4,"SuperCall",4,0,[1]),
     ]));
 
@@ -577,24 +577,24 @@ grm.define("SuperCall",
 grm.define("Arguments",
     choice([
         sequence([
-            pos,                 // 6 = start
+            pos(),               // 6 = start
             keyword("("),        // 5
-            whitespace,          // 4
-            pos,                 // 3 = listpos
+            whitespace(),        // 4
+            pos(),               // 3 = listpos
             keyword(")"),        // 2
-            pos,                 // 1 = end
+            pos(),               // 1 = end
             value(null),         // 0 = will become list
             spliceEmptyListNode(0,3,3),
             spliceNode(6,"Arguments",6,1,[0]),
         ]),
         sequence([
-            pos,                 // 6 = start
+            pos(),               // 6 = start
             keyword("("),        // 5
-            whitespace,          // 4
+            whitespace(),        // 4
             ref("ArgumentList"), // 3 = args
-            whitespace,          // 2
+            whitespace(),        // 2
             keyword(")"),        // 1
-            pos,                 // 0 = end
+            pos(),               // 0 = end
             spliceNode(6,"Arguments",6,0,[3]),
         ]),
     ]));
@@ -604,11 +604,11 @@ grm.define("Arguments",
 grm.define("ArgumentList_item",
     choice([
         sequence([
-            pos,                         // 4 = start
+            pos(),                       // 4 = start
             keyword("..."),              // 3
-            whitespace,                  // 2
+            whitespace(),                // 2
             ref("AssignmentExpression"), // 1 = expr
-            pos,                         // 0 = end
+            pos(),                       // 0 = end
             spliceNode(4,"SpreadElement",4,0,[1]),
         ]),
         ref("AssignmentExpression"),
@@ -620,9 +620,9 @@ grm.define("ArgumentList",
     list(
         ref("ArgumentList_item"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("ArgumentList_item"),
             spliceReplace(3,0),
         ])
@@ -644,19 +644,19 @@ grm.define("LeftHandSideExpression",
 
 grm.define("PostfixExpression",
     sequence([
-        pos,
+        pos(),
         ref("LeftHandSideExpression"),
         choice([
             sequence([
-                whitespaceNoNewline,
+                whitespaceNoNewline(),
                 keyword("++"),
-                pos,
+                pos(),
                 spliceNode(4,"PostIncrement",4,0,[3]),
             ]),
             sequence([
-                whitespaceNoNewline,
+                whitespaceNoNewline(),
                 keyword("--"),
-                pos,
+                pos(),
                 spliceNode(4,"PostDecrement",4,0,[3]),
             ]),
             spliceReplace(1,0),
@@ -670,75 +670,75 @@ grm.define("PostfixExpression",
 grm.define("UnaryExpression",
     choice([
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("delete"),      // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"Delete",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("void"),        // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"Void",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("typeof"),      // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"TypeOf",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("++"),          // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"PreIncrement",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("--"),          // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"PreDecrement",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("+"),           // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"UnaryPlus",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("-"),           // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"UnaryMinus",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("~"),           // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"UnaryBitwiseNot",4,0,[1]),
         ]),
         sequence([
-            pos,                    // 4 = start
+            pos(),                  // 4 = start
             keyword("!"),           // 3
-            whitespace,             // 2
+            whitespace(),           // 2
             ref("UnaryExpression"), // 1 = expr
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(4,"UnaryLogicalNot",4,0,[1]),
         ]),
         ref("PostfixExpression"),
@@ -750,31 +750,31 @@ grm.define("UnaryExpression",
 
 grm.define("MultiplicativeExpression",
     sequence([
-        pos,                            // 6 = start
+        pos(),                          // 6 = start
         ref("UnaryExpression"),         // 5 = left
         repeat(choice([
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("*"),           // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("UnaryExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"Multiply",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("/"),           // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("UnaryExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"Divide",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("%"),           // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("UnaryExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"Modulo",6,0,[5,1]),
             ]),
         ])),
@@ -787,23 +787,23 @@ grm.define("MultiplicativeExpression",
 
 grm.define("AdditiveExpression",
     sequence([
-        pos,                                     // 6 = start
+        pos(),                                   // 6 = start
         ref("MultiplicativeExpression"),         // 5 = left
         repeat(choice([
             sequence([
-                whitespace,                      // 4
+                whitespace(),                    // 4
                 keyword("+"),                    // 3
-                whitespace,                      // 2
+                whitespace(),                    // 2
                 ref("MultiplicativeExpression"), // 1 = right
-                pos,                             // 0 = end
+                pos(),                           // 0 = end
                 spliceNode(5,"Add",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                      // 4
+                whitespace(),                    // 4
                 keyword("-"),                    // 3
-                whitespace,                      // 2
+                whitespace(),                    // 2
                 ref("MultiplicativeExpression"), // 1 = right
-                pos,                             // 0 = end
+                pos(),                           // 0 = end
                 spliceNode(5,"Subtract",6,0,[5,1]),
             ]),
         ])),
@@ -816,31 +816,31 @@ grm.define("AdditiveExpression",
 
 grm.define("ShiftExpression",
     sequence([
-        pos,                               // 6 = start
+        pos(),                             // 6 = start
         ref("AdditiveExpression"),         // 5 = left
         repeat(choice([
             sequence([
-                whitespace,                // 4
+                whitespace(),              // 4
                 keyword("<<"),             // 3
-                whitespace,                // 2
+                whitespace(),              // 2
                 ref("AdditiveExpression"), // 1 = right
-                pos,                       // 0 = end
+                pos(),                     // 0 = end
                 spliceNode(5,"LeftShift",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                // 4
+                whitespace(),              // 4
                 keyword(">>>"),            // 3
-                whitespace,                // 2
+                whitespace(),              // 2
                 ref("AdditiveExpression"), // 1 = right
-                pos,                       // 0 = end
+                pos(),                     // 0 = end
                 spliceNode(5,"UnsignedRightShift",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                // 4
+                whitespace(),              // 4
                 keyword(">>"),             // 3
-                whitespace,                // 2
+                whitespace(),              // 2
                 ref("AdditiveExpression"), // 1 = right
-                pos,                       // 0 = end
+                pos(),                     // 0 = end
                 spliceNode(5,"SignedRightShift",6,0,[5,1]),
             ]),
         ])),
@@ -853,55 +853,55 @@ grm.define("ShiftExpression",
 
 grm.define("RelationalExpression",
     sequence([
-        pos,                            // 6 = start
+        pos(),                          // 6 = start
         ref("ShiftExpression"),         // 5 = left
         repeat(choice([
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("<="),          // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("ShiftExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"LessEqual",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword(">="),          // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("ShiftExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"GreaterEqual",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("<"),           // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("ShiftExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"LessThan",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword(">"),           // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("ShiftExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"GreaterThan",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("instanceof"),  // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("ShiftExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"InstanceOf",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,             // 4
+                whitespace(),           // 4
                 keyword("in"),          // 3
-                whitespace,             // 2
+                whitespace(),           // 2
                 ref("ShiftExpression"), // 1 = right
-                pos,                    // 0 = end
+                pos(),                  // 0 = end
                 spliceNode(5,"In",6,0,[5,1]),
             ]),
         ])),
@@ -914,39 +914,39 @@ grm.define("RelationalExpression",
 
 grm.define("EqualityExpression",
     sequence([
-        pos,                                 // 6 = start
+        pos(),                               // 6 = start
         ref("RelationalExpression"),         // 5 = left
         repeat(choice([
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("==="),              // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("RelationalExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"StrictEquals",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("!=="),              // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("RelationalExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"StrictNotEquals",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("=="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("RelationalExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AbstractEquals",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("!="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("RelationalExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AbstractNotEquals",6,0,[5,1]),
             ]),
         ])),
@@ -959,14 +959,14 @@ grm.define("EqualityExpression",
 
 grm.define("BitwiseANDExpression",
     sequence([
-        pos,                           // 6 = start
+        pos(),                         // 6 = start
         ref("EqualityExpression"),     // 5 = left
         repeat(sequence([
-            whitespace,                // 4
+            whitespace(),              // 4
             keyword("&"),              // 3
-            whitespace,                // 2
+            whitespace(),              // 2
             ref("EqualityExpression"), // 1 = right
-            pos,                       // 0 = end
+            pos(),                     // 0 = end
             spliceNode(5,"BitwiseAND",6,0,[5,1]),
         ])),
         spliceReplace(1,0),
@@ -976,14 +976,14 @@ grm.define("BitwiseANDExpression",
 
 grm.define("BitwiseXORExpression",
     sequence([
-        pos,                             // 6 = start
+        pos(),                           // 6 = start
         ref("BitwiseANDExpression"),     // 5 = left
         repeat(sequence([
-            whitespace,                  // 4
+            whitespace(),                // 4
             keyword("^"),                // 3
-            whitespace,                  // 2
+            whitespace(),                // 2
             ref("BitwiseANDExpression"), // 1 = right
-            pos,                         // 0 = end
+            pos(),                       // 0 = end
             spliceNode(5,"BitwiseXOR",6,0,[5,1]),
         ])),
         spliceReplace(1,0),
@@ -993,14 +993,14 @@ grm.define("BitwiseXORExpression",
 
 grm.define("BitwiseORExpression",
     sequence([
-        pos,                             // 6 = start
+        pos(),                           // 6 = start
         ref("BitwiseXORExpression"),     // 5 = left
         repeat(sequence([
-            whitespace,                  // 4
+            whitespace(),                // 4
             keyword("|"),                // 3
-            whitespace,                  // 2
+            whitespace(),                // 2
             ref("BitwiseXORExpression"), // 1 = right
-            pos,                         // 0 = end
+            pos(),                       // 0 = end
             spliceNode(5,"BitwiseOR",6,0,[5,1]),
         ])),
         spliceReplace(1,0),
@@ -1012,14 +1012,14 @@ grm.define("BitwiseORExpression",
 
 grm.define("LogicalANDExpression",
     sequence([
-        pos,                            // 6 = start
+        pos(),                          // 6 = start
         ref("BitwiseORExpression"),     // 5 = left
         repeat(sequence([
-            whitespace,                 // 4
+            whitespace(),               // 4
             keyword("&&"),              // 3
-            whitespace,                 // 2
+            whitespace(),               // 2
             ref("BitwiseORExpression"), // 1 = right
-            pos,                        // 0 = end
+            pos(),                      // 0 = end
             spliceNode(5,"LogicalAND",6,0,[5,1]),
         ])),
         spliceReplace(1,0),
@@ -1029,14 +1029,14 @@ grm.define("LogicalANDExpression",
 
 grm.define("LogicalORExpression",
     sequence([
-        pos,                             // 6 = start
+        pos(),                           // 6 = start
         ref("LogicalANDExpression"),     // 5 = left
         repeat(sequence([
-            whitespace,                  // 4
+            whitespace(),                // 4
             keyword("||"),               // 3
-            whitespace,                  // 2
+            whitespace(),                // 2
             ref("LogicalANDExpression"), // 1 = right
-            pos,                         // 0 = end
+            pos(),                       // 0 = end
             spliceNode(5,"LogicalOR",6,0,[5,1]),
         ])),
         spliceReplace(1,0),
@@ -1048,22 +1048,22 @@ grm.define("LogicalORExpression",
 
 grm.define("ConditionalExpression",
     sequence([
-        pos,                                 // 10 = start
+        pos(),                               // 10 = start
         ref("LogicalORExpression"),          // 9 = condition
         choice([
             sequence([
-                whitespace,                  // 8
+                whitespace(),                // 8
                 keyword("?"),                // 7
-                whitespace,                  // 6
+                whitespace(),                // 6
                 ref("AssignmentExpression"), // 5 = trueExpr
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword(":"),                // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = falseExpr
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(9,"Conditional",10,0,[9,5,1]),
             ]),
-            empty,
+            empty(),
         ]),
         spliceReplace(1,0),
     ]));
@@ -1074,103 +1074,103 @@ grm.define("ConditionalExpression",
 
 grm.define("AssignmentExpression_plain",
     sequence([
-        pos,                                 // 6 = start
+        pos(),                               // 6 = start
         ref("LeftHandSideExpression"),       // 5 = left
         choice([
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("="),                // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"Assign",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("*="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignMultiply",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("/="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignDivide",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("%="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignModulo",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("+="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignAdd",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("-="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignSubtract",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("<<="),              // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignLeftShift",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword(">>="),              // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignSignedRightShift",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword(">>>="),             // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignUnsignedRightShift",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("&="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignBitwiseAND",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("^="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignBitwiseXOR",6,0,[5,1]),
             ]),
             sequence([
-                whitespace,                  // 4
+                whitespace(),                // 4
                 keyword("|="),               // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("AssignmentExpression"), // 1 = right
-                pos,                         // 0 = end
+                pos(),                       // 0 = end
                 spliceNode(5,"AssignBitwiseOR",6,0,[5,1]),
             ]),
         ]),
@@ -1195,14 +1195,14 @@ grm.define("AssignmentExpression",
 
 grm.define("Expression",
     sequence([
-        pos,                             // 6 = start
+        pos(),                           // 6 = start
         ref("AssignmentExpression"),     // 5 = left
         repeat(sequence([
-            whitespace,                  // 4
+            whitespace(),                // 4
             keyword(","),                // 3
-            whitespace,                  // 2
+            whitespace(),                // 2
             ref("AssignmentExpression"), // 1 = right
-            pos,                         // 0 = end
+            pos(),                       // 0 = end
             spliceNode(5,"Comma",6,0,[5,1]),
         ])),
         spliceReplace(1,0),
@@ -1266,22 +1266,22 @@ grm.define("BlockStatement",
 
 grm.define("Block",
     sequence([
-        pos,              // 5
+        pos(),            // 5
         keyword("{"),     // 4
-        whitespace,       // 3
+        whitespace(),     // 3
         choice([          // 2 = statements
             sequence([
                 ref("StatementList"),
-                whitespace,
+                whitespace(),
                 spliceReplace(1,1),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
         keyword("}"),     // 1
-        pos,              // 0
+        pos(),            // 0
         spliceNode(5,"Block",5,0,[2]),
     ]));
 
@@ -1291,7 +1291,7 @@ grm.define("StatementList",
     list(
         ref("StatementListItem"),
         sequence([
-            whitespace,
+            whitespace(),
             ref("StatementListItem"),
             spliceReplace(1,0),
         ])
@@ -1312,23 +1312,23 @@ grm.define("StatementListItem",
 grm.define("LexicalDeclaration",
     choice([
         sequence([
-            pos,                // 6 = start
+            pos(),              // 6 = start
             keyword("let"),     // 5
-            whitespace,         // 4
+            whitespace(),       // 4
             ref("BindingList"), // 3 = bindings
-            whitespace,         // 2
+            whitespace(),       // 2
             keyword(";"),       // 1
-            pos,                // 0 = end
+            pos(),              // 0 = end
             spliceNode(6,"Let",6,0,[3]),
         ]),
         sequence([
-            pos,                // 6 = start
+            pos(),              // 6 = start
             keyword("const"),   // 5
-            whitespace,         // 4
+            whitespace(),       // 4
             ref("BindingList"), // 3 = bindings
-            whitespace,         // 2
+            whitespace(),       // 2
             keyword(";"),       // 1
-            pos,                // 0 = end
+            pos(),              // 0 = end
             spliceNode(6,"Const",6,0,[3]),
         ]),
     ]));
@@ -1339,9 +1339,9 @@ grm.define("BindingList",
     list(
         ref("LexicalBinding"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("LexicalBinding"),
             spliceReplace(3,0),
         ])
@@ -1351,14 +1351,14 @@ grm.define("BindingList",
 
 grm.define("LexicalBinding_identifier",
     sequence([
-        pos,                      // 3 = start
+        pos(),                    // 3 = start
         ref("BindingIdentifier"), // 2 = identifier
         opt(sequence([               // 1 = initializer
-            whitespace,
+            whitespace(),
             ref("Initializer"),
             spliceReplace(1,0),
         ])),
-        pos,                      // 0 = end
+        pos(),                    // 0 = end
         spliceNode(3,"LexicalIdentifierBinding",3,0,[2,1]),
     ]));
 
@@ -1366,11 +1366,11 @@ grm.define("LexicalBinding_identifier",
 
 grm.define("LexicalBinding_pattern",
     sequence([
-        pos,                   // 4 = start
+        pos(),                 // 4 = start
         ref("BindingPattern"), // 3 = pattern
-        whitespace,            // 2
+        whitespace(),          // 2
         ref("Initializer"),    // 1 = initializer
-        pos,                   // 0 = end
+        pos(),                 // 0 = end
         spliceNode(4,"LexicalPatternBinding",4,0,[3,1]),
     ]));
 
@@ -1388,13 +1388,13 @@ grm.define("LexicalBinding",
 
 grm.define("VariableStatement",
     sequence([
-        pos,                            // 6 = start
+        pos(),                          // 6 = start
         keyword("var"),                 // 5
-        whitespace,                     // 4
+        whitespace(),                   // 4
         ref("VariableDeclarationList"), // 3 = declarations
-        whitespace,                     // 2
+        whitespace(),                   // 2
         keyword(";"),                   // 1
-        pos,                            // 0 = end
+        pos(),                          // 0 = end
         spliceNode(6,"Var",6,0,[3]),
     ]));
 
@@ -1404,9 +1404,9 @@ grm.define("VariableDeclarationList",
     list(
         ref("VariableDeclaration"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("VariableDeclaration"),
             spliceReplace(3,0),
         ])
@@ -1416,18 +1416,18 @@ grm.define("VariableDeclarationList",
 
 grm.define("VariableDeclaration_identifier",
     sequence([
-        pos,
+        pos(),
         ref("BindingIdentifier"),
         choice([
             sequence([
-                whitespace,
+                whitespace(),
                 ref("Initializer"),
-                pos,
+                pos(),
                 spliceNode(4,"VarIdentifier",4,0,[3,1]),
             ]),
             sequence([
                 value(null),
-                pos,
+                pos(),
                 spliceNode(3,"VarIdentifier",3,0,[2,1]),
             ]),
         ]),
@@ -1437,11 +1437,11 @@ grm.define("VariableDeclaration_identifier",
 
 grm.define("VariableDeclaration_pattern",
     sequence([
-        pos,                   // 4 = start
+        pos(),                 // 4 = start
         ref("BindingPattern"), // 3 = pattern
-        whitespace,            // 2
+        whitespace(),          // 2
         ref("Initializer"),    // 1 = initializer
-        pos,                   // 0 = end
+        pos(),                 // 0 = end
         spliceNode(4,"VarPattern",4,0,[3,1]),
     ]));
 
@@ -1467,28 +1467,28 @@ grm.define("BindingPattern",
 
 grm.define("ObjectBindingPattern",
     sequence([
-        pos,               // 6 = start
+        pos(),             // 6 = start
         keyword("{"),      // 5
-        whitespace,        // 4
-        pos,               // 3
+        whitespace(),      // 4
+        pos(),             // 3
         choice([           // 2 = properties
             sequence([
                 ref("BindingPropertyList"),
-                whitespace,
+                whitespace(),
                 opt(sequence([
                     keyword(","),
-                    whitespace,
+                    whitespace(),
                     spliceNull(1),
                 ])),
                 spliceReplace(2,2),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
         keyword("}"),      // 1
-        pos,               // 0 = end
+        pos(),             // 0 = end
         spliceNode(6,"ObjectBindingPattern",6,0,[2]),
     ]));
 
@@ -1496,18 +1496,18 @@ grm.define("ObjectBindingPattern",
 
 grm.define("ArrayBindingPattern",
     sequence([
-        pos,                       // 7 = start
+        pos(),                     // 7 = start
         keyword("["),              // 6
-        whitespace,                // 5
+        whitespace(),              // 5
         ref("BindingElementList"), // 4 = elements
-        whitespace,                // 3
+        whitespace(),              // 3
         opt(sequence([                // 2 = rest
             ref("BindingRestElement"),
-            whitespace,
+            whitespace(),
             spliceReplace(1,1),
         ])),
         keyword("]"),              // 1
-        pos,                       // 0 = end
+        pos(),                     // 0 = end
         spliceNode(7,"ArrayBindingPattern",7,0,[4,2]),
     ]));
 
@@ -1517,9 +1517,9 @@ grm.define("BindingPropertyList",
     list(
         ref("BindingProperty"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("BindingProperty"),
             spliceReplace(3,0),
         ])
@@ -1530,26 +1530,26 @@ grm.define("BindingPropertyList",
 grm.define("BindingElementList",
     list(
         opt(sequence([
-            pos,
+            pos(),
             keyword(","),
-            pos,
+            pos(),
             spliceNode(2,"Elision",2,0,[]),
         ])),
         choice([
             sequence([
-                whitespace,   // 3
-                pos,          // 2 = before
+                whitespace(), // 3
+                pos(),        // 2 = before
                 keyword(","), // 1
-                pos,          // 0 = after
+                pos(),        // 0 = after
                 spliceNode(3,"Elision",2,0,[]),
             ]),
             sequence([
-                whitespace,
+                whitespace(),
                 ref("BindingElement"),
                 opt(sequence([
-                    whitespace,
+                    whitespace(),
                     keyword(","),
-                    pop,
+                    pop(),
                 ])),
                 spliceReplace(2,1),
             ]),
@@ -1561,13 +1561,13 @@ grm.define("BindingElementList",
 grm.define("BindingProperty",
     choice([
         sequence([
-            pos,                   // 6 = start
+            pos(),                 // 6 = start
             ref("PropertyName"),   // 5 = name
-            whitespace,            // 4
+            whitespace(),          // 4
             keyword(":"),          // 3
-            whitespace,            // 2
+            whitespace(),          // 2
             ref("BindingElement"), // 1 = element
-            pos,                   // 0 = end
+            pos(),                 // 0 = end
             spliceNode(6,"BindingProperty",6,0,[5,1]),
         ]),
         // SingleNameBinding has to come after the colon version above, since both SingleNameBinding
@@ -1581,13 +1581,13 @@ grm.define("BindingElement",
     choice([
         ref("SingleNameBinding"),
         sequence([
-            pos,
+            pos(),
             ref("BindingPattern"),
             choice([
                 sequence([
-                    whitespace,
+                    whitespace(),
                     ref("Initializer"),
-                    pos,
+                    pos(),
                     spliceNode(4,"BindingPatternInit",4,0,[3,1]),
                 ]),
                 spliceReplace(1,0),
@@ -1599,13 +1599,13 @@ grm.define("BindingElement",
 
 grm.define("SingleNameBinding",
     sequence([
-        pos,
+        pos(),
         ref("BindingIdentifier"),
         choice([
             sequence([
-                whitespace,
+                whitespace(),
                 ref("Initializer"),
-                pos,
+                pos(),
                 spliceNode(2,"SingleNameBinding",4,0,[3,1]),
             ]),
             sequence([
@@ -1620,11 +1620,11 @@ grm.define("SingleNameBinding",
 
 grm.define("BindingRestElement",
     sequence([
-        pos,                      // 4 = start
+        pos(),                    // 4 = start
         keyword("..."),           // 3
-        whitespace,               // 2
+        whitespace(),             // 2
         ref("BindingIdentifier"), // 1 = ident
-        pos,                      // 0 = end
+        pos(),                    // 0 = end
         spliceNode(4,"BindingRestElement",4,0,[1]),
     ]));
 
@@ -1634,9 +1634,9 @@ grm.define("BindingRestElement",
 
 grm.define("EmptyStatement",
     sequence([
-        pos,
+        pos(),
         keyword(";"),
-        pos,
+        pos(),
         spliceNode(2,"EmptyStatement",2,0,[]),
     ]));
 
@@ -1651,14 +1651,14 @@ grm.define("ExpressionStatement",
         not(keyword("class")),
         not(sequence([
             keyword("let"),
-            whitespace,
+            whitespace(),
             keyword("["),
         ])),
-        pos,               // 4 = start
+        pos(),             // 4 = start
         ref("Expression"), // 3 = expr
-        whitespace,        // 2
+        whitespace(),      // 2
         keyword(";"),      // 1
-        pos,               // 0 = end
+        pos(),             // 0 = end
         spliceNode(4,"ExpressionStatement",4,0,[3]),
     ]));
 
@@ -1668,24 +1668,24 @@ grm.define("ExpressionStatement",
 
 grm.define("IfStatement",
     sequence([
-        pos,               // 11 = start
+        pos(),             // 11 = start
         keyword("if"),     // 10
-        whitespace,        // 9
+        whitespace(),      // 9
         keyword("("),      // 8
-        whitespace,        // 7
+        whitespace(),      // 7
         ref("Expression"), // 6 = condition
-        whitespace,        // 5
+        whitespace(),      // 5
         keyword(")"),      // 4
-        whitespace,        // 3
+        whitespace(),      // 3
         ref("Statement"),  // 2 = trueBranch
         opt(sequence([        // 1 = falseBranch
-            whitespace,
+            whitespace(),
             keyword("else"),
-            whitespace,
+            whitespace(),
             ref("Statement"),
             spliceReplace(3,0),
         ])),
-        pos,               // 0 = end
+        pos(),             // 0 = end
         spliceNode(11,"IfStatement",11,0,[6,2,1]),
     ]));
 
@@ -1695,21 +1695,21 @@ grm.define("IfStatement",
 
 grm.define("IterationStatement_do",
     sequence([
-        pos,               // 14
+        pos(),             // 14
         keyword("do"),     // 13
-        whitespace,        // 12
+        whitespace(),      // 12
         ref("Statement"),  // 11 = body
-        whitespace,        // 10
+        whitespace(),      // 10
         keyword("while"),  // 9
-        whitespace,        // 8
+        whitespace(),      // 8
         keyword("("),      // 7
-        whitespace,        // 6
+        whitespace(),      // 6
         ref("Expression"), // 5 = condition
-        whitespace,        // 4
+        whitespace(),      // 4
         keyword(")"),      // 3
-        whitespace,        // 2
+        whitespace(),      // 2
         keyword(";"),      // 1 = end
-        pos,               // 0 = start
+        pos(),             // 0 = start
         spliceNode(14,"DoStatement",14,0,[11,5]),
     ]));
 
@@ -1717,17 +1717,17 @@ grm.define("IterationStatement_do",
 
 grm.define("IterationStatement_while",
     sequence([
-        pos,                // 10 = start
+        pos(),              // 10 = start
         keyword("while"),   // 9
-        whitespace,         // 8
+        whitespace(),       // 8
         keyword("("),       // 7
-        whitespace,         // 6
+        whitespace(),       // 6
         ref("Expression"),  // 5 = condition
-        whitespace,         // 4
+        whitespace(),       // 4
         keyword(")"),       // 3
-        whitespace,         // 2
+        whitespace(),       // 2
         ref("Statement"),   // 1 = body
-        pos,                // 0 = end
+        pos(),              // 0 = end
         spliceNode(10,"WhileStatement",10,0,[5,1]),
     ]));
 
@@ -1739,35 +1739,35 @@ grm.define("IterationStatement_for_c",
     // for ( LexicalDeclaration                     Expression-opt ; Expression-opt ) Statement[?Yield, ?Return]
 
     sequence([
-        pos,                                    // 14 = start
+        pos(),                                  // 14 = start
         keyword("for"),                         // 13
-        whitespace,                             // 12
+        whitespace(),                           // 12
         keyword("("),                           // 11
-        whitespace,                             // 10
+        whitespace(),                           // 10
         choice([
             sequence([
                 not(keyword("let")), // FIXME: need tests for this
                 not(keyword("[")), // FIXME: need tests for this
                 opt(ref("Expression")),         // 3 = expr
-                whitespace,                     // 2
+                whitespace(),                   // 2
                 keyword(";"),                   // 1
-                whitespace,                     // 0
+                whitespace(),                   // 0
                 spliceReplace(3,3),
             ]),
             sequence([
-                pos,                            // 7 = start2
+                pos(),                          // 7 = start2
                 keyword("var"),                 // 6
-                whitespace,                     // 5
+                whitespace(),                   // 5
                 ref("VariableDeclarationList"), // 4 = declarations
-                pos,                            // 3 = end
-                whitespace,                     // 2
+                pos(),                          // 3 = end
+                whitespace(),                   // 2
                 keyword(";"),                   // 1
-                whitespace,                     // 0
+                whitespace(),                   // 0
                 spliceNode(7,"Var",7,3,[4]),
             ]),
             sequence([
                 ref("LexicalDeclaration"),
-                whitespace,
+                whitespace(),
                 spliceReplace(1,1),
             ]),
             // initializer part can be empty, but need to distinguish this from an error
@@ -1777,18 +1777,18 @@ grm.define("IterationStatement_for_c",
             ]),
         ]),
         opt(ref("Expression")), // 8 = condition
-        whitespace,             // 7
+        whitespace(),           // 7
         keyword(";"),           // 6
-        whitespace,             // 5
+        whitespace(),           // 5
         opt(sequence([
             ref("Expression"),
-            whitespace,
+            whitespace(),
             spliceReplace(1,1),
         ])),
         keyword(")"),           // 3
-        whitespace,             // 2
+        whitespace(),           // 2
         ref("Statement"),       // 1 = body
-        pos,                    // 0 = end
+        pos(),                  // 0 = end
         spliceNode(14,"ForC",14,0,[9,8,4,1]),
     ]));
 
@@ -1800,11 +1800,11 @@ grm.define("IterationStatement_for_in",
     // for ( ForDeclaration                               in Expression )             Statement[?Yield, ?Return]
 
     sequence([
-        pos,                       // 14 = start
+        pos(),                     // 14 = start
         keyword("for"),            // 13
-        whitespace,                // 12
+        whitespace(),              // 12
         keyword("("),              // 11
-        whitespace,                // 10
+        whitespace(),              // 10
         choice([                   // 9 = binding
             sequence([
                 not(keyword("let")), // FIXME: need tests for this
@@ -1812,24 +1812,24 @@ grm.define("IterationStatement_for_in",
                 ref("LeftHandSideExpression"),
             ]),
             sequence([
-                pos,
+                pos(),
                 keyword("var"),
-                whitespace,
+                whitespace(),
                 ref("ForBinding"),
-                pos,
+                pos(),
                 spliceNode(4,"VarForDeclaration",4,0,[1]),
             ]),
             ref("ForDeclaration"),
         ]),
-        whitespace,                // 8
+        whitespace(),              // 8
         keyword("in"),             // 7
-        whitespace,                // 6
+        whitespace(),              // 6
         ref("Expression"),         // 5 = expr
-        whitespace,                // 4
+        whitespace(),              // 4
         keyword(")"),              // 3
-        whitespace,                // 2
+        whitespace(),              // 2
         ref("Statement"),          // 1 = body
-        pos,                       // 0 = end
+        pos(),                     // 0 = end
         spliceNode(14,"ForIn",14,0,[9,5,1]),
     ]));
 
@@ -1841,11 +1841,11 @@ grm.define("IterationStatement_for_of",
     // for ( ForDeclaration                               of AssignmentExpression )   Statement[?Yield, ?Return]
 
     sequence([
-        pos,                       // 14 = start
+        pos(),                     // 14 = start
         keyword("for"),            // 13
-        whitespace,                // 12
+        whitespace(),              // 12
         keyword("("),              // 11
-        whitespace,                // 10
+        whitespace(),              // 10
         choice([                   // 9
             sequence([
                 not(keyword("let")), // FIXME: need tests for this
@@ -1853,24 +1853,24 @@ grm.define("IterationStatement_for_of",
                 ref("LeftHandSideExpression"),
             ]),
             sequence([
-                pos,
+                pos(),
                 keyword("var"),
-                whitespace,
+                whitespace(),
                 ref("ForBinding"),
-                pos,
+                pos(),
                 spliceNode(4,"VarForDeclaration",4,0,[1]),
             ]),
             ref("ForDeclaration"),
         ]),
-        whitespace,                // 8
+        whitespace(),              // 8
         identifier("of"),          // 7
-        whitespace,                // 6
+        whitespace(),              // 6
         ref("Expression"),         // 5 = expr
-        whitespace,                // 4
+        whitespace(),              // 4
         keyword(")"),              // 3
-        whitespace,                // 2
+        whitespace(),              // 2
         ref("Statement"),          // 1 = body
-        pos,                       // 0 = end
+        pos(),                     // 0 = end
         spliceNode(14,"ForOf",14,0,[9,5,1]),
     ]));
 
@@ -1897,19 +1897,19 @@ grm.define("IterationStatement",
 grm.define("ForDeclaration",
     choice([
         sequence([
-            pos,               // 4 = start
+            pos(),             // 4 = start
             keyword("let"),    // 3
-            whitespace,        // 2
+            whitespace(),      // 2
             ref("ForBinding"), // 1 = binding
-            pos,               // 0 = end
+            pos(),             // 0 = end
             spliceNode(4,"LetForDeclaration",4,0,[1]),
         ]),
         sequence([
-            pos,               // 4 = start
+            pos(),             // 4 = start
             keyword("const"),  // 3
-            whitespace,        // 2
+            whitespace(),      // 2
             ref("ForBinding"), // 1 = binding
-            pos,               // 0 = end
+            pos(),             // 0 = end
             spliceNode(4,"ConstForDeclaration",4,0,[1]),
         ]),
     ]));
@@ -1929,22 +1929,22 @@ grm.define("ForBinding",
 grm.define("ContinueStatement",
     choice([
         sequence([
-            pos,                    // 5 = start
+            pos(),                  // 5 = start
             keyword("continue"),    // 4
-            whitespace,             // 3
+            whitespace(),           // 3
             value(null),            // 2 = null
             keyword(";"),           // 1
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(5,"ContinueStatement",5,0,[2]),
         ]),
         sequence([
-            pos,                    // 6 = start
+            pos(),                  // 6 = start
             keyword("continue"),    // 5
-            whitespaceNoNewline,    // 4
+            whitespaceNoNewline(),  // 4
             ref("LabelIdentifier"), // 3 = ident
-            whitespace,             // 2
+            whitespace(),           // 2
             keyword(";"),           // 1
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(6,"ContinueStatement",6,0,[3]),
         ]),
     ]));
@@ -1956,22 +1956,22 @@ grm.define("ContinueStatement",
 grm.define("BreakStatement",
     choice([
         sequence([
-            pos,                    // 5 = start
+            pos(),                  // 5 = start
             keyword("break"),       // 4
-            whitespace,             // 3
+            whitespace(),           // 3
             value(null),            // 2 = null
             keyword(";"),           // 1
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(5,"BreakStatement",5,0,[2]),
         ]),
         sequence([
-            pos,                    // 6 = start
+            pos(),                  // 6 = start
             keyword("break"),       // 5
-            whitespaceNoNewline,    // 4
+            whitespaceNoNewline(),  // 4
             ref("LabelIdentifier"), // 3 = ident
-            whitespace,             // 2
+            whitespace(),           // 2
             keyword(";"),           // 1
-            pos,                    // 0 = end
+            pos(),                  // 0 = end
             spliceNode(6,"BreakStatement",6,0,[3]),
         ]),
     ]));
@@ -1983,22 +1983,22 @@ grm.define("BreakStatement",
 grm.define("ReturnStatement",
     choice([
         sequence([
-            pos,                 // 5 = start
-            keyword("return"),   // 4
-            whitespace,          // 3
-            value(null),         // 2 = null
-            keyword(";"),        // 1
-            pos,                 // 0 = end
+            pos(),                 // 5 = start
+            keyword("return"),     // 4
+            whitespace(),          // 3
+            value(null),           // 2 = null
+            keyword(";"),          // 1
+            pos(),                 // 0 = end
             spliceNode(5,"ReturnStatement",5,0,[2]),
         ]),
         sequence([
-            pos,                 // 6 = start
-            keyword("return"),   // 5
-            whitespaceNoNewline, // 4
-            ref("Expression"),   // 3 = expr
-            whitespace,          // 2
-            keyword(";"),        // 1
-            pos,                 // 0 = end
+            pos(),                 // 6 = start
+            keyword("return"),     // 5
+            whitespaceNoNewline(), // 4
+            ref("Expression"),     // 3 = expr
+            whitespace(),          // 2
+            keyword(";"),          // 1
+            pos(),                 // 0 = end
             spliceNode(6,"ReturnStatement",6,0,[3]),
         ]),
     ]));
@@ -2009,17 +2009,17 @@ grm.define("ReturnStatement",
 
 grm.define("WithStatement",
     sequence([
-        pos,               // 10 = start
+        pos(),             // 10 = start
         keyword("with"),   // 9
-        whitespace,        // 8
+        whitespace(),      // 8
         keyword("("),      // 7
-        whitespace,        // 6
+        whitespace(),      // 6
         ref("Expression"), // 5 = expr
-        whitespace,        // 4
+        whitespace(),      // 4
         keyword(")"),      // 3
-        whitespace,        // 2
+        whitespace(),      // 2
         ref("Statement"),  // 1 = body
-        pos,               // 0 = end
+        pos(),             // 0 = end
         spliceNode(10,"WithStatement",10,0,[5,1]),
     ]));
 
@@ -2029,17 +2029,17 @@ grm.define("WithStatement",
 
 grm.define("SwitchStatement",
     sequence([
-        pos,               // 10 = start
+        pos(),             // 10 = start
         keyword("switch"), // 9
-        whitespace,        // 8
+        whitespace(),      // 8
         keyword("("),      // 7
-        whitespace,        // 6
+        whitespace(),      // 6
         ref("Expression"), // 5 = expr
-        whitespace,        // 4
+        whitespace(),      // 4
         keyword(")"),      // 3
-        whitespace,        // 2
+        whitespace(),      // 2
         ref("CaseBlock"),  // 1 = cases
-        pos,               // 0 = end
+        pos(),             // 0 = end
         spliceNode(10,"SwitchStatement",10,0,[5,1]),
     ]));
 
@@ -2047,20 +2047,20 @@ grm.define("SwitchStatement",
 
 grm.define("CaseBlock_1",
     sequence([
-        pos,          // 7
+        pos(),        // 7
         keyword("{"), // 6
-        whitespace,   // 5
-        pos,          // 4 = midpos
+        whitespace(), // 5
+        pos(),        // 4 = midpos
         choice([      // 3 = clauses
             ref("CaseClauses"),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
-        whitespace,   // 2
+        whitespace(), // 2
         keyword("}"), // 1
-        pos,          // 0
+        pos(),        // 0
         spliceNode(7,"CaseBlock1",7,0,[3]),
     ]));
 
@@ -2068,17 +2068,17 @@ grm.define("CaseBlock_1",
 
 grm.define("CaseBlock_2",
     sequence([
-        pos,                     // 10 = start
+        pos(),                   // 10 = start
         keyword("{"),            // 9
-        whitespace,              // 8
+        whitespace(),            // 8
         opt(ref("CaseClauses")), // 7 = clauses1
-        whitespace,              // 6
+        whitespace(),            // 6
         ref("DefaultClause"),    // 5 = defaultClause
-        whitespace,              // 4
+        whitespace(),            // 4
         opt(ref("CaseClauses")), // 3 = clauses2
-        whitespace,              // 2
+        whitespace(),            // 2
         keyword("}"),            // 1
-        pos,                     // 0 = end
+        pos(),                   // 0 = end
         spliceNode(10,"CaseBlock2",10,0,[7,5,3]),
     ]));
 
@@ -2096,7 +2096,7 @@ grm.define("CaseClauses",
     list(
         ref("CaseClause"),
         sequence([
-            whitespace,
+            whitespace(),
             ref("CaseClause"),
             spliceReplace(1,0),
         ])
@@ -2106,15 +2106,15 @@ grm.define("CaseClauses",
 
 grm.define("CaseClause",
     sequence([
-        pos,                  // 8 = start
+        pos(),                // 8 = start
         keyword("case"),      // 7
-        whitespace,           // 6
+        whitespace(),         // 6
         ref("Expression"),    // 5 = expr
-        whitespace,           // 4
+        whitespace(),         // 4
         keyword(":"),         // 3
-        whitespace,           // 2
+        whitespace(),         // 2
         ref("StatementList"), // 1 = statements
-        pos,                  // 0 = end
+        pos(),                // 0 = end
         spliceNode(8,"CaseClause",8,0,[5,1]),
     ]));
 
@@ -2122,14 +2122,14 @@ grm.define("CaseClause",
 
 grm.define("DefaultClause",
     sequence([
-        pos,                  // 7 = start
+        pos(),                // 7 = start
         keyword("default"),   // 6
-        whitespace,           // 5
+        whitespace(),         // 5
         keyword(":"),         // 4
-        whitespace,           // 3
+        whitespace(),         // 3
         ref("StatementList"), // 2 = statements
-        pos,                  // 1 = end
-        whitespace,           // 0
+        pos(),                // 1 = end
+        whitespace(),         // 0
         spliceNode(7,"DefaultClause",7,1,[2]),
     ]));
 
@@ -2139,13 +2139,13 @@ grm.define("DefaultClause",
 
 grm.define("LabelledStatement",
     sequence([
-        pos,                    // 6 = start
+        pos(),                  // 6 = start
         ref("LabelIdentifier"), // 5 = ident
-        whitespace,             // 4
+        whitespace(),           // 4
         keyword(":"),           // 3
-        whitespace,             // 2
+        whitespace(),           // 2
         ref("LabelledItem"),    // 1 = item
-        pos,                    // 0 = end
+        pos(),                  // 0 = end
         spliceNode(6,"LabelledStatement",6,0,[5,1]),
     ]));
 
@@ -2163,13 +2163,13 @@ grm.define("LabelledItem",
 
 grm.define("ThrowStatement",
     sequence([
-        pos,                 // 6 = start
-        keyword("throw"),    // 5
-        whitespaceNoNewline, // 4
-        ref("Expression"),   // 3 = expr
-        whitespace,          // 2
-        keyword(";"),        // 1
-        pos,                 // 0 = end
+        pos(),                 // 6 = start
+        keyword("throw"),      // 5
+        whitespaceNoNewline(), // 4
+        ref("Expression"),     // 3 = expr
+        whitespace(),          // 2
+        keyword(";"),          // 1
+        pos(),                 // 0 = end
         spliceNode(6,"ThrowStatement",6,0,[3]),
     ]));
 
@@ -2179,27 +2179,27 @@ grm.define("ThrowStatement",
 
 grm.define("TryStatement",
     sequence([
-        pos,                         // 7 = start
+        pos(),                       // 7 = start
         keyword("try"),              // 6
-        whitespace,                  // 5
+        whitespace(),                // 5
         ref("Block"),                // 4 = tryBlock
         choice([
             sequence([
-                whitespace,          // 3
+                whitespace(),        // 3
                 value(null),         // 2 = catchBlock
                 ref("Finally"),      // 1 = finallyBlock
             ]),
             sequence([
-                whitespace,          // 3
+                whitespace(),        // 3
                 ref("Catch"),        // 2 = catchBlock
                 opt(sequence([          // 1 = finallyBlock
-                    whitespace,
+                    whitespace(),
                     ref("Finally"),
                     spliceReplace(1,0),
                 ])),
             ]),
         ]),
-        pos,                         // 0 = end
+        pos(),                       // 0 = end
         spliceNode(7,"TryStatement",7,0,[4,2,1]),
     ]));
 
@@ -2207,17 +2207,17 @@ grm.define("TryStatement",
 
 grm.define("Catch",
     sequence([
-        pos,                   // 10 = start
+        pos(),                 // 10 = start
         keyword("catch"),      // 9
-        whitespace,            // 8
+        whitespace(),          // 8
         keyword("("),          // 7
-        whitespace,            // 6
+        whitespace(),          // 6
         ref("CatchParameter"), // 5 = param
-        whitespace,            // 4
+        whitespace(),          // 4
         keyword(")"),          // 3
-        whitespace,            // 2
+        whitespace(),          // 2
         ref("Block"),          // 1 = block
-        pos,                   // 0 = end
+        pos(),                 // 0 = end
         spliceNode(10,"Catch",10,0,[5,1]),
     ]));
 
@@ -2225,11 +2225,11 @@ grm.define("Catch",
 
 grm.define("Finally",
     sequence([
-        pos,                // 4
+        pos(),              // 4
         keyword("finally"), // 3
-        whitespace,         // 2
+        whitespace(),       // 2
         ref("Block"),       // 1
-        pos,                // 0
+        pos(),              // 0
         spliceNode(4,"Finally",4,0,[1]),
     ]));
 
@@ -2247,11 +2247,11 @@ grm.define("CatchParameter",
 
 grm.define("DebuggerStatement",
     sequence([
-        pos,                 // 4
+        pos(),               // 4
         keyword("debugger"), // 3
-        whitespace,          // 2
+        whitespace(),        // 2
         keyword(";"),        // 1
-        pos,                 // 0
+        pos(),               // 0
         spliceNode(4,"DebuggerStatement",4,0,[]),
     ]));
 
@@ -2261,23 +2261,23 @@ grm.define("DebuggerStatement",
 
 grm.define("FunctionDeclaration_named",
     sequence([
-        pos,                      // 16 = start
+        pos(),                    // 16 = start
         keyword("function"),      // 15
-        whitespace,               // 14
+        whitespace(),             // 14
         ref("BindingIdentifier"), // 13 = ident
-        whitespace,               // 12
+        whitespace(),             // 12
         keyword("("),             // 11
-        whitespace,               // 10
+        whitespace(),             // 10
         ref("FormalParameters"),  // 9 = params
-        whitespace,               // 8
+        whitespace(),             // 8
         keyword(")"),             // 7
-        whitespace,               // 6
+        whitespace(),             // 6
         keyword("{"),             // 5
-        whitespace,               // 4
+        whitespace(),             // 4
         ref("FunctionBody"),      // 3 = body
-        whitespace,               // 2
+        whitespace(),             // 2
         keyword("}"),             // 1
-        pos,                      // 0 = end
+        pos(),                    // 0 = end
         spliceNode(16,"FunctionDeclaration",16,0,[13,9,3]),
     ]));
 
@@ -2285,22 +2285,22 @@ grm.define("FunctionDeclaration_named",
 
 grm.define("FunctionDeclaration_unnamed",
     sequence([
-        pos,                     // 15 = start
+        pos(),                   // 15 = start
         keyword("function"),     // 14
-        whitespace,              // 13
+        whitespace(),            // 13
         keyword("("),            // 12
-        whitespace,              // 11
+        whitespace(),            // 11
         value(null),             // 10 = null
         ref("FormalParameters"), // 9 = params
-        whitespace,              // 8
+        whitespace(),            // 8
         keyword(")"),            // 7
-        whitespace,              // 6
+        whitespace(),            // 6
         keyword("{"),            // 5
-        whitespace,              // 4
+        whitespace(),            // 4
         ref("FunctionBody"),     // 3 = body
-        whitespace,              // 2
+        whitespace(),            // 2
         keyword("}"),            // 1
-        pos,                     // 0 = end
+        pos(),                   // 0 = end
         spliceNode(15,"FunctionDeclaration",15,0,[10,9,3]),
     ]));
 
@@ -2316,26 +2316,26 @@ grm.define("FunctionDeclaration",
 
 grm.define("FunctionExpression",
     sequence([
-        pos,                     // 15 = start
+        pos(),                   // 15 = start
         keyword("function"),     // 14
-        whitespace,              // 13
+        whitespace(),            // 13
         opt(sequence([
             ref("BindingIdentifier"),
-            whitespace,
+            whitespace(),
             spliceReplace(1,1),
         ])),
         keyword("("),            // 11
-        whitespace,              // 10
+        whitespace(),            // 10
         ref("FormalParameters"), // 9 = params
-        whitespace,              // 8
+        whitespace(),            // 8
         keyword(")"),            // 7
-        whitespace,              // 6
+        whitespace(),            // 6
         keyword("{"),            // 5
-        whitespace,              // 4
+        whitespace(),            // 4
         ref("FunctionBody"),     // 3 = body
-        whitespace,              // 2
+        whitespace(),            // 2
         keyword("}"),            // 1
-        pos,                     // 0 = end
+        pos(),                   // 0 = end
         spliceNode(15,"FunctionExpression",15,0,[12,9,3]),
     ]));
 
@@ -2350,7 +2350,7 @@ grm.define("FormalParameters",
     choice([
         ref("FormalParameterList"),
         sequence([
-            pos,
+            pos(),
             spliceNode(0,"FormalParameters1",0,0,[]),
         ]),
     ]));
@@ -2360,25 +2360,25 @@ grm.define("FormalParameters",
 grm.define("FormalParameterList",
     choice([
         sequence([
-            pos,                          // 2 = start
+            pos(),                        // 2 = start
             ref("FunctionRestParameter"), // 1 = rest
-            pos,                          // 0 = end
+            pos(),                        // 0 = end
             spliceNode(2,"FormalParameters2",2,0,[1]),
         ]),
         sequence([
-            pos,                // 3 = start
+            pos(),              // 3 = start
             ref("FormalsList"), // 2 = formals
             choice([
                 sequence([
-                    whitespace,
+                    whitespace(),
                     keyword(","),
-                    whitespace,
+                    whitespace(),
                     ref("FunctionRestParameter"),
-                    pos,
+                    pos(),
                     spliceNode(6,"FormalParameters4",6,0,[5,1]),
                 ]),
                 sequence([
-                    pos,
+                    pos(),
                     spliceNode(2,"FormalParameters3",2,0,[1]),
                 ]),
             ]),
@@ -2391,9 +2391,9 @@ grm.define("FormalsList",
     list(
         ref("FormalParameter"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("FormalParameter"),
             spliceReplace(3,0),
         ])
@@ -2420,7 +2420,7 @@ grm.define("FunctionStatementList",
     choice([
         ref("StatementList"),
         sequence([
-            pos,
+            pos(),
             spliceEmptyListNode(0,0,0),
         ]),
     ]));
@@ -2431,13 +2431,13 @@ grm.define("FunctionStatementList",
 
 grm.define("ArrowFunction",
     sequence([
-        pos,                    // 6 = start
+        pos(),                  // 6 = start
         ref("ArrowParameters"), // 5 = params
-        whitespaceNoNewline,    // 4
+        whitespaceNoNewline(),  // 4
         keyword("=>"),          // 3
-        whitespace,             // 2
+        whitespace(),           // 2
         ref("ConciseBody"),     // 1 = body
-        pos,                    // 0 = end
+        pos(),                  // 0 = end
         spliceNode(6,"ArrowFunction",6,0,[5,1]),
     ]));
 
@@ -2462,9 +2462,9 @@ grm.define("ConciseBody_1",
 grm.define("ConciseBody_2",
     sequence([
         keyword("{"),        // 4
-        whitespace,          // 3
+        whitespace(),        // 3
         ref("FunctionBody"), // 2
-        whitespace,          // 1
+        whitespace(),        // 1
         keyword("}"),        // 0
         spliceReplace(4,2),
     ]));
@@ -2482,9 +2482,9 @@ grm.define("ConciseBody",
 grm.define("ArrowFormalParameters",
     sequence([
         keyword("("),                  // 4
-        whitespace,                    // 3
+        whitespace(),                  // 3
         ref("StrictFormalParameters"), // 2
-        whitespace,                    // 1
+        whitespace(),                  // 1
         keyword(")"),                  // 0
         spliceReplace(4,2),
     ]));
@@ -2495,21 +2495,21 @@ grm.define("ArrowFormalParameters",
 
 grm.define("MethodDefinition_1",
     sequence([
-        pos,                           // 14 = start
+        pos(),                         // 14 = start
         ref("PropertyName"),           // 13 = name
-        whitespace,                    // 12
+        whitespace(),                  // 12
         keyword("("),                  // 11
-        whitespace,                    // 10
+        whitespace(),                  // 10
         ref("StrictFormalParameters"), // 9 = params
-        whitespace,                    // 8
+        whitespace(),                  // 8
         keyword(")"),                  // 7
-        whitespace,                    // 6
+        whitespace(),                  // 6
         keyword("{"),                  // 5
-        whitespace,                    // 4
+        whitespace(),                  // 4
         ref("FunctionBody"),           // 3 = body
-        whitespace,                    // 2
+        whitespace(),                  // 2
         keyword("}"),                  // 1
-        pos,                           // 0 = end
+        pos(),                         // 0 = end
         spliceNode(14,"Method",14,0,[13,9,3]),
     ]));
 
@@ -2522,21 +2522,21 @@ grm.define("MethodDefinition_2",
 
 grm.define("MethodDefinition_3",
     sequence([
-        pos,                 // 14 = start
+        pos(),               // 14 = start
         identifier("get"),   // 13 "get" is not a reserved word, so we can't use keyword here
-        whitespace,          // 12
+        whitespace(),        // 12
         ref("PropertyName"), // 11 = name
-        whitespace,          // 10
+        whitespace(),        // 10
         keyword("("),        // 9
-        whitespace,          // 8
+        whitespace(),        // 8
         keyword(")"),        // 7
-        whitespace,          // 6
+        whitespace(),        // 6
         keyword("{"),        // 5
-        whitespace,          // 4
+        whitespace(),        // 4
         ref("FunctionBody"), // 3 = body
-        whitespace,          // 2
+        whitespace(),        // 2
         keyword("}"),        // 1
-        pos,                 // 0 = end
+        pos(),               // 0 = end
         spliceNode(14,"Getter",14,0,[11,3]),
     ]));
 
@@ -2544,23 +2544,23 @@ grm.define("MethodDefinition_3",
 
 grm.define("MethodDefinition_4",
     sequence([
-        pos,                             // 16 = start
+        pos(),                           // 16 = start
         identifier("set"),               // 15
-        whitespace,                      // 14
+        whitespace(),                    // 14
         ref("PropertyName"),             // 13 = name
-        whitespace,                      // 12
+        whitespace(),                    // 12
         keyword("("),                    // 11
-        whitespace,                      // 10
+        whitespace(),                    // 10
         ref("PropertySetParameterList"), // 9 = param
-        whitespace,                      // 8
+        whitespace(),                    // 8
         keyword(")"),                    // 7
-        whitespace,                      // 6
+        whitespace(),                    // 6
         keyword("{"),                    // 5
-        whitespace,                      // 4
+        whitespace(),                    // 4
         ref("FunctionBody"),             // 3 = body
-        whitespace,                      // 2
+        whitespace(),                    // 2
         keyword("}"),                    // 1
-        pos,                             // 0 = end
+        pos(),                           // 0 = end
         spliceNode(16,"Setter",16,0,[13,9,3]),
     ]));
 
@@ -2585,23 +2585,23 @@ grm.define("PropertySetParameterList",
 
 grm.define("GeneratorMethod",
     sequence([
-        pos,                           // 16 = start
+        pos(),                         // 16 = start
         keyword("*"),                  // 15
-        whitespace,                    // 14
+        whitespace(),                  // 14
         ref("PropertyName"),           // 13 = name
-        whitespace,                    // 12
+        whitespace(),                  // 12
         keyword("("),                  // 11
-        whitespace,                    // 10
+        whitespace(),                  // 10
         ref("StrictFormalParameters"), // 9 = params
-        whitespace,                    // 8
+        whitespace(),                  // 8
         keyword(")"),                  // 7
-        whitespace,                    // 6
+        whitespace(),                  // 6
         keyword("{"),                  // 5
-        whitespace,                    // 4
+        whitespace(),                  // 4
         ref("GeneratorBody"),          // 3 = body
-        whitespace,                    // 2
+        whitespace(),                  // 2
         keyword("}"),                  // 1
-        pos,                           // 0 = end
+        pos(),                         // 0 = end
         spliceNode(16,"GeneratorMethod",16,0,[13,9,3]),
     ]));
 
@@ -2609,25 +2609,25 @@ grm.define("GeneratorMethod",
 
 grm.define("GeneratorDeclaration_named",
     sequence([
-        pos,                      // 18 = start
+        pos(),                    // 18 = start
         keyword("function"),      // 17
-        whitespace,               // 16
+        whitespace(),             // 16
         keyword("*"),             // 15
-        whitespace,               // 14
+        whitespace(),             // 14
         ref("BindingIdentifier"), // 13 = ident
-        whitespace,               // 12
+        whitespace(),             // 12
         keyword("("),             // 11
-        whitespace,               // 10
+        whitespace(),             // 10
         ref("FormalParameters"),  // 9 = params
-        whitespace,               // 8
+        whitespace(),             // 8
         keyword(")"),             // 7
-        whitespace,               // 6
+        whitespace(),             // 6
         keyword("{"),             // 5
-        whitespace,               // 4
+        whitespace(),             // 4
         ref("GeneratorBody"),     // 3 = body
-        whitespace,               // 2
+        whitespace(),             // 2
         keyword("}"),             // 1
-        pos,                      // 0 = end
+        pos(),                    // 0 = end
         spliceNode(18,"GeneratorDeclaration",18,0,[13,9,3]),
     ]));
 
@@ -2635,24 +2635,24 @@ grm.define("GeneratorDeclaration_named",
 
 grm.define("GeneratorDeclaration_unnamed",
     sequence([
-        pos,                     // 17 = start
+        pos(),                   // 17 = start
         keyword("function"),     // 16
-        whitespace,              // 15
+        whitespace(),            // 15
         keyword("*"),            // 14
-        whitespace,              // 13
+        whitespace(),            // 13
         keyword("("),            // 12
-        whitespace,              // 11
+        whitespace(),            // 11
         value(null),             // 10 = null
         ref("FormalParameters"), // 9 = params
-        whitespace,              // 8
+        whitespace(),            // 8
         keyword(")"),            // 7
-        whitespace,              // 6
+        whitespace(),            // 6
         keyword("{"),            // 5
-        whitespace,              // 4
+        whitespace(),            // 4
         ref("GeneratorBody"),    // 3 = body
-        whitespace,              // 2
+        whitespace(),            // 2
         keyword("}"),            // 1
-        pos,                     // 0 = end
+        pos(),                   // 0 = end
         spliceNode(17,"GeneratorDeclaration",17,0,[10,9,3]),
     ]));
 
@@ -2668,28 +2668,28 @@ grm.define("GeneratorDeclaration",
 
 grm.define("GeneratorExpression",
     sequence([
-        pos,                     // 17 = start
+        pos(),                   // 17 = start
         keyword("function"),     // 16
-        whitespace,              // 15
+        whitespace(),            // 15
         keyword("*"),            // 14
-        whitespace,              // 13
+        whitespace(),            // 13
         opt(sequence([
             ref("BindingIdentifier"),
-            whitespace,
+            whitespace(),
             spliceReplace(1,1),
         ])),
         keyword("("),            // 11
-        whitespace,              // 10
+        whitespace(),            // 10
         ref("FormalParameters"), // 9 = params
-        whitespace,              // 8
+        whitespace(),            // 8
         keyword(")"),            // 7
-        whitespace,              // 6
+        whitespace(),            // 6
         keyword("{"),            // 5
-        whitespace,              // 4
+        whitespace(),            // 4
         ref("GeneratorBody"),    // 3 = body
-        whitespace,              // 2
+        whitespace(),            // 2
         keyword("}"),            // 1
-        pos,                     // 0 = end
+        pos(),                   // 0 = end
         spliceNode(17,"GeneratorExpression",17,0,[12,9,3]),
     ]));
 
@@ -2702,13 +2702,13 @@ grm.define("GeneratorBody",
 
 grm.define("YieldExpression_1",
     sequence([
-        pos,                         // 6
+        pos(),                       // 6
         keyword("yield"),            // 5
-        whitespaceNoNewline,         // 4
+        whitespaceNoNewline(),       // 4
         keyword("*"),                // 3
-        whitespace,                  // 2
+        whitespace(),                // 2
         ref("AssignmentExpression"), // 1
-        pos,                         // 0
+        pos(),                       // 0
         spliceNode(6,"YieldStar",6,0,[1]),
     ]));
 
@@ -2716,11 +2716,11 @@ grm.define("YieldExpression_1",
 
 grm.define("YieldExpression_2",
     sequence([
-        pos,                         // 4
+        pos(),                       // 4
         keyword("yield"),            // 3
-        whitespaceNoNewline,         // 2
+        whitespaceNoNewline(),       // 2
         ref("AssignmentExpression"), // 1
-        pos,                         // 0
+        pos(),                       // 0
         spliceNode(4,"YieldExpr",4,0,[1]),
     ]));
 
@@ -2728,9 +2728,9 @@ grm.define("YieldExpression_2",
 
 grm.define("YieldExpression_3",
     sequence([
-        pos,
+        pos(),
         keyword("yield"),
-        pos,
+        pos(),
         spliceNode(2,"YieldNothing",2,0,[]),
     ]));
 
@@ -2749,13 +2749,13 @@ grm.define("YieldExpression",
 
 grm.define("ClassDeclaration_1",
     sequence([
-        pos,                      // 6 = start
+        pos(),                    // 6 = start
         keyword("class"),         // 5
-        whitespace,               // 4
+        whitespace(),             // 4
         ref("BindingIdentifier"), // 3 = ident
-        whitespace,               // 2
+        whitespace(),             // 2
         ref("ClassTail"),         // 1 = tail
-        pos,                      // 0 = end
+        pos(),                    // 0 = end
         spliceNode(6,"ClassDeclaration",6,0,[3,1]),
     ]));
 
@@ -2763,12 +2763,12 @@ grm.define("ClassDeclaration_1",
 
 grm.define("ClassDeclaration_2",
     sequence([
-        pos,              // 5
+        pos(),            // 5
         keyword("class"), // 4
-        whitespace,       // 3
+        whitespace(),     // 3
         value(null),      // 2
         ref("ClassTail"), // 1
-        pos,              // 0
+        pos(),            // 0
         spliceNode(5,"ClassDeclaration",5,0,[2,1]),
     ]));
 
@@ -2784,16 +2784,16 @@ grm.define("ClassDeclaration",
 
 grm.define("ClassExpression",
     sequence([
-        pos,                  // 5
+        pos(),                // 5
         keyword("class"),     // 4
-        whitespace,           // 3
+        whitespace(),         // 3
         opt(sequence([
             ref("BindingIdentifier"),
-            whitespace,
+            whitespace(),
             spliceReplace(1,1),
         ])),
         ref("ClassTail"),     // 1
-        pos,                  // 0
+        pos(),                // 0
         spliceNode(5,"ClassExpression",5,0,[2,1]),
     ]));
 
@@ -2801,27 +2801,27 @@ grm.define("ClassExpression",
 
 grm.define("ClassTail",
     sequence([
-        pos,                // 6 = start
+        pos(),              // 6 = start
         opt(sequence([         // 5 = heritage
             ref("ClassHeritage"),
-            whitespace,
+            whitespace(),
             spliceReplace(1,1),
         ])),
         keyword("{"),       // 4
-        whitespace,         // 3
+        whitespace(),       // 3
         choice([            // 2 = body
             sequence([
                 ref("ClassBody"),
-                whitespace,
+                whitespace(),
                 spliceReplace(1,1),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
         keyword("}"),       // 1
-        pos,                // 0 = end
+        pos(),              // 0 = end
         spliceNode(6,"ClassTail",6,0,[5,2]),
     ]));
 
@@ -2829,11 +2829,11 @@ grm.define("ClassTail",
 
 grm.define("ClassHeritage",
     sequence([
-        pos,                           // 4 = start
+        pos(),                         // 4 = start
         keyword("extends"),            // 3
-        whitespace,                    // 2
+        whitespace(),                  // 2
         ref("LeftHandSideExpression"), // 1 = expr
-        pos,                           // 0 = end
+        pos(),                         // 0 = end
         spliceNode(4,"Extends",4,0,[1]),
     ]));
 
@@ -2848,7 +2848,7 @@ grm.define("ClassElementList",
     list(
         ref("ClassElement"),
         sequence([
-            whitespace,
+            whitespace(),
             ref("ClassElement"),
             spliceReplace(1,0),
         ])
@@ -2863,11 +2863,11 @@ grm.define("ClassElement_1",
 
 grm.define("ClassElement_2",
     sequence([
-        pos,
+        pos(),
         keyword("static"),
-        whitespace,
+        whitespace(),
         ref("MethodDefinition"),
-        pos,
+        pos(),
         spliceNode(4,"StaticMethodDefinition",4,0,[1]),
     ]));
 
@@ -2875,9 +2875,9 @@ grm.define("ClassElement_2",
 
 grm.define("ClassElement_3",
     sequence([
-        pos,
+        pos(),
         keyword(";"),
-        pos,
+        pos(),
         spliceNode(2,"EmptyClassElement",2,0,[]),
     ]));
 
@@ -2896,16 +2896,16 @@ grm.define("ClassElement",
 
 grm.define("Script",
     sequence([
-        pos,
-        whitespace,
+        pos(),
+        whitespace(),
         choice([
             ref("ScriptBody"),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
-        pos,
+        pos(),
         spliceNode(3,"Script",3,0,[1]),
     ]));
 
@@ -2920,16 +2920,16 @@ grm.define("ScriptBody",
 
 grm.define("Module",
     sequence([
-        pos,
-        whitespace,
+        pos(),
+        whitespace(),
         choice([
             ref("ModuleBody"),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
-        pos,
+        pos(),
         spliceNode(3,"Module",3,0,[1]),
     ]));
 
@@ -2944,7 +2944,7 @@ grm.define("ModuleItemList",
     list(
         ref("ModuleItem"),
         sequence([
-            whitespace,
+            whitespace(),
             ref("ModuleItem"),
             spliceReplace(1,0),
         ])
@@ -2965,15 +2965,15 @@ grm.define("ModuleItem",
 
 grm.define("ImportDeclaration_from",
     sequence([
-        pos,                 // 8 = start
+        pos(),               // 8 = start
         keyword("import"),   // 7
-        whitespace,          // 6
+        whitespace(),        // 6
         ref("ImportClause"), // 5 = importClause
-        whitespace,          // 4
+        whitespace(),        // 4
         ref("FromClause"),   // 3 = fromClause
-        whitespace,          // 2
+        whitespace(),        // 2
         keyword(";"),        // 1
-        pos,                 // 0 = end
+        pos(),               // 0 = end
         spliceNode(8,"ImportFrom",8,0,[5,3]),
     ]));
 
@@ -2981,13 +2981,13 @@ grm.define("ImportDeclaration_from",
 
 grm.define("ImportDeclaration_module",
     sequence([
-        pos,                    // 6 = start
+        pos(),                  // 6 = start
         keyword("import"),      // 5
-        whitespace,             // 4
+        whitespace(),           // 4
         ref("ModuleSpecifier"), // 3 = specifier
-        whitespace,             // 2
+        whitespace(),           // 2
         keyword(";"),           // 1
-        pos,                    // 0 = end
+        pos(),                  // 0 = end
         spliceNode(6,"ImportModule",6,0,[3]),
     ]));
 
@@ -3006,27 +3006,27 @@ grm.define("ImportClause",
         ref("NameSpaceImport"),
         ref("NamedImports"),
         sequence([
-            pos,                            // 6 = start
+            pos(),                          // 6 = start
             ref("ImportedDefaultBinding"),  // 5 = defbinding
             choice([
                 sequence([
-                    whitespace,             // 4
+                    whitespace(),           // 4
                     keyword(","),           // 3
-                    whitespace,             // 2
+                    whitespace(),           // 2
                     ref("NameSpaceImport"), // 1 = nsimport
-                    pos,                    // 0 = end
+                    pos(),                  // 0 = end
                     spliceNode(6,"DefaultAndNameSpaceImports",6,0,[5,1]),
                 ]),
                 sequence([
-                    whitespace,             // 4
+                    whitespace(),           // 4
                     keyword(","),           // 3
-                    whitespace,             // 2
+                    whitespace(),           // 2
                     ref("NamedImports"),    // 1 = nsimports
-                    pos,                    // 0 = end
+                    pos(),                  // 0 = end
                     spliceNode(6,"DefaultAndNamedImports",6,0,[5,1]),
                 ]),
                 sequence([
-                    pos,
+                    pos(),
                     spliceNode(2,"DefaultImport",2,0,[1]),
                 ]),
             ]),
@@ -3042,13 +3042,13 @@ grm.define("ImportedDefaultBinding",
 
 grm.define("NameSpaceImport",
     sequence([
-        pos,                    // 6 = start
+        pos(),                  // 6 = start
         keyword("*"),           // 5
-        whitespace,             // 4
+        whitespace(),           // 4
         identifier("as"),       // 3
-        whitespace,             // 2
+        whitespace(),           // 2
         ref("ImportedBinding"), // 1 = binding
-        pos,                    // 0 = end
+        pos(),                  // 0 = end
         spliceNode(6,"NameSpaceImport",6,0,[1]),
     ]));
 
@@ -3056,27 +3056,27 @@ grm.define("NameSpaceImport",
 
 grm.define("NamedImports",
     sequence([
-        pos,               // 5 = start
+        pos(),             // 5 = start
         keyword("{"),      // 4
-        whitespace,        // 3
+        whitespace(),      // 3
         choice([           // 2 = imports
             sequence([
                 ref("ImportsList"),
-                whitespace,
+                whitespace(),
                 opt(sequence([
                     keyword(","),
-                    whitespace,
-                    pop,
+                    whitespace(),
+                    pop(),
                 ])),
                 spliceReplace(2,2),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
         keyword("}"),      // 1
-        pos,               // 0 = end
+        pos(),             // 0 = end
         spliceNode(5,"NamedImports",5,0,[2]),
     ]));
 
@@ -3085,7 +3085,7 @@ grm.define("NamedImports",
 grm.define("FromClause",
     sequence([
         identifier("from"),
-        whitespace,
+        whitespace(),
         ref("ModuleSpecifier"),
         spliceReplace(2,0),
     ]));
@@ -3096,9 +3096,9 @@ grm.define("ImportsList",
     list(
         ref("ImportSpecifier"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("ImportSpecifier"),
             spliceReplace(3,0),
         ])
@@ -3109,19 +3109,19 @@ grm.define("ImportsList",
 grm.define("ImportSpecifier",
     choice([
         sequence([
-            pos,                     // 6 = start
+            pos(),                   // 6 = start
             ref("IdentifierName"),   // 5 = name
-            whitespace,              // 4
+            whitespace(),            // 4
             identifier("as"),        // 3
-            whitespace,              // 2
+            whitespace(),            // 2
             ref("ImportedBinding"),  // 1 = binding
-            pos,                     // 0 = end
+            pos(),                   // 0 = end
             spliceNode(6,"ImportAsSpecifier",6,0,[5,1]),
         ]),
         sequence([
-            pos,                     // 2 = start
+            pos(),                   // 2 = start
             ref("ImportedBinding"),  // 1 = binding
-            pos,                     // 0 = end
+            pos(),                   // 0 = end
             spliceNode(2,"ImportSpecifier",2,0,[1]),
         ]),
     ]));
@@ -3142,68 +3142,68 @@ grm.define("ImportedBinding",
 
 grm.define("ExportDeclaration",
     sequence([
-        pos,
+        pos(),
         keyword("export"),
-        whitespace,
+        whitespace(),
         choice([
             sequence([
                 keyword("default"),          // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("HoistableDeclaration"), // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(6,"ExportDefault",6,0,[1]),
             ]),
             sequence([
                 keyword("default"),          // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 ref("ClassDeclaration"),     // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(6,"ExportDefault",6,0,[1]),
             ]),
             sequence([
                 keyword("default"),          // 5
-                whitespace,                  // 4
+                whitespace(),                // 4
                 not(keyword("function")),    // FIXME: need tests for this
                 not(keyword("class")),       // FIXME: need tests for this
                 ref("AssignmentExpression"), // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 keyword(";"),                // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(8,"ExportDefault",8,0,[3]),
             ]),
             sequence([
                 keyword("*"),                // 5
-                whitespace,                  // 4
+                whitespace(),                // 4
                 ref("FromClause"),           // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 keyword(";"),                // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(8,"ExportStar",8,0,[3]),
             ]),
             sequence([
                 ref("ExportClause"),         // 5
-                whitespace,                  // 4
+                whitespace(),                // 4
                 ref("FromClause"),           // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 keyword(";"),                // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(8,"ExportFrom",8,0,[5,3]),
             ]),
             sequence([
                 ref("ExportClause"),         // 3
-                whitespace,                  // 2
+                whitespace(),                // 2
                 keyword(";"),                // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(6,"ExportPlain",6,0,[3]),
             ]),
             sequence([
                 ref("VariableStatement"),    // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(4,"ExportVariable",4,0,[1]),
             ]),
             sequence([
                 ref("Declaration"),          // 1
-                pos,                         // 0
+                pos(),                       // 0
                 spliceNode(4,"ExportDeclaration",4,0,[1]),
             ]),
         ]),
@@ -3213,27 +3213,27 @@ grm.define("ExportDeclaration",
 
 grm.define("ExportClause",
     sequence([
-        pos,             // 5
+        pos(),           // 5
         keyword("{"),    // 4
-        whitespace,      // 3
+        whitespace(),    // 3
         choice([         // 2
             sequence([
                 ref("ExportsList"),
-                whitespace,
+                whitespace(),
                 opt(sequence([
                     keyword(","),
-                    whitespace,
-                    pop,
+                    whitespace(),
+                    pop(),
                 ])),
                 spliceReplace(2,2),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceEmptyListNode(0,0,0),
             ]),
         ]),
         keyword("}"),    // 1
-        pos,             // 0
+        pos(),           // 0
         spliceNode(5,"ExportClause",5,0,[2]),
     ]));
 
@@ -3243,9 +3243,9 @@ grm.define("ExportsList",
     list(
         ref("ExportSpecifier"),
         sequence([
-            whitespace,
+            whitespace(),
             keyword(","),
-            whitespace,
+            whitespace(),
             ref("ExportSpecifier"),
             spliceReplace(3,0),
         ])
@@ -3255,19 +3255,19 @@ grm.define("ExportsList",
 
 grm.define("ExportSpecifier",
     sequence([
-        pos,
+        pos(),
         ref("IdentifierName"),
         choice([
             sequence([
-                whitespace,            // 4
+                whitespace(),          // 4
                 identifier("as"),      // 3
-                whitespace,            // 2
+                whitespace(),          // 2
                 ref("IdentifierName"), // 1
-                pos,                   // 0
+                pos(),                 // 0
                 spliceNode(4,"ExportAsSpecifier",6,0,[5,1]),
             ]),
             sequence([
-                pos,
+                pos(),
                 spliceNode(0,"ExportNormalSpecifier",2,0,[1]),
             ]),
         ]),

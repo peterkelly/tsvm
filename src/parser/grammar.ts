@@ -261,7 +261,9 @@ class EmptyAction extends LeafAction {
     }
 }
 
-export const empty = new EmptyAction();
+export function empty(): Action {
+    return new EmptyAction();
+}
 
 class NotAction extends Action {
     private child: Action;
@@ -690,7 +692,9 @@ class PopAction extends LeafAction {
     }
 }
 
-export const pop: Action = new PopAction();
+export function pop(): Action {
+    return new PopAction();
+}
 
 class OptAction extends Action {
     private child: Action;
@@ -825,7 +829,9 @@ class PosAction extends LeafAction {
     }
 }
 
-export const pos: Action = new PosAction();
+export function pos(): Action {
+    return new PosAction();
+}
 
 class ValueAction extends LeafAction {
     private value: any;
@@ -939,7 +945,9 @@ class WhitespaceAction extends LeafAction {
     }
 }
 
-export const whitespace = new WhitespaceAction();
+export function whitespace(): Action {
+    return new WhitespaceAction();
+}
 
 class WhitespaceNoNewlineAction extends LeafAction {
     public constructor() {
@@ -960,7 +968,9 @@ class WhitespaceNoNewlineAction extends LeafAction {
     }
 }
 
-export const whitespaceNoNewline = new WhitespaceNoNewlineAction();
+export function whitespaceNoNewline(): Action {
+    return new WhitespaceNoNewlineAction();
+}
 
 class IdentifierTokenAction extends LeafAction {
     public constructor() {
@@ -986,7 +996,9 @@ class IdentifierTokenAction extends LeafAction {
     }
 }
 
-export const identifier_token: Action = new IdentifierTokenAction();
+export function identifier_token(): Action {
+    return new IdentifierTokenAction();
+}
 
 class NumericLiteralTokenAction extends LeafAction {
     public constructor() {
@@ -1013,7 +1025,9 @@ class NumericLiteralTokenAction extends LeafAction {
     }
 }
 
-export const numeric_literal_token: Action = new NumericLiteralTokenAction();
+export function numeric_literal_token(): Action {
+    return new NumericLiteralTokenAction();
+}
 
 class StringLiteralTokenAction extends LeafAction {
     public constructor() {
@@ -1039,4 +1053,6 @@ class StringLiteralTokenAction extends LeafAction {
     }
 }
 
-export const string_literal_token = new StringLiteralTokenAction();
+export function string_literal_token(): Action {
+    return new StringLiteralTokenAction();
+}
