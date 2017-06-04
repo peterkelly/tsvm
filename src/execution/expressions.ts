@@ -659,7 +659,7 @@ export class ArrayLiteralNode extends ExpressionNode {
                 if (!(initValueComp instanceof NormalCompletion))
                     return initValueComp;
                 const initValue = initValueComp.value;
-                const createdComp = CreateDataProperty(ctx.realm,array,new JSString(''+nextIndex),initValue);
+                const createdComp = CreateDataProperty(ctx.realm,array,new JSString(""+nextIndex),initValue);
                 if (!(createdComp instanceof NormalCompletion))
                     return createdComp;
                 const created = createdComp.value;

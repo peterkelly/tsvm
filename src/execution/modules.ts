@@ -135,7 +135,7 @@ export class ScriptNode extends ASTNode {
     // ES6 Section 15.1.6 Static Semantics: VarScopedDeclarations
     public varScopedDeclarations(out: VarScopedDeclaration[]): void {
         // FIXME: Return TopLevelVarScopedDeclarations of StatementList.
-        throw new Error('ScriptNode.varScopedDeclarations not implemented');
+        throw new Error("ScriptNode.varScopedDeclarations not implemented");
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference | Empty> {
