@@ -1939,7 +1939,7 @@ export abstract class MultiplicativeNode extends BinaryNode {
 
         // 10. Return the result of applying the MultiplicativeOperator (*, /, or %) to lnum and rnum
         // as specified in 12.6.3.1, 12.6.3.2, or 12.6.3.3.
-        let resultNum = this.primitiveEvaluate(lnum.numberValue,rnum.numberValue);
+        const resultNum = this.primitiveEvaluate(lnum.numberValue,rnum.numberValue);
         return new NormalCompletion(new JSNumber(resultNum));
     }
 }
