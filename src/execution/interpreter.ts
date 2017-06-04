@@ -72,7 +72,7 @@ class ConsoleLogFunction extends JSObject {
     public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         const strings: string[] = [];
         for (const arg of args) {
-            const strComp = ToString(realm,arg);
+            const strComp = ToString(realm, arg);
             if (!(strComp instanceof NormalCompletion))
                 return strComp;
             const str = strComp.value;
@@ -87,15 +87,15 @@ export function evalModule(node: ModuleNode, callbacks: ExecutionCallbacks): voi
     const realm = node.realm;
     const envRec = realm.globalEnv.record;
 
-    envRec.CreateImmutableBinding("console",true);
+    envRec.CreateImmutableBinding("console", true);
     const consoleObject = new JSObject(realm.intrinsics.ObjectPrototype);
-    consoleObject.properties.put(new JSString("log"),new DataDescriptor({
+    consoleObject.properties.put(new JSString("log"), new DataDescriptor({
         enumerable: true,
         configurable: true,
         writable: true,
-        value: new ConsoleLogFunction(realm.intrinsics.FunctionPrototype,callbacks)
+        value: new ConsoleLogFunction(realm.intrinsics.FunctionPrototype, callbacks)
     }));
-    envRec.InitializeBinding("console",consoleObject);
+    envRec.InitializeBinding("console", consoleObject);
 
     const resultComp = node.topLevelModuleEvaluationJob();
     if (resultComp instanceof NormalCompletion) {
@@ -107,13 +107,13 @@ export function evalModule(node: ModuleNode, callbacks: ExecutionCallbacks): voi
         if (!(resultComp instanceof ThrowCompletion))
             throw new Error("Completion type not Normal or Throw");
 
-        const strComp = ToString(realm,resultComp.exceptionValue);
+        const strComp = ToString(realm, resultComp.exceptionValue);
         if (!(strComp instanceof NormalCompletion))
             throw new Error("toString() on exception object failed");
 
-        callbacks.failure("Exception: "+strComp.value);
+        callbacks.failure("Exception: " + strComp.value);
     }
     catch (e) {
-        callbacks.failure("Exception (internal): "+e);
+        callbacks.failure("Exception (internal): " + e);
     }
 }

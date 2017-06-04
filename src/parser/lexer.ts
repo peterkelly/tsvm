@@ -84,7 +84,7 @@ const keywordArray = [
     "}",
 ];
 
-const keywordSet = stringArrayToSet(keywordArray,TokenKind.FIRST_KEYWORD);
+const keywordSet = stringArrayToSet(keywordArray, TokenKind.FIRST_KEYWORD);
 
 const keywordMaxLen = stringArrayMaxLength(keywordArray);
 
@@ -96,7 +96,7 @@ function stringArrayToSet(array: string[], start: number): { [key: string]: numb
     const result: { [key: string]: number } = {};
     for (let i = 0; i < array.length; i++) {
         const str = array[i];
-        result[str] = start+i;
+        result[str] = start + i;
     }
     return result;
 }
@@ -122,13 +122,13 @@ export function isIdChar(c: string): boolean {
 export function upcomingKeyword(p: Parser): Token | null {
     let longest: string | null = null;
     for (let i = 1; i <= keywordMaxLen; i++) {
-        const candidate = p.text.substring(p.pos,p.pos+i);
+        const candidate = p.text.substring(p.pos, p.pos + i);
         if (isKeyword(candidate))
             longest = candidate;
     }
     if (longest == null)
         return null;
-    return new Token(new Range(p.pos,p.pos+longest.length),keywordSet[longest],longest);
+    return new Token(new Range(p.pos, p.pos + longest.length), keywordSet[longest], longest);
 }
 
 export function lexIdentOrKeyword(p: Parser): Token | null {
@@ -138,12 +138,12 @@ export function lexIdentOrKeyword(p: Parser): Token | null {
         current = p.next();
         while ((current != null) && isIdChar(current))
             current = p.next();
-        const range = new Range(start,p.pos);
-        const value = p.text.substring(range.start,range.end);
+        const range = new Range(start, p.pos);
+        const value = p.text.substring(range.start, range.end);
         if (isKeyword(value))
-            return new Token(new Range(start,p.pos),keywordSet[value],value);
+            return new Token(new Range(start, p.pos), keywordSet[value], value);
         else
-            return new Token(new Range(start,p.pos),TokenKind.IDENT,value);
+            return new Token(new Range(start, p.pos), TokenKind.IDENT, value);
     }
     else {
         const token = upcomingKeyword(p);
@@ -173,11 +173,11 @@ export function lexNumber(p: Parser): Token | null {
         }
         if (p.pos === postDecimal) {
             p.pos = start;
-            throw new ParseError(p,p.pos,"Invalid number");
+            throw new ParseError(p, p.pos, "Invalid number");
         }
     }
-    const stringValue = p.text.substring(start,p.pos);
-    return new Token(new Range(start,p.pos),TokenKind.NUMBER,stringValue);
+    const stringValue = p.text.substring(start, p.pos);
+    return new Token(new Range(start, p.pos), TokenKind.NUMBER, stringValue);
 }
 
 export function lexString(p: Parser): Token | null {
@@ -188,11 +188,11 @@ export function lexString(p: Parser): Token | null {
         p.next();
         let value = "";
         while (true) {
-            if ((p.pos+1 < p.len) && (p.text[p.pos] === "\\") && (p.text[p.pos+1] === "\"")) {
+            if ((p.pos + 1 < p.len) && (p.text[p.pos] === "\\") && (p.text[p.pos + 1] === "\"")) {
                 value += "\"";
                 p.pos += 2;
             }
-            else if ((p.pos+1 < p.len) && (p.text[p.pos] === "\\") && (p.text[p.pos+1] === "'")) {
+            else if ((p.pos + 1 < p.len) && (p.text[p.pos] === "\\") && (p.text[p.pos + 1] === "'")) {
                 value += "'";
                 p.pos += 2;
             }
@@ -210,10 +210,10 @@ export function lexString(p: Parser): Token | null {
             }
             else {
                 p.pos = start;
-                throw new ParseError(p,p.pos,"Unterminated string");
+                throw new ParseError(p, p.pos, "Unterminated string");
             }
         }
-        return new Token(new Range(start,p.pos),TokenKind.STRING,value);
+        return new Token(new Range(start, p.pos), TokenKind.STRING, value);
     }
     return null;
 }

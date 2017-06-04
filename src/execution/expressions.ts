@@ -138,7 +138,7 @@ export enum Precedence {
 
 export function ExpressionNode_fromGeneric(node: ASTNode | null): ExpressionNode {
     if (node === null)
-        throw new CannotConvertError("ExpressionNode",node);
+        throw new CannotConvertError("ExpressionNode", node);
     switch (node.kind) {
         case "Multiply":
             return MultiplyNode.fromGeneric(node);
@@ -285,7 +285,7 @@ export function ExpressionNode_fromGeneric(node: ASTNode | null): ExpressionNode
         case "ClassExpression":
             return ClassExpressionNode.fromGeneric(node);
         default:
-            throw new CannotConvertError("ExpressionNode",node);
+            throw new CannotConvertError("ExpressionNode", node);
     }
 }
 
@@ -293,7 +293,7 @@ export type LiteralPropertyNameType = IdentifierNode | StringLiteralNode | Numer
 export const LiteralPropertyNameType = {
     fromGeneric(node: ASTNode | null): LiteralPropertyNameType {
         if (node === null)
-            throw new CannotConvertError("LiteralPropertyNameType",node);
+            throw new CannotConvertError("LiteralPropertyNameType", node);
         switch (node.kind) {
             case "Identifier":
                 return IdentifierNode.fromGeneric(node);
@@ -302,7 +302,7 @@ export const LiteralPropertyNameType = {
             case "NumericLiteral":
                 return NumericLiteralNode.fromGeneric(node);
             default:
-                throw new CannotConvertError("LiteralPropertyNameType",node);
+                throw new CannotConvertError("LiteralPropertyNameType", node);
         }
     }
 };
@@ -311,7 +311,7 @@ export type PropertyNameType = ComputedPropertyNameNode | LiteralPropertyNameTyp
 export const PropertyNameType = {
     fromGeneric(node: ASTNode | null): PropertyNameType {
         if (node === null)
-            throw new CannotConvertError("PropertyNameType",node);
+            throw new CannotConvertError("PropertyNameType", node);
         switch (node.kind) {
             case "ComputedPropertyName":
                 return ComputedPropertyNameNode.fromGeneric(node);
@@ -320,7 +320,7 @@ export const PropertyNameType = {
             case "NumericLiteral":
                 return LiteralPropertyNameType.fromGeneric(node);
             default:
-                throw new CannotConvertError("PropertyNameType",node);
+                throw new CannotConvertError("PropertyNameType", node);
         }
     }
 };
@@ -330,7 +330,7 @@ export type PropertyDefinitionType = ColonPropertyDefinitionNode | CoverInitiali
 export const PropertyDefinitionType = {
     fromGeneric(node: ASTNode | null): PropertyDefinitionType {
         if (node === null)
-            throw new CannotConvertError("PropertyDefinitionType",node);
+            throw new CannotConvertError("PropertyDefinitionType", node);
         switch (node.kind) {
             case "ColonPropertyDefinition":
                 return ColonPropertyDefinitionNode.fromGeneric(node);
@@ -349,7 +349,7 @@ export const ArgumentType = {
     fromGeneric(node: ASTNode | null): ArgumentType {
         try { return ExpressionNode_fromGeneric(node); } catch (e) {}
         try { return SpreadElementNode.fromGeneric(node); } catch (e) {}
-        throw new CannotConvertError("ArgumentType",node);
+        throw new CannotConvertError("ArgumentType", node);
     }
 };
 
@@ -359,7 +359,7 @@ export const ArrayLiteralItemType = {
         try { return ElisionNode.fromGeneric(node); } catch (e) {}
         try { return SpreadElementNode.fromGeneric(node); } catch (e) {}
         try { return ExpressionNode_fromGeneric(node); } catch (e) {}
-        throw new CannotConvertError("ArrayLiteralItemType",node);
+        throw new CannotConvertError("ArrayLiteralItemType", node);
     }
 };
 
@@ -372,10 +372,10 @@ export abstract class BinaryNode extends ExpressionNode {
     public readonly _children: ASTNode[];
 
     public constructor(range: Range, kind: string, left: ExpressionNode, right: ExpressionNode) {
-        super(range,kind);
+        super(range, kind);
         this.left = left;
         this.right = right;
-        this._children = [left,right];
+        this._children = [left, right];
     }
 
     public get children(): (ASTNode | null)[] {
@@ -392,7 +392,7 @@ export class IdentifierReferenceNode extends ExpressionNode {
     public readonly value: string;
 
     public constructor(range: Range, value: string) {
-        super(range,"IdentifierReference");
+        super(range, "IdentifierReference");
         this.value = value;
     }
 
@@ -405,7 +405,7 @@ export class IdentifierReferenceNode extends ExpressionNode {
     }
 
     public get label(): string {
-        return "IdentifierReference("+JSON.stringify(this.value)+")";
+        return "IdentifierReference(" + JSON.stringify(this.value) + ")";
         // return this.value;
     }
 
@@ -415,8 +415,8 @@ export class IdentifierReferenceNode extends ExpressionNode {
 
     public static fromGeneric(node: ASTNode | null): IdentifierReferenceNode {
         if ((node === null) || (node.kind !== "IdentifierReference") || !(node instanceof GenericStringNode))
-            throw new CannotConvertError("IdentifierReference",node);
-        return new IdentifierReferenceNode(node.range,node.value);
+            throw new CannotConvertError("IdentifierReference", node);
+        return new IdentifierReferenceNode(node.range, node.value);
     }
 }
 
@@ -430,7 +430,7 @@ export class ThisNode extends ExpressionNode {
     public _type_ThisNode: any;
 
     public constructor(range: Range) {
-        super(range,"This");
+        super(range, "This");
     }
 
     public get precedence(): number {
@@ -446,7 +446,7 @@ export class ThisNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): ThisNode {
-        node = check.node(node,"This",0);
+        node = check.node(node, "This", 0);
         return new ThisNode(node.range);
     }
 }
@@ -459,7 +459,7 @@ export class NullLiteralNode extends ExpressionNode {
     public _type_NullLiteralNode: any;
 
     public constructor(range: Range) {
-        super(range,"NullLiteral");
+        super(range, "NullLiteral");
     }
 
     public get precedence(): number {
@@ -475,7 +475,7 @@ export class NullLiteralNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): NullLiteralNode {
-        node = check.node(node,"NullLiteral",0);
+        node = check.node(node, "NullLiteral", 0);
         return new NullLiteralNode(node.range);
     }
 }
@@ -484,7 +484,7 @@ export class TrueNode extends ExpressionNode {
     public _type_TrueNode: any;
 
     public constructor(range: Range) {
-        super(range,"True");
+        super(range, "True");
     }
 
     public get precedence(): number {
@@ -500,7 +500,7 @@ export class TrueNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): TrueNode {
-        node = check.node(node,"True",0);
+        node = check.node(node, "True", 0);
         return new TrueNode(node.range);
     }
 }
@@ -509,7 +509,7 @@ export class FalseNode extends ExpressionNode {
     public _type_FalseNode: any;
 
     public constructor(range: Range) {
-        super(range,"False");
+        super(range, "False");
     }
 
     public get precedence(): number {
@@ -525,7 +525,7 @@ export class FalseNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): FalseNode {
-        node = check.node(node,"False",0);
+        node = check.node(node, "False", 0);
         return new FalseNode(node.range);
     }
 }
@@ -535,7 +535,7 @@ export class NumericLiteralNode extends ExpressionNode {
     public readonly value: number;
 
     public constructor(range: Range, value: number) {
-        super(range,"NumericLiteral");
+        super(range, "NumericLiteral");
         this.value = value;
     }
 
@@ -548,8 +548,8 @@ export class NumericLiteralNode extends ExpressionNode {
     }
 
     public get label(): string {
-        // return "NumericLiteral("+this.value+")";
-        return ""+this.value;
+        // return "NumericLiteral(" + this.value + ")";
+        return "" + this.value;
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -558,8 +558,8 @@ export class NumericLiteralNode extends ExpressionNode {
 
     public static fromGeneric(node: ASTNode | null): NumericLiteralNode {
         if ((node === null) || (node.kind !== "NumericLiteral") || !(node instanceof GenericNumberNode))
-            throw new CannotConvertError("NumericLiteral",node);
-        return new NumericLiteralNode(node.range,node.value);
+            throw new CannotConvertError("NumericLiteral", node);
+        return new NumericLiteralNode(node.range, node.value);
     }
 }
 
@@ -568,7 +568,7 @@ export class StringLiteralNode extends ExpressionNode {
     public readonly value: string;
 
     public constructor(range: Range, value: string) {
-        super(range,"StringLiteral");
+        super(range, "StringLiteral");
         this.value = value;
     }
 
@@ -591,8 +591,8 @@ export class StringLiteralNode extends ExpressionNode {
 
     public static fromGeneric(node: ASTNode | null): StringLiteralNode {
         if ((node === null) || (node.kind !== "StringLiteral") || !(node instanceof GenericStringNode))
-            throw new CannotConvertError("StringLiteral",node);
-        return new StringLiteralNode(node.range,node.value);
+            throw new CannotConvertError("StringLiteral", node);
+        return new StringLiteralNode(node.range, node.value);
     }
 }
 
@@ -603,7 +603,7 @@ export class ElementListNode extends ASTNode {
     public readonly elements: ArrayLiteralItemType[];
 
     public constructor(range: Range, elements: ArrayLiteralItemType[]) {
-        super(range,"[]");
+        super(range, "[]");
         this.elements = elements;
     }
 
@@ -616,7 +616,7 @@ export class ElementListNode extends ASTNode {
         const elements: ArrayLiteralItemType[] = [];
         for (const listElement of list.elements)
             elements.push(ArrayLiteralItemType.fromGeneric(listElement));
-        return new ElementListNode(list.range,elements);
+        return new ElementListNode(list.range, elements);
     }
 }
 
@@ -625,7 +625,7 @@ export class ArrayLiteralNode extends ExpressionNode {
     private readonly elements: ElementListNode;
 
     public constructor(range: Range, elements: ElementListNode) {
-        super(range,"ArrayLiteral");
+        super(range, "ArrayLiteral");
         this.elements = elements;
     }
 
@@ -640,7 +640,7 @@ export class ArrayLiteralNode extends ExpressionNode {
     // ES6 Section 12.2.5.3: Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
         // ElisionNode | SpreadElementNode | ExpressionNode
-        const arrayComp = ArrayCreate(ctx.realm,0);
+        const arrayComp = ArrayCreate(ctx.realm, 0);
         if (!(arrayComp instanceof NormalCompletion))
             return arrayComp;
         const array = arrayComp.value;
@@ -655,11 +655,11 @@ export class ArrayLiteralNode extends ExpressionNode {
             }
             else if (element instanceof ExpressionNode) {
                 const initResultComp = element.evaluate(ctx);
-                const initValueComp = GetValue(ctx.realm,initResultComp);
+                const initValueComp = GetValue(ctx.realm, initResultComp);
                 if (!(initValueComp instanceof NormalCompletion))
                     return initValueComp;
                 const initValue = initValueComp.value;
-                const createdComp = CreateDataProperty(ctx.realm,array,new JSString(""+nextIndex),initValue);
+                const createdComp = CreateDataProperty(ctx.realm, array, new JSString("" + nextIndex), initValue);
                 if (!(createdComp instanceof NormalCompletion))
                     return createdComp;
                 const created = createdComp.value;
@@ -675,9 +675,9 @@ export class ArrayLiteralNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): ArrayLiteralNode {
-        node = check.node(node,"ArrayLiteral",1);
+        node = check.node(node, "ArrayLiteral", 1);
         const elements = ElementListNode.fromGeneric(node.children[0]);
-        return new ArrayLiteralNode(node.range,elements);
+        return new ArrayLiteralNode(node.range, elements);
     }
 }
 
@@ -685,7 +685,7 @@ export class ElisionNode extends ASTNode {
     public _type_ElisionNode: any;
 
     public constructor(range: Range) {
-        super(range,"Elision");
+        super(range, "Elision");
     }
 
     public get children(): (ASTNode | null)[] {
@@ -707,7 +707,7 @@ export class ElisionNode extends ASTNode {
     }
 
     public static fromGeneric(node: ASTNode | null): ElisionNode {
-        node = check.node(node,"Elision",0);
+        node = check.node(node, "Elision", 0);
         return new ElisionNode(node.range);
     }
 }
@@ -717,7 +717,7 @@ export class SpreadElementNode extends ASTNode {
     public readonly child: ExpressionNode;
 
     public constructor(range: Range, child: ExpressionNode) {
-        super(range,"SpreadElement");
+        super(range, "SpreadElement");
         this.child = child;
     }
 
@@ -726,9 +726,9 @@ export class SpreadElementNode extends ASTNode {
     }
 
     public static fromGeneric(node: ASTNode | null): SpreadElementNode {
-        node = check.node(node,"SpreadElement",1);
+        node = check.node(node, "SpreadElement", 1);
         const child = ExpressionNode_fromGeneric(node.children[0]);
-        return new SpreadElementNode(node.range,child);
+        return new SpreadElementNode(node.range, child);
     }
 }
 
@@ -739,7 +739,7 @@ export class PropertyDefinitionListNode extends ASTNode {
     public readonly elements: PropertyDefinitionType[];
 
     public constructor(range: Range, elements: PropertyDefinitionType[]) {
-        super(range,"[]");
+        super(range, "[]");
         this.elements = elements;
     }
 
@@ -755,7 +755,7 @@ export class PropertyDefinitionListNode extends ASTNode {
                 throw new Error("identifier references in object literals not implemented");
             else if (element instanceof CoverInitializedNameNode)
                 throw new Error("CoverInitializedName properties object literals not implemented");
-            const statusComp = element.propertyDefinitionEvaluation(ctx,object,enumerable);
+            const statusComp = element.propertyDefinitionEvaluation(ctx, object, enumerable);
             if (!(statusComp instanceof NormalCompletion))
                 return statusComp;
             resultComp = statusComp;
@@ -768,7 +768,7 @@ export class PropertyDefinitionListNode extends ASTNode {
         const elements: PropertyDefinitionType[] = [];
         for (const listElement of list.elements)
             elements.push(PropertyDefinitionType.fromGeneric(listElement));
-        return new PropertyDefinitionListNode(list.range,elements);
+        return new PropertyDefinitionListNode(list.range, elements);
     }
 }
 
@@ -795,7 +795,7 @@ export class ObjectLiteralNode extends ExpressionNode {
     public readonly properties: PropertyDefinitionListNode;
 
     public constructor(range: Range, properties: PropertyDefinitionListNode) {
-        super(range,"ObjectLiteral");
+        super(range, "ObjectLiteral");
         this.properties = properties;
     }
 
@@ -810,10 +810,10 @@ export class ObjectLiteralNode extends ExpressionNode {
     // ES6 Section 12.2.6.8: Runtime Semantics: Evaluation
     public evaluate(ctx: ExecutionContext): Completion<JSObject> {
         // 1. Let obj be ObjectCreate(%ObjectPrototype%).
-        const obj = ObjectCreate(ctx.realm,ctx.realm.intrinsics.ObjectPrototype);
+        const obj = ObjectCreate(ctx.realm, ctx.realm.intrinsics.ObjectPrototype);
         // 2. Let status be the result of performing PropertyDefinitionEvaluation of
         // PropertyDefinitionList with arguments obj and true.
-        const status = this.properties.propertyDefinitionEvaluation(ctx,obj,true);
+        const status = this.properties.propertyDefinitionEvaluation(ctx, obj, true);
         // 3. ReturnIfAbrupt(status).
         if (!(status instanceof NormalCompletion))
             return status;
@@ -822,9 +822,9 @@ export class ObjectLiteralNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): ObjectLiteralNode {
-        node = check.node(node,"ObjectLiteral",1);
+        node = check.node(node, "ObjectLiteral", 1);
         const properties = PropertyDefinitionListNode.fromGeneric(node.children[0]);
-        return new ObjectLiteralNode(node.range,properties);
+        return new ObjectLiteralNode(node.range, properties);
     }
 }
 
@@ -834,19 +834,19 @@ export class ColonPropertyDefinitionNode extends ASTNode {
     public readonly init: ExpressionNode;
 
     public constructor(range: Range, name: PropertyNameType, init: ExpressionNode) {
-        super(range,"ColonPropertyDefinition");
+        super(range, "ColonPropertyDefinition");
         this.name = name;
         this.init = init;
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.name,this.init];
+        return [this.name, this.init];
     }
 
     // ES6 Section 12.2.6.9: Runtime Semantics: PropertyDefinitionEvaluation
     public propertyDefinitionEvaluation(ctx: ExecutionContext, object: JSObject, enumerable: boolean): Completion<boolean> {
         // 1. Let propKey be the result of evaluating PropertyName.
-        const propKeyComp = evaluatePropertyName(ctx,this.name);
+        const propKeyComp = evaluatePropertyName(ctx, this.name);
 
         // 2. ReturnIfAbrupt(propKey).
         if (!(propKeyComp instanceof NormalCompletion))
@@ -857,7 +857,7 @@ export class ColonPropertyDefinitionNode extends ASTNode {
         const exprValueRefComp = this.init.evaluate(ctx);
 
         // 4. Let propValue be GetValue(exprValueRef).
-        const propValueComp = GetValue(ctx.realm,exprValueRefComp);
+        const propValueComp = GetValue(ctx.realm, exprValueRefComp);
 
         // 5. ReturnIfAbrupt(propValue).
         if (!(propValueComp instanceof NormalCompletion))
@@ -876,14 +876,14 @@ export class ColonPropertyDefinitionNode extends ASTNode {
         }
 
         // 8. Return CreateDataPropertyOrThrow(object, propKey, propValue).
-        return CreateDataPropertyOrThrow(ctx.realm,object,propKey,propValue);
+        return CreateDataPropertyOrThrow(ctx.realm, object, propKey, propValue);
     }
 
     public static fromGeneric(node: ASTNode | null): ColonPropertyDefinitionNode {
-        node = check.node(node,"ColonPropertyDefinition",2);
+        node = check.node(node, "ColonPropertyDefinition", 2);
         const name = PropertyNameType.fromGeneric(node.children[0]);
         const init = ExpressionNode_fromGeneric(node.children[1]);
-        return new ColonPropertyDefinitionNode(node.range,name,init);
+        return new ColonPropertyDefinitionNode(node.range, name, init);
     }
 }
 
@@ -892,7 +892,7 @@ export class ComputedPropertyNameNode extends ASTNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"ComputedPropertyName");
+        super(range, "ComputedPropertyName");
         this.expr = expr;
     }
 
@@ -906,7 +906,7 @@ export class ComputedPropertyNameNode extends ASTNode {
         const exprValueComp = this.expr.evaluate(ctx);
 
         // 2. Let propName be GetValue(exprValue).
-        const propNameComp = GetValue(ctx.realm,exprValueComp);
+        const propNameComp = GetValue(ctx.realm, exprValueComp);
 
         // 3. ReturnIfAbrupt(propName).
         if (!(propNameComp instanceof NormalCompletion))
@@ -914,13 +914,13 @@ export class ComputedPropertyNameNode extends ASTNode {
         const propName = propNameComp.value;
 
         // 4. Return ToPropertyKey(propName).
-        return ToPropertyKey(ctx.realm,propName);
+        return ToPropertyKey(ctx.realm, propName);
     }
 
     public static fromGeneric(node: ASTNode | null): ComputedPropertyNameNode {
-        node = check.node(node,"ComputedPropertyName",1);
+        node = check.node(node, "ComputedPropertyName", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new ComputedPropertyNameNode(node.range,expr);
+        return new ComputedPropertyNameNode(node.range, expr);
     }
 }
 
@@ -930,20 +930,20 @@ export class CoverInitializedNameNode extends ASTNode {
     public readonly init: ExpressionNode;
 
     public constructor(range: Range, ident: IdentifierReferenceNode, init: ExpressionNode) {
-        super(range,"CoverInitializedName");
+        super(range, "CoverInitializedName");
         this.ident = ident;
         this.init = init;
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.ident,this.init];
+        return [this.ident, this.init];
     }
 
     public static fromGeneric(node: ASTNode | null): CoverInitializedNameNode {
-        node = check.node(node,"CoverInitializedName",2);
+        node = check.node(node, "CoverInitializedName", 2);
         const ident = IdentifierReferenceNode.fromGeneric(node.children[0]);
         const init = ExpressionNode_fromGeneric(node.children[1]);
-        return new CoverInitializedNameNode(node.range,ident,init);
+        return new CoverInitializedNameNode(node.range, ident, init);
     }
 }
 
@@ -963,7 +963,7 @@ export class MemberAccessExprNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, obj: ExpressionNode, expr: ExpressionNode) {
-        super(range,"MemberAccessExpr");
+        super(range, "MemberAccessExpr");
         this.obj = obj;
         this.expr = expr;
     }
@@ -973,7 +973,7 @@ export class MemberAccessExprNode extends ExpressionNode {
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.obj,this.expr];
+        return [this.obj, this.expr];
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -981,7 +981,7 @@ export class MemberAccessExprNode extends ExpressionNode {
         const baseReferenceComp = this.obj.evaluate(ctx);
 
         // 2. Let baseValue be GetValue(baseReference).
-        const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+        const baseValueComp = GetValue(ctx.realm, baseReferenceComp);
 
         // 3. ReturnIfAbrupt(baseValue).
         if (!(baseValueComp instanceof NormalCompletion))
@@ -992,7 +992,7 @@ export class MemberAccessExprNode extends ExpressionNode {
         const propertyNameReferenceComp = this.expr.evaluate(ctx);
 
         // 5. Let propertyNameValue be GetValue(propertyNameReference).
-        const propertyNameValueComp = GetValue(ctx.realm,propertyNameReferenceComp);
+        const propertyNameValueComp = GetValue(ctx.realm, propertyNameReferenceComp);
 
         // 6. ReturnIfAbrupt(propertyNameValue).
         if (!(propertyNameValueComp instanceof NormalCompletion))
@@ -1000,7 +1000,7 @@ export class MemberAccessExprNode extends ExpressionNode {
         const propertyNameValue = propertyNameValueComp.value;
 
         // 7. Let bv be RequireObjectCoercible(baseValue).
-        const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+        const bvComp = RequireObjectCoercible(ctx.realm, baseValue);
 
         // 8. ReturnIfAbrupt(bv).
         if (!(bvComp instanceof NormalCompletion))
@@ -1008,7 +1008,7 @@ export class MemberAccessExprNode extends ExpressionNode {
         const bv = bvComp.value;
 
         // 9. Let propertyKey be ToPropertyKey(propertyNameValue).
-        const propertyKeyComp = ToPropertyKey(ctx.realm,propertyNameValue);
+        const propertyKeyComp = ToPropertyKey(ctx.realm, propertyNameValue);
 
         // 10. ReturnIfAbrupt(propertyKey).
         if (!(propertyKeyComp instanceof NormalCompletion))
@@ -1021,15 +1021,15 @@ export class MemberAccessExprNode extends ExpressionNode {
 
         // 12. Return a value of type Reference whose base value is bv and whose referenced name is
         // propertyKey, and whose strict reference flag is strict.
-        const ref = new PropertyReference(bv,propertyKey,strict);
+        const ref = new PropertyReference(bv, propertyKey, strict);
         return new NormalCompletion(ref);
     }
 
     public static fromGeneric(node: ASTNode | null): MemberAccessExprNode {
-        node = check.node(node,"MemberAccessExpr",2);
+        node = check.node(node, "MemberAccessExpr", 2);
         const obj = ExpressionNode_fromGeneric(node.children[0]);
         const expr = ExpressionNode_fromGeneric(node.children[1]);
-        return new MemberAccessExprNode(node.range,obj,expr);
+        return new MemberAccessExprNode(node.range, obj, expr);
     }
 }
 
@@ -1039,7 +1039,7 @@ export class MemberAccessIdentNode extends ExpressionNode {
     public readonly ident: IdentifierNode;
 
     public constructor(range: Range, obj: ExpressionNode, ident: IdentifierNode) {
-        super(range,"MemberAccessIdent");
+        super(range, "MemberAccessIdent");
         this.obj = obj;
         this.ident = ident;
     }
@@ -1049,7 +1049,7 @@ export class MemberAccessIdentNode extends ExpressionNode {
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.obj,this.ident];
+        return [this.obj, this.ident];
     }
 
     // ES6 Section 12.3.2.1: Property Accessors - Runtime Semantics: Evaluation
@@ -1065,14 +1065,14 @@ export class MemberAccessIdentNode extends ExpressionNode {
 
         // 2. Let baseValue be GetValue(baseReference).
         // 3. ReturnIfAbrupt(baseValue).
-        const baseValueComp = GetValue(ctx.realm,baseReferenceComp);
+        const baseValueComp = GetValue(ctx.realm, baseReferenceComp);
         if (!(baseValueComp instanceof NormalCompletion))
             return baseValueComp;
         const baseValue = baseValueComp.value;
 
         // 4. Let bv be RequireObjectCoercible(baseValue).
         // 5. ReturnIfAbrupt(bv).
-        const bvComp = RequireObjectCoercible(ctx.realm,baseValue);
+        const bvComp = RequireObjectCoercible(ctx.realm, baseValue);
         if (!(bvComp instanceof NormalCompletion))
             return bvComp;
         const bv = bvComp.value;
@@ -1088,15 +1088,15 @@ export class MemberAccessIdentNode extends ExpressionNode {
 
         // 8. Return a value of type Reference whose base value is bv and whose referenced name is
         // propertyNameString, and whose strict reference flag is strict.
-        const ref = new PropertyReference(bv,new JSString(propertyNameString),strict);
+        const ref = new PropertyReference(bv, new JSString(propertyNameString), strict);
         return new NormalCompletion(ref);
     }
 
     public static fromGeneric(node: ASTNode | null): MemberAccessIdentNode {
-        node = check.node(node,"MemberAccessIdent",2);
+        node = check.node(node, "MemberAccessIdent", 2);
         const obj = ExpressionNode_fromGeneric(node.children[0]);
         const ident = IdentifierNode.fromGeneric(node.children[1]);
-        return new MemberAccessIdentNode(node.range,obj,ident);
+        return new MemberAccessIdentNode(node.range, obj, ident);
     }
 }
 
@@ -1105,7 +1105,7 @@ export class SuperPropertyExprNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"SuperPropertyExpr");
+        super(range, "SuperPropertyExpr");
         this.expr = expr;
     }
 
@@ -1122,9 +1122,9 @@ export class SuperPropertyExprNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): SuperPropertyExprNode {
-        node = check.node(node,"SuperPropertyExpr",1);
+        node = check.node(node, "SuperPropertyExpr", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new SuperPropertyExprNode(node.range,expr);
+        return new SuperPropertyExprNode(node.range, expr);
     }
 }
 
@@ -1133,7 +1133,7 @@ export class SuperPropertyIdentNode extends ExpressionNode {
     public readonly ident: IdentifierNode;
 
     public constructor(range: Range, ident: IdentifierNode) {
-        super(range,"SuperPropertyIdent");
+        super(range, "SuperPropertyIdent");
         this.ident = ident;
     }
 
@@ -1150,9 +1150,9 @@ export class SuperPropertyIdentNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): SuperPropertyIdentNode {
-        node = check.node(node,"SuperPropertyIdent",1);
+        node = check.node(node, "SuperPropertyIdent", 1);
         const ident = IdentifierNode.fromGeneric(node.children[0]);
-        return new SuperPropertyIdentNode(node.range,ident);
+        return new SuperPropertyIdentNode(node.range, ident);
     }
 }
 
@@ -1160,7 +1160,7 @@ export class NewTargetNode extends ExpressionNode {
     public _type_NewTargetNode: any;
 
     public constructor(range: Range) {
-        super(range,"NewTarget");
+        super(range, "NewTarget");
     }
 
     public get precedence(): number {
@@ -1176,7 +1176,7 @@ export class NewTargetNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): NewTargetNode {
-        node = check.node(node,"NewTarget",0);
+        node = check.node(node, "NewTarget", 0);
         return new NewTargetNode(node.range);
     }
 }
@@ -1187,7 +1187,7 @@ export class NewExpressionNode extends ExpressionNode {
     public readonly args: ArgumentsNode | null;
 
     public constructor(range: Range, expr: ExpressionNode, args: ArgumentsNode | null) {
-        super(range,"NewExpression");
+        super(range, "NewExpression");
         this.expr = expr;
         this.args = args;
     }
@@ -1197,7 +1197,7 @@ export class NewExpressionNode extends ExpressionNode {
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.expr,this.args];
+        return [this.expr, this.args];
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -1205,10 +1205,10 @@ export class NewExpressionNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): NewExpressionNode {
-        node = check.node(node,"NewExpression",2);
+        node = check.node(node, "NewExpression", 2);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
         const args = (node.children[1] === null) ? null : ArgumentsNode.fromGeneric(node.children[1]);
-        return new NewExpressionNode(node.range,expr,args);
+        return new NewExpressionNode(node.range, expr, args);
     }
 }
 
@@ -1217,7 +1217,7 @@ export class NewExpressionNode extends ExpressionNode {
 
 function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSValue,
                             args: ArgumentType[], tailPosition: boolean): Completion<JSValue> {
-    const argListComp = ArgumentListEvaluation(ctx,args);
+    const argListComp = ArgumentListEvaluation(ctx, args);
     if (!(argListComp instanceof NormalCompletion))
         return argListComp;
     const argList = argListComp.value;
@@ -1225,11 +1225,11 @@ function EvaluateDirectCall(ctx: ExecutionContext, func: JSValue, thisValue: JSV
     if (!(func instanceof JSValue))
         return ctx.realm.throwTypeError("Attempt to call a value that is not an object");
 
-    if (!IsCallable(ctx.realm,func))
+    if (!IsCallable(ctx.realm, func))
         return ctx.realm.throwTypeError("Object is not callable");
 
     // FIXME: support tail calls
-    return Call(ctx.realm,func,thisValue,argList);
+    return Call(ctx.realm, func, thisValue, argList);
 }
 
 // ES6 Section 12.3.6.1: Argument Lists - Runtime Semantics: ArgumentListEvaluation
@@ -1243,7 +1243,7 @@ function ArgumentListEvaluation(ctx: ExecutionContext, argNodes: ArgumentType[])
         if (argNode instanceof SpreadElementNode)
             throw new Error("SpreadElementNode support not implemented");
         const refComp = argNode.evaluate(ctx);
-        const argComp = GetValue(ctx.realm,refComp);
+        const argComp = GetValue(ctx.realm, refComp);
         if (!(argComp instanceof NormalCompletion))
             return argComp;
         const arg = argComp.value;
@@ -1258,7 +1258,7 @@ export class CallNode extends ExpressionNode {
     public readonly args: ArgumentsNode;
 
     public constructor(range: Range, fun: ExpressionNode, args: ArgumentsNode) {
-        super(range,"Call");
+        super(range, "Call");
         this.fun = fun;
         this.args = args;
     }
@@ -1268,7 +1268,7 @@ export class CallNode extends ExpressionNode {
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.fun,this.args];
+        return [this.fun, this.args];
     }
 
     // ES6 Section 12.3.4.1: Function Calls - Runtime Semantics: Evaluation
@@ -1291,7 +1291,7 @@ export class CallNode extends ExpressionNode {
         // FIXME: Following is required only for eval()
         // 4. If Type(ref) is Reference and IsPropertyReference(ref) is false and
         // GetReferencedName(ref) is "eval", then
-        // if (TypeIsReference(ref) && IsPropertyReference(ctx.realm,ref) && (GetReferencedName(ctx.realm,ref) === "eval")) {
+        // if (TypeIsReference(ref) && IsPropertyReference(ctx.realm, ref) && (GetReferencedName(ctx.realm, ref) === "eval")) {
         //
         //     // a. If SameValue(func, %eval%) is true, then
         //         // i. Let argList be ArgumentListEvaluation(Arguments).
@@ -1309,9 +1309,9 @@ export class CallNode extends ExpressionNode {
         // 5. If Type(ref) is Reference, then
         if (TypeIsReference(ref)) {
             // a. If IsPropertyReference(ref) is true, then
-            if (IsPropertyReference(ctx.realm,ref)) {
+            if (IsPropertyReference(ctx.realm, ref)) {
                 // i. Let thisValue be GetThisValue(ref).
-                const thisValueComp = GetThisValue(ctx.realm,ref);
+                const thisValueComp = GetThisValue(ctx.realm, ref);
                 if (!(thisValueComp instanceof NormalCompletion))
                     return thisValueComp;
                 thisValue = thisValueComp.value;
@@ -1319,7 +1319,7 @@ export class CallNode extends ExpressionNode {
             // b. Else, the base of ref is an Environment Record
             else {
                 // i. Let refEnv be GetBase(ref).
-                const refEnv = GetBase(ctx.realm,ref);
+                const refEnv = GetBase(ctx.realm, ref);
                 if (!(refEnv instanceof EnvironmentRecord)) {
                     return ctx.realm.throwTypeError("Expected refEnv to be an EnvironmentRecord");
                 }
@@ -1348,10 +1348,10 @@ export class CallNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): CallNode {
-        node = check.node(node,"Call",2);
+        node = check.node(node, "Call", 2);
         const fun = ExpressionNode_fromGeneric(node.children[0]);
         const args = ArgumentsNode.fromGeneric(node.children[1]);
-        return new CallNode(node.range,fun,args);
+        return new CallNode(node.range, fun, args);
     }
 }
 
@@ -1360,7 +1360,7 @@ export class SuperCallNode extends ExpressionNode {
     public readonly args: ArgumentsNode;
 
     public constructor(range: Range, args: ArgumentsNode) {
-        super(range,"SuperCall");
+        super(range, "SuperCall");
         this.args = args;
     }
 
@@ -1377,9 +1377,9 @@ export class SuperCallNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): SuperCallNode {
-        node = check.node(node,"SuperCall",1);
+        node = check.node(node, "SuperCall", 1);
         const args = ArgumentsNode.fromGeneric(node.children[0]);
-        return new SuperCallNode(node.range,args);
+        return new SuperCallNode(node.range, args);
     }
 }
 
@@ -1388,7 +1388,7 @@ export class ArgumentListNode extends ASTNode {
     public readonly elements: ArgumentType[];
 
     public constructor(range: Range, elements: ArgumentType[]) {
-        super(range,"[]");
+        super(range, "[]");
         this.elements = elements;
     }
 
@@ -1401,7 +1401,7 @@ export class ArgumentListNode extends ASTNode {
         const elements: ArgumentType[] = [];
         for (const listElement of list.elements)
             elements.push(ArgumentType.fromGeneric(listElement));
-        return new ArgumentListNode(list.range,elements);
+        return new ArgumentListNode(list.range, elements);
     }
 }
 
@@ -1410,7 +1410,7 @@ export class ArgumentsNode extends ASTNode {
     public readonly items: ArgumentListNode;
 
     public constructor(range: Range, items: ArgumentListNode) {
-        super(range,"Arguments");
+        super(range, "Arguments");
         this.items = items;
     }
 
@@ -1419,9 +1419,9 @@ export class ArgumentsNode extends ASTNode {
     }
 
     public static fromGeneric(node: ASTNode | null): ArgumentsNode {
-        node = check.node(node,"Arguments",1);
+        node = check.node(node, "Arguments", 1);
         const items = ArgumentListNode.fromGeneric(node.children[0]);
-        return new ArgumentsNode(node.range,items);
+        return new ArgumentsNode(node.range, items);
     }
 }
 
@@ -1432,7 +1432,7 @@ export class PostIncrementNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"PostIncrement");
+        super(range, "PostIncrement");
         this.expr = expr;
     }
 
@@ -1450,7 +1450,7 @@ export class PostIncrementNode extends ExpressionNode {
         const lhsComp = this.expr.evaluate(ctx);
 
         // 2. Let oldValue be ToNumber(GetValue(lhs)).
-        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,lhsComp));
+        const oldValueComp = ToNumber(ctx.realm, GetValue(ctx.realm, lhsComp));
 
         // 3. ReturnIfAbrupt(oldValue).
         if (!(oldValueComp instanceof NormalCompletion))
@@ -1459,10 +1459,10 @@ export class PostIncrementNode extends ExpressionNode {
 
         // 4. Let newValue be the result of adding the value 1 to oldValue, using the same
         // rules as for the + operator (see 12.7.5).
-        const newValue = new JSNumber(pr_double_add(oldValue.numberValue,1));
+        const newValue = new JSNumber(pr_double_add(oldValue.numberValue, 1));
 
         // 5. Let status be PutValue(lhs, newValue).
-        const statusComp = PutValue(ctx.realm,lhsComp,newValue);
+        const statusComp = PutValue(ctx.realm, lhsComp, newValue);
 
         // 6. ReturnIfAbrupt(status).
         if (!(statusComp instanceof NormalCompletion))
@@ -1473,9 +1473,9 @@ export class PostIncrementNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): PostIncrementNode {
-        node = check.node(node,"PostIncrement",1);
+        node = check.node(node, "PostIncrement", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new PostIncrementNode(node.range,expr);
+        return new PostIncrementNode(node.range, expr);
     }
 }
 
@@ -1484,7 +1484,7 @@ export class PostDecrementNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"PostDecrement");
+        super(range, "PostDecrement");
         this.expr = expr;
     }
 
@@ -1502,7 +1502,7 @@ export class PostDecrementNode extends ExpressionNode {
         const lhsComp = this.expr.evaluate(ctx);
 
         // 2. Let oldValue be ToNumber(GetValue(lhs)).
-        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,lhsComp));
+        const oldValueComp = ToNumber(ctx.realm, GetValue(ctx.realm, lhsComp));
 
         // 3. ReturnIfAbrupt(oldValue).
         if (!(oldValueComp instanceof NormalCompletion))
@@ -1511,10 +1511,10 @@ export class PostDecrementNode extends ExpressionNode {
 
         // 4. Let newValue be the result of subtracting the value 1 from oldValue, using the same
         // rules as for the - operator (12.7.5).
-        const newValue = new JSNumber(pr_double_sub(oldValue.numberValue,1));
+        const newValue = new JSNumber(pr_double_sub(oldValue.numberValue, 1));
 
         // 5. Let status be PutValue(lhs, newValue).
-        const statusComp = PutValue(ctx.realm,lhsComp,newValue);
+        const statusComp = PutValue(ctx.realm, lhsComp, newValue);
 
         // 6. ReturnIfAbrupt(status).
         if (!(statusComp instanceof NormalCompletion))
@@ -1525,9 +1525,9 @@ export class PostDecrementNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): PostDecrementNode {
-        node = check.node(node,"PostDecrement",1);
+        node = check.node(node, "PostDecrement", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new PostDecrementNode(node.range,expr);
+        return new PostDecrementNode(node.range, expr);
     }
 }
 
@@ -1538,7 +1538,7 @@ export class DeleteNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"Delete");
+        super(range, "Delete");
         this.expr = expr;
     }
 
@@ -1555,9 +1555,9 @@ export class DeleteNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): DeleteNode {
-        node = check.node(node,"Delete",1);
+        node = check.node(node, "Delete", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new DeleteNode(node.range,expr);
+        return new DeleteNode(node.range, expr);
     }
 }
 
@@ -1566,7 +1566,7 @@ export class VoidNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"Void");
+        super(range, "Void");
         this.expr = expr;
     }
 
@@ -1583,9 +1583,9 @@ export class VoidNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): VoidNode {
-        node = check.node(node,"Void",1);
+        node = check.node(node, "Void", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new VoidNode(node.range,expr);
+        return new VoidNode(node.range, expr);
     }
 }
 
@@ -1594,7 +1594,7 @@ export class TypeOfNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"TypeOf");
+        super(range, "TypeOf");
         this.expr = expr;
     }
 
@@ -1622,7 +1622,7 @@ export class TypeOfNode extends ExpressionNode {
         }
 
         // 3. Let val be GetValue(val).
-        const val2Comp = GetValue(ctx.realm,val1);
+        const val2Comp = GetValue(ctx.realm, val1);
 
         // 4. ReturnIfAbrupt(val).
         if (!(val2Comp instanceof NormalCompletion))
@@ -1649,9 +1649,9 @@ export class TypeOfNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): TypeOfNode {
-        node = check.node(node,"TypeOf",1);
+        node = check.node(node, "TypeOf", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new TypeOfNode(node.range,expr);
+        return new TypeOfNode(node.range, expr);
     }
 }
 
@@ -1660,7 +1660,7 @@ export class PreIncrementNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"PreIncrement");
+        super(range, "PreIncrement");
         this.expr = expr;
     }
 
@@ -1678,7 +1678,7 @@ export class PreIncrementNode extends ExpressionNode {
         const exprComp = this.expr.evaluate(ctx);
 
         // 2. Let oldValue be ToNumber(GetValue(expr)).
-        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+        const oldValueComp = ToNumber(ctx.realm, GetValue(ctx.realm, exprComp));
 
         // 3. ReturnIfAbrupt(oldValue).
         if (!(oldValueComp instanceof NormalCompletion))
@@ -1687,10 +1687,10 @@ export class PreIncrementNode extends ExpressionNode {
 
         // 4. Let newValue be the result of adding the value 1 to oldValue, using the same
         // rules as for the + operator (see 12.7.5).
-        const newValue = new JSNumber(pr_double_add(oldValue.numberValue,1));
+        const newValue = new JSNumber(pr_double_add(oldValue.numberValue, 1));
 
         // 5. Let status be PutValue(expr, newValue).
-        const statusComp = PutValue(ctx.realm,exprComp,newValue);
+        const statusComp = PutValue(ctx.realm, exprComp, newValue);
 
         // 6. ReturnIfAbrupt(status).
         if (!(statusComp instanceof NormalCompletion))
@@ -1701,9 +1701,9 @@ export class PreIncrementNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): PreIncrementNode {
-        node = check.node(node,"PreIncrement",1);
+        node = check.node(node, "PreIncrement", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new PreIncrementNode(node.range,expr);
+        return new PreIncrementNode(node.range, expr);
     }
 }
 
@@ -1712,7 +1712,7 @@ export class PreDecrementNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"PreDecrement");
+        super(range, "PreDecrement");
         this.expr = expr;
     }
 
@@ -1730,7 +1730,7 @@ export class PreDecrementNode extends ExpressionNode {
         const exprComp = this.expr.evaluate(ctx);
 
         // 2. Let oldValue be ToNumber(GetValue(expr)).
-        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+        const oldValueComp = ToNumber(ctx.realm, GetValue(ctx.realm, exprComp));
 
         // 3. ReturnIfAbrupt(oldValue).
         if (!(oldValueComp instanceof NormalCompletion))
@@ -1739,10 +1739,10 @@ export class PreDecrementNode extends ExpressionNode {
 
         // 4. Let newValue be the result of subtracting the value 1 from oldValue, using the same
         // rules as for the - operator (see 12.7.5).
-        const newValue = new JSNumber(pr_double_sub(oldValue.numberValue,1));
+        const newValue = new JSNumber(pr_double_sub(oldValue.numberValue, 1));
 
         // 5. Let status be PutValue(expr, newValue).
-        const statusComp = PutValue(ctx.realm,exprComp,newValue);
+        const statusComp = PutValue(ctx.realm, exprComp, newValue);
 
         // 6. ReturnIfAbrupt(status).
         if (!(statusComp instanceof NormalCompletion))
@@ -1753,9 +1753,9 @@ export class PreDecrementNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): PreDecrementNode {
-        node = check.node(node,"PreDecrement",1);
+        node = check.node(node, "PreDecrement", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new PreDecrementNode(node.range,expr);
+        return new PreDecrementNode(node.range, expr);
     }
 }
 
@@ -1764,7 +1764,7 @@ export class UnaryPlusNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"UnaryPlus");
+        super(range, "UnaryPlus");
         this.expr = expr;
     }
 
@@ -1782,13 +1782,13 @@ export class UnaryPlusNode extends ExpressionNode {
         const exprComp = this.expr.evaluate(ctx);
 
         // 2. Return ToNumber(GetValue(expr)).
-        return ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+        return ToNumber(ctx.realm, GetValue(ctx.realm, exprComp));
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryPlusNode {
-        node = check.node(node,"UnaryPlus",1);
+        node = check.node(node, "UnaryPlus", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new UnaryPlusNode(node.range,expr);
+        return new UnaryPlusNode(node.range, expr);
     }
 }
 
@@ -1797,7 +1797,7 @@ export class UnaryMinusNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"UnaryMinus");
+        super(range, "UnaryMinus");
         this.expr = expr;
     }
 
@@ -1814,7 +1814,7 @@ export class UnaryMinusNode extends ExpressionNode {
         const exprComp = this.expr.evaluate(ctx);
 
         // 2. Let oldValue be ToNumber(GetValue(expr)).
-        const oldValueComp = ToNumber(ctx.realm,GetValue(ctx.realm,exprComp));
+        const oldValueComp = ToNumber(ctx.realm, GetValue(ctx.realm, exprComp));
 
         // 3. ReturnIfAbrupt(oldValue).
         if (!(oldValueComp instanceof NormalCompletion))
@@ -1831,9 +1831,9 @@ export class UnaryMinusNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryMinusNode {
-        node = check.node(node,"UnaryMinus",1);
+        node = check.node(node, "UnaryMinus", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new UnaryMinusNode(node.range,expr);
+        return new UnaryMinusNode(node.range, expr);
     }
 }
 
@@ -1842,7 +1842,7 @@ export class UnaryBitwiseNotNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"UnaryBitwiseNot");
+        super(range, "UnaryBitwiseNot");
         this.expr = expr;
     }
 
@@ -1859,9 +1859,9 @@ export class UnaryBitwiseNotNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryBitwiseNotNode {
-        node = check.node(node,"UnaryBitwiseNot",1);
+        node = check.node(node, "UnaryBitwiseNot", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new UnaryBitwiseNotNode(node.range,expr);
+        return new UnaryBitwiseNotNode(node.range, expr);
     }
 }
 
@@ -1870,7 +1870,7 @@ export class UnaryLogicalNotNode extends ExpressionNode {
     public readonly expr: ExpressionNode;
 
     public constructor(range: Range, expr: ExpressionNode) {
-        super(range,"UnaryLogicalNot");
+        super(range, "UnaryLogicalNot");
         this.expr = expr;
     }
 
@@ -1887,9 +1887,9 @@ export class UnaryLogicalNotNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): UnaryLogicalNotNode {
-        node = check.node(node,"UnaryLogicalNot",1);
+        node = check.node(node, "UnaryLogicalNot", 1);
         const expr = ExpressionNode_fromGeneric(node.children[0]);
-        return new UnaryLogicalNotNode(node.range,expr);
+        return new UnaryLogicalNotNode(node.range, expr);
     }
 }
 
@@ -1915,31 +1915,31 @@ export abstract class MultiplicativeNode extends BinaryNode {
 
         // 2. Let leftValue be GetValue(left).
         // 3. ReturnIfAbrupt(leftValue).
-        const leftValueComp = GetValue(ctx.realm,leftComp);
+        const leftValueComp = GetValue(ctx.realm, leftComp);
 
         // 4. Let right be the result of evaluating UnaryExpression.
         const rightComp = rightNode.evaluate(ctx);
 
         // 5. Let rightValue be GetValue(right).
-        const rightValueComp = GetValue(ctx.realm,rightComp);
+        const rightValueComp = GetValue(ctx.realm, rightComp);
 
         // 6. Let lnum be ToNumber(leftValue).
         // 7. ReturnIfAbrupt(lnum).
-        const lnumComp = ToNumber(ctx.realm,leftValueComp);
+        const lnumComp = ToNumber(ctx.realm, leftValueComp);
         if (!(lnumComp instanceof NormalCompletion))
             return lnumComp;
         const lnum = lnumComp.value;
 
         // 8. Let rnum be ToNumber(rightValue).
         // 9. ReturnIfAbrupt(rnum).
-        const rnumComp = ToNumber(ctx.realm,rightValueComp);
+        const rnumComp = ToNumber(ctx.realm, rightValueComp);
         if (!(rnumComp instanceof NormalCompletion))
             return rnumComp;
         const rnum = rnumComp.value;
 
         // 10. Return the result of applying the MultiplicativeOperator (*, /, or %) to lnum and rnum
         // as specified in 12.6.3.1, 12.6.3.2, or 12.6.3.3.
-        const resultNum = this.primitiveEvaluate(lnum.numberValue,rnum.numberValue);
+        const resultNum = this.primitiveEvaluate(lnum.numberValue, rnum.numberValue);
         return new NormalCompletion(new JSNumber(resultNum));
     }
 }
@@ -1948,18 +1948,18 @@ export class MultiplyNode extends MultiplicativeNode {
     public _type_MultiplyNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Multiply",left,right);
+        super(range, "Multiply", left, right);
     }
 
     protected primitiveEvaluate(leftValue: number, rightValue: number): number {
-        return pr_double_mul(leftValue,rightValue);
+        return pr_double_mul(leftValue, rightValue);
     }
 
     public static fromGeneric(node: ASTNode | null): MultiplyNode {
-        node = check.node(node,"Multiply",2);
+        node = check.node(node, "Multiply", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new MultiplyNode(node.range,left,right);
+        return new MultiplyNode(node.range, left, right);
     }
 }
 
@@ -1967,18 +1967,18 @@ export class DivideNode extends MultiplicativeNode {
     public _type_DivideNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Divide",left,right);
+        super(range, "Divide", left, right);
     }
 
     protected primitiveEvaluate(leftValue: number, rightValue: number): number {
-        return pr_double_div(leftValue,rightValue);
+        return pr_double_div(leftValue, rightValue);
     }
 
     public static fromGeneric(node: ASTNode | null): DivideNode {
-        node = check.node(node,"Divide",2);
+        node = check.node(node, "Divide", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new DivideNode(node.range,left,right);
+        return new DivideNode(node.range, left, right);
     }
 }
 
@@ -1986,18 +1986,18 @@ export class ModuloNode extends MultiplicativeNode {
     public _type_ModuloNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Modulo",left,right);
+        super(range, "Modulo", left, right);
     }
 
     protected primitiveEvaluate(leftValue: number, rightValue: number): number {
-        return pr_double_mod(leftValue,rightValue);
+        return pr_double_mod(leftValue, rightValue);
     }
 
     public static fromGeneric(node: ASTNode | null): ModuloNode {
-        node = check.node(node,"Modulo",2);
+        node = check.node(node, "Modulo", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new ModuloNode(node.range,left,right);
+        return new ModuloNode(node.range, left, right);
     }
 }
 
@@ -2007,7 +2007,7 @@ export class AddNode extends BinaryNode {
     public _type_AddNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Add",left,right);
+        super(range, "Add", left, right);
     }
 
     public get precedence(): number {
@@ -2025,7 +2025,7 @@ export class AddNode extends BinaryNode {
 
         // 2. Let lval be GetValue(lref).
         // 3. ReturnIfAbrupt(lval).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
         if (!(lvalComp instanceof NormalCompletion))
             return lvalComp;
         const lval = lvalComp.value;
@@ -2035,21 +2035,21 @@ export class AddNode extends BinaryNode {
 
         // 5. Let rval be GetValue(rref).
         // 6. ReturnIfAbrupt(rval).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
         if (!(rvalComp instanceof NormalCompletion))
             return rvalComp;
         const rval = rvalComp.value;
 
         // 7. Let lprim be ToPrimitive(lval).
         // 8. ReturnIfAbrupt(lprim).
-        const lprimComp = ToPrimitive(ctx.realm,lval);
+        const lprimComp = ToPrimitive(ctx.realm, lval);
         if (!(lprimComp instanceof NormalCompletion))
             return lprimComp;
         const lprim = lprimComp.value;
 
         // 9. Let rprim be ToPrimitive(rval).
         // 10. ReturnIfAbrupt(rprim).
-        const rprimComp = ToPrimitive(ctx.realm,rval);
+        const rprimComp = ToPrimitive(ctx.realm, rval);
         if (!(rprimComp instanceof NormalCompletion))
             return rprimComp;
         const rprim = rprimComp.value;
@@ -2058,49 +2058,49 @@ export class AddNode extends BinaryNode {
         if ((lprim instanceof JSString) || (rprim instanceof JSString)) {
             // a. Let lstr be ToString(lprim).
             // b. ReturnIfAbrupt(lstr).
-            const lstrComp = ToString(ctx.realm,lprim);
+            const lstrComp = ToString(ctx.realm, lprim);
             if (!(lstrComp instanceof NormalCompletion))
                 return lstrComp;
             const lstr = lstrComp.value;
 
             // c. Let rstr be ToString(rprim).
             // d. ReturnIfAbrupt(rstr).
-            const rstrComp = ToString(ctx.realm,rprim);
+            const rstrComp = ToString(ctx.realm, rprim);
             if (!(rstrComp instanceof NormalCompletion))
                 return rstrComp;
             const rstr = rstrComp.value;
 
             // e. Return the String that is the result of concatenating lstr and rstr.
-            const resultStr = pr_string_concat(lstr.stringValue,rstr.stringValue);
+            const resultStr = pr_string_concat(lstr.stringValue, rstr.stringValue);
             const result = new JSString(resultStr);
             return new NormalCompletion(result);
         }
 
         // 12. Let lnum be ToNumber(lprim).
         // 13. ReturnIfAbrupt(lnum).
-        const lnumComp = ToNumber(ctx.realm,lprim);
+        const lnumComp = ToNumber(ctx.realm, lprim);
         if (!(lnumComp instanceof NormalCompletion))
             return lnumComp;
         const lnum = lnumComp.value;
 
         // 14. Let rnum be ToNumber(rprim).
         // 15. ReturnIfAbrupt(rnum).
-        const rnumComp = ToNumber(ctx.realm,rprim);
+        const rnumComp = ToNumber(ctx.realm, rprim);
         if (!(rnumComp instanceof NormalCompletion))
             return rnumComp;
         const rnum = rnumComp.value;
 
         // 16. Return the result of applying the addition operation to lnum and rnum.
-        const resultNum = pr_double_add(lnum.numberValue,rnum.numberValue);
+        const resultNum = pr_double_add(lnum.numberValue, rnum.numberValue);
         const result = new JSNumber(resultNum);
         return new NormalCompletion(result);
     }
 
     public static fromGeneric(node: ASTNode | null): AddNode {
-        node = check.node(node,"Add",2);
+        node = check.node(node, "Add", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AddNode(node.range,left,right);
+        return new AddNode(node.range, left, right);
     }
 }
 
@@ -2108,7 +2108,7 @@ export class SubtractNode extends BinaryNode {
     public _type_SubtractNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Subtract",left,right);
+        super(range, "Subtract", left, right);
     }
 
     public get precedence(): number {
@@ -2126,7 +2126,7 @@ export class SubtractNode extends BinaryNode {
 
         // 2. Let lval be GetValue(lref).
         // 3. ReturnIfAbrupt(lval).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
         if (!(lvalComp instanceof NormalCompletion))
             return lvalComp;
         const lval = lvalComp.value;
@@ -2136,36 +2136,36 @@ export class SubtractNode extends BinaryNode {
 
         // 5. Let rval be GetValue(rref).
         // 6. ReturnIfAbrupt(rval).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
         if (!(rvalComp instanceof NormalCompletion))
             return rvalComp;
         const rval = rvalComp.value;
 
         // 7. Let lnum be ToNumber(lval).
         // 8. ReturnIfAbrupt(lnum).
-        const lnumComp = ToNumber(ctx.realm,lval);
+        const lnumComp = ToNumber(ctx.realm, lval);
         if (!(lnumComp instanceof NormalCompletion))
             return lnumComp;
         const lnum = lnumComp.value;
 
         // 9. Let rnum be ToNumber(rval).
         // 10. ReturnIfAbrupt(rnum).
-        const rnumComp = ToNumber(ctx.realm,rval);
+        const rnumComp = ToNumber(ctx.realm, rval);
         if (!(rnumComp instanceof NormalCompletion))
             return rnumComp;
         const rnum = rnumComp.value;
 
         // 1. Return the result of applying the subtraction operation to lnum and rnum.
-        const resultNum = pr_double_sub(lnum.numberValue,rnum.numberValue);
+        const resultNum = pr_double_sub(lnum.numberValue, rnum.numberValue);
         const result = new JSNumber(resultNum);
         return new NormalCompletion(result);
     }
 
     public static fromGeneric(node: ASTNode | null): SubtractNode {
-        node = check.node(node,"Subtract",2);
+        node = check.node(node, "Subtract", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new SubtractNode(node.range,left,right);
+        return new SubtractNode(node.range, left, right);
     }
 }
 
@@ -2175,7 +2175,7 @@ export class LeftShiftNode extends BinaryNode {
     public _type_LeftShiftNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"LeftShift",left,right);
+        super(range, "LeftShift", left, right);
     }
 
     public get precedence(): number {
@@ -2187,10 +2187,10 @@ export class LeftShiftNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): LeftShiftNode {
-        node = check.node(node,"LeftShift",2);
+        node = check.node(node, "LeftShift", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new LeftShiftNode(node.range,left,right);
+        return new LeftShiftNode(node.range, left, right);
     }
 }
 
@@ -2198,7 +2198,7 @@ export class SignedRightShiftNode extends BinaryNode {
     public _type_SignedRightShiftNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"SignedRightShift",left,right);
+        super(range, "SignedRightShift", left, right);
     }
 
     public get precedence(): number {
@@ -2210,10 +2210,10 @@ export class SignedRightShiftNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): SignedRightShiftNode {
-        node = check.node(node,"SignedRightShift",2);
+        node = check.node(node, "SignedRightShift", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new SignedRightShiftNode(node.range,left,right);
+        return new SignedRightShiftNode(node.range, left, right);
     }
 }
 
@@ -2221,7 +2221,7 @@ export class UnsignedRightShiftNode extends BinaryNode {
     public _type_UnsignedRightShiftNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"UnsignedRightShift",left,right);
+        super(range, "UnsignedRightShift", left, right);
     }
 
     public get precedence(): number {
@@ -2233,10 +2233,10 @@ export class UnsignedRightShiftNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): UnsignedRightShiftNode {
-        node = check.node(node,"UnsignedRightShift",2);
+        node = check.node(node, "UnsignedRightShift", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new UnsignedRightShiftNode(node.range,left,right);
+        return new UnsignedRightShiftNode(node.range, left, right);
     }
 }
 
@@ -2246,7 +2246,7 @@ export class LessThanNode extends BinaryNode {
     public _type_LessThanNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"LessThan",left,right);
+        super(range, "LessThan", left, right);
     }
 
     public get precedence(): number {
@@ -2259,7 +2259,7 @@ export class LessThanNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2270,13 +2270,13 @@ export class LessThanNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
         if (!(rvalComp instanceof NormalCompletion))
             return rvalComp;
         const rval = rvalComp.value;
 
         // 6. Let r be the result of performing Abstract Relational Comparison lval < rval. (see 7.2.11)
-        const rComp = abstractRelationalComparison(ctx.realm,lval,rval,true);
+        const rComp = abstractRelationalComparison(ctx.realm, lval, rval, true);
 
         // 7. ReturnIfAbrupt(r).
         if (!(rComp instanceof NormalCompletion))
@@ -2291,10 +2291,10 @@ export class LessThanNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): LessThanNode {
-        node = check.node(node,"LessThan",2);
+        node = check.node(node, "LessThan", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new LessThanNode(node.range,left,right);
+        return new LessThanNode(node.range, left, right);
     }
 }
 
@@ -2302,7 +2302,7 @@ export class GreaterThanNode extends BinaryNode {
     public _type_GreaterThanNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"GreaterThan",left,right);
+        super(range, "GreaterThan", left, right);
     }
 
     public get precedence(): number {
@@ -2315,7 +2315,7 @@ export class GreaterThanNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2326,13 +2326,13 @@ export class GreaterThanNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
         if (!(rvalComp instanceof NormalCompletion))
             return rvalComp;
         const rval = rvalComp.value;
 
         // 6. Let r be the result of performing Abstract Relational Comparison rval < lval with LeftFirst equal to false.
-        const rComp = abstractRelationalComparison(ctx.realm,rval,lval,false);
+        const rComp = abstractRelationalComparison(ctx.realm, rval, lval, false);
 
         // 7. ReturnIfAbrupt(r).
         if (!(rComp instanceof NormalCompletion))
@@ -2347,10 +2347,10 @@ export class GreaterThanNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): GreaterThanNode {
-        node = check.node(node,"GreaterThan",2);
+        node = check.node(node, "GreaterThan", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new GreaterThanNode(node.range,left,right);
+        return new GreaterThanNode(node.range, left, right);
     }
 }
 
@@ -2358,7 +2358,7 @@ export class LessEqualNode extends BinaryNode {
     public _type_LessEqualNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"LessEqual",left,right);
+        super(range, "LessEqual", left, right);
     }
 
     public get precedence(): number {
@@ -2371,7 +2371,7 @@ export class LessEqualNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2382,13 +2382,13 @@ export class LessEqualNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
         if (!(rvalComp instanceof NormalCompletion))
             return rvalComp;
         const rval = rvalComp.value;
 
         // 6. Let r be the result of performing Abstract Relational Comparison rval < lval with LeftFirst equal to false.
-        const rComp = abstractRelationalComparison(ctx.realm,rval,lval,false);
+        const rComp = abstractRelationalComparison(ctx.realm, rval, lval, false);
 
         // 7. ReturnIfAbrupt(r).
         if (!(rComp instanceof NormalCompletion))
@@ -2405,10 +2405,10 @@ export class LessEqualNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): LessEqualNode {
-        node = check.node(node,"LessEqual",2);
+        node = check.node(node, "LessEqual", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new LessEqualNode(node.range,left,right);
+        return new LessEqualNode(node.range, left, right);
     }
 }
 
@@ -2416,7 +2416,7 @@ export class GreaterEqualNode extends BinaryNode {
     public _type_GreaterEqualNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"GreaterEqual",left,right);
+        super(range, "GreaterEqual", left, right);
     }
 
     public get precedence(): number {
@@ -2429,7 +2429,7 @@ export class GreaterEqualNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2440,13 +2440,13 @@ export class GreaterEqualNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
         if (!(rvalComp instanceof NormalCompletion))
             return rvalComp;
         const rval = rvalComp.value;
 
         // 6. Let r be the result of performing Abstract Relational Comparison lval < rval.
-        const rComp = abstractRelationalComparison(ctx.realm,lval,rval,true);
+        const rComp = abstractRelationalComparison(ctx.realm, lval, rval, true);
 
         // 7. ReturnIfAbrupt(r).
         if (!(rComp instanceof NormalCompletion))
@@ -2463,10 +2463,10 @@ export class GreaterEqualNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): GreaterEqualNode {
-        node = check.node(node,"GreaterEqual",2);
+        node = check.node(node, "GreaterEqual", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new GreaterEqualNode(node.range,left,right);
+        return new GreaterEqualNode(node.range, left, right);
     }
 }
 
@@ -2474,7 +2474,7 @@ export class InstanceOfNode extends BinaryNode {
     public _type_InstanceOfNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"InstanceOf",left,right);
+        super(range, "InstanceOf", left, right);
     }
 
     public get precedence(): number {
@@ -2486,10 +2486,10 @@ export class InstanceOfNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): InstanceOfNode {
-        node = check.node(node,"InstanceOf",2);
+        node = check.node(node, "InstanceOf", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new InstanceOfNode(node.range,left,right);
+        return new InstanceOfNode(node.range, left, right);
     }
 }
 
@@ -2497,7 +2497,7 @@ export class InNode extends BinaryNode {
     public _type_InNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"In",left,right);
+        super(range, "In", left, right);
     }
 
     public get precedence(): number {
@@ -2509,10 +2509,10 @@ export class InNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): InNode {
-        node = check.node(node,"In",2);
+        node = check.node(node, "In", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new InNode(node.range,left,right);
+        return new InNode(node.range, left, right);
     }
 }
 
@@ -2522,7 +2522,7 @@ export class AbstractEqualsNode extends BinaryNode {
     public _type_AbstractEqualsNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AbstractEquals",left,right);
+        super(range, "AbstractEquals", left, right);
     }
 
     public get precedence(): number {
@@ -2535,7 +2535,7 @@ export class AbstractEqualsNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2546,7 +2546,7 @@ export class AbstractEqualsNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
 
         // 6. ReturnIfAbrupt(rval).
         if (!(rvalComp instanceof NormalCompletion))
@@ -2554,7 +2554,7 @@ export class AbstractEqualsNode extends BinaryNode {
         const rval = rvalComp.value;
 
         // 7. Return the result of performing Abstract Equality Comparison rval == lval.
-        const resultComp = abstractEqualityComparison(ctx.realm,rval,lval);
+        const resultComp = abstractEqualityComparison(ctx.realm, rval, lval);
         if (!(resultComp instanceof NormalCompletion))
             return resultComp;
         const result = resultComp.value;
@@ -2563,10 +2563,10 @@ export class AbstractEqualsNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AbstractEqualsNode {
-        node = check.node(node,"AbstractEquals",2);
+        node = check.node(node, "AbstractEquals", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AbstractEqualsNode(node.range,left,right);
+        return new AbstractEqualsNode(node.range, left, right);
     }
 }
 
@@ -2574,7 +2574,7 @@ export class AbstractNotEqualsNode extends BinaryNode {
     public _type_AbstractNotEqualsNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AbstractNotEquals",left,right);
+        super(range, "AbstractNotEquals", left, right);
     }
 
     public get precedence(): number {
@@ -2587,7 +2587,7 @@ export class AbstractNotEqualsNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2598,7 +2598,7 @@ export class AbstractNotEqualsNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
 
         // 6. ReturnIfAbrupt(rval).
         if (!(rvalComp instanceof NormalCompletion))
@@ -2606,7 +2606,7 @@ export class AbstractNotEqualsNode extends BinaryNode {
         const rval = rvalComp.value;
 
         // 7. Let r be the result of performing Abstract Equality Comparison rval == lval.
-        const rComp = abstractEqualityComparison(ctx.realm,rval,lval);
+        const rComp = abstractEqualityComparison(ctx.realm, rval, lval);
         if (!(rComp instanceof NormalCompletion))
             return rComp;
         const r = rComp.value;
@@ -2619,10 +2619,10 @@ export class AbstractNotEqualsNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AbstractNotEqualsNode {
-        node = check.node(node,"AbstractNotEquals",2);
+        node = check.node(node, "AbstractNotEquals", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AbstractNotEqualsNode(node.range,left,right);
+        return new AbstractNotEqualsNode(node.range, left, right);
     }
 }
 
@@ -2630,7 +2630,7 @@ export class StrictEqualsNode extends BinaryNode {
     public _type_StrictEqualsNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"StrictEquals",left,right);
+        super(range, "StrictEquals", left, right);
     }
 
     public get precedence(): number {
@@ -2643,7 +2643,7 @@ export class StrictEqualsNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval)
         if (!(lvalComp instanceof NormalCompletion))
@@ -2654,7 +2654,7 @@ export class StrictEqualsNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
 
         // 6. ReturnIfAbrupt(rval).
         if (!(rvalComp instanceof NormalCompletion))
@@ -2662,15 +2662,15 @@ export class StrictEqualsNode extends BinaryNode {
         const rval = rvalComp.value;
 
         // 7. Return the result of performing Strict Equality Comparison rval === lval.
-        const result = strictEqualityComparison(ctx.realm,rval,lval);
+        const result = strictEqualityComparison(ctx.realm, rval, lval);
         return new NormalCompletion(new JSBoolean(result));
     }
 
     public static fromGeneric(node: ASTNode | null): StrictEqualsNode {
-        node = check.node(node,"StrictEquals",2);
+        node = check.node(node, "StrictEquals", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new StrictEqualsNode(node.range,left,right);
+        return new StrictEqualsNode(node.range, left, right);
     }
 }
 
@@ -2678,7 +2678,7 @@ export class StrictNotEqualsNode extends BinaryNode {
     public _type_StrictNotEqualsNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"StrictNotEquals",left,right);
+        super(range, "StrictNotEquals", left, right);
     }
 
     public get precedence(): number {
@@ -2691,7 +2691,7 @@ export class StrictNotEqualsNode extends BinaryNode {
         const lrefComp = this.left.evaluate(ctx);
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
 
         // 3. ReturnIfAbrupt(lval).
         if (!(lvalComp instanceof NormalCompletion))
@@ -2702,7 +2702,7 @@ export class StrictNotEqualsNode extends BinaryNode {
         const rrefComp = this.right.evaluate(ctx);
 
         // 5. Let rval be GetValue(rref).
-        const rvalComp = GetValue(ctx.realm,rrefComp);
+        const rvalComp = GetValue(ctx.realm, rrefComp);
 
         // 6. ReturnIfAbrupt(rval).
         if (!(rvalComp instanceof NormalCompletion))
@@ -2710,17 +2710,17 @@ export class StrictNotEqualsNode extends BinaryNode {
         const rval = rvalComp.value;
 
         // 7. Let r be the result of performing Strict Equality Comparison rval === lval.
-        const r = strictEqualityComparison(ctx.realm,rval,lval);
+        const r = strictEqualityComparison(ctx.realm, rval, lval);
 
         // 8. If r is true, return false. Otherwise, return true.
         return new NormalCompletion(new JSBoolean(!r));
     }
 
     public static fromGeneric(node: ASTNode | null): StrictNotEqualsNode {
-        node = check.node(node,"StrictNotEquals",2);
+        node = check.node(node, "StrictNotEquals", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new StrictNotEqualsNode(node.range,left,right);
+        return new StrictNotEqualsNode(node.range, left, right);
     }
 }
 
@@ -2730,7 +2730,7 @@ export class BitwiseANDNode extends BinaryNode {
     public _type_BitwiseANDNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"BitwiseAND",left,right);
+        super(range, "BitwiseAND", left, right);
     }
 
     public get precedence(): number {
@@ -2742,10 +2742,10 @@ export class BitwiseANDNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): BitwiseANDNode {
-        node = check.node(node,"BitwiseAND",2);
+        node = check.node(node, "BitwiseAND", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new BitwiseANDNode(node.range,left,right);
+        return new BitwiseANDNode(node.range, left, right);
     }
 }
 
@@ -2753,7 +2753,7 @@ export class BitwiseXORNode extends BinaryNode {
     public _type_BitwiseXORNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"BitwiseXOR",left,right);
+        super(range, "BitwiseXOR", left, right);
     }
 
     public get precedence(): number {
@@ -2765,10 +2765,10 @@ export class BitwiseXORNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): BitwiseXORNode {
-        node = check.node(node,"BitwiseXOR",2);
+        node = check.node(node, "BitwiseXOR", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new BitwiseXORNode(node.range,left,right);
+        return new BitwiseXORNode(node.range, left, right);
     }
 }
 
@@ -2776,7 +2776,7 @@ export class BitwiseORNode extends BinaryNode {
     public _type_BitwiseORNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"BitwiseOR",left,right);
+        super(range, "BitwiseOR", left, right);
     }
 
     public get precedence(): number {
@@ -2788,10 +2788,10 @@ export class BitwiseORNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): BitwiseORNode {
-        node = check.node(node,"BitwiseOR",2);
+        node = check.node(node, "BitwiseOR", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new BitwiseORNode(node.range,left,right);
+        return new BitwiseORNode(node.range, left, right);
     }
 }
 
@@ -2801,7 +2801,7 @@ export class LogicalANDNode extends BinaryNode {
     public _type_LogicalANDNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"LogicalAND",left,right);
+        super(range, "LogicalAND", left, right);
     }
 
     public get precedence(): number {
@@ -2821,14 +2821,14 @@ export class LogicalANDNode extends BinaryNode {
         const lref = lrefComp.value;
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lrefComp);
+        const lvalComp = GetValue(ctx.realm, lrefComp);
         if (!(lvalComp instanceof NormalCompletion))
             return lvalComp;
         const lval = lvalComp.value;
 
         // 3. Let lbool be ToBoolean(lval).
         // 4. ReturnIfAbrupt(lbool).
-        const lboolComp = ToBoolean(ctx.realm,lvalComp);
+        const lboolComp = ToBoolean(ctx.realm, lvalComp);
         if (!(lboolComp instanceof NormalCompletion))
             return lboolComp;
         const lbool = lboolComp.value;
@@ -2841,14 +2841,14 @@ export class LogicalANDNode extends BinaryNode {
         const rrefComp = rightNode.evaluate(ctx);
 
         // 7. Return GetValue(rref).
-        return GetValue(ctx.realm,rrefComp);
+        return GetValue(ctx.realm, rrefComp);
     }
 
     public static fromGeneric(node: ASTNode | null): LogicalANDNode {
-        node = check.node(node,"LogicalAND",2);
+        node = check.node(node, "LogicalAND", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new LogicalANDNode(node.range,left,right);
+        return new LogicalANDNode(node.range, left, right);
     }
 }
 
@@ -2856,7 +2856,7 @@ export class LogicalORNode extends BinaryNode {
     public _type_LogicalORNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"LogicalOR",left,right);
+        super(range, "LogicalOR", left, right);
     }
 
     public get precedence(): number {
@@ -2874,14 +2874,14 @@ export class LogicalORNode extends BinaryNode {
         const lref = lrefComp.value;
 
         // 2. Let lval be GetValue(lref).
-        const lvalComp = GetValue(ctx.realm,lref);
+        const lvalComp = GetValue(ctx.realm, lref);
         if (!(lvalComp instanceof NormalCompletion))
             return lvalComp;
         const lval = lvalComp.value;
 
         // 3. Let lbool be ToBoolean(lval).
         // 4. ReturnIfAbrupt(lbool).
-        const lboolComp = ToBoolean(ctx.realm,lval);
+        const lboolComp = ToBoolean(ctx.realm, lval);
         if (!(lboolComp instanceof NormalCompletion))
             return lboolComp;
         const lbool = lboolComp.value;
@@ -2894,14 +2894,14 @@ export class LogicalORNode extends BinaryNode {
         const rrefComp = rightNode.evaluate(ctx);
 
         // 7. Return GetValue(rref).
-        return GetValue(ctx.realm,rrefComp);
+        return GetValue(ctx.realm, rrefComp);
     }
 
     public static fromGeneric(node: ASTNode | null): LogicalORNode {
-        node = check.node(node,"LogicalOR",2);
+        node = check.node(node, "LogicalOR", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new LogicalORNode(node.range,left,right);
+        return new LogicalORNode(node.range, left, right);
     }
 }
 
@@ -2919,7 +2919,7 @@ export class ConditionalNode extends ExpressionNode {
         trueExpr: ExpressionNode,
         falseExpr: ExpressionNode
     ) {
-        super(range,"Conditional");
+        super(range, "Conditional");
         this.condition = condition;
         this.trueExpr = trueExpr;
         this.falseExpr = falseExpr;
@@ -2930,7 +2930,7 @@ export class ConditionalNode extends ExpressionNode {
     }
 
     public get children(): (ASTNode | null)[] {
-        return [this.condition,this.trueExpr,this.falseExpr];
+        return [this.condition, this.trueExpr, this.falseExpr];
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -2938,11 +2938,11 @@ export class ConditionalNode extends ExpressionNode {
     }
 
     public static fromGeneric(node: ASTNode | null): ConditionalNode {
-        node = check.node(node,"Conditional",3);
+        node = check.node(node, "Conditional", 3);
         const condition = ExpressionNode_fromGeneric(node.children[0]);
         const trueExpr = ExpressionNode_fromGeneric(node.children[1]);
         const falseExpr = ExpressionNode_fromGeneric(node.children[2]);
-        return new ConditionalNode(node.range,condition,trueExpr,falseExpr);
+        return new ConditionalNode(node.range, condition, trueExpr, falseExpr);
     }
 }
 
@@ -2952,7 +2952,7 @@ export class AssignNode extends BinaryNode {
     public _type_AssignNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Assign",left,right);
+        super(range, "Assign", left, right);
     }
 
     public get precedence(): number {
@@ -2971,7 +2971,7 @@ export class AssignNode extends BinaryNode {
             // c. Let rref be the result of evaluating AssignmentExpression.
             // d. Let rval be GetValue(rref).
             const rrefComp = this.right.evaluate(ctx);
-            const rvalComp = GetValue(ctx.realm,rrefComp);
+            const rvalComp = GetValue(ctx.realm, rrefComp);
             if (!(rvalComp instanceof NormalCompletion))
                 return rvalComp;
             const rval = rvalComp.value;
@@ -2984,7 +2984,7 @@ export class AssignNode extends BinaryNode {
 
             // f. Let status be PutValue(lref, rval).
             // g. ReturnIfAbrupt(status).
-            const status = PutValue(ctx.realm,lrefComp,rvalComp);
+            const status = PutValue(ctx.realm, lrefComp, rvalComp);
             if (!(status instanceof NormalCompletion))
                 return status;
 
@@ -3005,10 +3005,10 @@ export class AssignNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignNode {
-        node = check.node(node,"Assign",2);
+        node = check.node(node, "Assign", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignNode(node.range,left,right);
+        return new AssignNode(node.range, left, right);
     }
 }
 
@@ -3016,7 +3016,7 @@ export class AssignMultiplyNode extends BinaryNode {
     public _type_AssignMultiplyNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignMultiply",left,right);
+        super(range, "AssignMultiply", left, right);
     }
 
     public get precedence(): number {
@@ -3028,10 +3028,10 @@ export class AssignMultiplyNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignMultiplyNode {
-        node = check.node(node,"AssignMultiply",2);
+        node = check.node(node, "AssignMultiply", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignMultiplyNode(node.range,left,right);
+        return new AssignMultiplyNode(node.range, left, right);
     }
 }
 
@@ -3039,7 +3039,7 @@ export class AssignDivideNode extends BinaryNode {
     public _type_AssignDivideNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignDivide",left,right);
+        super(range, "AssignDivide", left, right);
     }
 
     public get precedence(): number {
@@ -3051,10 +3051,10 @@ export class AssignDivideNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignDivideNode {
-        node = check.node(node,"AssignDivide",2);
+        node = check.node(node, "AssignDivide", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignDivideNode(node.range,left,right);
+        return new AssignDivideNode(node.range, left, right);
     }
 }
 
@@ -3062,7 +3062,7 @@ export class AssignModuloNode extends BinaryNode {
     public _type_AssignModuloNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignModulo",left,right);
+        super(range, "AssignModulo", left, right);
     }
 
     public get precedence(): number {
@@ -3074,10 +3074,10 @@ export class AssignModuloNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignModuloNode {
-        node = check.node(node,"AssignModulo",2);
+        node = check.node(node, "AssignModulo", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignModuloNode(node.range,left,right);
+        return new AssignModuloNode(node.range, left, right);
     }
 }
 
@@ -3085,7 +3085,7 @@ export class AssignAddNode extends BinaryNode {
     public _type_AssignAddNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignAdd",left,right);
+        super(range, "AssignAdd", left, right);
     }
 
     public get precedence(): number {
@@ -3097,10 +3097,10 @@ export class AssignAddNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignAddNode {
-        node = check.node(node,"AssignAdd",2);
+        node = check.node(node, "AssignAdd", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignAddNode(node.range,left,right);
+        return new AssignAddNode(node.range, left, right);
     }
 }
 
@@ -3108,7 +3108,7 @@ export class AssignSubtractNode extends BinaryNode {
     public _type_AssignSubtractNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignSubtract",left,right);
+        super(range, "AssignSubtract", left, right);
     }
 
     public get precedence(): number {
@@ -3120,10 +3120,10 @@ export class AssignSubtractNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignSubtractNode {
-        node = check.node(node,"AssignSubtract",2);
+        node = check.node(node, "AssignSubtract", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignSubtractNode(node.range,left,right);
+        return new AssignSubtractNode(node.range, left, right);
     }
 }
 
@@ -3131,7 +3131,7 @@ export class AssignLeftShiftNode extends BinaryNode {
     public _type_AssignLeftShiftNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignLeftShift",left,right);
+        super(range, "AssignLeftShift", left, right);
     }
 
     public get precedence(): number {
@@ -3143,10 +3143,10 @@ export class AssignLeftShiftNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignLeftShiftNode {
-        node = check.node(node,"AssignLeftShift",2);
+        node = check.node(node, "AssignLeftShift", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignLeftShiftNode(node.range,left,right);
+        return new AssignLeftShiftNode(node.range, left, right);
     }
 }
 
@@ -3154,7 +3154,7 @@ export class AssignSignedRightShiftNode extends BinaryNode {
     public _type_AssignSignedRightShiftNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignSignedRightShift",left,right);
+        super(range, "AssignSignedRightShift", left, right);
     }
 
     public get precedence(): number {
@@ -3166,10 +3166,10 @@ export class AssignSignedRightShiftNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignSignedRightShiftNode {
-        node = check.node(node,"AssignSignedRightShift",2);
+        node = check.node(node, "AssignSignedRightShift", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignSignedRightShiftNode(node.range,left,right);
+        return new AssignSignedRightShiftNode(node.range, left, right);
     }
 }
 
@@ -3177,7 +3177,7 @@ export class AssignUnsignedRightShiftNode extends BinaryNode {
     public _type_AssignUnsignedRightShiftNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignUnsignedRightShift",left,right);
+        super(range, "AssignUnsignedRightShift", left, right);
     }
 
     public get precedence(): number {
@@ -3189,10 +3189,10 @@ export class AssignUnsignedRightShiftNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignUnsignedRightShiftNode {
-        node = check.node(node,"AssignUnsignedRightShift",2);
+        node = check.node(node, "AssignUnsignedRightShift", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignUnsignedRightShiftNode(node.range,left,right);
+        return new AssignUnsignedRightShiftNode(node.range, left, right);
     }
 }
 
@@ -3200,7 +3200,7 @@ export class AssignBitwiseANDNode extends BinaryNode {
     public _type_AssignBitwiseANDNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignBitwiseAND",left,right);
+        super(range, "AssignBitwiseAND", left, right);
     }
 
     public get precedence(): number {
@@ -3212,10 +3212,10 @@ export class AssignBitwiseANDNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignBitwiseANDNode {
-        node = check.node(node,"AssignBitwiseAND",2);
+        node = check.node(node, "AssignBitwiseAND", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignBitwiseANDNode(node.range,left,right);
+        return new AssignBitwiseANDNode(node.range, left, right);
     }
 }
 
@@ -3227,7 +3227,7 @@ export class AssignBitwiseXORNode extends BinaryNode {
     }
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignBitwiseXOR",left,right);
+        super(range, "AssignBitwiseXOR", left, right);
     }
 
     public evaluate(ctx: ExecutionContext): Completion<JSValue | Reference> {
@@ -3235,10 +3235,10 @@ export class AssignBitwiseXORNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignBitwiseXORNode {
-        node = check.node(node,"AssignBitwiseXOR",2);
+        node = check.node(node, "AssignBitwiseXOR", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignBitwiseXORNode(node.range,left,right);
+        return new AssignBitwiseXORNode(node.range, left, right);
     }
 }
 
@@ -3246,7 +3246,7 @@ export class AssignBitwiseORNode extends BinaryNode {
     public _type_AssignBitwiseORNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"AssignBitwiseOR",left,right);
+        super(range, "AssignBitwiseOR", left, right);
     }
 
     public get precedence(): number {
@@ -3258,10 +3258,10 @@ export class AssignBitwiseORNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): AssignBitwiseORNode {
-        node = check.node(node,"AssignBitwiseOR",2);
+        node = check.node(node, "AssignBitwiseOR", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new AssignBitwiseORNode(node.range,left,right);
+        return new AssignBitwiseORNode(node.range, left, right);
     }
 }
 
@@ -3271,7 +3271,7 @@ export class CommaNode extends BinaryNode {
     public _type_CommaNode: any;
 
     public constructor(range: Range, left: ExpressionNode, right: ExpressionNode) {
-        super(range,"Comma",left,right);
+        super(range, "Comma", left, right);
     }
 
     public get precedence(): number {
@@ -3283,9 +3283,9 @@ export class CommaNode extends BinaryNode {
     }
 
     public static fromGeneric(node: ASTNode | null): CommaNode {
-        node = check.node(node,"Comma",2);
+        node = check.node(node, "Comma", 2);
         const left = ExpressionNode_fromGeneric(node.children[0]);
         const right = ExpressionNode_fromGeneric(node.children[1]);
-        return new CommaNode(node.range,left,right);
+        return new CommaNode(node.range, left, right);
     }
 }

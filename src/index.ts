@@ -36,12 +36,12 @@ const OUTPUT_START = "/*********************************************************
 const OUTPUT_END = "*******************************************************************************/";
 
 // console.log("Hello World");
-// console.log("__filename = "+__filename);
-// console.log("__dirname = "+__dirname);
-// // console.log("argv",process.argv);
-// console.log("argv.length = "+process.argv.length);
+// console.log("__filename = " + __filename);
+// console.log("__dirname = " + __dirname);
+// // console.log("argv", process.argv);
+// console.log("argv.length = " + process.argv.length);
 // for (let i = 0; i < process.argv.length; i++) {
-//     console.log("argv["+i+"] = "+JSON.stringify(process.argv[i]));
+//     console.log("argv[" + i + "] = " + JSON.stringify(process.argv[i]));
 // }
 
 function nodeToPlainTree(node: ASTNode, p: Parser): string {
@@ -51,16 +51,16 @@ function nodeToPlainTree(node: ASTNode, p: Parser): string {
 
     function recurse(node: ASTNode | null, indent: string = "") {
         if (node == null) {
-            lines.push(indent+"null");
+            lines.push(indent + "null");
             return;
         }
 
-        const rawText = p.text.substring(node.range.start,node.range.end);
+        const rawText = p.text.substring(node.range.start, node.range.end);
 
-        lines.push(indent+node.label+" "+node.range.start+"-"+node.range.end+" "+JSON.stringify(rawText));
+        lines.push(indent + node.label + " " + node.range.start + "-" + node.range.end + " " + JSON.stringify(rawText));
 
         for (const child of node.children)
-            recurse(child,indent+"  ");
+            recurse(child, indent + "  ");
     }
 }
 
@@ -71,19 +71,19 @@ function nodeToFancyTree(node: ASTNode): string {
 
     function recurse(node: ASTNode | null, prefix: string = "", indent: string = "") {
         if (node == null) {
-            console.log(prefix+"null");
+            console.log(prefix + "null");
             return;
         }
 
-        lines.push(prefix+node.label);
+        lines.push(prefix + node.label);
 
         const children = node.children;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            if (i+1 < children.length)
-                recurse(child,indent+"|-- ",indent+"|   ");
+            if (i + 1 < children.length)
+                recurse(child, indent + "|-- ", indent + "|   ");
             else
-                recurse(child,indent+"\\-- ",indent+"    ");
+                recurse(child, indent + "\\-- ", indent + "    ");
         }
     }
 }
@@ -95,10 +95,10 @@ const commands: CommandSet = {
         const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
-            throw new ParseError(p,p.pos,"Expected end of file");
+            throw new ParseError(p, p.pos, "Expected end of file");
         const realm = new RealmImpl();
-        const typedRoot = ModuleNode.fromGeneric(root,realm);
-        return nodeToPlainTree(typedRoot,p);
+        const typedRoot = ModuleNode.fromGeneric(root, realm);
+        return nodeToPlainTree(typedRoot, p);
     },
 
     ["execute"](input: string): string {
@@ -106,12 +106,12 @@ const commands: CommandSet = {
         const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
-            throw new ParseError(p,p.pos,"Expected end of file");
+            throw new ParseError(p, p.pos, "Expected end of file");
         const realm = new RealmImpl();
-        const typedRoot = ModuleNode.fromGeneric(root,realm);
+        const typedRoot = ModuleNode.fromGeneric(root, realm);
 
         const outputLines: string[] = [];
-        evalModule(typedRoot,{
+        evalModule(typedRoot, {
             log(message: string): void {
                 outputLines.push(message);
             },
@@ -150,18 +150,18 @@ function splitTestData(content: string): TestData {
             inputLines.push(lines[i]);
         }
     }
-    while ((inputLines.length > 0) && (inputLines[inputLines.length-1] === ""))
+    while ((inputLines.length > 0) && (inputLines[inputLines.length - 1] === ""))
         inputLines.length--;
-    while ((outputLines.length > 0) && (outputLines[outputLines.length-1] === ""))
+    while ((outputLines.length > 0) && (outputLines[outputLines.length - 1] === ""))
         outputLines.length--;
 
     let command: string = "";
     if (outputLines.length > 0) {
         command = outputLines[0];
-        outputLines.splice(0,1);
+        outputLines.splice(0, 1);
     }
     if ((outputLines.length > 0) && (outputLines[0] === ""))
-        outputLines.splice(0,1);
+        outputLines.splice(0, 1);
 
     return {
         input: inputLines.join("\n"),
@@ -184,79 +184,79 @@ function joinTestData(data: TestData) {
 
 function leftpad(str: string, width: number) {
     if (str.length < width)
-        str += (new Array(width-str.length+1)).join(" ");
+        str += (new Array(width - str.length + 1)).join(" ");
     return str;
 }
 
 function checkTest(relPath: string, content: string): boolean {
-    const absPath = path.resolve(process.cwd(),relPath);
+    const absPath = path.resolve(process.cwd(), relPath);
     try {
         const { input, command, output: expected } = splitTestData(content);
         const fun = commands[command];
         if (fun == null)
-            throw new Error("Unknown command "+JSON.stringify(command));
+            throw new Error("Unknown command " + JSON.stringify(command));
         const actual = fun(input);
         const pass = (actual === expected);
         if (pass) {
-            console.log(leftpad(relPath,60)+"PASS");
+            console.log(leftpad(relPath, 60) + "PASS");
             return true;
         }
         else {
-            console.log(leftpad(relPath,60)+"FAIL");
+            console.log(leftpad(relPath, 60) + "FAIL");
             return false;
         }
     }
     catch (e) {
-        console.log(leftpad(relPath,60)+"FAIL "+e);
+        console.log(leftpad(relPath, 60) + "FAIL " + e);
         return false;
     }
 }
 
 function genTest(command: string, relPath: string, write: boolean) {
-    const absPath = path.resolve(process.cwd(),relPath);
+    const absPath = path.resolve(process.cwd(), relPath);
     try {
-        const content = fs.readFileSync(absPath,{ encoding: "utf-8" });
+        const content = fs.readFileSync(absPath, { encoding: "utf-8" });
 
         const { input } = splitTestData(content);
 
         const fun = commands[command];
         if (fun == null)
-            throw new Error("Unknown command "+JSON.stringify(command));
+            throw new Error("Unknown command " + JSON.stringify(command));
 
         let output: string = "";
         try {
             output = fun(input);
         }
         catch (e) {
-            output = "Exception: "+e;
+            output = "Exception: " + e;
         }
 
         const joined = joinTestData({ input: input, command: command, output: output });
 
         if (write) {
-            fs.writeFileSync(relPath,joined+"\n",{ encoding: "utf-8" });
-            console.log("Wrote "+relPath);
+            fs.writeFileSync(relPath, joined + "\n", { encoding: "utf-8" });
+            console.log("Wrote " + relPath);
         }
         else {
             console.log(joined);
         }
     }
     catch (e) {
-        console.error(absPath+": "+e);
+        console.error(absPath + ": " + e);
         process.exit(1);
     }
 }
 
 function parse(relFilename: string): void {
-    const text = fs.readFileSync(relFilename,{ encoding: "utf-8" });
+    const text = fs.readFileSync(relFilename, { encoding: "utf-8" });
     console.log(text);
     try {
         const p = new Parser(text);
         const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
-            throw new ParseError(p,p.pos,"Expected end of file");
-        console.log(nodeToPlainTree(root,p));
+            throw new ParseError(p, p.pos, "Expected end of file");
+        console.log(nodeToPlainTree(root, p));
     }
     catch (e) {
         console.error(e.toString());
@@ -265,15 +265,15 @@ function parse(relFilename: string): void {
 }
 
 function runtests(relRoot: string): void {
-    const absRoot = path.resolve(process.cwd(),relRoot);
+    const absRoot = path.resolve(process.cwd(), relRoot);
     let passed = 0;
     let failed = 0;
     recurse();
-    console.log("Passed: "+passed);
-    console.log("Failed: "+failed);
+    console.log("Passed: " + passed);
+    console.log("Failed: " + failed);
 
     function recurse(relPath: string = "") {
-        const absPath = path.join(absRoot,relPath);
+        const absPath = path.join(absRoot, relPath);
         try {
             // let str = relPath;
             // while (str.length < 60)
@@ -283,12 +283,12 @@ function runtests(relRoot: string): void {
 
             if (fs.statSync(absPath).isDirectory()) {
                 for (const filename of fs.readdirSync(absPath))
-                    recurse(path.join(relPath,filename));
+                    recurse(path.join(relPath, filename));
             }
             else {
                 if (relPath.match(/\.js$/)) {
-                    const content = fs.readFileSync(absPath,{ encoding: "utf-8" });
-                    if(checkTest(relPath,content))
+                    const content = fs.readFileSync(absPath, { encoding: "utf-8" });
+                    if (checkTest(relPath, content))
                         passed++;
                     else
                         failed++;
@@ -296,28 +296,28 @@ function runtests(relRoot: string): void {
             }
         }
         catch (e) {
-            console.error(absPath+": "+e);
+            console.error(absPath + ": " + e);
         }
     }
 }
 
 function showUsageAndExit(): void {
     console.error("Usage:");
-    console.error("    "+path.basename(process.argv[1])+" gentest [-w] <command> <filename>");
-    console.error("    "+path.basename(process.argv[1])+" runtests <path>");
+    console.error("    " + path.basename(process.argv[1]) + " gentest [-w] <command> <filename>");
+    console.error("    " + path.basename(process.argv[1]) + " runtests <path>");
     process.exit(1);
 }
 
 function execute(relFilename: string) {
-    const absFilename = path.resolve(process.cwd(),relFilename);
+    const absFilename = path.resolve(process.cwd(), relFilename);
     try {
-        const content = fs.readFileSync(absFilename,{ encoding: "utf-8" });
+        const content = fs.readFileSync(absFilename, { encoding: "utf-8" });
         const { input } = splitTestData(content);
         const output = commands["execute"](input);
         console.log(output);
     }
     catch (e) {
-        console.error(absFilename+": "+e);
+        console.error(absFilename + ": " + e);
         process.exit(1);
     }
 }
@@ -373,7 +373,7 @@ function perftest(): void {
         const root = parseModule(p);
         p.skipWhitespace();
         if (p.pos < p.len)
-            throw new ParseError(p,p.pos,"Expected end of file");
+            throw new ParseError(p, p.pos, "Expected end of file");
     }
 }
 
@@ -411,7 +411,7 @@ function main(): void {
         if ((command === "") || (filename === ""))
             showUsageAndExit();
 
-        genTest(command,filename,write);
+        genTest(command, filename, write);
     }
     else if ((i < argc) && (argv[i] === "perftest")) {
         perftest();

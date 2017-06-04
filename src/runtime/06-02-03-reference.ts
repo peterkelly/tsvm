@@ -64,7 +64,7 @@ export function HasPrimitiveBase(realm: Realm, V: Reference): boolean {
 }
 
 export function IsPropertyReference(realm: Realm, V: Reference): V is PropertyReference {
-    return ((V.base instanceof JSObject) || HasPrimitiveBase(realm,V));
+    return ((V.base instanceof JSObject) || HasPrimitiveBase(realm, V));
 }
 
 export function IsUnresolvableReference(realm: Realm, V: Reference): V is UnresolvableReference {
@@ -105,30 +105,30 @@ export function GetValue(realm: Realm, VComp: Reference | JSValue | Completion<R
             nameStr = V.name.description.stringValue;
         else
             nameStr = "[symbol]";
-        return realm.throwReferenceError(name+" is not defined");
+        return realm.throwReferenceError(name + " is not defined");
     }
     // 5. If IsPropertyReference(V), then
     else if (V instanceof PropertyReference) {
         let base = V.base;
         if (!(base instanceof JSObject)) {
-            const baseComp = ToObject(realm,base);
+            const baseComp = ToObject(realm, base);
             if (!(baseComp instanceof NormalCompletion))
                 return baseComp;
             base = baseComp.value;
         }
-        const name = GetReferencedName(realm,V);
-        const thisValueComp = GetThisValue(realm,V);
+        const name = GetReferencedName(realm, V);
+        const thisValueComp = GetThisValue(realm, V);
         if (!(thisValueComp instanceof NormalCompletion))
             return thisValueComp;
         const thisValue = thisValueComp.value;
-        return base.__Get__(realm,name,thisValue);
+        return base.__Get__(realm, name, thisValue);
     }
     // 6. Else base must be an Environment Record,
     else {
         // a. Return base.GetBindingValue(GetReferencedName(V), IsStrictReference(V))
         const name: string = V.name.stringValue;
-        const strict: boolean = IsStrictReference(realm,V);
-        return V.base.GetBindingValue(name,strict);
+        const strict: boolean = IsStrictReference(realm, V);
+        return V.base.GetBindingValue(name, strict);
     }
 }
 
@@ -160,27 +160,27 @@ export function PutValue(realm: Realm, Vcomp: Completion<JSValue | Reference>, W
     // (done below)
 
     // 5. If IsUnresolvableReference(V), then
-    if (IsUnresolvableReference(realm,V)) {
+    if (IsUnresolvableReference(realm, V)) {
         // a. If IsStrictReference(V) is true, then
         if (V.strict) {
             // i. Throw ReferenceError exception.
             if (V.name instanceof JSString)
-                return realm.throwReferenceError(V.name.stringValue+" is not defined");
+                return realm.throwReferenceError(V.name.stringValue + " is not defined");
             else
-                return realm.throwReferenceError(V.name.stringRep+" is not defined");
+                return realm.throwReferenceError(V.name.stringRep + " is not defined");
         }
 
         // b. Let globalObj be GetGlobalObject().
         const globalObj = realm.globalThis;
 
-        // c. Return Set(globalObj,GetReferencedName(V), W, false).
-        const setComp = Set(realm,globalObj,GetReferencedName(realm,V),W,false);
+        // c. Return Set(globalObj, GetReferencedName(V), W, false).
+        const setComp = Set(realm, globalObj, GetReferencedName(realm, V), W, false);
         if (!(setComp instanceof NormalCompletion))
             return setComp;
         return new NormalCompletion(undefined);
     }
     // 6. Else if IsPropertyReference(V), then
-    else if (IsPropertyReference(realm,V)) {
+    else if (IsPropertyReference(realm, V)) {
         let base: JSObject;
 
         // a. If HasPrimitiveBase(V) is true, then
@@ -189,7 +189,7 @@ export function PutValue(realm: Realm, Vcomp: Completion<JSValue | Reference>, W
             if ((V.base instanceof JSNull) || (V.base instanceof JSUndefined))
                 throw new Error("base should not be null or undefined");
             // ii. Set base to ToObject(base).
-            const base2Comp = ToObject(realm,V.base);
+            const base2Comp = ToObject(realm, V.base);
             if (!(base2Comp instanceof NormalCompletion))
                 return base2Comp;
             base = base2Comp.value;
@@ -200,17 +200,17 @@ export function PutValue(realm: Realm, Vcomp: Completion<JSValue | Reference>, W
 
         // b. Let succeeded be base.[[Set]](GetReferencedName(V), W, GetThisValue(V)).
         // c. ReturnIfAbrupt(succeeded).
-        const thisValueComp = GetThisValue(realm,V);
+        const thisValueComp = GetThisValue(realm, V);
         if (!(thisValueComp instanceof NormalCompletion))
             return thisValueComp;
         const thisValue = thisValueComp.value;
-        const succeededComp = base.__Set__(realm,V.name,W,thisValue);
+        const succeededComp = base.__Set__(realm, V.name, W, thisValue);
         if (!(succeededComp instanceof NormalCompletion))
             return succeededComp;
         const succeeded = succeededComp.value;
 
         // d. If succeeded is false and IsStrictReference(V) is true, throw a TypeError exception.
-        if (!succeeded && IsStrictReference(realm,V))
+        if (!succeeded && IsStrictReference(realm, V))
             return realm.throwTypeError("Cannot set property which only has a getter");
 
         // e. Return.
@@ -233,7 +233,7 @@ export function GetThisValue(realm: Realm, V: Reference): Completion<JSValue> {
     if (V instanceof SuperReference)
         return new NormalCompletion(V.thisValue);
     else {
-        const result = GetBase(realm,V);
+        const result = GetBase(realm, V);
         if (!(result instanceof JSValue))
             throw new Error("base is not a value"); // FIXME: What to do here?
         return new NormalCompletion(result);
@@ -260,7 +260,7 @@ export function InitializeReferencedBinding(realm: Realm, V: EnvironmentReferenc
     // (implicit in parameter type)
 
     // 7. Return base.InitializeBinding(GetReferencedName(V), W).
-    const initComp = V.base.InitializeBinding(V.name.stringValue,W);
+    const initComp = V.base.InitializeBinding(V.name.stringValue, W);
     if (!(initComp instanceof NormalCompletion))
         return initComp;
     return new NormalCompletion(new Empty());

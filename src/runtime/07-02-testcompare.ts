@@ -141,17 +141,17 @@ export function SameValueUndefined(x: JSValue | undefined, y: JSValue | undefine
         return false;
     if (y === undefined)
         return false;
-    return SameValue(x,y);
+    return SameValue(x, y);
 }
 
 export function SameValue(x: JSValue, y: JSValue): boolean {
-    return SameValue2(x,y,false);
+    return SameValue2(x, y, false);
 }
 
 // ES6 Section 7.2.10: SameValueZero (x, y)
 
 export function SameValueZero(x: any, y: any): boolean {
-    return SameValue2(x,y,true);
+    return SameValue2(x, y, true);
 }
 
 function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
@@ -181,7 +181,7 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
                     if (pr_double_isNegativeZero(x.numberValue) && pr_double_isPositiveZero(y.numberValue))
                         return true;
                 }
-                if (pr_double_equalsExact(x.numberValue,y.numberValue))
+                if (pr_double_equalsExact(x.numberValue, y.numberValue))
                     return true;
                 return false;
             }
@@ -224,13 +224,13 @@ export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValu
     if (leftFirst) {
         // a. Let px be ToPrimitive(x, hint Number).
         // b. ReturnIfAbrupt(px).
-        const pxComp = ToPrimitive(realm,x,ValueType.Number);
+        const pxComp = ToPrimitive(realm, x, ValueType.Number);
         if (!(pxComp instanceof NormalCompletion))
             return pxComp;
         px = pxComp.value;
         // c. Let py be ToPrimitive(y, hint Number).
         // d. ReturnIfAbrupt(py).
-        const pyComp = ToPrimitive(realm,y,ValueType.Number);
+        const pyComp = ToPrimitive(realm, y, ValueType.Number);
         if (!(pyComp instanceof NormalCompletion))
             return pyComp;
         py = pyComp.value;
@@ -239,13 +239,13 @@ export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValu
     else {
         // a. Let py be ToPrimitive(y, hint Number).
         // b. ReturnIfAbrupt(py).
-        const pyComp = ToPrimitive(realm,y,ValueType.Number);
+        const pyComp = ToPrimitive(realm, y, ValueType.Number);
         if (!(pyComp instanceof NormalCompletion))
             return pyComp;
         py = pyComp.value;
         // c. Let px be ToPrimitive(x, hint Number).
         // d. ReturnIfAbrupt(px).
-        const pxComp = ToPrimitive(realm,x,ValueType.Number);
+        const pxComp = ToPrimitive(realm, x, ValueType.Number);
         if (!(pxComp instanceof NormalCompletion))
             return pxComp;
         px = pxComp.value;
@@ -259,7 +259,7 @@ export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValu
         // d. Let m be the integer that is the code unit value at index k within px.
         // e. Let n be the integer that is the code unit value at index k within py.
         // f. If m < n, return true. Otherwise, return false.
-        const result = pr_string_lessThan(px.stringValue,py.stringValue);
+        const result = pr_string_lessThan(px.stringValue, py.stringValue);
         return new NormalCompletion(new JSBoolean(result));
     }
     // 6. Else,
@@ -278,15 +278,15 @@ export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValu
         // l. If ny is −∞, return false.
         // m. If nx is −∞, return true.
         // n. If the mathematical value of nx is less than the mathematical value of ny —note that these mathematical values are both finite and not both zero—return true. Otherwise, return false.
-        const nxComp = ToNumber(realm,px);
+        const nxComp = ToNumber(realm, px);
         if (!(nxComp instanceof NormalCompletion))
             return nxComp;
         const nx = nxComp.value;
-        const nyComp = ToNumber(realm,py);
+        const nyComp = ToNumber(realm, py);
         if (!(nyComp instanceof NormalCompletion))
             return nyComp;
         const ny = nyComp.value;
-        const result = pr_double_abstractRelationalComparison(nx.numberValue,ny.numberValue);
+        const result = pr_double_abstractRelationalComparison(nx.numberValue, ny.numberValue);
         if (result === undefined)
             return new NormalCompletion(new JSUndefined());
         else
@@ -298,7 +298,7 @@ export function abstractRelationalComparison(realm: Realm, x: JSValue, y: JSValu
 
 export function abstractEqualityComparison(realm: Realm, x: JSValue, y: JSValue): Completion<boolean> {
     if (x.type === y.type)
-        return new NormalCompletion(strictEqualityComparison(realm,x,y));
+        return new NormalCompletion(strictEqualityComparison(realm, x, y));
 
     if ((x instanceof JSNull) && (y instanceof JSUndefined))
         return new NormalCompletion(true);
@@ -307,31 +307,31 @@ export function abstractEqualityComparison(realm: Realm, x: JSValue, y: JSValue)
         return new NormalCompletion(true);
 
     if ((x instanceof JSNumber) && (y instanceof JSString))
-        return abstractEqualityComparison(realm,x,ToNumber_string(realm,y));
+        return abstractEqualityComparison(realm, x, ToNumber_string(realm, y));
 
     if ((x instanceof JSString) && (y instanceof JSNumber))
-        return abstractEqualityComparison(realm,ToNumber_string(realm,x),y);
+        return abstractEqualityComparison(realm, ToNumber_string(realm, x), y);
 
     if (x instanceof JSBoolean)
-        return abstractEqualityComparison(realm,ToNumber_boolean(realm,x),y);
+        return abstractEqualityComparison(realm, ToNumber_boolean(realm, x), y);
 
     if (y instanceof JSBoolean)
-        return abstractEqualityComparison(realm,x,ToNumber_boolean(realm,y));
+        return abstractEqualityComparison(realm, x, ToNumber_boolean(realm, y));
 
     if ((y instanceof JSObject) &&
         ((x instanceof JSString) || (x instanceof JSNumber) || (x instanceof JSSymbol))) {
-        const yComp = ToPrimitive(realm,y);
+        const yComp = ToPrimitive(realm, y);
         if (!(yComp instanceof NormalCompletion))
             return yComp;
-        return abstractEqualityComparison(realm,x,yComp.value);
+        return abstractEqualityComparison(realm, x, yComp.value);
     }
 
     if ((x instanceof JSObject) &&
         ((y instanceof JSString) || (y instanceof JSNumber) || (y instanceof JSSymbol))) {
-        const xComp = ToPrimitive(realm,x);
+        const xComp = ToPrimitive(realm, x);
         if (!(xComp instanceof NormalCompletion))
             return xComp;
-        return abstractEqualityComparison(realm,xComp.value,y);
+        return abstractEqualityComparison(realm, xComp.value, y);
     }
 
     return new NormalCompletion(false);
@@ -349,7 +349,7 @@ export function strictEqualityComparison(realm: Realm, x: JSValue, y: JSValue): 
             return true;
         case ValueType.Number:
             if ((x instanceof JSNumber) && (y instanceof JSNumber)) {
-                return pr_double_strictEqualityComparison(x.numberValue,y.numberValue);
+                return pr_double_strictEqualityComparison(x.numberValue, y.numberValue);
             }
             else {
                 throw new Error("Incorrect JSValue.type (Number); should never get here");

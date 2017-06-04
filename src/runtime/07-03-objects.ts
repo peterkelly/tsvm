@@ -37,28 +37,28 @@ import {
 // ES6 Section 7.3.1: Get (O, P)
 
 export function Get(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<JSValue> {
-    return O.__Get__(realm,P,O);
+    return O.__Get__(realm, P, O);
 }
 
 // ES6 Section 7.3.2: GetV (V, P)
 
 export function GetV(realm: Realm, V: JSValue, P: JSPropertyKey): Completion<JSValue> {
-    const OComp = ToObject(realm,V);
+    const OComp = ToObject(realm, V);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
-    return O.__Get__(realm,P,O);
+    return O.__Get__(realm, P, O);
 }
 
 // ES6 Section 7.3.3: Set (O, P, V, Throw)
 
 export function Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Throw: boolean): Completion<boolean> {
-    const successComp = O.__Set__(realm,P,V,O);
+    const successComp = O.__Set__(realm, P, V, O);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
     if (!success && Throw)
-        return realm.throwTypeError("Set "+JSON.stringify(P.stringRep)+" failed");
+        return realm.throwTypeError("Set " + JSON.stringify(P.stringRep) + " failed");
     return new NormalCompletion(success);
 }
 
@@ -73,13 +73,13 @@ export function CreateDataProperty(realm: Realm, O: JSObject, P: JSPropertyKey, 
     });
     newDesc.enumerable = true;
     newDesc.configurable = true;
-    return O.__DefineOwnProperty__(realm,P,newDesc);
+    return O.__DefineOwnProperty__(realm, P, newDesc);
 }
 
 // ES6 Section 7.3.5: CreateMethodProperty (O, P, V)
 
 export function CreateMethodProperty(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    return O.__DefineOwnProperty__(realm,P,new DataDescriptor({
+    return O.__DefineOwnProperty__(realm, P, new DataDescriptor({
         value: V,
         writable: true,
         enumerable: false,
@@ -90,63 +90,63 @@ export function CreateMethodProperty(realm: Realm, O: JSObject, P: JSPropertyKey
 // ES6 Section 7.3.6: CreateDataPropertyOrThrow (O, P, V)
 
 export function CreateDataPropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue): Completion<boolean> {
-    const successComp = CreateDataProperty(realm,O,P,V);
+    const successComp = CreateDataProperty(realm, O, P, V);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
     if (!success)
-        return realm.throwTypeError("CreateDataPropertyOrThrow "+JSON.stringify(P.stringRep)+" failed");
+        return realm.throwTypeError("CreateDataPropertyOrThrow " + JSON.stringify(P.stringRep) + " failed");
     return new NormalCompletion(success);
 }
 
 // ES6 Section 7.3.7: DefinePropertyOrThrow (O, P, desc)
 
 export function DefinePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKey, desc: PropertyDescriptor): Completion<boolean> {
-    const successComp = O.__DefineOwnProperty__(realm,P,desc);
+    const successComp = O.__DefineOwnProperty__(realm, P, desc);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
     if (!success)
-        return realm.throwTypeError("DefinePropertyOrThrow "+JSON.stringify(P.stringRep)+" failed");
+        return realm.throwTypeError("DefinePropertyOrThrow " + JSON.stringify(P.stringRep) + " failed");
     return new NormalCompletion(success);
 }
 
 // ES6 Section 7.3.8: DeletePropertyOrThrow (O, P)
 
 export function DeletePropertyOrThrow(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const successComp = O.__Delete__(realm,P);
+    const successComp = O.__Delete__(realm, P);
     if (!(successComp instanceof NormalCompletion))
         return successComp;
     const success = successComp.value;
     if (!success)
-        return realm.throwTypeError("DeletePropertyOrThrow "+JSON.stringify(P.stringRep)+" failed");
+        return realm.throwTypeError("DeletePropertyOrThrow " + JSON.stringify(P.stringRep) + " failed");
     return new NormalCompletion(success);
 }
 
 // ES6 Section 7.3.9: GetMethod (O, P)
 
 export function GetMethod(realm: Realm, O: JSValue, P: JSPropertyKey): Completion<JSValue> {
-    const funcComp = GetV(realm,O,P);
+    const funcComp = GetV(realm, O, P);
     if (!(funcComp instanceof NormalCompletion))
         return funcComp;
     const func = funcComp.value;
     if ((func instanceof JSUndefined) || (func instanceof JSNull))
         return new NormalCompletion(new JSUndefined());
-    if (!IsCallable(realm,func))
-        return realm.throwTypeError("GetMethod: "+JSON.stringify(P.stringRep)+" is not callable");
+    if (!IsCallable(realm, func))
+        return realm.throwTypeError("GetMethod: " + JSON.stringify(P.stringRep) + " is not callable");
     return new NormalCompletion(func);
 }
 
 // ES6 Section 7.3.10: HasProperty (O, P)
 
 export function HasProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    return O.__HasProperty__(realm,P);
+    return O.__HasProperty__(realm, P);
 }
 
 // ES6 Section 7.3.11: HasOwnProperty (O, P)
 
 export function HasOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const descComp = O.__GetOwnProperty__(realm,P);
+    const descComp = O.__GetOwnProperty__(realm, P);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;
@@ -162,7 +162,7 @@ export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue
         throw new Error("Object is not callable"); // FIXME: temp
     // if (!IsCallable(F))
         // return realm.throwTypeError();
-    return F.__Call__(realm,V,argumentList);
+    return F.__Call__(realm, V, argumentList);
 }
 
 // ES6 Section 7.3.13: Construct (F, [argumentsList], [newTarget])
@@ -170,7 +170,7 @@ export function Call(realm: Realm, F: JSValue, V: JSValue, argumentList: JSValue
 export function Construct(realm: Realm, F: JSObject, argumentList: JSValue[], newTarget: JSObject): Completion<JSObject> {
     if (!F.implementsConstruct)
         throw new Error("Attempt to call Construct ot an object that is not a constructor");
-    return F.__Construct__(realm,argumentList,newTarget);
+    return F.__Construct__(realm, argumentList, newTarget);
 }
 
 // ES6 Section 7.3.14: SetIntegrityLevel (O, level)
@@ -200,11 +200,11 @@ export function CreateListFromArrayLike(realm: Realm, obj: JSValue, elementTypes
 // ES6 Section 7.3.18: Invoke(O, P, [argumentsList])
 
 export function Invoke(realm: Realm, O: JSObject, P: JSPropertyKey, argumentsList: JSValue[]): Completion<JSValue> {
-    const funcComp = GetV(realm,O,P);
+    const funcComp = GetV(realm, O, P);
     if (!(funcComp instanceof NormalCompletion))
         return funcComp;
     const func = funcComp.value;
-    return Call(realm,func,O,argumentsList);
+    return Call(realm, func, O, argumentsList);
 }
 
 // ES6 Section 7.3.19: OrdinaryHasInstance (C, O)

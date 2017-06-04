@@ -20,7 +20,7 @@ export function pr_double_strictEqualityComparison(x: number, y: number): boolea
         return false;
     if (pr_double_isNaN(y))
         return false;
-    if (pr_double_equalsExact(x,y))
+    if (pr_double_equalsExact(x, y))
         return true;
     if (pr_double_isPositiveZero(x) && pr_double_isNegativeZero(y))
         return true;
@@ -63,11 +63,11 @@ export function pr_double_isNaN(value: number): boolean {
 }
 
 export function pr_double_isPositiveZero(value: number): boolean {
-    return pr_double_isPositiveInfinity(1/value);
+    return pr_double_isPositiveInfinity(1 / value);
 }
 
 export function pr_double_isNegativeZero(value: number): boolean {
-    return pr_double_isNegativeInfinity(1/value);
+    return pr_double_isNegativeInfinity(1 / value);
 }
 
 export function pr_double_isPositiveInfinity(value: number): boolean {
@@ -93,7 +93,7 @@ export function pr_double_isArrayIndex(value: number): boolean {
 }
 
 export function pr_double_to_string(value: number): string {
-    return ""+value;
+    return "" + value;
 }
 
 export function pr_string_to_double(value: string): number {

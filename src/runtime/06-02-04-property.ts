@@ -89,12 +89,12 @@ export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | un
 
     // 2. Let obj be ObjectCreate(%ObjectPrototype%).
     // 3. Assert: obj is an extensible ordinary object with no own properties.
-    const obj = ObjectCreate(realm,realm.intrinsics.ObjectPrototype);
+    const obj = ObjectCreate(realm, realm.intrinsics.ObjectPrototype);
 
     // 4. If Desc has a [[Value]] field, then
     if (Desc.value !== undefined) {
         // a. Perform CreateDataProperty(obj, "value", Desc.[[Value]]).
-        const comp = CreateDataProperty(realm,obj,new JSString("value"),Desc.value);
+        const comp = CreateDataProperty(realm, obj, new JSString("value"), Desc.value);
         if (!(comp instanceof NormalCompletion))
             return comp;
     }
@@ -102,7 +102,7 @@ export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | un
     // 5. If Desc has a [[Writable]] field, then
     if (Desc.writable !== undefined) {
         // a. Perform CreateDataProperty(obj, "writable", Desc.[[Writable]]).
-        const comp = CreateDataProperty(realm,obj,new JSString("writable"),new JSBoolean(Desc.writable));
+        const comp = CreateDataProperty(realm, obj, new JSString("writable"), new JSBoolean(Desc.writable));
         if (!(comp instanceof NormalCompletion))
             return comp;
     }
@@ -110,7 +110,7 @@ export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | un
     // 6. If Desc has a [[Get]] field, then
     if (Desc.__get__ !== undefined) {
         // a. Perform CreateDataProperty(obj, "get", Desc.[[Get]]).
-        const comp = CreateDataProperty(realm,obj,new JSString("get"),Desc.__get__);
+        const comp = CreateDataProperty(realm, obj, new JSString("get"), Desc.__get__);
         if (!(comp instanceof NormalCompletion))
             return comp;
     }
@@ -118,7 +118,7 @@ export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | un
     // 7. If Desc has a [[Set]] field, then
     if (Desc.__set__ !== undefined) {
         // a. Perform CreateDataProperty(obj, "set", Desc.[[Set]])
-        const comp = CreateDataProperty(realm,obj,new JSString("set"),Desc.__set__);
+        const comp = CreateDataProperty(realm, obj, new JSString("set"), Desc.__set__);
         if (!(comp instanceof NormalCompletion))
             return comp;
     }
@@ -126,7 +126,7 @@ export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | un
     // 8. If Desc has an [[Enumerable]] field, then
     if (Desc.enumerable !== undefined) {
         // a. Perform CreateDataProperty(obj, "enumerable", Desc.[[Enumerable]]).
-        const comp = CreateDataProperty(realm,obj,new JSString("enumerable"),new JSBoolean(Desc.enumerable));
+        const comp = CreateDataProperty(realm, obj, new JSString("enumerable"), new JSBoolean(Desc.enumerable));
         if (!(comp instanceof NormalCompletion))
             return comp;
     }
@@ -134,7 +134,7 @@ export function FromPropertyDescriptor(realm: Realm, Desc: DescriptorFields | un
     // 9. If Desc has a [[Configurable]] field, then
     if (Desc.configurable !== undefined) {
         // a. Perform CreateDataProperty(obj , "configurable", Desc.[[Configurable]]).
-        const comp = CreateDataProperty(realm,obj,new JSString("configurable"),new JSBoolean(Desc.configurable));
+        const comp = CreateDataProperty(realm, obj, new JSString("configurable"), new JSBoolean(Desc.configurable));
         if (!(comp instanceof NormalCompletion))
             return comp;
     }
@@ -164,7 +164,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
     // 4. Let hasEnumerable be HasProperty(Obj, "enumerable").
     // 5. ReturnIfAbrupt(hasEnumerable).
-    const hasEnumerableComp = HasProperty(realm,Obj,new JSString("enumerable"));
+    const hasEnumerableComp = HasProperty(realm, Obj, new JSString("enumerable"));
     if (!(hasEnumerableComp instanceof NormalCompletion))
         return hasEnumerableComp;
     const hasEnumerable = hasEnumerableComp.value;
@@ -173,7 +173,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
     if (hasEnumerable) {
         // a. Let enum be ToBoolean(Get(Obj, "enumerable")).
         // b. ReturnIfAbrupt(enum).
-        const enumComp = ToBoolean(realm,Get(realm,Obj,new JSString("enumerable")));
+        const enumComp = ToBoolean(realm, Get(realm, Obj, new JSString("enumerable")));
         if (!(enumComp instanceof NormalCompletion))
             return enumComp;
         const enumerable = enumComp.value;
@@ -183,7 +183,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
     // 7. Let hasConfigurable be HasProperty(Obj, "configurable").
     // 8. ReturnIfAbrupt(hasConfigurable).
-    const hasConfigurableComp = HasProperty(realm,Obj,new JSString("configurable"));
+    const hasConfigurableComp = HasProperty(realm, Obj, new JSString("configurable"));
     if (!(hasConfigurableComp instanceof NormalCompletion))
         return hasConfigurableComp;
     const hasConfigurable = hasConfigurableComp.value;
@@ -192,7 +192,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
     if (hasConfigurable) {
         // a. Let conf be ToBoolean(Get(Obj, "configurable")).
         // b. ReturnIfAbrupt(conf).
-        const confComp = ToBoolean(realm,Get(realm,Obj,new JSString("configurable")));
+        const confComp = ToBoolean(realm, Get(realm, Obj, new JSString("configurable")));
         if (!(confComp instanceof NormalCompletion))
             return confComp;
         const conf = confComp.value;
@@ -202,7 +202,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
     // 10. Let hasValue be HasProperty(Obj, "value").
     // 11. ReturnIfAbrupt(hasValue).
-    const hasValueComp = HasProperty(realm,Obj,new JSString("value"));
+    const hasValueComp = HasProperty(realm, Obj, new JSString("value"));
     if (!(hasValueComp instanceof NormalCompletion))
         return hasValueComp;
     const hasValue = hasValueComp.value;
@@ -211,7 +211,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
     if (hasValue) {
         // a. Let value be Get(Obj, "value").
         // b. ReturnIfAbrupt(value).
-        const valueComp = Get(realm,Obj,new JSString("value"));
+        const valueComp = Get(realm, Obj, new JSString("value"));
         if (!(valueComp instanceof NormalCompletion))
             return valueComp;
         const value = valueComp.value;
@@ -221,7 +221,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
     // 13. Let hasWritable be HasProperty(Obj, "writable").
     // 14. ReturnIfAbrupt(hasWritable).
-    const hasWritableComp = HasProperty(realm,Obj,new JSString("writable"));
+    const hasWritableComp = HasProperty(realm, Obj, new JSString("writable"));
     if (!(hasWritableComp instanceof NormalCompletion))
         return hasWritableComp;
     const hasWritable = hasWritableComp.value;
@@ -230,7 +230,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
     if (hasWritable) {
         // a. Let writable be ToBoolean(Get(Obj, "writable")).
         // b. ReturnIfAbrupt(writable).
-        const writableComp = ToBoolean(realm,Get(realm,Obj,new JSString("writable")));
+        const writableComp = ToBoolean(realm, Get(realm, Obj, new JSString("writable")));
         if (!(writableComp instanceof NormalCompletion))
             return writableComp;
         const writable = writableComp.value;
@@ -240,7 +240,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
     // 16. Let hasGet be HasProperty(Obj, "get").
     // 17. ReturnIfAbrupt(hasGet).
-    const hasGetComp = HasProperty(realm,Obj,new JSString("get"));
+    const hasGetComp = HasProperty(realm, Obj, new JSString("get"));
     if (!(hasGetComp instanceof NormalCompletion))
         return hasGetComp;
     const hasGet = hasGetComp.value;
@@ -248,14 +248,14 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
     // 18. If hasGet is true, then
     if (hasGet) {
         // a. Let getter be Get(Obj, "get").
-        const getterComp = Get(realm,Obj,new JSString("get"));
+        const getterComp = Get(realm, Obj, new JSString("get"));
         // b. ReturnIfAbrupt(getter).
         if (!(getterComp instanceof NormalCompletion))
             return getterComp;
         const getter = getterComp.value;
         // c. If IsCallable(getter) is false and getter is not undefined, throw a TypeError exception.
         // d. Set the [[Get]] field of desc to getter.
-        if ((getter instanceof JSObject) && IsCallable(realm,getter))
+        if ((getter instanceof JSObject) && IsCallable(realm, getter))
             desc.__get__ = getter;
         else if (getter instanceof JSUndefined)
             desc.__get__ = undefined;
@@ -265,7 +265,7 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
 
     // 19. Let hasSet be HasProperty(Obj, "set").
     // 20. ReturnIfAbrupt(hasSet).
-    const hasSetComp = HasProperty(realm,Obj,new JSString("set"));
+    const hasSetComp = HasProperty(realm, Obj, new JSString("set"));
     if (!(hasSetComp instanceof NormalCompletion))
         return hasSetComp;
     const hasSet = hasSetComp.value;
@@ -274,13 +274,13 @@ export function ToPropertyDescriptor(realm: Realm, Obj: JSValue | Completion<JSV
     if (hasSet) {
         // a. Let setter be Get(Obj, "set").
         // b. ReturnIfAbrupt(setter).
-        const setterComp = Get(realm,Obj,new JSString("set"));
+        const setterComp = Get(realm, Obj, new JSString("set"));
         if (!(setterComp instanceof NormalCompletion))
             return setterComp;
         const setter = setterComp.value;
         // c. If IsCallable(setter) is false and setter is not undefined, throw a TypeError exception.
         // Set the [[Set]] field of desc to setter.
-        if ((setter instanceof JSObject) && IsCallable(realm,setter))
+        if ((setter instanceof JSObject) && IsCallable(realm, setter))
             desc.__set__ = setter;
         else if (setter instanceof JSUndefined)
             desc.__set__ = undefined;

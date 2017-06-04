@@ -58,7 +58,7 @@ function JSObject_GetPrototypeOf(realm: Realm, O: JSObject): Completion<JSObject
 function JSObject_SetPrototypeOf(realm: Realm, O: JSObject, V: JSObject | JSNull): Completion<boolean> {
     const extensible = O.__extensible__;
     const current = O.__prototype__;
-    if (SameValue(V,current))
+    if (SameValue(V, current))
         return new NormalCompletion(true);
     if (!extensible)
         return new NormalCompletion(false);
@@ -67,7 +67,7 @@ function JSObject_SetPrototypeOf(realm: Realm, O: JSObject, V: JSObject | JSNull
     while (!done) {
         if (p instanceof JSNull)
             done = true;
-        else if (SameValue(p,O))
+        else if (SameValue(p, O))
             return new NormalCompletion(false);
         else if (p.overridesGetPrototypeOf)
             done = true;
@@ -94,7 +94,7 @@ function JSObject_PreventExtensions(realm: Realm, O: JSObject): Completion<boole
 // ES6 Section 9.1.5: [[GetOwnProperty]] (P)
 
 function JSObject_GetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor> {
-    return new NormalCompletion(OrdinaryGetOwnProperty(realm,O,P));
+    return new NormalCompletion(OrdinaryGetOwnProperty(realm, O, P));
 }
 
 // ES6 Section 9.1.5.1: OrdinaryGetOwnProperty (O, P)
@@ -128,18 +128,18 @@ export function OrdinaryGetOwnProperty(realm: Realm, O: JSObject, P: JSPropertyK
 // ES6 Section 9.1.6: [[DefineOwnProperty]] (P, Desc)
 
 function JSObject_DefineOwnProperty(realm: Realm, O: JSObject, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
-    return OrdinaryDefineOwnProperty(realm,O,propertyKey,property);
+    return OrdinaryDefineOwnProperty(realm, O, propertyKey, property);
 }
 
 // ES6 Section 9.1.6.1: OrdinaryDefineOwnProperty (O, P, Desc)
 
 export function OrdinaryDefineOwnProperty(realm: Realm, O: JSObject, P: JSPropertyKey, Desc: PropertyDescriptor): Completion<boolean> {
-    const currentComp = O.__GetOwnProperty__(realm,P);
+    const currentComp = O.__GetOwnProperty__(realm, P);
     if (!(currentComp instanceof NormalCompletion))
         return currentComp;
     const current = currentComp.value;
     const extensible = O.__extensible__;
-    return ValidateAndApplyPropertyDescriptor(realm,O,P,extensible,Desc,current);
+    return ValidateAndApplyPropertyDescriptor(realm, O, P, extensible, Desc, current);
 }
 
 // ES6 Section 9.1.6.2: IsCompatiblePropertyDescriptor (Extensible, Desc, Current)
@@ -174,7 +174,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // described by Desc. If the value of an attribute field of Desc is absent, the
             // attribute of the newly created property is set to its default value.
             if (O !== undefined) {
-                O.properties.put(P,new DataDescriptor({
+                O.properties.put(P, new DataDescriptor({
                     value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
                     writable: (Desc.writable !== undefined) ? Desc.writable : false,
                     enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
@@ -189,7 +189,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // by Desc. If the value of an attribute field of Desc is absent, the attribute of the
             // newly created property is set to its default value.
             if (O !== undefined) {
-                O.properties.put(P,new AccessorDescriptor({
+                O.properties.put(P, new AccessorDescriptor({
                     __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
                     __set__: (Desc.__set__ !== undefined) ? Desc.__set__ : new JSUndefined(),
                     enumerable: (Desc.enumerable !== undefined) ? Desc.enumerable : false,
@@ -218,8 +218,8 @@ export function ValidateAndApplyPropertyDescriptor(
             (Desc.writable === undefined) &&
             (Desc.enumerable === current.enumerable) &&
             (Desc.configurable === current.configurable) &&
-            SameValueUndefined(Desc.__get__,current.__get__) &&
-            SameValueUndefined(Desc.__get__,current.__set__))
+            SameValueUndefined(Desc.__get__, current.__get__) &&
+            SameValueUndefined(Desc.__get__, current.__set__))
             return new NormalCompletion(true);
     }
     else {
@@ -228,7 +228,7 @@ export function ValidateAndApplyPropertyDescriptor(
             (Desc.__set__ === undefined) &&
             (Desc.enumerable === current.enumerable) &&
             (Desc.configurable === current.configurable) &&
-            SameValueUndefined(Desc.value,current.value) &&
+            SameValueUndefined(Desc.value, current.value) &&
             (Desc.writable === current.writable))
             return new NormalCompletion(true);
     }
@@ -260,7 +260,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // property’s [[Configurable]] and [[Enumerable]] attributes and set the rest of the
             // property’s attributes to their default values.
             if (O !== undefined) {
-                O.properties.put(P,new AccessorDescriptor({
+                O.properties.put(P, new AccessorDescriptor({
                     configurable: current.configurable,
                     enumerable: current.enumerable,
                     __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
@@ -275,7 +275,7 @@ export function ValidateAndApplyPropertyDescriptor(
             // [[Configurable]] and [[Enumerable]] attributes and set the rest of the property’s
             // attributes to their default values.
             if (O !== undefined) {
-                O.properties.put(P,new DataDescriptor({
+                O.properties.put(P, new DataDescriptor({
                     configurable: current.configurable,
                     enumerable: current.enumerable,
                     value: (Desc.value !== undefined) ? Desc.value : new JSUndefined(),
@@ -296,7 +296,7 @@ export function ValidateAndApplyPropertyDescriptor(
             if (!current.writable) {
                 // 1. Return false, if the [[Value]] field of Desc is present and
                 // SameValue(Desc.[[Value]], current.[[Value]]) is false.
-                if ((Desc.value !== undefined) && !SameValue(Desc.value,current.value))
+                if ((Desc.value !== undefined) && !SameValue(Desc.value, current.value))
                     return new NormalCompletion(false);
             }
         }
@@ -311,11 +311,11 @@ export function ValidateAndApplyPropertyDescriptor(
         if (!current.configurable) {
             // i. Return false, if the [[Set]] field of Desc is present and SameValue(Desc.[[Set]],
             // current.[[Set]]) is false.
-            if ((Desc.__set__ !== undefined) && !SameValue(Desc.__set__,current.__set__))
+            if ((Desc.__set__ !== undefined) && !SameValue(Desc.__set__, current.__set__))
                 return new NormalCompletion(false);
             // ii. Return false, if the [[Get]] field of Desc is present and
             // SameValue(Desc.[[Get]], current.[[Get]]) is false.
-            if ((Desc.__get__ !== undefined) && !SameValue(Desc.__get__,current.__get__))
+            if ((Desc.__get__ !== undefined) && !SameValue(Desc.__get__, current.__get__))
                 return new NormalCompletion(true);
         }
     }
@@ -324,7 +324,7 @@ export function ValidateAndApplyPropertyDescriptor(
     if (O !== undefined) {
         const existingDesc = O.properties.get(P);
         if (existingDesc === undefined)
-            throw new Error("Expected existing property descriptor for "+P.stringRep);
+            throw new Error("Expected existing property descriptor for " + P.stringRep);
 
         // a. For each field of Desc that is present, set the corresponding attribute of the
         // property named P of object O to the value of the field.
@@ -360,13 +360,13 @@ export function ValidateAndApplyPropertyDescriptor(
 // ES6 Section 9.1.7: [[HasProperty]] (P)
 
 function JSObject_HasProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    return OrdinaryHasProperty(realm,O,P);
+    return OrdinaryHasProperty(realm, O, P);
 }
 
 // ES6 Section 9.1.7.1: OrdinaryHasProperty (O, P)
 
 export function OrdinaryHasProperty(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const hasOwn = OrdinaryGetOwnProperty(realm,O,P);
+    const hasOwn = OrdinaryGetOwnProperty(realm, O, P);
     if (!(hasOwn instanceof JSUndefined))
         return new NormalCompletion(true);
     const parentComp = O.__GetPrototypeOf__(realm);
@@ -374,14 +374,14 @@ export function OrdinaryHasProperty(realm: Realm, O: JSObject, P: JSPropertyKey)
         return parentComp;
     const parent = parentComp.value;
     if (!(parent instanceof JSNull))
-        return parent.__HasProperty__(realm,P);
+        return parent.__HasProperty__(realm, P);
     return new NormalCompletion(false);
 }
 
 // ES6 Section 9.1.8: [[Get]] (P, Receiver)
 
 function JSObject_Get(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
-    const descComp = O.__GetOwnProperty__(realm,P);
+    const descComp = O.__GetOwnProperty__(realm, P);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;
@@ -392,7 +392,7 @@ function JSObject_Get(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSV
         const parent = parentComp.value;
         if (parent instanceof JSNull)
             return new NormalCompletion(new JSUndefined());
-        return parent.__Get__(realm,P,Receiver);
+        return parent.__Get__(realm, P, Receiver);
     }
     else if (desc instanceof DataDescriptor) {
         return new NormalCompletion(desc.value);
@@ -401,14 +401,14 @@ function JSObject_Get(realm: Realm, O: JSObject, P: JSPropertyKey, Receiver: JSV
         const getter = desc.__get__;
         if (getter instanceof JSUndefined)
             return new NormalCompletion(new JSUndefined());
-        return Call(realm,getter,Receiver,[]);
+        return Call(realm, getter, Receiver, []);
     }
 }
 
 // ES6 Section 9.1.9: [[Set]] (P, V, Receiver)
 
 function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
-    const ownDescComp = O.__GetOwnProperty__(realm,P);
+    const ownDescComp = O.__GetOwnProperty__(realm, P);
     if (!(ownDescComp instanceof NormalCompletion))
         return ownDescComp;
     let ownDesc = ownDescComp.value;
@@ -418,7 +418,7 @@ function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, R
             return parentComp;
         const parent = parentComp.value;
         if (!(parent instanceof JSNull)) {
-            return parent.__Set__(realm,P,V,Receiver);
+            return parent.__Set__(realm, P, V, Receiver);
         }
         else {
             ownDesc = new DataDescriptor({
@@ -435,7 +435,7 @@ function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, R
             return new NormalCompletion(false);
         if (!(Receiver instanceof JSObject))
             return new NormalCompletion(false);
-        const existingDescriptorComp = Receiver.__GetOwnProperty__(realm,P);
+        const existingDescriptorComp = Receiver.__GetOwnProperty__(realm, P);
         if (!(existingDescriptorComp instanceof NormalCompletion))
             return existingDescriptorComp;
         const existingDescriptor = existingDescriptorComp.value;
@@ -450,17 +450,17 @@ function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, R
                 enumerable: true,
                 configurable: true,
             });
-            return Receiver.__DefineOwnProperty__(realm,P,valueDesc);
+            return Receiver.__DefineOwnProperty__(realm, P, valueDesc);
         }
         else {
-            return CreateDataProperty(realm,Receiver,P,V);
+            return CreateDataProperty(realm, Receiver, P, V);
         }
     }
     else {
         const setter = ownDesc.__set__;
         if (setter instanceof JSUndefined)
             return new NormalCompletion(false);
-        const setterResultComp = Call(realm,setter,Receiver,[V]);
+        const setterResultComp = Call(realm, setter, Receiver, [V]);
         if (!(setterResultComp instanceof NormalCompletion))
             return setterResultComp;
         return new NormalCompletion(true);
@@ -470,7 +470,7 @@ function JSObject_Set(realm: Realm, O: JSObject, P: JSPropertyKey, V: JSValue, R
 // ES6 Section 9.1.10: [[Delete]] (P)
 
 function JSObject_Delete(realm: Realm, O: JSObject, P: JSPropertyKey): Completion<boolean> {
-    const descComp = O.__GetOwnProperty__(realm,P);
+    const descComp = O.__GetOwnProperty__(realm, P);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;

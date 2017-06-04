@@ -72,7 +72,7 @@ class ThrowTypeErrorFunction extends BuiltinFunction {
     public constructor(proto: JSObject) {
         super(proto);
         this.__extensible__ = false;
-        this.properties.put(new JSString("length"),new DataDescriptor({
+        this.properties.put(new JSString("length"), new DataDescriptor({
             enumerable: false,
             configurable: false,
             value: new JSNumber(1),
@@ -84,9 +84,9 @@ class ThrowTypeErrorFunction extends BuiltinFunction {
         const message = (args.length > 0) ? args[0] : new JSUndefined();
         const proto = realm.intrinsics.TypeErrorPrototype;
         if (message instanceof JSString)
-            return new ThrowCompletion(new TypeErrorObject(proto,message));
+            return new ThrowCompletion(new TypeErrorObject(proto, message));
         else
-            return new ThrowCompletion(new TypeErrorObject(proto,new JSUndefined()));
+            return new ThrowCompletion(new TypeErrorObject(proto, new JSUndefined()));
     }
 }
 
@@ -100,7 +100,7 @@ export function createThrowTypeErrorFunction(proto: JSObject): JSObject {
 class TypeErrorObject extends JSObject {
     public constructor(prototype: JSObject | JSNull, message: JSString | JSUndefined) {
         super(prototype);
-        this.properties.put(new JSString("message"),new DataDescriptor({
+        this.properties.put(new JSString("message"), new DataDescriptor({
             enumerable: true,
             configurable: false,
             value: message,
@@ -110,7 +110,7 @@ class TypeErrorObject extends JSObject {
 }
 
 export function createTypeErrorObject(proto: JSObject, message: JSString | JSUndefined): JSObject {
-    return new TypeErrorObject(proto,message);
+    return new TypeErrorObject(proto, message);
 }
 
 // FunctionPrototype

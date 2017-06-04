@@ -13,16 +13,16 @@
 // limitations under the License.
 
 export function leftpad(value: any, length: number): string {
-    value = ""+value;
+    value = "" + value;
     while (value.length < length)
-        value = " "+value;
+        value = " " + value;
     return value;
 }
 
 export function rightpad(value: any, length: number): string {
-    value = ""+value;
+    value = "" + value;
     while (value.length < length)
-        value = value+" ";
+        value = value + " ";
     return value;
 }
 

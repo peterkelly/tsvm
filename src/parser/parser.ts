@@ -63,15 +63,15 @@ export class Parser {
                         return;
                     break;
                 case "/": {
-                    if (this.pos+1 >= this.len)
+                    if (this.pos + 1 >= this.len)
                         return;
-                    if (this.text[this.pos+1] === "*") {
+                    if (this.text[this.pos + 1] === "*") {
                         this.pos += 2;
                         // while ((this.pos+1 < this.len) && ((this.text[this.pos] != "*") || (this.text[this.pos] != "/")))
                         //     this.pos++;
 
                         while (this.pos < this.len) {
-                            if ((this.pos+1 < this.len) && (this.text[this.pos] === "*") && (this.text[this.pos+1] === "/")) {
+                            if ((this.pos + 1 < this.len) && (this.text[this.pos] === "*") && (this.text[this.pos + 1] === "/")) {
                                 this.pos += 2;
                                 break;
                             }
@@ -80,7 +80,7 @@ export class Parser {
                             }
                         }
                     }
-                    else if (this.text[this.pos+1] === "/") {
+                    else if (this.text[this.pos + 1] === "/") {
                         // Note: This implicitly handles windows-style newlines (\r\n) because \r
                         // is skipped over just like any other character
                         this.pos += 2;
@@ -138,7 +138,7 @@ export class Parser {
 
     public expectKeyword(keyword: string): void {
         if (!this.matchKeyword(keyword))
-            throw new ParseError(this,this.pos,"Expected "+keyword);
+            throw new ParseError(this, this.pos, "Expected " + keyword);
     }
 
     public attempt<T>(f: (start: number) => T): T {
@@ -191,18 +191,18 @@ export class Parser {
                 this.pos = start;
             }
         }
-        throw new ParseError(this,this.pos,"No valid alternative found");
+        throw new ParseError(this, this.pos, "No valid alternative found");
     }
 
     public get preceding(): string {
-        return JSON.stringify(this.text.substring(0,this.pos));
+        return JSON.stringify(this.text.substring(0, this.pos));
     }
 
     public get following(): string {
         return JSON.stringify(this.text.substring(this.pos));
     }
 
-    public seq1<T1,R>(
+    public seq1<T1, R>(
         elements: [ PF<T1> ],
         cb: (nodes: [T1]) => R
     ): R {
@@ -217,15 +217,15 @@ export class Parser {
         }
     }
 
-    public seq2<T1,T2,R>(
+    public seq2<T1, T2, R>(
         elements: [ PF<T1>, PF<T2> ],
-        cb: (nodes: [T1,T2]) => R
+        cb: (nodes: [T1, T2]) => R
     ): R {
         const start = this.pos;
         try {
             const v1 = elements[0](this);
             const v2 = elements[1](this);
-            return cb([v1,v2]);
+            return cb([v1, v2]);
         }
         catch (e) {
             this.pos = start;
@@ -233,16 +233,16 @@ export class Parser {
         }
     }
 
-    public seq3<T1,T2,T3,R>(
+    public seq3<T1, T2, T3, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3> ],
-        cb: (nodes: [T1,T2,T3]) => R
+        cb: (nodes: [T1, T2, T3]) => R
     ): R {
         const start = this.pos;
         try {
             const v1 = elements[0](this);
             const v2 = elements[1](this);
             const v3 = elements[2](this);
-            return cb([v1,v2,v3]);
+            return cb([v1, v2, v3]);
         }
         catch (e) {
             this.pos = start;
@@ -250,9 +250,9 @@ export class Parser {
         }
     }
 
-    public seq4<T1,T2,T3,T4,R>(
+    public seq4<T1, T2, T3, T4, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4> ],
-        cb: (nodes: [T1,T2,T3,T4]) => R
+        cb: (nodes: [T1, T2, T3, T4]) => R
     ): R {
         const start = this.pos;
         try {
@@ -260,7 +260,7 @@ export class Parser {
             const v2 = elements[1](this);
             const v3 = elements[2](this);
             const v4 = elements[3](this);
-            return cb([v1,v2,v3,v4]);
+            return cb([v1, v2, v3, v4]);
         }
         catch (e) {
             this.pos = start;
@@ -268,9 +268,9 @@ export class Parser {
         }
     }
 
-    public seq5<T1,T2,T3,T4,T5,R>(
+    public seq5<T1, T2, T3, T4, T5, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5> ],
-        cb: (nodes: [T1,T2,T3,T4,T5]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5]) => R
     ): R {
         const start = this.pos;
         try {
@@ -279,7 +279,7 @@ export class Parser {
             const v3 = elements[2](this);
             const v4 = elements[3](this);
             const v5 = elements[4](this);
-            return cb([v1,v2,v3,v4,v5]);
+            return cb([v1, v2, v3, v4, v5]);
         }
         catch (e) {
             this.pos = start;
@@ -287,9 +287,9 @@ export class Parser {
         }
     }
 
-    public seq6<T1,T2,T3,T4,T5,T6,R>(
+    public seq6<T1, T2, T3, T4, T5, T6, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6]) => R
     ): R {
         const start = this.pos;
         try {
@@ -299,7 +299,7 @@ export class Parser {
             const v4 = elements[3](this);
             const v5 = elements[4](this);
             const v6 = elements[5](this);
-            return cb([v1,v2,v3,v4,v5,v6]);
+            return cb([v1, v2, v3, v4, v5, v6]);
         }
         catch (e) {
             this.pos = start;
@@ -307,9 +307,9 @@ export class Parser {
         }
     }
 
-    public seq7<T1,T2,T3,T4,T5,T6,T7,R>(
+    public seq7<T1, T2, T3, T4, T5, T6, T7, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7]) => R
     ): R {
         const start = this.pos;
         try {
@@ -320,16 +320,16 @@ export class Parser {
             const v5 = elements[4](this);
             const v6 = elements[5](this);
             const v7 = elements[6](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7]);
+            return cb([v1, v2, v3, v4, v5, v6, v7]);
         }
         catch (e) {
             this.pos = start;
             throw e;
         }
     }
-    public seq8<T1,T2,T3,T4,T5,T6,T7,T8,R>(
+    public seq8<T1, T2, T3, T4, T5, T6, T7, T8, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8]) => R
     ): R {
         const start = this.pos;
         try {
@@ -341,7 +341,7 @@ export class Parser {
             const v6 = elements[5](this);
             const v7 = elements[6](this);
             const v8 = elements[7](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8]);
         }
         catch (e) {
             this.pos = start;
@@ -349,10 +349,10 @@ export class Parser {
         }
     }
 
-    public seq9<T1,T2,T3,T4,T5,T6,T7,T8,T9,R>(
+    public seq9<T1, T2, T3, T4, T5, T6, T7, T8, T9, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9]) => R
     ): R {
         const start = this.pos;
         try {
@@ -365,7 +365,7 @@ export class Parser {
             const v7 = elements[6](this);
             const v8 = elements[7](this);
             const v9 = elements[8](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9]);
         }
         catch (e) {
             this.pos = start;
@@ -373,10 +373,10 @@ export class Parser {
         }
     }
 
-    public seq10<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,R>(
+    public seq10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]) => R
     ): R {
         const start = this.pos;
         try {
@@ -390,7 +390,7 @@ export class Parser {
             const v8 = elements[7](this);
             const v9 = elements[8](this);
             const v10 = elements[9](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10]);
         }
         catch (e) {
             this.pos = start;
@@ -398,10 +398,10 @@ export class Parser {
         }
     }
 
-    public seq11<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,R>(
+    public seq11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]) => R
     ): R {
         const start = this.pos;
         try {
@@ -416,7 +416,7 @@ export class Parser {
             const v9 = elements[8](this);
             const v10 = elements[9](this);
             const v11 = elements[10](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11]);
         }
         catch (e) {
             this.pos = start;
@@ -424,10 +424,10 @@ export class Parser {
         }
     }
 
-    public seq12<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,R>(
+    public seq12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]) => R
     ): R {
         const start = this.pos;
         try {
@@ -443,7 +443,7 @@ export class Parser {
             const v10 = elements[9](this);
             const v11 = elements[10](this);
             const v12 = elements[11](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12]);
         }
         catch (e) {
             this.pos = start;
@@ -451,10 +451,10 @@ export class Parser {
         }
     }
 
-    public seq13<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,R>(
+    public seq13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]) => R
     ): R {
         const start = this.pos;
         try {
@@ -471,7 +471,7 @@ export class Parser {
             const v11 = elements[10](this);
             const v12 = elements[11](this);
             const v13 = elements[12](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13]);
         }
         catch (e) {
             this.pos = start;
@@ -479,10 +479,10 @@ export class Parser {
         }
     }
 
-    public seq14<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,R>(
+    public seq14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14]) => R
     ): R {
         const start = this.pos;
         try {
@@ -500,7 +500,7 @@ export class Parser {
             const v12 = elements[11](this);
             const v13 = elements[12](this);
             const v14 = elements[13](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14]);
         }
         catch (e) {
             this.pos = start;
@@ -508,10 +508,10 @@ export class Parser {
         }
     }
 
-    public seq15<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,R>(
+    public seq15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15]) => R
     ): R {
         const start = this.pos;
         try {
@@ -530,7 +530,7 @@ export class Parser {
             const v13 = elements[12](this);
             const v14 = elements[13](this);
             const v15 = elements[14](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15]);
         }
         catch (e) {
             this.pos = start;
@@ -538,10 +538,10 @@ export class Parser {
         }
     }
 
-    public seq16<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,R>(
+    public seq16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15>, PF<T16> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16]) => R
     ): R {
         const start = this.pos;
         try {
@@ -561,7 +561,7 @@ export class Parser {
             const v14 = elements[13](this);
             const v15 = elements[14](this);
             const v16 = elements[15](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16]);
         }
         catch (e) {
             this.pos = start;
@@ -569,11 +569,11 @@ export class Parser {
         }
     }
 
-    public seq17<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,R>(
+    public seq17<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15>, PF<T16>,
                     PF<T17> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17]) => R
     ): R {
         const start = this.pos;
         try {
@@ -594,7 +594,7 @@ export class Parser {
             const v15 = elements[14](this);
             const v16 = elements[15](this);
             const v17 = elements[16](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,v17]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17]);
         }
         catch (e) {
             this.pos = start;
@@ -602,11 +602,11 @@ export class Parser {
         }
     }
 
-    public seq18<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,R>(
+    public seq18<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, R>(
         elements: [ PF<T1>, PF<T2>, PF<T3>, PF<T4>, PF<T5>, PF<T6>, PF<T7>, PF<T8>,
                     PF<T9>, PF<T10>, PF<T11>, PF<T12>, PF<T13>, PF<T14>, PF<T15>, PF<T16>,
                     PF<T17>, PF<T18> ],
-        cb: (nodes: [T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18]) => R
+        cb: (nodes: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18]) => R
     ): R {
         const start = this.pos;
         try {
@@ -628,7 +628,7 @@ export class Parser {
             const v16 = elements[15](this);
             const v17 = elements[16](this);
             const v18 = elements[17](this);
-            return cb([v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,v17,v18]);
+            return cb([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18]);
         }
         catch (e) {
             this.pos = start;
@@ -653,9 +653,9 @@ export class ParseError extends ParseFailure {
         this.message = message;
     }
     public toString(): string {
-        const before = this.parser.text.substring(0,this.pos);
-        const after = this.parser.text.substring(this.pos,this.parser.text.length);
-        return this.message+": "+JSON.stringify(before+"|"+after);
+        const before = this.parser.text.substring(0, this.pos);
+        const after = this.parser.text.substring(this.pos, this.parser.text.length);
+        return this.message + ": " + JSON.stringify(before + "|" + after);
     }
 }
 
