@@ -312,7 +312,7 @@ export function CompletePropertyDescriptor(realm: Realm, Desc: DescriptorFields)
     //        [[Enumerable]]: false,
     //        [[Configurable]]: false }.
     const like: DescriptorFields = {
-        value: new JSUndefined,
+        value: new JSUndefined(),
         writable: false,
         __get__: new JSUndefined(),
         __set__: new JSUndefined(),

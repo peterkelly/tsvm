@@ -225,7 +225,7 @@ export function OrdinaryCallBindThis(
 
     // 2. If thisMode is lexical, return NormalCompletion(undefined).
     if (thisMode === ThisMode.Lexical)
-        return new NormalCompletion(new JSUndefined);
+        return new NormalCompletion(new JSUndefined());
 
     // 3. Let calleeRealm be the value of F’s [[Realm]] internal slot.
     const calleeRealm = F.realm;
