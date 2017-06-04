@@ -279,7 +279,7 @@ class EmptyAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + indent + "empty");
+        output(this.stats() + indent + "empty()");
     }
 }
 
@@ -500,7 +500,7 @@ class SpliceReplaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "spliceReplace(" + this.index + "," + this.srcIndex + ")");
+        output(this.stats() + prefix + "spliceReplace(" + this.index + ", " + this.srcIndex + ")");
     }
 }
 
@@ -548,11 +548,11 @@ class SpliceNodeAction extends LeafAction {
             this.stats() +
             prefix +
             "spliceNode(" +
-            this.index + "," +
-            JSON.stringify(this.name) + "," +
-            this.startIndex + "," +
-            this.endIndex + "," +
-            "[" + this.childIndices.map((n: number) => n.toString()).join(",") + "]" +
+            this.index + ", " +
+            JSON.stringify(this.name) + ", " +
+            this.startIndex + ", " +
+            this.endIndex + ", " +
+            "[" + this.childIndices.map((n: number) => n.toString()).join(", ") + "]" +
             ")"
         );
     }
@@ -600,10 +600,10 @@ class SpliceStringNodeAction extends LeafAction {
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
             this.stats() +
-            prefix + "spliceStringNode(" + this.index + "," +
-            JSON.stringify(this.nodeName) + "," +
-            this.startIndex + "," +
-            this.endIndex + "," +
+            prefix + "spliceStringNode(" + this.index + ", " +
+            JSON.stringify(this.nodeName) + ", " +
+            this.startIndex + ", " +
+            this.endIndex + ", " +
             this.valueIndex + ")"
         );
     }
@@ -651,10 +651,10 @@ class SpliceNumberNodeAction extends LeafAction {
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
             this.stats() +
-            prefix + "spliceNumberNode(" + this.index + "," +
-            JSON.stringify(this.nodeName) + "," +
-            this.startIndex + "," +
-            this.endIndex + "," +
+            prefix + "spliceNumberNode(" + this.index + ", " +
+            JSON.stringify(this.nodeName) + ", " +
+            this.startIndex + ", " +
+            this.endIndex + ", " +
             this.valueIndex + ")"
         );
     }
@@ -689,7 +689,7 @@ class SpliceEmptyListNodeAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "spliceEmptyListNode(" + this.index + "," + this.startIndex + "," + this.endIndex + ")");
+        output(this.stats() + prefix + "spliceEmptyListNode(" + this.index + ", " + this.startIndex + ", " + this.endIndex + ")");
     }
 }
 
@@ -713,7 +713,7 @@ class PopAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "pop");
+        output(this.stats() + prefix + "pop()");
     }
 }
 
@@ -850,7 +850,7 @@ class PosAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "pos");
+        output(this.stats() + prefix + "pos()");
     }
 }
 
@@ -966,7 +966,7 @@ class WhitespaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "whitespace");
+        output(this.stats() + prefix + "whitespace()");
     }
 }
 
@@ -989,7 +989,7 @@ class WhitespaceNoNewlineAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "whitespaceNoNewline");
+        output(this.stats() + prefix + "whitespaceNoNewline()");
     }
 }
 
@@ -1017,7 +1017,7 @@ class IdentifierTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "identifier_token");
+        output(this.stats() + prefix + "identifier_token()");
     }
 }
 
@@ -1046,7 +1046,7 @@ class NumericLiteralTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "numeric_literal_token");
+        output(this.stats() + prefix + "numeric_literal_token()");
     }
 }
 
@@ -1074,7 +1074,7 @@ class StringLiteralTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "string_literal_token");
+        output(this.stats() + prefix + "string_literal_token()");
     }
 }
 
