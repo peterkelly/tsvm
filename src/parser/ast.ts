@@ -26,7 +26,7 @@ export class CastError {
     public value: any;
     public typeName: string;
 
-    constructor(value: any, typeName: string) {
+    public constructor(value: any, typeName: string) {
         this.value = value;
         this.typeName = typeName;
     }

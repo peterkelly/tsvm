@@ -7,6 +7,7 @@
         "file-header": [true, "Copyright \\d{4}"],
         "indent": [true, "spaces"],
         "linebreak-style": [true, "LF"],
+        "member-access": [true, "check-constructor", "check-accessor"],
         "new-parens": true,
         "no-trailing-whitespace": true,
         "one-line": [true, "check-open-brace", "check-whitespace"],
