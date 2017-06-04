@@ -187,7 +187,7 @@ function actionsTotalOffset(actions: Action[]): number {
 function actionsSameOffset(actions: Action[]): number {
     if (actions.length == 0)
         return 0;
-    let result = actions[0].offset;
+    const result = actions[0].offset;
     for (let i = 1; i < actions.length; i++) {
         if (actions[i].offset != result)
             throw new Error("Choice has children with different offset values");

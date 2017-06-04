@@ -1678,7 +1678,7 @@ export class WhileStatementNode extends BreakableStatementNode {
         const labelSet = new LabelSet();
 
         // 1. Let V = undefined.
-        let V: JSValue | Reference | Empty = new JSUndefined();
+        const V: JSValue | Reference | Empty = new JSUndefined();
 
         // 2. Repeat
         while (true) {
