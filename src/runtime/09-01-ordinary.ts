@@ -240,7 +240,7 @@ export function ValidateAndApplyPropertyDescriptor(
             return new NormalCompletion(false);
         // b. Return false, if the [[Enumerable]] field of Desc is present and the [[Enumerable]]
         // fields of current and Desc are the Boolean negation of each other.
-        if ((Desc.enumerable !== undefined) && (Desc.enumerable != current.enumerable))
+        if ((Desc.enumerable !== undefined) && (Desc.enumerable !== current.enumerable))
             return new NormalCompletion(false);
     }
 
@@ -249,7 +249,7 @@ export function ValidateAndApplyPropertyDescriptor(
         // do nothing
     }
     // 7. Else if IsDataDescriptor(current) and IsDataDescriptor(Desc) have different results, then
-    else if ((current instanceof DataDescriptor) != IsDataDescriptor(Desc)) {
+    else if ((current instanceof DataDescriptor) !== IsDataDescriptor(Desc)) {
         // a. Return false, if the [[Configurable]] field of current is false.
         if (!current.configurable)
             return new NormalCompletion(false);

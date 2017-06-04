@@ -65,13 +65,13 @@ export class Parser {
                 case "/": {
                     if (this.pos+1 >= this.len)
                         return;
-                    if (this.text[this.pos+1] == "*") {
+                    if (this.text[this.pos+1] === "*") {
                         this.pos += 2;
                         // while ((this.pos+1 < this.len) && ((this.text[this.pos] != "*") || (this.text[this.pos] != "/")))
                         //     this.pos++;
 
                         while (this.pos < this.len) {
-                            if ((this.pos+1 < this.len) && (this.text[this.pos] == "*") && (this.text[this.pos+1] == "/")) {
+                            if ((this.pos+1 < this.len) && (this.text[this.pos] === "*") && (this.text[this.pos+1] === "/")) {
                                 this.pos += 2;
                                 break;
                             }
@@ -80,13 +80,13 @@ export class Parser {
                             }
                         }
                     }
-                    else if (this.text[this.pos+1] == "/") {
+                    else if (this.text[this.pos+1] === "/") {
                         // Note: This implicitly handles windows-style newlines (\r\n) because \r
                         // is skipped over just like any other character
                         this.pos += 2;
-                        while ((this.pos < this.len) && this.text[this.pos] != "\n")
+                        while ((this.pos < this.len) && this.text[this.pos] !== "\n")
                             this.pos++;
-                        if ((this.pos < this.len) && this.text[this.pos] == "\n")
+                        if ((this.pos < this.len) && this.text[this.pos] === "\n")
                             this.pos++;
                     }
                     else {
@@ -115,7 +115,7 @@ export class Parser {
         const token = lexIdentOrKeyword(this);
         if (token != null)
             return token;
-        else if ((c == "\"") || (c == "'"))
+        else if ((c === "\"") || (c === "'"))
             return lexString(this);
         else if ((c >= "0") && (c <= "9"))
             return lexNumber(this);
@@ -125,7 +125,7 @@ export class Parser {
 
     public lookaheadKeyword(keyword: string): boolean {
         const upcoming = upcomingKeyword(this);
-        return ((upcoming != null) && (upcoming.value == keyword));
+        return ((upcoming != null) && (upcoming.value === keyword));
     }
 
     public matchKeyword(keyword: string): boolean {

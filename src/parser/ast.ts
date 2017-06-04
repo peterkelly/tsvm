@@ -294,7 +294,7 @@ export class GenericNumberNode extends ASTNode {
 export class check {
 
     public static arity(node: ASTNode, arity: number): void {
-        if (node.children.length != arity)
+        if (node.children.length !== arity)
             throw new Error(node.kind+" node has "+node.children.length+" children, expected "+arity);
     }
 
@@ -303,7 +303,7 @@ export class check {
             throw new Error("node is null; expected "+name);
         if (node.kind !== name)
             throw new Error("node is "+node.kind+"; expected "+name);
-        if (node.children.length != arity)
+        if (node.children.length !== arity)
             throw new Error("node has "+node.children.length+" children, expected "+arity);
         return node;
     }

@@ -151,14 +151,14 @@ export class Builder {
     }
 
     public assertLengthIs(length: number): void {
-        if (this.stack.length != length)
+        if (this.stack.length !== length)
             throw new Error("Expected b to have exactly "+length+
                             " items on the stack; have "+this.stack.length);
     }
 }
 
 function actionArrayEquals(first: Action[], second: Action[]): boolean {
-    if (first.length != second.length)
+    if (first.length !== second.length)
         return false;
     for (let i = 0; i < first.length; i++) {
         if (!first[i].equals(second[i]))
@@ -168,10 +168,10 @@ function actionArrayEquals(first: Action[], second: Action[]): boolean {
 }
 
 function numberArrayEquals(first: number[], second: number[]): boolean {
-    if (first.length != second.length)
+    if (first.length !== second.length)
         return false;
     for (let i = 0; i < first.length; i++) {
-        if (first[i] != second[i])
+        if (first[i] !== second[i])
             return false;
     }
     return true;
@@ -185,11 +185,11 @@ function actionsTotalOffset(actions: Action[]): number {
 }
 
 function actionsSameOffset(actions: Action[]): number {
-    if (actions.length == 0)
+    if (actions.length === 0)
         return 0;
     const result = actions[0].offset;
     for (let i = 1; i < actions.length; i++) {
-        if (actions[i].offset != result)
+        if (actions[i].offset !== result)
             throw new Error("Choice has children with different offset values");
     }
     return result;
@@ -246,7 +246,7 @@ class ProductionAction extends Action {
     public equals(other: Action): boolean {
         return ((other instanceof ProductionAction) &&
                 this.child.equals(other.child) &&
-                (this.name == other.name));
+                (this.name === other.name));
     }
 
     public executeImpl(b: Builder): void {
@@ -344,7 +344,7 @@ class RefAction extends Action {
 
     public equals(other: Action): boolean {
         return ((other instanceof RefAction) &&
-                (this.name == other.name));
+                (this.name === other.name));
     }
 
     public executeImpl(b: Builder): void {
@@ -463,7 +463,7 @@ class SpliceNullAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof SpliceNullAction) &&
-                (this.index == other.index));
+                (this.index === other.index));
     }
 
     public executeImpl(b: Builder): void {
@@ -491,8 +491,8 @@ class SpliceReplaceAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof SpliceReplaceAction) &&
-                (this.index == other.index) &&
-                (this.srcIndex == other.srcIndex));
+                (this.index === other.index) &&
+                (this.srcIndex === other.srcIndex));
     }
 
     public executeImpl(b: Builder): void {
@@ -526,10 +526,10 @@ class SpliceNodeAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof SpliceNodeAction) &&
-                (this.index == other.index) &&
-                (this.name == other.name) &&
-                (this.startIndex == other.startIndex) &&
-                (this.endIndex == other.endIndex) &&
+                (this.index === other.index) &&
+                (this.name === other.name) &&
+                (this.startIndex === other.startIndex) &&
+                (this.endIndex === other.endIndex) &&
                 numberArrayEquals(this.childIndices,other.childIndices));
     }
 
@@ -580,10 +580,10 @@ class SpliceStringNodeAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof SpliceStringNodeAction) &&
-                (this.nodeName == other.nodeName) &&
-                (this.startIndex == other.startIndex) &&
-                (this.endIndex == other.endIndex) &&
-                (this.valueIndex == other.valueIndex));
+                (this.nodeName === other.nodeName) &&
+                (this.startIndex === other.startIndex) &&
+                (this.endIndex === other.endIndex) &&
+                (this.valueIndex === other.valueIndex));
     }
 
     public executeImpl(b: Builder): void {
@@ -631,10 +631,10 @@ class SpliceNumberNodeAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof SpliceNumberNodeAction) &&
-                (this.nodeName == other.nodeName) &&
-                (this.startIndex == other.startIndex) &&
-                (this.endIndex == other.endIndex) &&
-                (this.valueIndex == other.valueIndex));
+                (this.nodeName === other.nodeName) &&
+                (this.startIndex === other.startIndex) &&
+                (this.endIndex === other.endIndex) &&
+                (this.valueIndex === other.valueIndex));
     }
 
     public executeImpl(b: Builder): void {
@@ -678,8 +678,8 @@ class SpliceEmptyListNodeAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof SpliceEmptyListNodeAction) &&
-                (this.startIndex == other.startIndex) &&
-                (this.endIndex == other.endIndex));
+                (this.startIndex === other.startIndex) &&
+                (this.endIndex === other.endIndex));
     }
 
     public executeImpl(b: Builder): void {
@@ -707,7 +707,7 @@ class PopAction extends LeafAction {
     }
 
     public executeImpl(b: Builder): void {
-        if (b.stack.length == 0)
+        if (b.stack.length === 0)
             throw new Error("Attempt to pop past end of stack");
         b.stack.length--;
     }
@@ -868,7 +868,7 @@ class ValueAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof ValueAction) &&
-                (this.value == other.value));
+                (this.value === other.value));
     }
 
     public executeImpl(b: Builder): void {
@@ -894,14 +894,14 @@ class KeywordAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof KeywordAction) &&
-                (this.str == other.str));
+                (this.str === other.str));
     }
 
     public executeImpl(b: Builder): void {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
-            if ((token == null) || (token.value != this.str))
+            if ((token === null) || (token.value !== this.str))
                 throw new ParseError(b.parser,b.parser.pos,"Expected "+this.str);
             b.push(null);
         });
@@ -926,7 +926,7 @@ class IdentifierAction extends LeafAction {
 
     public equals(other: Action): boolean {
         return ((other instanceof IdentifierAction) &&
-                (this.str == other.str));
+                (this.str === other.str));
     }
 
     public executeImpl(b: Builder): void {
@@ -936,7 +936,7 @@ class IdentifierAction extends LeafAction {
             ref("Identifier").execute(b);
             b.assertLengthIs(oldLength+1);
             const ident = b.getNode(0);
-            if (!(ident instanceof GenericStringNode) || (ident.value != this.str))
+            if (!(ident instanceof GenericStringNode) || (ident.value !== this.str))
                 throw new ParseError(b.parser,start,"Expected "+this.str);
             // Identifier_b will already have pushed onto the stack
         });
@@ -1010,7 +1010,7 @@ class IdentifierTokenAction extends LeafAction {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
-            if ((token == null) || (token.kind != TokenKind.IDENT))
+            if ((token == null) || (token.kind !== TokenKind.IDENT))
                 throw new ParseError(b.parser,b.parser.pos,"Expected identifier");
             b.push(new GenericStringNode(token.range,"Identifier",token.value));
         });
@@ -1038,7 +1038,7 @@ class NumericLiteralTokenAction extends LeafAction {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
-            if ((token == null) || (token.kind != TokenKind.NUMBER))
+            if ((token == null) || (token.kind !== TokenKind.NUMBER))
                 throw new ParseError(b.parser,b.parser.pos,"Expected number");
             const numericValue = parseFloat(token.value);
             b.push(new GenericNumberNode(token.range,"NumericLiteral",numericValue));
@@ -1067,7 +1067,7 @@ class StringLiteralTokenAction extends LeafAction {
         const p = b.parser;
         p.attempt((start) => {
             const token = p.nextToken();
-            if ((token == null) || (token.kind != TokenKind.STRING))
+            if ((token == null) || (token.kind !== TokenKind.STRING))
                 throw new ParseError(b.parser,b.parser.pos,"Expected string");
             b.push(new GenericStringNode(token.range,"StringLiteral",token.value,true));
         });

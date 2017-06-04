@@ -155,7 +155,7 @@ export function SameValueZero(x: any, y: any): boolean {
 }
 
 function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
-    if (x.type != y.type)
+    if (x.type !== y.type)
         return false;
 
     switch (x.type) {
@@ -195,7 +195,7 @@ function SameValue2(x: JSValue, y: JSValue, zero: boolean): boolean {
                 throw new Error("Incorrect JSValue.type (String); should never get here");
         case ValueType.Boolean:
             if ((x instanceof JSBoolean) && (y instanceof JSBoolean))
-                return (x.booleanValue == y.booleanValue);
+                return (x.booleanValue === y.booleanValue);
             else
                 throw new Error("Incorrect JSValue.type (Boolean); should never get here");
         case ValueType.Object:
@@ -366,7 +366,7 @@ export function strictEqualityComparison(realm: Realm, x: JSValue, y: JSValue): 
             }
         case ValueType.Boolean:
             if ((x instanceof JSBoolean) && (y instanceof JSBoolean)) {
-                return (x.booleanValue == y.booleanValue);
+                return (x.booleanValue === y.booleanValue);
             }
             else {
                 throw new Error("Incorrect JSValue.type (Boolean); should never get here");
