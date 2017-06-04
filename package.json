@@ -1,0 +1,33 @@
+{
+  "name": "tsvm",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "7.0.22",
+    "del": "2.2.2",
+    "gulp": "3.9.1",
+    "gulp-tslint": "8.1.0",
+    "gulp-typescript": "3.1.7",
+    "run-sequence": "1.2.2",
+    "tslint": "5.3.2",
+    "typescript": "2.3.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterkelly/tsvm.git"
+  },
+  "author": "Peter Kelly <peter@pmkelly.net>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/peterkelly/tsvm/issues"
+  },
+  "homepage": "https://github.com/peterkelly/tsvm#readme"
+}

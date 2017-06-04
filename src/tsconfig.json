@@ -14,15 +14,10 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "dist",
+        "outDir": "../dist",
         "sourceMap": true,
         "strictNullChecks": true
     },
-    "exclude": [
-        "node_modules",
-        "typings/browser",
-        "typings/browser.d.ts"
-    ],
     "compileOnSave": true,
     "buildOnSave": false,
     "atom": {

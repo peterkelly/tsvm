@@ -1,0 +1,15 @@
+{
+    "defaultSeverity": "error",
+    "jsRules": {},
+    "rules": {
+        "comment-format": [true, "check-space"],
+        "eofline": true,
+        "file-header": [true, "Copyright \\d{4}"],
+        "indent": [true, "spaces"],
+        "linebreak-style": [true, "LF"],
+        "no-trailing-whitespace": true,
+        "one-line": [true, "check-open-brace", "check-whitespace"],
+        "space-before-function-paren": [true, "never"]
+    },
+    "rulesDirectory": []
+}
