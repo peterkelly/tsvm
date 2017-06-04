@@ -63,7 +63,7 @@ function setupIntrinsicObjects(realm: Realm): void {
     // Note: We do this separately from *creating* the intrinsics, to ensure that these actions
     // only occur after all intrinsic objects have actually been created. Prior to CreateIntrinsics
     // returning, the realm is not initialized with any such objects.
-    setupErrorPrototype(realm,realm.intrinsics.ErrorPrototype);
+    setupErrorPrototype(realm, realm.intrinsics.ErrorPrototype);
     setupEvalErrorPrototype(realm.intrinsics.EvalErrorPrototype);
     setupRangeErrorPrototype(realm.intrinsics.RangeErrorPrototype);
     setupReferenceErrorPrototype(realm.intrinsics.ReferenceErrorPrototype);
@@ -86,37 +86,37 @@ export class RealmImpl implements Realm {
     public constructor() {
         this.intrinsics = CreateIntrinsics();
         this.globalThis = new JSObject(this.intrinsics.ObjectPrototype);
-        this.globalEnv = NewGlobalEnvironment(this,this.globalThis);
+        this.globalEnv = NewGlobalEnvironment(this, this.globalThis);
         this.templateMap = [];
         SetDefaultGlobalBindings(this);
         setupIntrinsicObjects(this);
     }
 
     public throwEvalError(message?: string): ThrowCompletion {
-        return this.throwError(this.intrinsics.EvalErrorPrototype,message);
+        return this.throwError(this.intrinsics.EvalErrorPrototype, message);
     }
 
     public throwRangeError(message?: string): ThrowCompletion {
-        return this.throwError(this.intrinsics.RangeErrorPrototype,message);
+        return this.throwError(this.intrinsics.RangeErrorPrototype, message);
     }
     public throwReferenceError(message?: string): ThrowCompletion {
-        return this.throwError(this.intrinsics.ReferenceErrorPrototype,message);
+        return this.throwError(this.intrinsics.ReferenceErrorPrototype, message);
     }
 
     public throwSyntaxError(message?: string): ThrowCompletion {
-        return this.throwError(this.intrinsics.SyntaxErrorPrototype,message);
+        return this.throwError(this.intrinsics.SyntaxErrorPrototype, message);
     }
 
     public throwTypeError(message?: string): ThrowCompletion {
-        return this.throwError(this.intrinsics.TypeErrorPrototype,message);
+        return this.throwError(this.intrinsics.TypeErrorPrototype, message);
     }
 
     public throwURIError(message?: string): ThrowCompletion {
-        return this.throwError(this.intrinsics.URIErrorPrototype,message);
+        return this.throwError(this.intrinsics.URIErrorPrototype, message);
     }
 
     private throwError(proto: JSObject, message: string | undefined): ThrowCompletion {
-        const error = new ErrorObject(this,proto,message);
+        const error = new ErrorObject(this, proto, message);
         return new ThrowCompletion(error);
     }
 }
@@ -308,13 +308,13 @@ export function CreateIntrinsics(): Intrinsics {
     // of the prototype's constructor property descriptor
 
     function setupConstructorPrototype(constructor: JSObject, prototype: JSObject): void {
-        constructor.properties.put(new JSString("prototype"),new DataDescriptor({
+        constructor.properties.put(new JSString("prototype"), new DataDescriptor({
             value: prototype,
             writable: false,
             enumerable: false,
             configurable: false,
         }));
-        prototype.properties.put(new JSString("constructor"),new DataDescriptor({
+        prototype.properties.put(new JSString("constructor"), new DataDescriptor({
             value: constructor,
             writable: false,
             enumerable: false,
@@ -323,39 +323,39 @@ export function CreateIntrinsics(): Intrinsics {
 
     }
 
-    setupConstructorPrototype(intrinsics.Array,intrinsics.ArrayPrototype);
-    setupConstructorPrototype(intrinsics.ArrayBuffer,intrinsics.ArrayBufferPrototype);
-    setupConstructorPrototype(intrinsics.Boolean,intrinsics.BooleanPrototype);
-    setupConstructorPrototype(intrinsics.DataView,intrinsics.DataViewPrototype);
-    setupConstructorPrototype(intrinsics.Date,intrinsics.DatePrototype);
-    setupConstructorPrototype(intrinsics.Error,intrinsics.ErrorPrototype);
-    setupConstructorPrototype(intrinsics.EvalError,intrinsics.EvalErrorPrototype);
-    setupConstructorPrototype(intrinsics.Float32Array,intrinsics.Float32ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Float64Array,intrinsics.Float64ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Function,intrinsics.FunctionPrototype);
-    setupConstructorPrototype(intrinsics.GeneratorFunction,intrinsics.Generator);
-    setupConstructorPrototype(intrinsics.Int8Array,intrinsics.Int8ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Int8Array,intrinsics.Int8ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Int32Array,intrinsics.Int32ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Map,intrinsics.MapPrototype);
-    setupConstructorPrototype(intrinsics.Number,intrinsics.NumberPrototype);
-    setupConstructorPrototype(intrinsics.Object,intrinsics.ObjectPrototype);
-    setupConstructorPrototype(intrinsics.Promise,intrinsics.PromisePrototype);
-    setupConstructorPrototype(intrinsics.RangeError,intrinsics.RangeErrorPrototype);
-    setupConstructorPrototype(intrinsics.ReferenceError,intrinsics.ReferenceErrorPrototype);
-    setupConstructorPrototype(intrinsics.RegExp,intrinsics.RegExpPrototype);
-    setupConstructorPrototype(intrinsics.Set,intrinsics.SetPrototype);
-    setupConstructorPrototype(intrinsics.String,intrinsics.StringPrototype);
-    setupConstructorPrototype(intrinsics.Symbol,intrinsics.SymbolPrototype);
-    setupConstructorPrototype(intrinsics.SyntaxError,intrinsics.SyntaxErrorPrototype);
-    setupConstructorPrototype(intrinsics.TypeError,intrinsics.TypeErrorPrototype);
-    setupConstructorPrototype(intrinsics.Uint8Array,intrinsics.Uint8ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Uint8ClampedArray,intrinsics.Uint8ClampedArrayPrototype);
-    setupConstructorPrototype(intrinsics.Uint16Array,intrinsics.Uint16ArrayPrototype);
-    setupConstructorPrototype(intrinsics.Uint32Array,intrinsics.Uint32ArrayPrototype);
-    setupConstructorPrototype(intrinsics.URIError,intrinsics.URIErrorPrototype);
-    setupConstructorPrototype(intrinsics.WeakMap,intrinsics.WeakMapPrototype);
-    setupConstructorPrototype(intrinsics.WeakSet,intrinsics.WeakSetPrototype);
+    setupConstructorPrototype(intrinsics.Array, intrinsics.ArrayPrototype);
+    setupConstructorPrototype(intrinsics.ArrayBuffer, intrinsics.ArrayBufferPrototype);
+    setupConstructorPrototype(intrinsics.Boolean, intrinsics.BooleanPrototype);
+    setupConstructorPrototype(intrinsics.DataView, intrinsics.DataViewPrototype);
+    setupConstructorPrototype(intrinsics.Date, intrinsics.DatePrototype);
+    setupConstructorPrototype(intrinsics.Error, intrinsics.ErrorPrototype);
+    setupConstructorPrototype(intrinsics.EvalError, intrinsics.EvalErrorPrototype);
+    setupConstructorPrototype(intrinsics.Float32Array, intrinsics.Float32ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Float64Array, intrinsics.Float64ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Function, intrinsics.FunctionPrototype);
+    setupConstructorPrototype(intrinsics.GeneratorFunction, intrinsics.Generator);
+    setupConstructorPrototype(intrinsics.Int8Array, intrinsics.Int8ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Int8Array, intrinsics.Int8ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Int32Array, intrinsics.Int32ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Map, intrinsics.MapPrototype);
+    setupConstructorPrototype(intrinsics.Number, intrinsics.NumberPrototype);
+    setupConstructorPrototype(intrinsics.Object, intrinsics.ObjectPrototype);
+    setupConstructorPrototype(intrinsics.Promise, intrinsics.PromisePrototype);
+    setupConstructorPrototype(intrinsics.RangeError, intrinsics.RangeErrorPrototype);
+    setupConstructorPrototype(intrinsics.ReferenceError, intrinsics.ReferenceErrorPrototype);
+    setupConstructorPrototype(intrinsics.RegExp, intrinsics.RegExpPrototype);
+    setupConstructorPrototype(intrinsics.Set, intrinsics.SetPrototype);
+    setupConstructorPrototype(intrinsics.String, intrinsics.StringPrototype);
+    setupConstructorPrototype(intrinsics.Symbol, intrinsics.SymbolPrototype);
+    setupConstructorPrototype(intrinsics.SyntaxError, intrinsics.SyntaxErrorPrototype);
+    setupConstructorPrototype(intrinsics.TypeError, intrinsics.TypeErrorPrototype);
+    setupConstructorPrototype(intrinsics.Uint8Array, intrinsics.Uint8ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Uint8ClampedArray, intrinsics.Uint8ClampedArrayPrototype);
+    setupConstructorPrototype(intrinsics.Uint16Array, intrinsics.Uint16ArrayPrototype);
+    setupConstructorPrototype(intrinsics.Uint32Array, intrinsics.Uint32ArrayPrototype);
+    setupConstructorPrototype(intrinsics.URIError, intrinsics.URIErrorPrototype);
+    setupConstructorPrototype(intrinsics.WeakMap, intrinsics.WeakMapPrototype);
+    setupConstructorPrototype(intrinsics.WeakSet, intrinsics.WeakSetPrototype);
 
     return intrinsics;
 
@@ -387,7 +387,7 @@ function SetDefaultGlobalBindings(realm: Realm): void {
     // ES6 Section 18.1: Value Properties of the Global Object
 
     // Infinity
-    global.properties.put(new JSString("Infinity"),new DataDescriptor({
+    global.properties.put(new JSString("Infinity"), new DataDescriptor({
         value: new JSNumber(pr_Infinity()),
         writable: false,
         enumerable: false,
@@ -395,7 +395,7 @@ function SetDefaultGlobalBindings(realm: Realm): void {
     }));
 
     // NaN
-    global.properties.put(new JSString("NaN"),new DataDescriptor({
+    global.properties.put(new JSString("NaN"), new DataDescriptor({
         value: new JSNumber(pr_NaN()),
         writable: false,
         enumerable: false,
@@ -403,7 +403,7 @@ function SetDefaultGlobalBindings(realm: Realm): void {
     }));
 
     // undefined
-    global.properties.put(new JSString("undefined"),new DataDescriptor({
+    global.properties.put(new JSString("undefined"), new DataDescriptor({
         value: new JSUndefined(),
         writable: false,
         enumerable: false,
@@ -413,55 +413,55 @@ function SetDefaultGlobalBindings(realm: Realm): void {
     // ES6 Section 18.2: Function Properties of the Global Object
 
     // eval
-    global.properties.put(new JSString("eval"),prop(realm.intrinsics.eval));
-    global.properties.put(new JSString("isFinite"),prop(realm.intrinsics.isFinite));
-    global.properties.put(new JSString("isNaN"),prop(realm.intrinsics.isNaN));
-    global.properties.put(new JSString("parseFloat"),prop(realm.intrinsics.parseFloat));
-    global.properties.put(new JSString("parseInt"),prop(realm.intrinsics.parseInt));
-    global.properties.put(new JSString("decodeURI"),prop(realm.intrinsics.decodeURI));
-    global.properties.put(new JSString("decodeURIComponent"),prop(realm.intrinsics.decodeURIComponent));
-    global.properties.put(new JSString("encodeURI"),prop(realm.intrinsics.encodeURI));
-    global.properties.put(new JSString("encodeURIComponent"),prop(realm.intrinsics.encodeURIComponent));
+    global.properties.put(new JSString("eval"), prop(realm.intrinsics.eval));
+    global.properties.put(new JSString("isFinite"), prop(realm.intrinsics.isFinite));
+    global.properties.put(new JSString("isNaN"), prop(realm.intrinsics.isNaN));
+    global.properties.put(new JSString("parseFloat"), prop(realm.intrinsics.parseFloat));
+    global.properties.put(new JSString("parseInt"), prop(realm.intrinsics.parseInt));
+    global.properties.put(new JSString("decodeURI"), prop(realm.intrinsics.decodeURI));
+    global.properties.put(new JSString("decodeURIComponent"), prop(realm.intrinsics.decodeURIComponent));
+    global.properties.put(new JSString("encodeURI"), prop(realm.intrinsics.encodeURI));
+    global.properties.put(new JSString("encodeURIComponent"), prop(realm.intrinsics.encodeURIComponent));
 
     // ES6 Section 18.3: Constructor Properties of the Global Object
 
-    global.properties.put(new JSString("Array"),prop(realm.intrinsics.Array));
-    global.properties.put(new JSString("ArrayBuffer"),prop(realm.intrinsics.ArrayBuffer));
-    global.properties.put(new JSString("Boolean"),prop(realm.intrinsics.Boolean));
-    global.properties.put(new JSString("DataView"),prop(realm.intrinsics.DataView));
-    global.properties.put(new JSString("Date"),prop(realm.intrinsics.Date));
-    global.properties.put(new JSString("Error"),prop(realm.intrinsics.Error));
-    global.properties.put(new JSString("EvalError"),prop(realm.intrinsics.EvalError));
-    global.properties.put(new JSString("Float32Array"),prop(realm.intrinsics.Float32Array));
-    global.properties.put(new JSString("Float64Array"),prop(realm.intrinsics.Float64Array));
-    global.properties.put(new JSString("Function"),prop(realm.intrinsics.Function));
-    global.properties.put(new JSString("Int8Array"),prop(realm.intrinsics.Int8Array));
-    global.properties.put(new JSString("Int16Array"),prop(realm.intrinsics.Int16Array));
-    global.properties.put(new JSString("Int32Array"),prop(realm.intrinsics.Int32Array));
-    global.properties.put(new JSString("Map"),prop(realm.intrinsics.Map));
-    global.properties.put(new JSString("Number"),prop(realm.intrinsics.Number));
-    global.properties.put(new JSString("Object"),prop(realm.intrinsics.Object));
-    global.properties.put(new JSString("Proxy"),prop(realm.intrinsics.Proxy));
-    global.properties.put(new JSString("Promise"),prop(realm.intrinsics.Promise));
-    global.properties.put(new JSString("RangeError"),prop(realm.intrinsics.RangeError));
-    global.properties.put(new JSString("ReferenceError"),prop(realm.intrinsics.ReferenceError));
-    global.properties.put(new JSString("RegExp"),prop(realm.intrinsics.RegExp));
-    global.properties.put(new JSString("Set"),prop(realm.intrinsics.Set));
-    global.properties.put(new JSString("String"),prop(realm.intrinsics.String));
-    global.properties.put(new JSString("Symbol"),prop(realm.intrinsics.Symbol));
-    global.properties.put(new JSString("SyntaxError"),prop(realm.intrinsics.SyntaxError));
-    global.properties.put(new JSString("TypeError"),prop(realm.intrinsics.TypeError));
-    global.properties.put(new JSString("Uint8Array"),prop(realm.intrinsics.Uint8Array));
-    global.properties.put(new JSString("Uint8ClampedArray"),prop(realm.intrinsics.Uint8ClampedArray));
-    global.properties.put(new JSString("Uint16Array"),prop(realm.intrinsics.Uint16Array));
-    global.properties.put(new JSString("Uint32Array"),prop(realm.intrinsics.Uint32Array));
-    global.properties.put(new JSString("URIError"),prop(realm.intrinsics.URIError));
-    global.properties.put(new JSString("WeakMap"),prop(realm.intrinsics.WeakMap));
-    global.properties.put(new JSString("WeakSet"),prop(realm.intrinsics.WeakSet));
+    global.properties.put(new JSString("Array"), prop(realm.intrinsics.Array));
+    global.properties.put(new JSString("ArrayBuffer"), prop(realm.intrinsics.ArrayBuffer));
+    global.properties.put(new JSString("Boolean"), prop(realm.intrinsics.Boolean));
+    global.properties.put(new JSString("DataView"), prop(realm.intrinsics.DataView));
+    global.properties.put(new JSString("Date"), prop(realm.intrinsics.Date));
+    global.properties.put(new JSString("Error"), prop(realm.intrinsics.Error));
+    global.properties.put(new JSString("EvalError"), prop(realm.intrinsics.EvalError));
+    global.properties.put(new JSString("Float32Array"), prop(realm.intrinsics.Float32Array));
+    global.properties.put(new JSString("Float64Array"), prop(realm.intrinsics.Float64Array));
+    global.properties.put(new JSString("Function"), prop(realm.intrinsics.Function));
+    global.properties.put(new JSString("Int8Array"), prop(realm.intrinsics.Int8Array));
+    global.properties.put(new JSString("Int16Array"), prop(realm.intrinsics.Int16Array));
+    global.properties.put(new JSString("Int32Array"), prop(realm.intrinsics.Int32Array));
+    global.properties.put(new JSString("Map"), prop(realm.intrinsics.Map));
+    global.properties.put(new JSString("Number"), prop(realm.intrinsics.Number));
+    global.properties.put(new JSString("Object"), prop(realm.intrinsics.Object));
+    global.properties.put(new JSString("Proxy"), prop(realm.intrinsics.Proxy));
+    global.properties.put(new JSString("Promise"), prop(realm.intrinsics.Promise));
+    global.properties.put(new JSString("RangeError"), prop(realm.intrinsics.RangeError));
+    global.properties.put(new JSString("ReferenceError"), prop(realm.intrinsics.ReferenceError));
+    global.properties.put(new JSString("RegExp"), prop(realm.intrinsics.RegExp));
+    global.properties.put(new JSString("Set"), prop(realm.intrinsics.Set));
+    global.properties.put(new JSString("String"), prop(realm.intrinsics.String));
+    global.properties.put(new JSString("Symbol"), prop(realm.intrinsics.Symbol));
+    global.properties.put(new JSString("SyntaxError"), prop(realm.intrinsics.SyntaxError));
+    global.properties.put(new JSString("TypeError"), prop(realm.intrinsics.TypeError));
+    global.properties.put(new JSString("Uint8Array"), prop(realm.intrinsics.Uint8Array));
+    global.properties.put(new JSString("Uint8ClampedArray"), prop(realm.intrinsics.Uint8ClampedArray));
+    global.properties.put(new JSString("Uint16Array"), prop(realm.intrinsics.Uint16Array));
+    global.properties.put(new JSString("Uint32Array"), prop(realm.intrinsics.Uint32Array));
+    global.properties.put(new JSString("URIError"), prop(realm.intrinsics.URIError));
+    global.properties.put(new JSString("WeakMap"), prop(realm.intrinsics.WeakMap));
+    global.properties.put(new JSString("WeakSet"), prop(realm.intrinsics.WeakSet));
 
     // ES6 Section 18.4: Other Properties of the Global Object
 
-    global.properties.put(new JSString("JSON"),prop(realm.intrinsics.JSON));
-    global.properties.put(new JSString("Math"),prop(realm.intrinsics.Math));
-    global.properties.put(new JSString("Reflect"),prop(realm.intrinsics.Reflect));
+    global.properties.put(new JSString("JSON"), prop(realm.intrinsics.JSON));
+    global.properties.put(new JSString("Math"), prop(realm.intrinsics.Math));
+    global.properties.put(new JSString("Reflect"), prop(realm.intrinsics.Reflect));
 }

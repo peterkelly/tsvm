@@ -143,19 +143,19 @@ export class JSFunction extends JSObject {
         // (unnecessary, because we are using the host VM's stack)
 
         // 4. Let calleeContext be PrepareForOrdinaryCall(F, undefined).
-        const calleeContext = PrepareForOrdinaryCall(F,new JSUndefined());
+        const calleeContext = PrepareForOrdinaryCall(F, new JSUndefined());
         const calleeRealm = calleeContext.realm;
 
         // 5. Assert: calleeContext is now the running execution context.
         // (unnecessary, because we are using the host VM's stack)
 
         // 6. Perform OrdinaryCallBindThis(F, calleeContext, thisArgument).
-        const bindComp = OrdinaryCallBindThis(calleeRealm,F,calleeContext,thisArg);
+        const bindComp = OrdinaryCallBindThis(calleeRealm, F, calleeContext, thisArg);
         if (!(bindComp instanceof NormalCompletion))
             return bindComp;
 
         // 7. Let result be OrdinaryCallEvaluateBody(F, argumentsList).
-        const resultComp = OrdinaryCallEvaluateBody(calleeContext,F,args);
+        const resultComp = OrdinaryCallEvaluateBody(calleeContext, F, args);
 
         // 8. Remove calleeContext from the execution context stack and restore callerContext as the running execution context.
         // (unnecessary, because we are using the host VM's stack)
@@ -198,8 +198,8 @@ export function PrepareForOrdinaryCall(
     // 8. Set the LexicalEnvironment of calleeContext to localEnv.
     // 9. Set the VariableEnvironment of calleeContext to localEnv.
     // (property initialization is done in ExecutionContext constructor)
-    const localEnv = NewFunctionEnvironment(F.realm,F,newTarget);
-    const calleeContext = new ExecutionContext(F.realm,F,localEnv);
+    const localEnv = NewFunctionEnvironment(F.realm, F, newTarget);
+    const calleeContext = new ExecutionContext(F.realm, F, localEnv);
 
     // 10. If callerContext is not already suspended, Suspend callerContext.
     // (unnecessary, because we are using the host VM's stack)
@@ -248,7 +248,7 @@ export function OrdinaryCallBindThis(
         // b. Else
         else {
             // i. Let thisValue be ToObject(thisArgument).
-            const thisValueComp = ToObject(calleeRealm,thisArgument);
+            const thisValueComp = ToObject(calleeRealm, thisArgument);
 
             // ii. Assert: thisValue is not an abrupt completion.
             if (!(thisValueComp instanceof NormalCompletion))
@@ -277,7 +277,7 @@ export function OrdinaryCallBindThis(
 
 export function OrdinaryCallEvaluateBody(ctx: ExecutionContext, F: JSFunction, argumentsList: JSValue[]): Completion<JSValue | Reference | Empty> {
     // 1. Let status be FunctionDeclarationInstantiation(F, argumentsList).
-    const statusComp = FunctionDeclarationInstantiation(ctx,F,argumentsList);
+    const statusComp = FunctionDeclarationInstantiation(ctx, F, argumentsList);
 
     // 2. ReturnIfAbrupt(status)
     if (!(statusComp instanceof NormalCompletion))
@@ -498,10 +498,10 @@ export function FunctionCreate(
     }
 
     // 4. Let F be FunctionAllocate(prototype, Strict, allocKind).
-    const F = FunctionAllocate(realm,prototype,strict,allocKind);
+    const F = FunctionAllocate(realm, prototype, strict, allocKind);
 
     // 5. Return FunctionInitialize(F, kind, ParameterList, Body, Scope).
-    return FunctionInitialize(realm,F,kind,parameterList,body,scope);
+    return FunctionInitialize(realm, F, kind, parameterList, body, scope);
 }
 
 // ES6 Section 9.2.6: GeneratorFunctionCreate (kind, ParameterList, Body, Scope, Strict)
@@ -549,12 +549,12 @@ export function MakeConstructor(realm: Realm, F: JSFunction, writablePrototype?:
     // 5. If the prototype argument was not provided, then
     if (prototype === undefined) {
         // a. Let prototype be ObjectCreate(%ObjectPrototype%).
-        prototype = ObjectCreate(realm,realm.intrinsics.ObjectPrototype);
+        prototype = ObjectCreate(realm, realm.intrinsics.ObjectPrototype);
 
         // b. Let status be DefinePropertyOrThrow(prototype, "constructor",
         // PropertyDescriptor{[[Value]]: F, [[Writable]]: writablePrototype, [[Enumerable]]: false,
         // [[Configurable]]: true }).
-        const status = DefinePropertyOrThrow(realm,prototype,new JSString("constructor"),new DataDescriptor({
+        const status = DefinePropertyOrThrow(realm, prototype, new JSString("constructor"), new DataDescriptor({
             value: F,
             writable: writablePrototype,
             enumerable: false,
@@ -568,7 +568,7 @@ export function MakeConstructor(realm: Realm, F: JSFunction, writablePrototype?:
 
     // 6. Let status be DefinePropertyOrThrow(F, "prototype", PropertyDescriptor{[[Value]]: prototype,
     // [[Writable]]: writablePrototype, [[Enumerable]]: false, [[Configurable]]: false}).
-    const status = DefinePropertyOrThrow(realm,F,new JSString("prototype"),new DataDescriptor({
+    const status = DefinePropertyOrThrow(realm, F, new JSString("prototype"), new DataDescriptor({
         value: prototype,
         writable: writablePrototype,
         enumerable: false,
@@ -632,7 +632,7 @@ export function SetFunctionName(realm: Realm, F: JSObject, name: JSPropertyKey, 
 
         // c. Else, let name be the concatenation of "[", description, and "]".
         else
-            name = new JSString("["+description+"]");
+            name = new JSString("[" + description + "]");
     }
 
     // Not in the spec, but just to satisfy typescript
@@ -642,12 +642,12 @@ export function SetFunctionName(realm: Realm, F: JSObject, name: JSPropertyKey, 
     // 5. If prefix was passed, then
     if (prefix !== undefined) {
         // a. Let name be the concatenation of prefix, code unit 0x0020 (SPACE), and name.
-        name = new JSString(prefix+" "+name.stringValue);
+        name = new JSString(prefix + " " + name.stringValue);
     }
 
     // 6. Return DefinePropertyOrThrow(F, "name", PropertyDescriptor{[[Value]]: name,
     // [[Writable]]: false, [[Enumerable]]: false, [[Configurable]]: true}).
-    const result = DefinePropertyOrThrow(realm,F,new JSString("name"),new DataDescriptor({
+    const result = DefinePropertyOrThrow(realm, F, new JSString("name"), new DataDescriptor({
         value: name,
         writable: false,
         enumerable: false,
@@ -786,14 +786,14 @@ export function FunctionDeclarationInstantiation(
         // c. If alreadyDeclared is false, then
         if (!alreadyDeclared) {
             // i. Let status be envRec.CreateMutableBinding(paramName).
-            const statusComp1 = envRec.CreateMutableBinding(paramName,false);
+            const statusComp1 = envRec.CreateMutableBinding(paramName, false);
             if (!(statusComp1 instanceof NormalCompletion))
                 throw new Error("statusComp1 should not be an abrupt completion");
 
             // ii. If hasDuplicates is true, then
             if (hasDuplicates) {
                 // 1. Let status be envRec.InitializeBinding(paramName, undefined).
-                const statusComp2 = envRec.InitializeBinding(paramName,new JSUndefined());
+                const statusComp2 = envRec.InitializeBinding(paramName, new JSUndefined());
                 if (!(statusComp2 instanceof NormalCompletion))
                     throw new Error("statusComp2 should not be an abrupt completion");
             }
@@ -832,7 +832,7 @@ export function FunctionDeclarationInstantiation(
     // FIXME: This is a temporary solution to get arguments bound, but only supports basic
     // parameters with no initializers
     const iterator = new ValueIterator(argumentsList);
-    formals.iteratorBindingInitialization(iterator,env);
+    formals.iteratorBindingInitialization(iterator, env);
 
     let varEnv: LexicalEnvironment;
     let varEnvRec: EnvironmentRecord;
@@ -854,14 +854,14 @@ export function FunctionDeclarationInstantiation(
                 instantiatedVarNames.push(n);
 
                 // 2. Let status be envRec.CreateMutableBinding(n).
-                const statusComp = envRec.CreateMutableBinding(n,false);
+                const statusComp = envRec.CreateMutableBinding(n, false);
 
                 // 3. Assert: status is never an abrupt completion.
                 if (!(statusComp instanceof NormalCompletion))
                     throw new Error("Assertion failure: statusComp should not be an abrupt completion");
 
                 // 4. Call envRec.InitializeBinding(n, undefined).
-                const initComp = envRec.InitializeBinding(n,new JSUndefined());
+                const initComp = envRec.InitializeBinding(n, new JSUndefined());
                 if (!(initComp instanceof NormalCompletion))
                     return initComp;
             }
@@ -879,7 +879,7 @@ export function FunctionDeclarationInstantiation(
         // expressions in the formal parameter list do not have visibility of declarations in the function body.
 
         // b. Let varEnv be NewDeclarativeEnvironment(env).
-        varEnv = NewDeclarativeEnvironment(realm,env);
+        varEnv = NewDeclarativeEnvironment(realm, env);
 
         // c. Let varEnvRec be varEnv’s EnvironmentRecord.
         varEnvRec = varEnv.record;
@@ -906,7 +906,7 @@ export function FunctionDeclarationInstantiation(
     // 30. If strict is false, then
     if (!strict) {
         // a. Let lexEnv be NewDeclarativeEnvironment(varEnv).
-        lexEnv = NewDeclarativeEnvironment(realm,varEnv);
+        lexEnv = NewDeclarativeEnvironment(realm, varEnv);
         // b. NOTE: Non-strict functions use a separate lexical Environment Record for top-level
         // lexical declarations so that a direct eval (see 12.3.4.1) can determine whether any var
         // scoped declarations introduced by the eval code conflict with pre-existing top-level
@@ -941,14 +941,14 @@ export function FunctionDeclarationInstantiation(
             // i. If IsConstantDeclaration of d is true, then
             if (d.isConstantDeclaration()) {
                 // 1. Let status be lexEnvRec.CreateImmutableBinding(dn, true).
-                const statusComp = lexEnvRec.CreateImmutableBinding(dn,true);
+                const statusComp = lexEnvRec.CreateImmutableBinding(dn, true);
                 if (!(statusComp instanceof NormalCompletion))
                     return statusComp;
             }
             // ii. Else,
             else {
                 // 1. Let status be lexEnvRec.CreateMutableBinding(dn, false).
-                const statusComp = lexEnvRec.CreateMutableBinding(dn,false);
+                const statusComp = lexEnvRec.CreateMutableBinding(dn, false);
                 if (!(statusComp instanceof NormalCompletion))
                     return statusComp;
             }
@@ -974,7 +974,7 @@ export function FunctionDeclarationInstantiation(
         const fo = foComp.value;
 
         // c. Let status be varEnvRec.SetMutableBinding(fn, fo, false).
-        const statusComp = varEnvRec.SetMutableBinding(fn,fo,false);
+        const statusComp = varEnvRec.SetMutableBinding(fn, fo, false);
 
         // d. Assert: status is never an abrupt completion.
         if (!(statusComp instanceof NormalCompletion)) {
@@ -988,7 +988,7 @@ export function FunctionDeclarationInstantiation(
 
 function haveDuplicateNames(names: string[]): boolean {
     for (let a = 0; a < names.length; a++) {
-        for (let b = a+1; b < names.length; b++) {
+        for (let b = a + 1; b < names.length; b++) {
             if (names[a] === names[b])
                 return true;
         }

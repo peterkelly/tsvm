@@ -97,7 +97,7 @@ export function ToPrimitive(realm: Realm, input: JSValue | Completion<JSValue>, 
 
     // 4. Let exoticToPrim be GetMethod(input, @@toPrimitive).
     // 5. ReturnIfAbrupt(exoticToPrim).
-    const exoticToPrimComp = GetMethod(realm,input,JSSymbol.$$toPrimitive);
+    const exoticToPrimComp = GetMethod(realm, input, JSSymbol.$$toPrimitive);
     if (!(exoticToPrimComp instanceof NormalCompletion))
         return exoticToPrimComp;
     const exoticToPrim = exoticToPrimComp.value;
@@ -106,7 +106,7 @@ export function ToPrimitive(realm: Realm, input: JSValue | Completion<JSValue>, 
     if (!(exoticToPrim instanceof JSUndefined)) {
         // a. Let result be Call(exoticToPrim, input, «hint»).
         // b. ReturnIfAbrupt(result).
-        const resultComp = Call(realm,exoticToPrim,input,[hint]);
+        const resultComp = Call(realm, exoticToPrim, input, [hint]);
         if (!(resultComp instanceof NormalCompletion))
             return resultComp;
         const result = resultComp.value;
@@ -123,11 +123,11 @@ export function ToPrimitive(realm: Realm, input: JSValue | Completion<JSValue>, 
     if (hint.stringValue === "default")
         hint = new JSString("number");
 
-    // 6. Return OrdinaryToPrimitive(input,hint).
+    // 6. Return OrdinaryToPrimitive(input, hint).
     if (hint.stringValue === "string")
-        return OrdinaryToPrimitive(realm,input,"string");
+        return OrdinaryToPrimitive(realm, input, "string");
     else
-        return OrdinaryToPrimitive(realm,input,"number");
+        return OrdinaryToPrimitive(realm, input, "number");
 }
 
 export function OrdinaryToPrimitive(realm: Realm, O: JSObject, hint: "string" | "number"): Completion<JSValue> {
@@ -154,16 +154,16 @@ export function OrdinaryToPrimitive(realm: Realm, O: JSObject, hint: "string" | 
     for (const name of methodNames) {
         // a. Let method be Get(O, name).
         // b. ReturnIfAbrupt(method).
-        const methodComp = Get(realm,O,name);
+        const methodComp = Get(realm, O, name);
         if (!(methodComp instanceof NormalCompletion))
             return methodComp;
         const method = methodComp.value;
 
         // c. If IsCallable(method) is true, then
-        if (IsCallable(realm,method)) {
+        if (IsCallable(realm, method)) {
             // i. Let result be Call(method, O).
             // ii. ReturnIfAbrupt(result).
-            const resultComp = Call(realm,method,O,[]);
+            const resultComp = Call(realm, method, O, []);
             if (!(resultComp instanceof NormalCompletion))
                 return resultComp;
             const result = resultComp.value;
@@ -224,20 +224,20 @@ export function ToNumber(realm: Realm, argument: JSValue | Completion<JSValue>):
     if (argument instanceof JSNull)
         return new NormalCompletion(new JSNumber(0));
     if (argument instanceof JSBoolean) {
-        return new NormalCompletion(ToNumber_boolean(realm,argument));
+        return new NormalCompletion(ToNumber_boolean(realm, argument));
     }
     if (argument instanceof JSNumber)
         return new NormalCompletion(argument);
     if (argument instanceof JSString)
-        return new NormalCompletion(ToNumber_string(realm,argument));
+        return new NormalCompletion(ToNumber_string(realm, argument));
     if (argument instanceof JSSymbol)
         return realm.throwTypeError("ToNumber applied to symbol");
     if (argument instanceof JSObject) {
-        const primValueComp = ToPrimitive(realm,argument,ValueType.Number);
+        const primValueComp = ToPrimitive(realm, argument, ValueType.Number);
         if (!(primValueComp instanceof NormalCompletion))
             return primValueComp;
         const primValue = primValueComp.value;
-        return ToNumber(realm,primValue);
+        return ToNumber(realm, primValue);
     }
     throw new Error("Unhandled case; should never get here");
 }
@@ -269,7 +269,7 @@ export function ToInt32(realm: Realm, argument: JSValue | Completion<JSValue>): 
 
 export function ToUint32(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSUInt32> {
     // 1. Let number be ToNumber(argument).
-    const numberComp = ToNumber(realm,argument);
+    const numberComp = ToNumber(realm, argument);
 
     // 2. ReturnIfAbrupt(number).
     if (!(numberComp instanceof NormalCompletion))
@@ -292,7 +292,7 @@ export function ToUint32(realm: Realm, argument: JSValue | Completion<JSValue>):
         int = Math.floor(Math.abs(number.numberValue));
 
     // 5. Let int32bit be int modulo 2^32.
-    const int32bit = pr_double_positive_mod(int,Math.pow(2,32));
+    const int32bit = pr_double_positive_mod(int, Math.pow(2, 32));
     return new NormalCompletion(new JSUInt32(int32bit));
 }
 
@@ -353,11 +353,11 @@ export function ToString(realm: Realm, argument: JSValue | Completion<JSValue>):
     if (argument instanceof JSSymbol)
         return realm.throwTypeError("ToString applied to symbol");
     if (argument instanceof JSObject) {
-        const primValueComp = ToPrimitive(realm,argument,ValueType.String);
+        const primValueComp = ToPrimitive(realm, argument, ValueType.String);
         if (!(primValueComp instanceof NormalCompletion))
             return primValueComp;
         const primValue = primValueComp.value;
-        return ToString(realm,primValue);
+        return ToString(realm, primValue);
     }
     throw new Error("Unhandled case; should never get here");
 }
@@ -382,28 +382,28 @@ export function ToObject(realm: Realm, argument: JSValue | Completion<JSValue>):
         case ValueType.Boolean:
             if (argument instanceof JSBoolean) {
                 const proto = realm.intrinsics.BooleanPrototype;
-                const obj = new BooleanObject(proto,argument);
+                const obj = new BooleanObject(proto, argument);
                 return new NormalCompletion(obj);
             }
             break;
         case ValueType.Number:
             if (argument instanceof JSNumber) {
                 const proto = realm.intrinsics.NumberPrototype;
-                const obj = new NumberObject(proto,argument);
+                const obj = new NumberObject(proto, argument);
                 return new NormalCompletion(obj);
             }
             break;
         case ValueType.String:
             if (argument instanceof JSString) {
                 const proto = realm.intrinsics.StringPrototype;
-                const obj = new StringObject(proto,argument);
+                const obj = new StringObject(proto, argument);
                 return new NormalCompletion(obj);
             }
             break;
         case ValueType.Symbol:
             if (argument instanceof JSSymbol) {
                 const proto = realm.intrinsics.SymbolPrototype;
-                const obj = new SymbolObject(proto,argument);
+                const obj = new SymbolObject(proto, argument);
                 return new NormalCompletion(obj);
             }
             break;
@@ -412,7 +412,7 @@ export function ToObject(realm: Realm, argument: JSValue | Completion<JSValue>):
                 return new NormalCompletion(argument);
             break;
     }
-    throw new Error("Incorrect argument.type: "+argument.type);
+    throw new Error("Incorrect argument.type: " + argument.type);
 }
 
 // ES6 Section 7.1.14: ToPropertyKey (argument)
@@ -420,7 +420,7 @@ export function ToObject(realm: Realm, argument: JSValue | Completion<JSValue>):
 export function ToPropertyKey(realm: Realm, argument: JSValue | Completion<JSValue>): Completion<JSPropertyKey> {
     // 1. Let key be ToPrimitive(argument, hint String).
     // 2. ReturnIfAbrupt(key).
-    const keyComp = ToPrimitive(realm,argument,ValueType.String);
+    const keyComp = ToPrimitive(realm, argument, ValueType.String);
     if (!(keyComp instanceof NormalCompletion))
         return keyComp;
     const key = keyComp.value;
@@ -432,7 +432,7 @@ export function ToPropertyKey(realm: Realm, argument: JSValue | Completion<JSVal
     }
 
     // 4. Return ToString(key).
-    return ToString(realm,key);
+    return ToString(realm, key);
 }
 
 // ES6 Section 7.1.15: ToLength (argument)

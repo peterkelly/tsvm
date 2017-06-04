@@ -138,7 +138,7 @@ export class ArrayExoticObject extends JSObject {
         // else if ((P instanceof JSNumber) && pr_double_isArrayIndex(P.numberValue)) {
         else if ((Pnumber != null) && pr_double_isArrayIndex(Pnumber)) {
             // a. Let oldLenDesc be OrdinaryGetOwnProperty(A, "length").
-            const oldLenDesc = OrdinaryGetOwnProperty(realm,A,new JSString("length"));
+            const oldLenDesc = OrdinaryGetOwnProperty(realm, A, new JSString("length"));
 
             // b. Assert: oldLenDesc will never be undefined or an accessor descriptor because Array
             // objects are created with a length data property that cannot be deleted or reconfigured.
@@ -153,7 +153,7 @@ export class ArrayExoticObject extends JSObject {
             }
 
             // d. Let index be ToUint32(P).
-            const indexComp = ToUint32(realm,new JSString(""+Pnumber));
+            const indexComp = ToUint32(realm, new JSString("" + Pnumber));
 
             // e. Assert: index will never be an abrupt completion.
             if (!(indexComp instanceof NormalCompletion))
@@ -165,7 +165,7 @@ export class ArrayExoticObject extends JSObject {
                 return new NormalCompletion(false);
 
             // g. Let succeeded be OrdinaryDefineOwnProperty(A, P, Desc).
-            const succeeded = OrdinaryDefineOwnProperty(realm,A,P,Desc);
+            const succeeded = OrdinaryDefineOwnProperty(realm, A, P, Desc);
 
             // h. Assert: succeeded is not an abrupt completion.
             if (!(succeeded instanceof NormalCompletion))
@@ -180,7 +180,7 @@ export class ArrayExoticObject extends JSObject {
                 // i. Set oldLenDesc.[[Value]] to index + 1.
                 oldLenDesc.value = new JSNumber(index.numberValue + 1);
                 // ii. Let succeeded be OrdinaryDefineOwnProperty(A, "length", oldLenDesc).
-                const lengthSucceededComp = OrdinaryDefineOwnProperty(realm,A,new JSString("length"),oldLenDesc);
+                const lengthSucceededComp = OrdinaryDefineOwnProperty(realm, A, new JSString("length"), oldLenDesc);
                 if (!(lengthSucceededComp instanceof NormalCompletion))
                     return lengthSucceededComp;
                 const lengthSucceeded = lengthSucceededComp.value;
@@ -194,7 +194,7 @@ export class ArrayExoticObject extends JSObject {
         }
 
         // 4. Return OrdinaryDefineOwnProperty(A, P, Desc).
-        return OrdinaryDefineOwnProperty(realm,A,P,Desc);
+        return OrdinaryDefineOwnProperty(realm, A, P, Desc);
     }
 }
 
@@ -230,7 +230,7 @@ export function ArrayCreate(realm: Realm, length: number, proto?: JSObject | JSN
 
     // 10. Perform OrdinaryDefineOwnProperty(A, "length", PropertyDescriptor{[[Value]]: length,
     // [[Writable]]: true, [[Enumerable]]: false, [[Configurable]]: false}).
-    const defineComp = OrdinaryDefineOwnProperty(realm,A,new JSString("length"),new DataDescriptor({
+    const defineComp = OrdinaryDefineOwnProperty(realm, A, new JSString("length"), new DataDescriptor({
         value: new JSNumber(length),
         writable: true,
         enumerable: false,
@@ -332,7 +332,7 @@ export function MakeArgGetter(realm: Realm, name: string, env: EnvironmentRecord
     const intrinsics = realm.intrinsics;
     if (intrinsics === undefined)
         throw new Error("intrinsics is undefined"); // FIXME: temp: we'll remove undefiend from the type of intrinsics soon
-    const fun = new ArgGetterFunction(realm,intrinsics.FunctionPrototype,name,env);
+    const fun = new ArgGetterFunction(realm, intrinsics.FunctionPrototype, name, env);
     return new NormalCompletion(fun);
 }
 
@@ -351,7 +351,7 @@ class ArgGetterFunction extends JSObject {
     }
 
     public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        return this.env.GetBindingValue(this.name,false);
+        return this.env.GetBindingValue(this.name, false);
     }
 }
 
@@ -361,7 +361,7 @@ export function MakeArgSetter(realm: Realm, name: string, env: EnvironmentRecord
     const intrinsics = realm.intrinsics;
     if (intrinsics === undefined)
         throw new Error("intrinsics is undefined"); // FIXME: temp: we'll remove undefiend from the type of intrinsics soon
-    const fun = new ArgSetterFunction(realm,intrinsics.FunctionPrototype,name,env);
+    const fun = new ArgSetterFunction(realm, intrinsics.FunctionPrototype, name, env);
     return new NormalCompletion(fun);
 }
 
@@ -381,7 +381,7 @@ class ArgSetterFunction extends JSObject {
 
     public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
         const value = (args.length > 0) ? args[0] : new JSUndefined();
-        this.env.SetMutableBinding(this.name,value,false);
+        this.env.SetMutableBinding(this.name, value, false);
         return new NormalCompletion(new JSUndefined());
     }
 }

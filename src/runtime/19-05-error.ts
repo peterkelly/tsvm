@@ -39,7 +39,7 @@ export class ErrorObject extends JSObject {
     public constructor(realm: Realm, proto: JSObject, message: string | undefined) {
         super(proto);
         if (message !== undefined)
-            this.properties.put(new JSString("message"),stringDescriptor(message));
+            this.properties.put(new JSString("message"), stringDescriptor(message));
     }
 }
 
@@ -67,7 +67,7 @@ class ErrorToStringFunction extends JSObject {
         if (!(O instanceof JSObject))
             return realm.throwTypeError("Error.prototype.toString() applied to non-object");
 
-        const nameComp = Get(realm,O,new JSString("name"));
+        const nameComp = Get(realm, O, new JSString("name"));
         if (!(nameComp instanceof NormalCompletion))
             return nameComp;
         const name = nameComp.value;
@@ -77,13 +77,13 @@ class ErrorToStringFunction extends JSObject {
             nameStr = new JSString("Error");
         }
         else {
-            const nameStrComp = ToString(realm,name);
+            const nameStrComp = ToString(realm, name);
             if (!(nameStrComp instanceof NormalCompletion))
                 return nameStrComp;
             nameStr = nameStrComp.value;
         }
 
-        const msgComp = Get(realm,O,new JSString("message"));
+        const msgComp = Get(realm, O, new JSString("message"));
         if (!(msgComp instanceof NormalCompletion))
             return msgComp;
         const msg = msgComp.value;
@@ -93,14 +93,14 @@ class ErrorToStringFunction extends JSObject {
             msgStr = new JSString("");
         }
         else {
-            const msgStrComp = ToString(realm,msg);
+            const msgStrComp = ToString(realm, msg);
             if (!(msgStrComp instanceof NormalCompletion))
                 return msgStrComp;
             msgStr = msgStrComp.value;
         }
 
-        console.log("ErrorToStringFunction: nameStr = "+JSON.stringify(nameStr.stringValue)+
-                    ", msgStr = "+JSON.stringify(msgStr.stringValue));
+        console.log("ErrorToStringFunction: nameStr = " + JSON.stringify(nameStr.stringValue) +
+                    ", msgStr = " + JSON.stringify(msgStr.stringValue));
 
         if (nameStr.stringValue.length === 0)
             return new NormalCompletion(msgStr);
@@ -108,15 +108,15 @@ class ErrorToStringFunction extends JSObject {
         if (msgStr.stringValue.length === 0)
             return new NormalCompletion(nameStr);
 
-        const combined = nameStr.stringValue+": "+msgStr.stringValue;
+        const combined = nameStr.stringValue + ": " + msgStr.stringValue;
         return new NormalCompletion(new JSString(combined));
     }
 }
 
 export function setupErrorPrototype(realm: Realm, obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor(""));
-    obj.properties.put(new JSString("toString"),new DataDescriptor({
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor(""));
+    obj.properties.put(new JSString("toString"), new DataDescriptor({
         enumerable: false,
         configurable: true,
         writable: true,
@@ -125,31 +125,31 @@ export function setupErrorPrototype(realm: Realm, obj: JSObject): void {
 }
 
 export function setupEvalErrorPrototype(obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor("EvalError"));
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor("EvalError"));
 }
 
 export function setupRangeErrorPrototype(obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor("RangeError"));
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor("RangeError"));
 }
 
 export function setupReferenceErrorPrototype(obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor("ReferenceError"));
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor("ReferenceError"));
 }
 
 export function setupSyntaxErrorPrototype(obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor("SyntaxError"));
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor("SyntaxError"));
 }
 
 export function setupTypeErrorPrototype(obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor("TypeError"));
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor("TypeError"));
 }
 
 export function setupURIErrorPrototype(obj: JSObject): void {
-    obj.properties.put(new JSString("message"),stringDescriptor(""));
-    obj.properties.put(new JSString("name"),stringDescriptor("URIError"));
+    obj.properties.put(new JSString("message"), stringDescriptor(""));
+    obj.properties.put(new JSString("name"), stringDescriptor("URIError"));
 }

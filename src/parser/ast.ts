@@ -32,7 +32,7 @@ export class CastError {
     }
 
     public toString(): string {
-        return this.value+" is not a "+this.typeName;
+        return this.value + " is not a " + this.typeName;
     }
 }
 
@@ -124,7 +124,7 @@ export class BindingIdentifierNode extends ASTNode {
     public readonly value: string;
 
     public constructor(range: Range, value: string) {
-        super(range,"BindingIdentifier");
+        super(range, "BindingIdentifier");
         this.value = value;
     }
 
@@ -133,7 +133,7 @@ export class BindingIdentifierNode extends ASTNode {
     }
 
     public get label(): string {
-        return "BindingIdentifier("+JSON.stringify(this.value)+")";
+        return "BindingIdentifier(" + JSON.stringify(this.value) + ")";
         // return this.value;
     }
 
@@ -158,8 +158,8 @@ export class BindingIdentifierNode extends ASTNode {
 
     public static fromGeneric(node: ASTNode | null): BindingIdentifierNode {
         if ((node === null) || (node.kind !== "BindingIdentifier") || !(node instanceof GenericStringNode))
-            throw new CannotConvertError("BindingIdentifier",node);
-        return new BindingIdentifierNode(node.range,node.value);
+            throw new CannotConvertError("BindingIdentifier", node);
+        return new BindingIdentifierNode(node.range, node.value);
     }
 }
 
@@ -168,20 +168,20 @@ export class IdentifierNode extends ASTNode {
     public readonly value: string;
 
     public constructor(range: Range, value: string) {
-        super(range,"Identifier");
+        super(range, "Identifier");
         this.value = value;
     }
     public get children(): (ASTNode | null)[] {
         return [];
     }
     public get label(): string {
-        return "Identifier("+JSON.stringify(this.value)+")";
+        return "Identifier(" + JSON.stringify(this.value) + ")";
         // return this.value;
     }
     public static fromGeneric(node: ASTNode | null): IdentifierNode {
         if ((node === null) || (node.kind !== "Identifier") || !(node instanceof GenericStringNode))
-            throw new CannotConvertError("Identifier",node);
-        return new IdentifierNode(node.range,node.value);
+            throw new CannotConvertError("Identifier", node);
+        return new IdentifierNode(node.range, node.value);
     }
 }
 
@@ -190,7 +190,7 @@ export class ListNode extends ASTNode {
     public readonly elements: ASTNode[];
 
     public constructor(range: Range, elements: ASTNode[]) {
-        super(range,"[]");
+        super(range, "[]");
         this.elements = elements;
     }
 
@@ -208,7 +208,7 @@ export class ErrorNode extends ASTNode {
     public readonly message: string;
 
     public constructor(range: Range, message: string) {
-        super(range,"Error");
+        super(range, "Error");
         this.message = message;
     }
 
@@ -217,7 +217,7 @@ export class ErrorNode extends ASTNode {
     }
 
     public get label(): string {
-        return "ERROR: "+this.message;
+        return "ERROR: " + this.message;
     }
 
     public static fromGeneric(node: ASTNode | null): ErrorNode {
@@ -231,11 +231,11 @@ export class GenericNode extends ASTNode {
     public readonly value: any;
 
     public constructor(range: Range, kind: string, children: any[], value?: any) {
-        super(range,kind);
+        super(range, kind);
         this._children = [];
         for (const child of children) {
             if ((child !== null) && !(child instanceof ASTNode))
-                throw new Error(kind+": "+child+" is not an ASTNode");
+                throw new Error(kind + ": " + child + " is not an ASTNode");
             this._children.push(child);
         }
         this.value = value;
@@ -256,7 +256,7 @@ export class GenericStringNode extends ASTNode {
     public readonly raw: boolean;
 
     public constructor(range: Range, kind: string, value: string, raw: boolean = false) {
-        super(range,kind);
+        super(range, kind);
         this.value = value;
         this.raw = raw;
     }
@@ -269,7 +269,7 @@ export class GenericStringNode extends ASTNode {
         if (this.raw)
             return JSON.stringify(this.value);
         else
-            return this.kind+"("+JSON.stringify(this.value)+")";
+            return this.kind + "(" + JSON.stringify(this.value) + ")";
     }
 }
 
@@ -278,7 +278,7 @@ export class GenericNumberNode extends ASTNode {
     public readonly value: number;
 
     public constructor(range: Range, kind: string, value: number) {
-        super(range,kind);
+        super(range, kind);
         this.value = value;
     }
 
@@ -287,7 +287,7 @@ export class GenericNumberNode extends ASTNode {
     }
 
     public get label(): string {
-        return ""+this.value;
+        return "" + this.value;
     }
 }
 
@@ -295,22 +295,22 @@ export class check {
 
     public static arity(node: ASTNode, arity: number): void {
         if (node.children.length !== arity)
-            throw new Error(node.kind+" node has "+node.children.length+" children, expected "+arity);
+            throw new Error(node.kind + " node has " + node.children.length + " children, expected " + arity);
     }
 
     public static node(node: ASTNode | null, name: string, arity: number): ASTNode {
         if (node === null)
-            throw new Error("node is null; expected "+name);
+            throw new Error("node is null; expected " + name);
         if (node.kind !== name)
-            throw new Error("node is "+node.kind+"; expected "+name);
+            throw new Error("node is " + node.kind + "; expected " + name);
         if (node.children.length !== arity)
-            throw new Error("node has "+node.children.length+" children, expected "+arity);
+            throw new Error("node has " + node.children.length + " children, expected " + arity);
         return node;
     }
 
     public static nodeNotNull(node: ASTNode | null): ASTNode {
         if (node === null)
-            throw new Error("node is null; expected "+name);
+            throw new Error("node is null; expected " + name);
         return node;
     }
 
@@ -318,7 +318,7 @@ export class check {
         if (node === null)
             throw new Error("node is null; expected a list");
         if (!(node instanceof ListNode))
-            throw new Error("node is "+node.kind+"; expected a list");
+            throw new Error("node is " + node.kind + "; expected a list");
         return node;
     }
 
@@ -335,9 +335,9 @@ export class CannotConvertError {
 
     public toString(): string {
         if (this.node === null)
-            return "Cannot convert null to "+this.desiredType;
+            return "Cannot convert null to " + this.desiredType;
         else
-            return "Cannot convert "+this.node.kind+" to "+this.desiredType;
+            return "Cannot convert " + this.node.kind + " to " + this.desiredType;
     }
 }
 

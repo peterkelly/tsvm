@@ -74,7 +74,7 @@ export class ExecutionContext {
     public ResolveBinding(name: string, env?: LexicalEnvironment): Completion<Reference> {
         if (env === undefined)
             env = this.lexicalEnvironment;
-        return GetIdentifierReference(this.realm,env,name,this.strict);
+        return GetIdentifierReference(this.realm, env, name, this.strict);
     }
 
     // ES6 Section 8.3.2: GetThisEnvironment ()

@@ -139,12 +139,12 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 
         // 2. Assert: envRec does not already have a binding for N.
         if (this.bindings.contains(N))
-            throw new Error("Assertion failure: envRec does not already have a binding for "+N);
+            throw new Error("Assertion failure: envRec does not already have a binding for " + N);
 
         // 3. Create a mutable binding in envRec for N and record that it is uninitialized. If D is
         // true record that the newly created binding may be deleted by a subsequent DeleteBinding
         // call.
-        this.bindings.put(N,new DeclarativeBinding({
+        this.bindings.put(N, new DeclarativeBinding({
             value: new JSUndefined(),
             canDelete: D,
             mutable: true,
@@ -164,11 +164,11 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
 
         // 2. Assert: envRec does not already have a binding for N.
         if (this.bindings.contains(N))
-            throw new Error("Assertion failure: envRec does not already have a binding for "+N);
+            throw new Error("Assertion failure: envRec does not already have a binding for " + N);
 
         // 3. Create an immutable binding in envRec for N and record that it is uninitialized. If S
         // is true record that the newly created binding is a strict binding.
-        this.bindings.put(N,new DeclarativeBinding({
+        this.bindings.put(N, new DeclarativeBinding({
             value: new JSUndefined(),
             canDelete: false, // Spec doesn't actually mention what canDelete should be here
             mutable: false,
@@ -214,13 +214,13 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         if (binding === undefined) {
             // a. If S is true throw a ReferenceError exception.
             if (S)
-                return this.realm.throwReferenceError(N+": no such binding");
+                return this.realm.throwReferenceError(N + ": no such binding");
 
             // b. Perform envRec.CreateMutableBinding(N, true).
-            envRec.CreateMutableBinding(N,true);
+            envRec.CreateMutableBinding(N, true);
 
             // c. Perform envRec.InitializeBinding(N, V).
-            envRec.InitializeBinding(N,V);
+            envRec.InitializeBinding(N, V);
 
             // d. Return NormalCompletion(empty).
             return new NormalCompletion(undefined);
@@ -233,7 +233,7 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         // 4. If the binding for N in envRec has not yet been initialized throw a ReferenceError
         // exception.
         if (!binding.initialized) {
-            return this.realm.throwReferenceError(N+": binding has not yet been initialized");
+            return this.realm.throwReferenceError(N + ": binding has not yet been initialized");
         }
         // 5. Else if the binding for N in envRec is a mutable binding, change its bound value to V.
         else if (binding.mutable) {
@@ -242,7 +242,7 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         // 6. Else this must be an attempt to change the value of an immutable binding so if S is
         // true throw a TypeError exception.
         else {
-            return this.realm.throwTypeError(N+": binding is immutable");
+            return this.realm.throwTypeError(N + ": binding is immutable");
         }
 
         // Return NormalCompletion(empty).
@@ -258,12 +258,12 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
         // 2. Assert: envRec has a binding for N.
         const binding = this.bindings.get(N);
         if (binding === undefined)
-            throw new Error("Assertion failure: envRec has a binding for "+N);
+            throw new Error("Assertion failure: envRec has a binding for " + N);
 
         // 3. If the binding for N in envRec is an uninitialized binding, throw a ReferenceError
         // exception.
         if (!binding.initialized)
-            throw new Error(N+" has not yet been initialized");
+            throw new Error(N + " has not yet been initialized");
 
         // 4. Return the value currently bound to N in envRec.
         return new NormalCompletion(binding.value);
@@ -337,7 +337,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
 
         // 3. Let foundBinding be HasProperty(bindings, N)
         // 4. ReturnIfAbrupt(foundBinding).
-        const foundBindingComp = HasProperty(this.realm,bindings,new JSString(N));
+        const foundBindingComp = HasProperty(this.realm, bindings, new JSString(N));
         if (!(foundBindingComp instanceof NormalCompletion))
             return foundBindingComp;
         const foundBinding = foundBindingComp.value;
@@ -352,7 +352,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
 
         // 7. Let unscopables be Get(bindings, @@unscopables).
         // 8. ReturnIfAbrupt(unscopables).
-        const unscopablesComp = Get(this.realm,bindings,JSSymbol.$$unscopables);
+        const unscopablesComp = Get(this.realm, bindings, JSSymbol.$$unscopables);
         if (!(unscopablesComp instanceof NormalCompletion))
             return unscopablesComp;
         const unscopables = unscopablesComp.value;
@@ -361,7 +361,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
         if (unscopables instanceof JSObject) {
             // a. Let blocked be ToBoolean(Get(unscopables, N)).
             // b. ReturnIfAbrupt(blocked).
-            const blockedComp = ToBoolean(this.realm,Get(this.realm,unscopables,new JSString(N)));
+            const blockedComp = ToBoolean(this.realm, Get(this.realm, unscopables, new JSString(N)));
             if (!(blockedComp instanceof NormalCompletion))
                 return blockedComp;
             const blocked = blockedComp.value;
@@ -392,7 +392,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
         //                            [[Writable]]: true,
         //                            [[Enumerable]]: true,
         //                            [[Configurable]]: configValue }).
-        const resultComp = DefinePropertyOrThrow(this.realm,bindings,new JSString(N),new DataDescriptor({
+        const resultComp = DefinePropertyOrThrow(this.realm, bindings, new JSString(N), new DataDescriptor({
             value: new JSUndefined(),
             writable: true,
             enumerable: true,
@@ -423,7 +423,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
         //     individual object Environment Record bindings."
 
         // 4. Return envRec.SetMutableBinding(N, V, false).
-        return envRec.SetMutableBinding(N,V,false);
+        return envRec.SetMutableBinding(N, V, false);
     }
 
     // ES6 Section 8.1.1.2.5: SetMutableBinding (N, V, S)
@@ -436,7 +436,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
         const bindings = this.bindingObject;
 
         // 3. Return Set(bindings, N, V, S).
-        const resultComp = Set(this.realm,bindings,new JSString(N),V,S);
+        const resultComp = Set(this.realm, bindings, new JSString(N), V, S);
         if (!(resultComp instanceof NormalCompletion))
             return resultComp;
         return new NormalCompletion(undefined);
@@ -453,7 +453,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
 
         // 3. Let value be HasProperty(bindings, N).
         // 4. ReturnIfAbrupt(value).
-        const valueComp = HasProperty(this.realm,bindings,new JSString(N));
+        const valueComp = HasProperty(this.realm, bindings, new JSString(N));
         if (!(valueComp instanceof NormalCompletion))
             return valueComp;
         const value = valueComp.value;
@@ -465,11 +465,11 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
             if (!S)
                 return new NormalCompletion(new JSUndefined());
             else
-                this.realm.throwReferenceError(N+" is not defined");
+                this.realm.throwReferenceError(N + " is not defined");
         }
 
         // 6. Return Get(bindings, N).
-        return Get(this.realm,bindings,new JSString(N));
+        return Get(this.realm, bindings, new JSString(N));
     }
 
     // ES6 Section 8.1.1.2.7: DeleteBinding (N)
@@ -482,7 +482,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
         const bindings = this.bindingObject;
 
         // 3. Return bindings.[[Delete]](N).
-        return bindings.__Delete__(this.realm,new JSString(N));
+        return bindings.__Delete__(this.realm, new JSString(N));
     }
 
     // ES6 Section 8.1.1.2.8: HasThisBinding ()
@@ -662,7 +662,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
     public constructor(realm: Realm, G: JSObject) {
         super();
         this.realm = realm;
-        this.objectRecord = new ObjectEnvironmentRecord(realm,G);
+        this.objectRecord = new ObjectEnvironmentRecord(realm, G);
         this.declarativeRecord = new DeclarativeEnvironmentRecord(realm);
         this.varNames = [];
     }
@@ -706,10 +706,10 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
             return dclHasComp;
         const dclHas = dclHasComp.value;
         if (dclHas)
-            return this.realm.throwTypeError(N+": binding already exists");
+            return this.realm.throwTypeError(N + ": binding already exists");
 
         // 4. Return DclRec.CreateMutableBinding(N, D).
-        return dclRec.CreateMutableBinding(N,D);
+        return dclRec.CreateMutableBinding(N, D);
     }
 
     // ES6 Section 8.1.1.4.3: CreateImmutableBinding (N, S)
@@ -727,10 +727,10 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
             return dclHasComp;
         const dclHas = dclHasComp.value;
         if (dclHas)
-            return this.realm.throwTypeError(N+": binding already exists");
+            return this.realm.throwTypeError(N + ": binding already exists");
 
         // 4. Return DclRec.CreateImmutableBinding(N, S).
-        return dclRec.CreateImmutableBinding(N,S);
+        return dclRec.CreateImmutableBinding(N, S);
     }
 
     // ES6 Section 8.1.1.4.4: InitializeBinding (N, V)
@@ -749,7 +749,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
         const dclHas = dclHasComp.value;
         if (dclHas) {
             // a. Return DclRec.InitializeBinding(N, V).
-            return dclRec.InitializeBinding(N,V);
+            return dclRec.InitializeBinding(N, V);
         }
 
         // 4. Assert: If the binding exists it must be in the object Environment Record.
@@ -759,7 +759,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
         const objRec = envRec.objectRecord;
 
         // 6. Return ObjRec.InitializeBinding(N, V).
-        return objRec.InitializeBinding(N,V);
+        return objRec.InitializeBinding(N, V);
     }
 
     // ES6 Section 8.1.1.4.5: SetMutableBinding (N, V, S)
@@ -778,14 +778,14 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
         const dclHas = dclHasComp.value;
         if (dclHas) {
             // a. Return DclRec.SetMutableBinding(N, V, S).
-            return dclRec.SetMutableBinding(N,V,S);
+            return dclRec.SetMutableBinding(N, V, S);
         }
 
         // 4. Let ObjRec be envRec.[[ObjectRecord]].
         const objRec = envRec.objectRecord;
 
         // 5. Return ObjRec.SetMutableBinding(N, V, S).
-        return objRec.SetMutableBinding(N,V,S);
+        return objRec.SetMutableBinding(N, V, S);
     }
 
     // ES6 Section 8.1.1.4.6: GetBindingValue (N, S)
@@ -804,14 +804,14 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
         const dclHas = dclHasComp.value;
         if (dclHas) {
             // a. Return DclRec.GetBindingValue(N, S).
-            return dclRec.GetBindingValue(N,S);
+            return dclRec.GetBindingValue(N, S);
         }
 
         // 4. Let ObjRec be envRec.[[ObjectRecord]].
         const objRec = envRec.objectRecord;
 
         // 5. Return ObjRec.GetBindingValue(N, S).
-        return objRec.GetBindingValue(N,S);
+        return objRec.GetBindingValue(N, S);
     }
 
     // ES6 Section 8.1.1.4.7: DeleteBinding (N)
@@ -841,7 +841,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 6. Let existingProp be HasOwnProperty(globalObject, N).
         // 7. ReturnIfAbrupt(existingProp).
-        const existingPropComp = HasOwnProperty(this.realm,globalObject,new JSString(N));
+        const existingPropComp = HasOwnProperty(this.realm, globalObject, new JSString(N));
         if (!(existingPropComp instanceof NormalCompletion))
             return existingPropComp;
         const existingProp = existingPropComp.value;
@@ -862,7 +862,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
                 // ii. If N is an element of varNames, remove that element from the varNames.
                 const index = varNames.indexOf(N);
                 if (index >= 0)
-                    varNames.splice(index,1);
+                    varNames.splice(index, 1);
             }
 
             // d. Return status.
@@ -954,7 +954,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 4. Let existingProp be globalObject.[[GetOwnProperty]](N).
         // 5. ReturnIfAbrupt(existingProp).
-        const existingPropComp = globalObject.__GetOwnProperty__(this.realm,new JSString(N));
+        const existingPropComp = globalObject.__GetOwnProperty__(this.realm, new JSString(N));
         if (!(existingPropComp instanceof NormalCompletion))
             return existingPropComp;
         const existingProp = existingPropComp.value;
@@ -985,7 +985,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 4. Let hasProperty be HasOwnProperty(globalObject, N).
         // 5. ReturnIfAbrupt(hasProperty).
-        const hasPropertyComp = HasOwnProperty(this.realm,globalObject,new JSString(N));
+        const hasPropertyComp = HasOwnProperty(this.realm, globalObject, new JSString(N));
         if (!(hasPropertyComp instanceof NormalCompletion))
             return hasPropertyComp;
         const hasProperty = hasPropertyComp.value;
@@ -995,7 +995,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
             return new NormalCompletion(true);
 
         // 7. Return IsExtensible(globalObject).
-        return IsExtensible(this.realm,globalObject);
+        return IsExtensible(this.realm, globalObject);
     }
 
     // ES6 Section 8.1.1.4.16: CanDeclareGlobalFunction (N)
@@ -1012,14 +1012,14 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 4. Let existingProp be globalObject.[[GetOwnProperty]](N).
         // 5. ReturnIfAbrupt(existingProp).
-        const existingPropComp = globalObject.__GetOwnProperty__(this.realm,new JSString(N));
+        const existingPropComp = globalObject.__GetOwnProperty__(this.realm, new JSString(N));
         if (!(existingPropComp instanceof NormalCompletion))
             return existingPropComp;
         const existingProp = existingPropComp.value;
 
         // 6. If existingProp is undefined, return IsExtensible(globalObject).
         if (existingProp instanceof JSUndefined)
-            return IsExtensible(this.realm,globalObject);
+            return IsExtensible(this.realm, globalObject);
 
         // 7. If existingProp.[[Configurable]] is true, return true.
         if (existingProp.configurable)
@@ -1050,14 +1050,14 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 4. Let hasProperty be HasOwnProperty(globalObject, N).
         // 5. ReturnIfAbrupt(hasProperty).
-        const hasPropertyComp = HasOwnProperty(this.realm,globalObject,new JSString(N));
+        const hasPropertyComp = HasOwnProperty(this.realm, globalObject, new JSString(N));
         if (!(hasPropertyComp instanceof NormalCompletion))
             return hasPropertyComp;
         const hasProperty = hasPropertyComp.value;
 
         // 6. Let extensible be IsExtensible(globalObject).
         // 7. ReturnIfAbrupt(extensible).
-        const extensibleComp = IsExtensible(this.realm,globalObject);
+        const extensibleComp = IsExtensible(this.realm, globalObject);
         if (!(extensibleComp instanceof NormalCompletion))
             return extensibleComp;
         const extensible = extensibleComp.value;
@@ -1066,13 +1066,13 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
         if (!hasProperty && extensible) {
             // a. Let status be ObjRec.CreateMutableBinding(N, D).
             // b. ReturnIfAbrupt(status).
-            const createStatusComp = objRec.CreateMutableBinding(N,D);
+            const createStatusComp = objRec.CreateMutableBinding(N, D);
             if (!(createStatusComp instanceof NormalCompletion))
                 return createStatusComp;
 
             // c. Let status be ObjRec.InitializeBinding(N, undefined).
             // d. ReturnIfAbrupt(status).
-            const initStatusComp = objRec.InitializeBinding(N,new JSUndefined());
+            const initStatusComp = objRec.InitializeBinding(N, new JSUndefined());
             if (!(initStatusComp instanceof NormalCompletion))
                 return initStatusComp;
         }
@@ -1104,7 +1104,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 4. Let existingProp be globalObject.[[GetOwnProperty]](N).
         // 5. ReturnIfAbrupt(existingProp).
-        const existingPropComp = globalObject.__GetOwnProperty__(this.realm,new JSString(N));
+        const existingPropComp = globalObject.__GetOwnProperty__(this.realm, new JSString(N));
         if (!(existingPropComp instanceof NormalCompletion))
             return existingPropComp;
         const existingProp = existingPropComp.value;
@@ -1142,12 +1142,12 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
         // 8. Let status be DefinePropertyOrThrow(globalObject, N, desc).
         // 9. ReturnIfAbrupt(status).
-        const defineStatusComp = DefinePropertyOrThrow(this.realm,globalObject,new JSString(N),desc);
+        const defineStatusComp = DefinePropertyOrThrow(this.realm, globalObject, new JSString(N), desc);
         if (!(defineStatusComp instanceof NormalCompletion))
             return defineStatusComp;
 
         // 10. Let status be Set(globalObject, N, V, false).
-        const setStatusComp = Set(this.realm,globalObject,new JSString(N),V,false);
+        const setStatusComp = Set(this.realm, globalObject, new JSString(N), V, false);
 
         // 11. Record that the binding for N in ObjRec has been initialized.
         // FIXME: Not sure how this statement makes sense in this context, since we don't use
@@ -1189,7 +1189,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
         // 2. Assert: envRec has a binding for N.
         const binding = envRec.bindings.get(N);
         if (binding === undefined)
-            throw new Error("Assertion failure: envRec has a binding for "+N);
+            throw new Error("Assertion failure: envRec has a binding for " + N);
 
         // 3. If the binding for N is an indirect binding, then
         if ((binding.referencedModule !== undefined) && (binding.referencedName !== undefined)) {
@@ -1208,7 +1208,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
             const targetER = targetEnv.record;
 
             // e. Return targetER.GetBindingValue(N2, S).
-            return targetER.GetBindingValue(N2,S);
+            return targetER.GetBindingValue(N2, S);
         }
 
         // 4. If the binding for N in envRec is an uninitialized binding, throw a ReferenceError exception.
@@ -1256,7 +1256,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
 
         // 2. Assert: envRec does not already have a binding for N.
         if (envRec.bindings.contains(N))
-            throw new Error("Assertion failure: envRec does not already have a binding for "+N);
+            throw new Error("Assertion failure: envRec does not already have a binding for " + N);
 
         // 3. Assert: M is a Module Record.
         // (guaranteed by parameter type)
@@ -1275,7 +1275,7 @@ export class ModuleEnvironmentRecord extends DeclarativeEnvironmentRecord {
         });
         binding.referencedModule = M;
         binding.referencedName = N2;
-        envRec.bindings.put(N,binding);
+        envRec.bindings.put(N, binding);
 
         // 6. Return NormalCompletion(empty).
         return new NormalCompletion(undefined);
@@ -1291,7 +1291,7 @@ export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | n
     if (lex === null) {
         // a. Return a value of type Reference whose base value is undefined, whose referenced name
         // is name, and whose strict reference flag is strict.
-        const ref = new UnresolvableReference(new JSString(name),strict);
+        const ref = new UnresolvableReference(new JSString(name), strict);
         return new NormalCompletion(ref);
     }
 
@@ -1309,7 +1309,7 @@ export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | n
     if (exists) {
         // a. Return a value of type Reference whose base value is envRec, whose referenced name is
         // name, and whose strict reference flag is strict.
-        const ref = new EnvironmentReference(envRec,new JSString(name),strict);
+        const ref = new EnvironmentReference(envRec, new JSString(name), strict);
         return new NormalCompletion(ref);
     }
     // 6. Else
@@ -1318,7 +1318,7 @@ export function GetIdentifierReference(realm: Realm, lex: LexicalEnvironment | n
         const outer = lex.outer;
 
         // b. Return GetIdentifierReference(outer, name, strict).
-        return GetIdentifierReference(realm,outer,name,strict);
+        return GetIdentifierReference(realm, outer, name, strict);
     }
 }
 
@@ -1332,7 +1332,7 @@ export function NewDeclarativeEnvironment(realm: Realm, E: LexicalEnvironment | 
 // ES6 Section 8.1.2.3: NewObjectEnvironment (O, E)
 
 export function NewObjectEnvironment(realm: Realm, O: JSObject, E: LexicalEnvironment | null): LexicalEnvironment {
-    const envRec = new ObjectEnvironmentRecord(realm,O);
+    const envRec = new ObjectEnvironmentRecord(realm, O);
     return { record: envRec, outer: E };
 }
 
@@ -1350,21 +1350,21 @@ export function NewFunctionEnvironment(realm: Realm, F: JSFunction, newTarget: J
 
     // 4. Let envRec be a new function Environment Record containing no bindings.
     // Steps 5-10 are done in the FunctionEnvironmentRecord constructor
-    const envRec = new FunctionEnvironmentRecord(realm,F,newTarget);
+    const envRec = new FunctionEnvironmentRecord(realm, F, newTarget);
 
     // 11. Set env’s EnvironmentRecord to be envRec.
     // 12. Set the outer lexical environment reference of env to the value of F’s [[Environment]] internal slot.
     // 13. Return env.
     if (F.environment === undefined) // FIXME: Can this ever happen?
-        return new LexicalEnvironment(envRec,null);
+        return new LexicalEnvironment(envRec, null);
     else
-        return new LexicalEnvironment(envRec,F.environment);
+        return new LexicalEnvironment(envRec, F.environment);
 }
 
 // ES6 Section 8.1.2.5: NewGlobalEnvironment (G)
 
 export function NewGlobalEnvironment(realm: Realm, G: JSObject): LexicalEnvironment {
-    const globalRec = new GlobalEnvironmentRecord(realm,G);
+    const globalRec = new GlobalEnvironmentRecord(realm, G);
     return { record: globalRec, outer: null };
 }
 

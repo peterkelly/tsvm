@@ -23,22 +23,22 @@ export class UnknownType {
 export class GenericMap<T> {
     private readonly contents: { [key: string]: T } = {};
     public get(key: string): T | undefined {
-        const fullKey = "prop_"+key;
+        const fullKey = "prop_" + key;
         if (fullKey in this.contents)
             return this.contents[fullKey];
         else
             return undefined;
     }
     public put(key: string, value: T): void {
-        const fullKey = "prop_"+key;
+        const fullKey = "prop_" + key;
         this.contents[fullKey] = value;
     }
     public contains(key: string): boolean {
-        const fullKey = "prop_"+key;
+        const fullKey = "prop_" + key;
         return (fullKey in this.contents);
     }
     public remove(key: string): void {
-        const fullKey = "prop_"+key;
+        const fullKey = "prop_" + key;
         delete this.contents[fullKey];
     }
 }
@@ -46,22 +46,22 @@ export class GenericMap<T> {
 export class PropertyKeyMap<T> {
     private readonly contents: { [key: string]: T } = {};
     public get(pkey: JSPropertyKey): T | undefined {
-        const fullKey = "prop_"+pkey.stringRep;
+        const fullKey = "prop_" + pkey.stringRep;
         if (fullKey in this.contents)
             return this.contents[fullKey];
         else
             return undefined;
     }
     public put(pkey: JSPropertyKey, value: T): void {
-        const fullKey = "prop_"+pkey.stringRep;
+        const fullKey = "prop_" + pkey.stringRep;
         this.contents[fullKey] = value;
     }
     public contains(pkey: JSPropertyKey): boolean {
-        const fullKey = "prop_"+pkey.stringRep;
+        const fullKey = "prop_" + pkey.stringRep;
         return (fullKey in this.contents);
     }
     public remove(pkey: JSPropertyKey): void {
-        const fullKey = "prop_"+pkey.stringRep;
+        const fullKey = "prop_" + pkey.stringRep;
         delete this.contents[fullKey];
     }
 }
@@ -133,7 +133,7 @@ export class JSString extends JSPropertyKey {
         return ValueType.String;
     }
     public get stringRep(): string {
-        return "string:"+this.stringValue;
+        return "string:" + this.stringValue;
     }
 }
 
@@ -153,7 +153,7 @@ export class JSSymbol extends JSPropertyKey {
         return ValueType.Symbol;
     }
     public get stringRep(): string {
-        return "symbol:"+this.symbolId;
+        return "symbol:" + this.symbolId;
     }
 
     // ES6 Section 6.1.5.1: Well-Known Symbols
@@ -279,59 +279,59 @@ export class JSObject extends JSValue {
     }
 
     public __GetPrototypeOf__(realm: Realm): Completion<JSObject | JSNull> {
-        return realm.ordinaryOps.__GetPrototypeOf__(realm,this);
+        return realm.ordinaryOps.__GetPrototypeOf__(realm, this);
     }
 
     public __SetPrototypeOf__(realm: Realm, V: JSObject | JSNull): Completion<boolean> {
-        return realm.ordinaryOps.__SetPrototypeOf__(realm,this,V);
+        return realm.ordinaryOps.__SetPrototypeOf__(realm, this, V);
     }
 
     public __IsExtensible__(realm: Realm): Completion<boolean> {
-        return realm.ordinaryOps.__IsExtensible__(realm,this);
+        return realm.ordinaryOps.__IsExtensible__(realm, this);
     }
 
     public __PreventExtensions__(realm: Realm): Completion<boolean> {
-        return realm.ordinaryOps.__PreventExtensions__(realm,this);
+        return realm.ordinaryOps.__PreventExtensions__(realm, this);
     }
 
     public __GetOwnProperty__(realm: Realm, P: JSPropertyKey): Completion<JSUndefined | PropertyDescriptor> {
-        return realm.ordinaryOps.__GetOwnProperty__(realm,this,P);
+        return realm.ordinaryOps.__GetOwnProperty__(realm, this, P);
     }
 
     public __HasProperty__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
-        return realm.ordinaryOps.__HasProperty__(realm,this,P);
+        return realm.ordinaryOps.__HasProperty__(realm, this, P);
     }
 
     public __Get__(realm: Realm, P: JSPropertyKey, Receiver: JSValue): Completion<JSValue> {
-        return realm.ordinaryOps.__Get__(realm,this,P,Receiver);
+        return realm.ordinaryOps.__Get__(realm, this, P, Receiver);
     }
 
     public __Set__(realm: Realm, P: JSPropertyKey, V: JSValue, Receiver: JSValue): Completion<boolean> {
-        return realm.ordinaryOps.__Set__(realm,this,P,V,Receiver);
+        return realm.ordinaryOps.__Set__(realm, this, P, V, Receiver);
     }
 
     public __Delete__(realm: Realm, P: JSPropertyKey): Completion<boolean> {
-        return realm.ordinaryOps.__Delete__(realm,this,P);
+        return realm.ordinaryOps.__Delete__(realm, this, P);
     }
 
     public __DefineOwnProperty__(realm: Realm, propertyKey: JSPropertyKey, property: PropertyDescriptor): Completion<boolean> {
-        return realm.ordinaryOps.__DefineOwnProperty__(realm,this,propertyKey,property);
+        return realm.ordinaryOps.__DefineOwnProperty__(realm, this, propertyKey, property);
     }
 
     public __Enumerate__(realm: Realm): Completion<JSObject> {
-        return realm.ordinaryOps.__Enumerate__(realm,this);
+        return realm.ordinaryOps.__Enumerate__(realm, this);
     }
 
     public __OwnPropertyKeys__(realm: Realm): Completion<JSPropertyKey[]> {
-        return realm.ordinaryOps.__OwnPropertyKeys__(realm,this);
+        return realm.ordinaryOps.__OwnPropertyKeys__(realm, this);
     }
 
     public __Call__(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
-        return realm.ordinaryOps.__Call__(realm,this,thisArg,args);
+        return realm.ordinaryOps.__Call__(realm, this, thisArg, args);
     }
 
     public __Construct__(realm: Realm, args: JSValue[], newTarget: JSObject): Completion<JSObject> {
-        return realm.ordinaryOps.__Construct__(realm,this,args,newTarget);
+        return realm.ordinaryOps.__Construct__(realm, this, args, newTarget);
     }
 }
 
@@ -644,7 +644,7 @@ export class SuperReference extends PropertyReference {
     public _type_SuperReference: any;
     public thisValue: JSValue;
     public constructor(base: PropertyReferenceBase, name: JSPropertyKey, strict: boolean) {
-        super(base,name,strict);
+        super(base, name, strict);
         this.thisValue = new JSUndefined();
     }
 }

@@ -41,8 +41,8 @@ export class Grammar {
 
     public define(name: string, fun: Action) {
         if (this.productions[name] != null)
-            throw new Error("Production "+name+" is already defined");
-        this.productions[name] = new ProductionAction(name,fun);
+            throw new Error("Production " + name + " is already defined");
+        this.productions[name] = new ProductionAction(name, fun);
         this.names.push(name);
     }
 
@@ -52,7 +52,7 @@ export class Grammar {
 
     public dump(output: (str: string) => void): void {
         for (const name of this.names)
-            this.productions[name].dump("","",output);
+            this.productions[name].dump("", "", output);
     }
 }
 
@@ -75,18 +75,18 @@ export class Builder {
     }
 
     public get(index: number): any {
-        const pos = this.stack.length-1-index;
+        const pos = this.stack.length - 1 - index;
         if (pos >= 0)
             return this.stack[pos];
         else
-            throw new Error("Attempt to access position "+(this.stack.length-1-index)+" on stack");
+            throw new Error("Attempt to access position " + (this.stack.length - 1 - index) + " on stack");
     }
 
     public getNumber(index: number): number {
         const value = this.get(index);
         if (typeof(value) === "number")
             return value;
-        throw new CastError(value,"number");
+        throw new CastError(value, "number");
     }
 
     public getNode(index: number): any {
@@ -94,7 +94,7 @@ export class Builder {
         if ((value === null) || (value instanceof ASTNode))
             return value;
         else
-            throw new CastError(value,"ASTNode | null");
+            throw new CastError(value, "ASTNode | null");
     }
 
     public getStringNode(index: number): GenericStringNode | null {
@@ -102,7 +102,7 @@ export class Builder {
         if ((value === null) || (value instanceof GenericStringNode))
             return value;
         else
-            throw new CastError(value,"GenericStringNode | null");
+            throw new CastError(value, "GenericStringNode | null");
     }
 
     public getNumberNode(index: number): GenericNumberNode | null {
@@ -110,17 +110,17 @@ export class Builder {
         if ((value === null) || (value instanceof GenericNumberNode))
             return value;
         else
-            throw new CastError(value,"GenericNumberNode | null");
+            throw new CastError(value, "GenericNumberNode | null");
     }
 
     public splice(index: number, value: any): any {
-        const pos = this.stack.length-index-1;
+        const pos = this.stack.length - index - 1;
         if (pos >= 0) {
             this.stack[pos] = value;
-            this.stack.length = pos+1;
+            this.stack.length = pos + 1;
         }
         else {
-            throw new Error("Attempt to set position "+(this.stack.length-1-index)+" on stack");
+            throw new Error("Attempt to set position " + (this.stack.length - 1 - index) + " on stack");
         }
     }
 
@@ -152,8 +152,8 @@ export class Builder {
 
     public assertLengthIs(length: number): void {
         if (this.stack.length !== length)
-            throw new Error("Expected b to have exactly "+length+
-                            " items on the stack; have "+this.stack.length);
+            throw new Error("Expected b to have exactly " + length +
+                            " items on the stack; have " + this.stack.length);
     }
 }
 
@@ -215,12 +215,12 @@ export abstract class Action {
     public stats(): string {
         if (this.started === 0)
             return this.space();
-        const pct = (this.started > 0) ? (Math.round(100*(this.finished/this.started))+"%") : "0%";
-        return leftpad(this.started,7)+" "+leftpad(this.finished,7)+" "+leftpad(pct,4)+"    ";
+        const pct = (this.started > 0) ? (Math.round(100 * (this.finished / this.started)) + "%") : "0%";
+        return leftpad(this.started, 7) + " " + leftpad(this.finished, 7) + " " + leftpad(pct, 4) + "    ";
     }
 
     public space(): string {
-        return leftpad("",PROFILE_WIDTH);
+        return leftpad("", PROFILE_WIDTH);
     }
 
     public abstract equals(other: Action): boolean;
@@ -238,7 +238,7 @@ class ProductionAction extends Action {
     private name: string;
 
     public constructor(name: string, child: Action) {
-        super("["+name+"]",1);
+        super("[" + name + "]", 1);
         this.name = name;
         this.child = child;
     }
@@ -253,21 +253,21 @@ class ProductionAction extends Action {
         b.attempt((): void => {
             const oldLength = b.length;
             this.child.execute(b);
-            b.assertLengthIs(oldLength+1);
+            b.assertLengthIs(oldLength + 1);
             b.getNode(0); // Check that the top of the stack is either a node null
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+"grm.define("+JSON.stringify(this.name)+",\n");
-        this.child.dump(indent+"    ",indent+"    ",output);
+        output(this.stats() + "grm.define(" + JSON.stringify(this.name) + ",\n");
+        this.child.dump(indent + "    ", indent + "    ", output);
         output(");\n\n");
     }
 }
 
 class EmptyAction extends LeafAction {
     public constructor() {
-        super("empty",0);
+        super("empty", 0);
     }
 
     public equals(other: Action): boolean {
@@ -279,7 +279,7 @@ class EmptyAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+indent+"empty");
+        output(this.stats() + indent + "empty");
     }
 }
 
@@ -291,7 +291,7 @@ class NotAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
-        super("not",0);
+        super("not", 0);
         this.child = child;
     }
 
@@ -320,12 +320,12 @@ class NotAction extends Action {
         b.stack.length = length;
 
         if (!hadException)
-            throw new ParseError(b.parser,b.parser.pos,"NOT predicate failed");
+            throw new ParseError(b.parser, b.parser.pos, "NOT predicate failed");
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+indent+"not(");
-        this.child.dump("",indent,output);
+        output(this.stats() + indent + "not(");
+        this.child.dump("", indent, output);
         output(")");
     }
 }
@@ -338,7 +338,7 @@ class RefAction extends Action {
     private name: string;
 
     public constructor(productionName: string) {
-        super("ref",1);
+        super("ref", 1);
         this.name = productionName;
     }
 
@@ -350,12 +350,12 @@ class RefAction extends Action {
     public executeImpl(b: Builder): void {
         const production = b.grammar.lookup(this.name);
         if (production == null)
-            throw new Error("Production "+this.name+" not defined");
+            throw new Error("Production " + this.name + " not defined");
         production.execute(b);
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"ref("+JSON.stringify(this.name)+")");
+        output(this.stats() + prefix + "ref(" + JSON.stringify(this.name) + ")");
     }
 }
 
@@ -368,7 +368,7 @@ class ListAction extends Action {
     private rest: Action;
 
     public constructor(first: Action, rest: Action) {
-        super("list",1);
+        super("list", 1);
         this.first = first;
         this.rest = rest;
     }
@@ -386,7 +386,7 @@ class ListAction extends Action {
             const initialLength = b.stack.length;
 
             this.first.execute(b);
-            b.assertLengthIs(initialLength+1);
+            b.assertLengthIs(initialLength + 1);
             const firstNode = b.getNode(0);
             if (firstNode != null)
                 elements.push(firstNode);
@@ -395,7 +395,7 @@ class ListAction extends Action {
             b.assertLengthIs(initialLength);
             b.repeat(() => {
                 this.rest.execute(b);
-                b.assertLengthIs(initialLength+1);
+                b.assertLengthIs(initialLength + 1);
                 const node = b.get(0);
                 if (node != null)
                     elements.push(node);
@@ -403,35 +403,35 @@ class ListAction extends Action {
                 b.assertLengthIs(initialLength);
             });
             b.assertLengthIs(initialLength);
-            const end = (elements.length > 0) ? elements[elements.length-1].range.end : start;
-            b.push(new ListNode(new Range(start,end),elements));
+            const end = (elements.length > 0) ? elements[elements.length - 1].range.end : start;
+            b.push(new ListNode(new Range(start, end), elements));
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"list(\n");
-        this.first.dump(indent+"    ",indent+"    ",output);
+        output(this.stats() + prefix + "list(\n");
+        this.first.dump(indent + "    ", indent + "    ", output);
         output(",\n");
-        this.rest.dump(indent+"    ",indent+"    ",output);
-        output("\n"+this.space()+indent+")");
+        this.rest.dump(indent + "    ", indent + "    ", output);
+        output("\n" + this.space() + indent + ")");
     }
 }
 
 export function list(first: Action, rest: Action): Action {
-    return new ListAction(first,rest);
+    return new ListAction(first, rest);
 }
 
 class SequenceAction extends Action {
     private actions: Action[];
 
     public constructor(actions: Action[]) {
-        super("sequence",actionsTotalOffset(actions));
+        super("sequence", actionsTotalOffset(actions));
         this.actions = actions;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof SequenceAction) &&
-                actionArrayEquals(this.actions,other.actions));
+                actionArrayEquals(this.actions, other.actions));
     }
 
     public executeImpl(b: Builder): void {
@@ -440,12 +440,12 @@ class SequenceAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"sequence([\n");
+        output(this.stats() + prefix + "sequence([\n");
         for (const act of this.actions) {
-            act.dump(indent+"    ",indent+"    ",output);
+            act.dump(indent + "    ", indent + "    ", output);
             output(",\n");
         }
-        output(this.space()+indent+"])");
+        output(this.space() + indent + "])");
     }
 }
 
@@ -457,7 +457,7 @@ class SpliceNullAction extends LeafAction {
     private index: number;
 
     public constructor(index: number) {
-        super("spliceNull",-index);
+        super("spliceNull", -index);
         this.index = index;
     }
 
@@ -467,11 +467,11 @@ class SpliceNullAction extends LeafAction {
     }
 
     public executeImpl(b: Builder): void {
-        b.splice(this.index,null);
+        b.splice(this.index, null);
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"spliceNull("+this.index+")");
+        output(this.stats() + prefix + "spliceNull(" + this.index + ")");
     }
 }
 
@@ -484,7 +484,7 @@ class SpliceReplaceAction extends LeafAction {
     private srcIndex: number;
 
     public constructor(index: number, srcIndex: number) {
-        super("spliceReplace",-index);
+        super("spliceReplace", -index);
         this.index = index;
         this.srcIndex = srcIndex;
     }
@@ -496,16 +496,16 @@ class SpliceReplaceAction extends LeafAction {
     }
 
     public executeImpl(b: Builder): void {
-        b.splice(this.index,b.get(this.srcIndex));
+        b.splice(this.index, b.get(this.srcIndex));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"spliceReplace("+this.index+","+this.srcIndex+")");
+        output(this.stats() + prefix + "spliceReplace(" + this.index + "," + this.srcIndex + ")");
     }
 }
 
 export function spliceReplace(index: number, srcIndex: number): Action {
-    return new SpliceReplaceAction(index,srcIndex);
+    return new SpliceReplaceAction(index, srcIndex);
 }
 
 class SpliceNodeAction extends LeafAction {
@@ -516,7 +516,7 @@ class SpliceNodeAction extends LeafAction {
     private childIndices: number[];
 
     public constructor(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]) {
-        super("spliceNode",-index);
+        super("spliceNode", -index);
         this.index = index;
         this.name = name;
         this.startIndex = startIndex;
@@ -530,7 +530,7 @@ class SpliceNodeAction extends LeafAction {
                 (this.name === other.name) &&
                 (this.startIndex === other.startIndex) &&
                 (this.endIndex === other.endIndex) &&
-                numberArrayEquals(this.childIndices,other.childIndices));
+                numberArrayEquals(this.childIndices, other.childIndices));
     }
 
     public executeImpl(b: Builder): void {
@@ -540,26 +540,26 @@ class SpliceNodeAction extends LeafAction {
         for (const childIndex of this.childIndices) {
             children.push(b.getNode(childIndex));
         }
-        b.splice(this.index,new GenericNode(new Range(start,end),this.name,children));
+        b.splice(this.index, new GenericNode(new Range(start, end), this.name, children));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
-            this.stats()+
-            prefix+
-            "spliceNode("+
-            this.index+","+
-            JSON.stringify(this.name)+","+
-            this.startIndex+","+
-            this.endIndex+","+
-            "["+this.childIndices.map((n: number) => n.toString()).join(",")+"]"+
+            this.stats() +
+            prefix +
+            "spliceNode(" +
+            this.index + "," +
+            JSON.stringify(this.name) + "," +
+            this.startIndex + "," +
+            this.endIndex + "," +
+            "[" + this.childIndices.map((n: number) => n.toString()).join(",") + "]" +
             ")"
         );
     }
 }
 
 export function spliceNode(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]): Action {
-    return new SpliceNodeAction(index,name,startIndex,endIndex,childIndices);
+    return new SpliceNodeAction(index, name, startIndex, endIndex, childIndices);
 }
 
 class SpliceStringNodeAction extends LeafAction {
@@ -570,7 +570,7 @@ class SpliceStringNodeAction extends LeafAction {
     private valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
-        super("spliceStringNode",-index);
+        super("spliceStringNode", -index);
         this.index = index;
         this.nodeName = nodeName;
         this.startIndex = startIndex;
@@ -589,28 +589,28 @@ class SpliceStringNodeAction extends LeafAction {
     public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
-        const range = new Range(start,end);
+        const range = new Range(start, end);
         const valueNode = b.getStringNode(this.valueIndex);
         if (valueNode == null)
-            b.splice(this.index,null);
+            b.splice(this.index, null);
         else
-            b.splice(this.index,new GenericStringNode(range,this.nodeName,valueNode.value));
+            b.splice(this.index, new GenericStringNode(range, this.nodeName, valueNode.value));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
-            this.stats()+
-            prefix+"spliceStringNode("+this.index+","+
-            JSON.stringify(this.nodeName)+","+
-            this.startIndex+","+
-            this.endIndex+","+
-            this.valueIndex+")"
+            this.stats() +
+            prefix + "spliceStringNode(" + this.index + "," +
+            JSON.stringify(this.nodeName) + "," +
+            this.startIndex + "," +
+            this.endIndex + "," +
+            this.valueIndex + ")"
         );
     }
 }
 
 export function spliceStringNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): Action {
-    return new SpliceStringNodeAction(index,name,startIndex,endIndex,valueIndex);
+    return new SpliceStringNodeAction(index, name, startIndex, endIndex, valueIndex);
 }
 
 class SpliceNumberNodeAction extends LeafAction {
@@ -621,7 +621,7 @@ class SpliceNumberNodeAction extends LeafAction {
     private valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
-        super("spliceNumberNode",-index);
+        super("spliceNumberNode", -index);
         this.index = index;
         this.nodeName = nodeName;
         this.startIndex = startIndex;
@@ -640,28 +640,28 @@ class SpliceNumberNodeAction extends LeafAction {
     public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
-        const range = new Range(start,end);
+        const range = new Range(start, end);
         const valueNode = b.getNumberNode(this.valueIndex);
         if (valueNode == null)
-            b.splice(this.index,null);
+            b.splice(this.index, null);
         else
-            b.splice(this.index,new GenericNumberNode(range,this.nodeName,valueNode.value));
+            b.splice(this.index, new GenericNumberNode(range, this.nodeName, valueNode.value));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
         output(
-            this.stats()+
-            prefix+"spliceNumberNode("+this.index+","+
-            JSON.stringify(this.nodeName)+","+
-            this.startIndex+","+
-            this.endIndex+","+
-            this.valueIndex+")"
+            this.stats() +
+            prefix + "spliceNumberNode(" + this.index + "," +
+            JSON.stringify(this.nodeName) + "," +
+            this.startIndex + "," +
+            this.endIndex + "," +
+            this.valueIndex + ")"
         );
     }
 }
 
 export function spliceNumberNode(index: number, name: string, startIndex: number, endIndex: number, valueIndex: number): Action {
-    return new SpliceNumberNodeAction(index,name,startIndex,endIndex,valueIndex);
+    return new SpliceNumberNodeAction(index, name, startIndex, endIndex, valueIndex);
 }
 
 class SpliceEmptyListNodeAction extends LeafAction {
@@ -670,7 +670,7 @@ class SpliceEmptyListNodeAction extends LeafAction {
     private endIndex: number;
 
     public constructor(index: number, startIndex: number, endIndex: number) {
-        super("spliceEmptyListNode",-index);
+        super("spliceEmptyListNode", -index);
         this.index = index;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -685,21 +685,21 @@ class SpliceEmptyListNodeAction extends LeafAction {
     public executeImpl(b: Builder): void {
         const start = b.getNumber(this.startIndex);
         const end = b.getNumber(this.endIndex);
-        b.splice(this.index,new ListNode(new Range(start,end),[]));
+        b.splice(this.index, new ListNode(new Range(start, end), []));
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"spliceEmptyListNode("+this.index+","+this.startIndex+","+this.endIndex+")");
+        output(this.stats() + prefix + "spliceEmptyListNode(" + this.index + "," + this.startIndex + "," + this.endIndex + ")");
     }
 }
 
 export function spliceEmptyListNode(index: number, startIndex: number, endIndex: number): Action {
-    return new SpliceEmptyListNodeAction(index,startIndex,endIndex);
+    return new SpliceEmptyListNodeAction(index, startIndex, endIndex);
 }
 
 class PopAction extends LeafAction {
     public constructor() {
-        super("pop",-1);
+        super("pop", -1);
     }
 
     public equals(other: Action): boolean {
@@ -713,7 +713,7 @@ class PopAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"pop");
+        output(this.stats() + prefix + "pop");
     }
 }
 
@@ -725,7 +725,7 @@ class OptAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
-        super("opt",1);
+        super("opt", 1);
         this.child = child;
     }
 
@@ -740,7 +740,7 @@ class OptAction extends Action {
             b.attempt(() => {
                 const oldLength = b.stack.length;
                 this.child.execute(b);
-                b.assertLengthIs(oldLength+1);
+                b.assertLengthIs(oldLength + 1);
             });
         }
         catch (e) {
@@ -751,8 +751,8 @@ class OptAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+indent+"opt(");
-        this.child.dump("",indent,output);
+        output(this.stats() + indent + "opt(");
+        this.child.dump("", indent, output);
         output(")");
     }
 }
@@ -765,13 +765,13 @@ class ChoiceAction extends Action {
     private actions: Action[];
 
     public constructor(actions: Action[]) {
-        super("choice",actionsSameOffset(actions));
+        super("choice", actionsSameOffset(actions));
         this.actions = actions;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof ChoiceAction) &&
-                actionArrayEquals(this.actions,other.actions));
+                actionArrayEquals(this.actions, other.actions));
     }
 
     public executeImpl(b: Builder): void {
@@ -789,16 +789,16 @@ class ChoiceAction extends Action {
                 b.stack.length = length;
             }
         }
-        throw new ParseError(b.parser,b.parser.pos,"No valid alternative found");
+        throw new ParseError(b.parser, b.parser.pos, "No valid alternative found");
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"choice([\n");
+        output(this.stats() + prefix + "choice([\n");
         for (const act of this.actions) {
-            act.dump(indent+"    ",indent+"    ",output);
+            act.dump(indent + "    ", indent + "    ", output);
             output(",\n");
         }
-        output(this.stats()+indent+"])");
+        output(this.stats() + indent + "])");
     }
 }
 
@@ -810,7 +810,7 @@ class RepeatAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
-        super("repeat",0);
+        super("repeat", 0);
         this.child = child;
     }
 
@@ -826,8 +826,8 @@ class RepeatAction extends Action {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+indent+"repeat(");
-        this.child.dump("",indent,output);
+        output(this.stats() + indent + "repeat(");
+        this.child.dump("", indent, output);
         output(")");
     }
 }
@@ -838,7 +838,7 @@ export function repeat(f: Action): Action {
 
 class PosAction extends LeafAction {
     public constructor() {
-        super("pos",1);
+        super("pos", 1);
     }
 
     public equals(other: Action): boolean {
@@ -850,7 +850,7 @@ class PosAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"pos");
+        output(this.stats() + prefix + "pos");
     }
 }
 
@@ -862,7 +862,7 @@ class ValueAction extends LeafAction {
     private value: any;
 
     public constructor(value: any) {
-        super("value",1);
+        super("value", 1);
         this.value = value;
     }
 
@@ -876,7 +876,7 @@ class ValueAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"value("+JSON.stringify(this.value)+")");
+        output(this.stats() + prefix + "value(" + JSON.stringify(this.value) + ")");
     }
 }
 
@@ -888,7 +888,7 @@ class KeywordAction extends LeafAction {
     private str: string;
 
     public constructor(str: string) {
-        super("keyword",1);
+        super("keyword", 1);
         this.str = str;
     }
 
@@ -902,13 +902,13 @@ class KeywordAction extends LeafAction {
         p.attempt((start) => {
             const token = p.nextToken();
             if ((token === null) || (token.value !== this.str))
-                throw new ParseError(b.parser,b.parser.pos,"Expected "+this.str);
+                throw new ParseError(b.parser, b.parser.pos, "Expected " + this.str);
             b.push(null);
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"keyword("+JSON.stringify(this.str)+")");
+        output(this.stats() + prefix + "keyword(" + JSON.stringify(this.str) + ")");
     }
 }
 
@@ -920,7 +920,7 @@ class IdentifierAction extends LeafAction {
     private str: string;
 
     public constructor(str: string) {
-        super("identifier",1);
+        super("identifier", 1);
         this.str = str;
     }
 
@@ -934,16 +934,16 @@ class IdentifierAction extends LeafAction {
             const oldLength = b.stack.length;
             const start = b.parser.pos;
             ref("Identifier").execute(b);
-            b.assertLengthIs(oldLength+1);
+            b.assertLengthIs(oldLength + 1);
             const ident = b.getNode(0);
             if (!(ident instanceof GenericStringNode) || (ident.value !== this.str))
-                throw new ParseError(b.parser,start,"Expected "+this.str);
+                throw new ParseError(b.parser, start, "Expected " + this.str);
             // Identifier_b will already have pushed onto the stack
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"identifier("+JSON.stringify(this.str)+")");
+        output(this.stats() + prefix + "identifier(" + JSON.stringify(this.str) + ")");
     }
 }
 
@@ -953,7 +953,7 @@ export function identifier(str: string): Action {
 
 class WhitespaceAction extends LeafAction {
     public constructor() {
-        super("whitespace",1);
+        super("whitespace", 1);
     }
 
     public equals(other: Action): boolean {
@@ -966,7 +966,7 @@ class WhitespaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"whitespace");
+        output(this.stats() + prefix + "whitespace");
     }
 }
 
@@ -976,7 +976,7 @@ export function whitespace(): Action {
 
 class WhitespaceNoNewlineAction extends LeafAction {
     public constructor() {
-        super("whitespaceNoNewline",1);
+        super("whitespaceNoNewline", 1);
     }
 
     public equals(other: Action): boolean {
@@ -989,7 +989,7 @@ class WhitespaceNoNewlineAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"whitespaceNoNewline");
+        output(this.stats() + prefix + "whitespaceNoNewline");
     }
 }
 
@@ -999,7 +999,7 @@ export function whitespaceNoNewline(): Action {
 
 class IdentifierTokenAction extends LeafAction {
     public constructor() {
-        super("identifier_token",1);
+        super("identifier_token", 1);
     }
 
     public equals(other: Action): boolean {
@@ -1011,13 +1011,13 @@ class IdentifierTokenAction extends LeafAction {
         p.attempt((start) => {
             const token = p.nextToken();
             if ((token == null) || (token.kind !== TokenKind.IDENT))
-                throw new ParseError(b.parser,b.parser.pos,"Expected identifier");
-            b.push(new GenericStringNode(token.range,"Identifier",token.value));
+                throw new ParseError(b.parser, b.parser.pos, "Expected identifier");
+            b.push(new GenericStringNode(token.range, "Identifier", token.value));
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"identifier_token");
+        output(this.stats() + prefix + "identifier_token");
     }
 }
 
@@ -1027,7 +1027,7 @@ export function identifier_token(): Action {
 
 class NumericLiteralTokenAction extends LeafAction {
     public constructor() {
-        super("numeric_literal_token",1);
+        super("numeric_literal_token", 1);
     }
 
     public equals(other: Action): boolean {
@@ -1039,14 +1039,14 @@ class NumericLiteralTokenAction extends LeafAction {
         p.attempt((start) => {
             const token = p.nextToken();
             if ((token == null) || (token.kind !== TokenKind.NUMBER))
-                throw new ParseError(b.parser,b.parser.pos,"Expected number");
+                throw new ParseError(b.parser, b.parser.pos, "Expected number");
             const numericValue = parseFloat(token.value);
-            b.push(new GenericNumberNode(token.range,"NumericLiteral",numericValue));
+            b.push(new GenericNumberNode(token.range, "NumericLiteral", numericValue));
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"numeric_literal_token");
+        output(this.stats() + prefix + "numeric_literal_token");
     }
 }
 
@@ -1056,7 +1056,7 @@ export function numeric_literal_token(): Action {
 
 class StringLiteralTokenAction extends LeafAction {
     public constructor() {
-        super("string_literal_token",1);
+        super("string_literal_token", 1);
     }
 
     public equals(other: Action): boolean {
@@ -1068,13 +1068,13 @@ class StringLiteralTokenAction extends LeafAction {
         p.attempt((start) => {
             const token = p.nextToken();
             if ((token == null) || (token.kind !== TokenKind.STRING))
-                throw new ParseError(b.parser,b.parser.pos,"Expected string");
-            b.push(new GenericStringNode(token.range,"StringLiteral",token.value,true));
+                throw new ParseError(b.parser, b.parser.pos, "Expected string");
+            b.push(new GenericStringNode(token.range, "StringLiteral", token.value, true));
         });
     }
 
     public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats()+prefix+"string_literal_token");
+        output(this.stats() + prefix + "string_literal_token");
     }
 }
 

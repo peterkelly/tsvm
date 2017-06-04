@@ -76,20 +76,20 @@ function Object_prototype_hasOwnProperty(realm: Realm, thisArg: JSValue, args: J
 
     // 1. Let P be ToPropertyKey(V).
     // 2. ReturnIfAbrupt(P).
-    const PComp = ToPropertyKey(realm,V);
+    const PComp = ToPropertyKey(realm, V);
     if (!(PComp instanceof NormalCompletion))
         return PComp;
     const P = PComp.value;
 
     // 3. Let O be ToObject(this value).
     // 4. ReturnIfAbrupt(O).
-    const OComp = ToObject(realm,thisArg);
+    const OComp = ToObject(realm, thisArg);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
 
     // 5. Return HasOwnProperty(O, P).
-    const resultComp = HasOwnProperty(realm,O,P);
+    const resultComp = HasOwnProperty(realm, O, P);
     if (!(resultComp instanceof NormalCompletion))
         return resultComp;
     const result = resultComp.value;
@@ -108,7 +108,7 @@ function Object_prototype_isPrototypeOf(realm: Realm, thisArg: JSValue, args: JS
 
     // 2. Let O be ToObject(this value).
     // 3. ReturnIfAbrupt(O).
-    const OComp = ToObject(realm,thisArg);
+    const OComp = ToObject(realm, thisArg);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
@@ -126,7 +126,7 @@ function Object_prototype_isPrototypeOf(realm: Realm, thisArg: JSValue, args: JS
             return new NormalCompletion(new JSBoolean(false));
 
         // c. If SameValue(O, V) is true, return true.
-        if (SameValue(O,V2))
+        if (SameValue(O, V2))
             return new NormalCompletion(new JSBoolean(true));
     }
 }
@@ -138,21 +138,21 @@ function Object_prototype_propertyIsEnumerable(realm: Realm, thisArg: JSValue, a
 
     // 1. Let P be ToPropertyKey(V).
     // 2. ReturnIfAbrupt(P).
-    const PComp = ToPropertyKey(realm,V);
+    const PComp = ToPropertyKey(realm, V);
     if (!(PComp instanceof NormalCompletion))
         return PComp;
     const P = PComp.value;
 
     // 3. Let O be ToObject(this value).
     // 4. ReturnIfAbrupt(O).
-    const OComp = ToObject(realm,this.value);
+    const OComp = ToObject(realm, this.value);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
 
     // 5. Let desc be O.[[GetOwnProperty]](P).
     // 6. ReturnIfAbrupt(desc).
-    const descComp = O.__GetOwnProperty__(realm,P);
+    const descComp = O.__GetOwnProperty__(realm, P);
     if (!(descComp instanceof NormalCompletion))
         return descComp;
     const desc = descComp.value;
@@ -172,13 +172,13 @@ function Object_prototype_toLocaleString(realm: Realm, thisArg: JSValue, args: J
     // on a non-object. So let's just try to convert the value to an object if it isn't already one.
 
     // 1. Let O be the this value.
-    const OComp = ToObject(realm,thisArg);
+    const OComp = ToObject(realm, thisArg);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
 
     // 2. Return Invoke(O, "toString").
-    return Invoke(realm,O,new JSString("toString"),[]);
+    return Invoke(realm, O, new JSString("toString"), []);
 }
 
 // ES6 Section 19.1.3.6: Object.prototype.toString ( )
@@ -194,14 +194,14 @@ function Object_prototype_toString(realm: Realm, thisArg: JSValue, args: JSValue
         return new NormalCompletion(new JSString("[object Null]"));
 
     // 3. Let O be ToObject(this value).
-    const OComp = ToObject(realm,thisArg);
+    const OComp = ToObject(realm, thisArg);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
 
     // 4. Let isArray be IsArray(O).
     // 5. ReturnIfAbrupt(isArray).
-    const isArrayComp = IsArray(realm,O);
+    const isArrayComp = IsArray(realm, O);
     if (!(isArrayComp instanceof NormalCompletion))
         return isArrayComp;
     const isArray = isArrayComp.value;
@@ -250,7 +250,7 @@ function Object_prototype_toString(realm: Realm, thisArg: JSValue, args: JSValue
 
     // 16. Let tag be Get (O, @@toStringTag).
     // 17. ReturnIfAbrupt(tag).
-    const tagComp = Get(realm,O,JSSymbol.$$toStringTag);
+    const tagComp = Get(realm, O, JSSymbol.$$toStringTag);
     if (!(tagComp instanceof NormalCompletion))
         return tagComp;
     const tag = tagComp.value;
@@ -263,12 +263,12 @@ function Object_prototype_toString(realm: Realm, thisArg: JSValue, args: JSValue
         tagStr = builtinTag;
 
     // 19. Return the String that is the result of concatenating "[object ", tag, and "]".
-    return new NormalCompletion(new JSString("[object "+tagStr+"]"));
+    return new NormalCompletion(new JSString("[object " + tagStr + "]"));
 }
 
 // ES6 Section 19.1.3.7: Object.prototype.valueOf ( )
 
 function Object_prototype_valueOf(realm: Realm, thisArg: JSValue, args: JSValue[]): Completion<JSValue> {
     // 1. Return ToObject(this value).
-    return ToObject(realm,thisArg);
+    return ToObject(realm, thisArg);
 }
