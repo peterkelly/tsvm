@@ -102,10 +102,10 @@ class ErrorToStringFunction extends JSObject {
         console.log("ErrorToStringFunction: nameStr = "+JSON.stringify(nameStr.stringValue)+
                     ", msgStr = "+JSON.stringify(msgStr.stringValue));
 
-        if (nameStr.stringValue.length == 0)
+        if (nameStr.stringValue.length === 0)
             return new NormalCompletion(msgStr);
 
-        if (msgStr.stringValue.length == 0)
+        if (msgStr.stringValue.length === 0)
             return new NormalCompletion(nameStr);
 
         const combined = nameStr.stringValue+": "+msgStr.stringValue;

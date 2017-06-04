@@ -137,10 +137,10 @@ function splitTestData(content: string): TestData {
     const outputLines: string[] = [];
     for (let i = 0; i < lines.length; i++) {
         // console.log("Line "+i+": "+JSON.stringify(lines[i]));
-        if (lines[i] == OUTPUT_START) {
+        if (lines[i] === OUTPUT_START) {
             inOutput = true;
         }
-        else if (lines[i] == OUTPUT_END) {
+        else if (lines[i] === OUTPUT_END) {
             inOutput = false;
         }
         else if (inOutput) {
@@ -150,9 +150,9 @@ function splitTestData(content: string): TestData {
             inputLines.push(lines[i]);
         }
     }
-    while ((inputLines.length > 0) && (inputLines[inputLines.length-1] == ""))
+    while ((inputLines.length > 0) && (inputLines[inputLines.length-1] === ""))
         inputLines.length--;
-    while ((outputLines.length > 0) && (outputLines[outputLines.length-1] == ""))
+    while ((outputLines.length > 0) && (outputLines[outputLines.length-1] === ""))
         outputLines.length--;
 
     let command: string = "";
@@ -160,7 +160,7 @@ function splitTestData(content: string): TestData {
         command = outputLines[0];
         outputLines.splice(0,1);
     }
-    if ((outputLines.length > 0) && (outputLines[0] == ""))
+    if ((outputLines.length > 0) && (outputLines[0] === ""))
         outputLines.splice(0,1);
 
     return {
@@ -196,7 +196,7 @@ function checkTest(relPath: string, content: string): boolean {
         if (fun == null)
             throw new Error("Unknown command "+JSON.stringify(command));
         const actual = fun(input);
-        const pass = (actual == expected);
+        const pass = (actual === expected);
         if (pass) {
             console.log(leftpad(relPath,60)+"PASS");
             return true;
@@ -382,17 +382,17 @@ function main(): void {
     const argv = process.argv;
     const argc = process.argv.length;
 
-    if ((process.argv.length == 4) && (process.argv[2] == "runtests")) {
+    if ((process.argv.length === 4) && (process.argv[2] === "runtests")) {
         runtests(process.argv[3]);
     }
-    else if ((i < argc) && (argv[i] == "grammar")) {
+    else if ((i < argc) && (argv[i] === "grammar")) {
         printGrammar();
     }
-    else if ((i < argc) && (argv[i] == "execute")) {
+    else if ((i < argc) && (argv[i] === "execute")) {
         i++;
         execute(argv[i]);
     }
-    else if ((i < argc) && (argv[i] == "gentest")) {
+    else if ((i < argc) && (argv[i] === "gentest")) {
         i++;
 
         let command: string = "";
@@ -400,20 +400,20 @@ function main(): void {
         let write: boolean = false;
 
         for (; i < argc; i++) {
-            if (argv[i] == "-w")
+            if (argv[i] === "-w")
                 write = true;
-            else if (command == "")
+            else if (command === "")
                 command = argv[i];
-            else if (filename == "")
+            else if (filename === "")
                 filename = argv[i];
         }
 
-        if ((command == "") || (filename == ""))
+        if ((command === "") || (filename === ""))
             showUsageAndExit();
 
         genTest(command,filename,write);
     }
-    else if ((i < argc) && (argv[i] == "perftest")) {
+    else if ((i < argc) && (argv[i] === "perftest")) {
         perftest();
     }
     else {

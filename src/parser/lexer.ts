@@ -112,7 +112,7 @@ function stringArrayMaxLength(array: string[]): number {
 export function isIdStart(c: string): boolean {
     return (((c >= "A") && (c <= "Z")) ||
             ((c >= "a") && (c <= "z")) ||
-            (c == "_"));
+            (c === "_"));
 }
 
 export function isIdChar(c: string): boolean {
@@ -161,9 +161,9 @@ export function lexNumber(p: Parser): Token | null {
         p.next();
         current = p.current();
     }
-    if (p.pos == start)
+    if (p.pos === start)
         return null;
-    if (p.current() == ".") {
+    if (p.current() === ".") {
         p.next();
         const postDecimal = p.pos;
         current = p.current();
@@ -171,7 +171,7 @@ export function lexNumber(p: Parser): Token | null {
             p.next();
             current = p.current();
         }
-        if (p.pos == postDecimal) {
+        if (p.pos === postDecimal) {
             p.pos = start;
             throw new ParseError(p,p.pos,"Invalid number");
         }
@@ -183,24 +183,24 @@ export function lexNumber(p: Parser): Token | null {
 export function lexString(p: Parser): Token | null {
     // TODO: Complete string literal syntax according to spec
     const start = p.pos;
-    if ((p.current() == "\"") || (p.current() == "'")) {
+    if ((p.current() === "\"") || (p.current() === "'")) {
         const quote = p.current();
         p.next();
         let value = "";
         while (true) {
-            if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "\"")) {
+            if ((p.pos+1 < p.len) && (p.text[p.pos] === "\\") && (p.text[p.pos+1] === "\"")) {
                 value += "\"";
                 p.pos += 2;
             }
-            else if ((p.pos+1 < p.len) && (p.text[p.pos] == "\\") && (p.text[p.pos+1] == "'")) {
+            else if ((p.pos+1 < p.len) && (p.text[p.pos] === "\\") && (p.text[p.pos+1] === "'")) {
                 value += "'";
                 p.pos += 2;
             }
-            else if ((p.pos < p.len) && (p.text[p.pos] == "\"") && (quote == "\"")) {
+            else if ((p.pos < p.len) && (p.text[p.pos] === "\"") && (quote === "\"")) {
                 p.pos++;
                 break;
             }
-            else if ((p.pos < p.len) && (p.text[p.pos] == "'") && (quote == "'")) {
+            else if ((p.pos < p.len) && (p.text[p.pos] === "'") && (quote === "'")) {
                 p.pos++;
                 break;
             }

@@ -539,7 +539,7 @@ export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
         this.functionObject = F;
 
         // 6. If F’s [[ThisMode]] internal slot is lexical, set envRec.[[thisBindingStatus]] to "lexical".
-        if (F.thisMode == ThisMode.Lexical)
+        if (F.thisMode === ThisMode.Lexical)
             this.thisBindingStatus = BindingStatus.Lexical;
 
         // 7. Else, Set envRec.[[thisBindingStatus]] to "uninitialized".

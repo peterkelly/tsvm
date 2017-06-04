@@ -87,7 +87,7 @@ export function ToPrimitive(realm: Realm, input: JSValue | Completion<JSValue>, 
         hint = new JSString("default");
     }
     // 2. Else if PreferredType is hint String, let hint be "string".
-    else if (preferredType == ValueType.String) {
+    else if (preferredType === ValueType.String) {
         hint = new JSString("string");
     }
     // 3. Else PreferredType is hint Number, let hint be "number".
@@ -200,7 +200,7 @@ export function ToBoolean(realm: Realm, argument: JSValue | Completion<JSValue>)
             return new NormalCompletion(new JSBoolean(true));
     }
     if (argument instanceof JSString) {
-        const result = (argument.stringValue.length == 0);
+        const result = (argument.stringValue.length === 0);
         return new NormalCompletion(new JSBoolean(result));
     }
     if (argument instanceof JSSymbol)
