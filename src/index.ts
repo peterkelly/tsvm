@@ -127,7 +127,7 @@ const commands: CommandSet = {
         return outputLines.join("\n");
     }
 
-}
+};
 
 function splitTestData(content: string): TestData {
     const lines = content.split("\n");

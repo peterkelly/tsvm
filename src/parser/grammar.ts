@@ -554,7 +554,7 @@ class SpliceNodeAction extends LeafAction {
             this.endIndex+","+
             "["+this.childIndices.map((n: number) => n.toString()).join(",")+"]"+
             ")"
-        )
+        );
     }
 }
 

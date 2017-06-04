@@ -10,6 +10,7 @@
         "new-parens": true,
         "no-trailing-whitespace": true,
         "one-line": [true, "check-open-brace", "check-whitespace"],
+        "semicolon": [true, "always"],
         "space-before-function-paren": [true, "never"]
     },
     "rulesDirectory": []

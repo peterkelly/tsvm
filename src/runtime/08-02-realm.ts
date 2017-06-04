@@ -134,7 +134,7 @@ export function CreateIntrinsics(): Intrinsics {
     const FunctionPrototype = bi.createFunctionPrototype(ObjectPrototype);
     const ThrowTypeError = bi.createThrowTypeErrorFunction(FunctionPrototype);
 
-    const IteratorPrototype = bi.createIteratorPrototype(ObjectPrototype)
+    const IteratorPrototype = bi.createIteratorPrototype(ObjectPrototype);
     const ErrorPrototype = bi.createErrorPrototype(ObjectPrototype);
     const TypedArrayPrototype = bi.createTypedArrayPrototype(ObjectPrototype);
 

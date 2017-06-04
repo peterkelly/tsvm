@@ -2472,7 +2472,7 @@ export abstract class CaseBlockNode extends ASTNode {
                 throw new CannotConvertError("CaseBlockNode",node);
         }
     }
-};
+}
 
 export class CaseBlock1Node extends CaseBlockNode {
     public _type_CaseBlock1Node: any;

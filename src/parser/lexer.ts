@@ -177,7 +177,7 @@ export function lexNumber(p: Parser): Token | null {
         }
     }
     const stringValue = p.text.substring(start,p.pos);
-    return new Token(new Range(start,p.pos),TokenKind.NUMBER,stringValue)
+    return new Token(new Range(start,p.pos),TokenKind.NUMBER,stringValue);
 }
 
 export function lexString(p: Parser): Token | null {
