@@ -658,8 +658,8 @@ export class DataBlock {
 // ES6 Section 8.1: Lexical Environments
 
 export class LexicalEnvironment {
-    record: EnvironmentRecord;
-    outer: LexicalEnvironment | null;
+    public record: EnvironmentRecord;
+    public outer: LexicalEnvironment | null;
 
     public constructor(record: EnvironmentRecord, outer: LexicalEnvironment | null) {
         this.record = record;
