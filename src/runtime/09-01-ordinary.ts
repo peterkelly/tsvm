@@ -265,7 +265,7 @@ export function ValidateAndApplyPropertyDescriptor(
                     enumerable: current.enumerable,
                     __get__: (Desc.__get__ !== undefined) ? Desc.__get__ : new JSUndefined(),
                     __set__: (Desc.__set__ !== undefined) ? Desc.__set__ : new JSUndefined(),
-                }))
+                }));
             }
         }
         // c. Else,
@@ -541,4 +541,4 @@ export const ordinaryObjectOperations: ObjectOperations = {
     __OwnPropertyKeys__: JSObject_OwnPropertyKeys,
     __Call__: JSObject_Call,
     __Construct__: JSObject_Construct,
-}
+};
