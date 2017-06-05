@@ -268,11 +268,12 @@ export abstract class LeafAction extends Action {
     public visitChildren(v: Visitor): Action {
         return this;
     }
+    public abstract shortString(): string;
 }
 
 export class ProductionAction extends Action {
-    private child: Action;
-    private name: string;
+    public child: Action;
+    public name: string;
 
     public constructor(name: string, child: Action) {
         super("[" + name + "]", 1);
@@ -321,7 +322,11 @@ export class EmptyAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + indent + "empty()");
+        output.write(this.stats(output) + indent + this.shortString());
+    }
+
+    public shortString(): string {
+        return "empty()";
     }
 }
 
@@ -330,7 +335,7 @@ export function empty(): Action {
 }
 
 export class NotAction extends Action {
-    private child: Action;
+    public child: Action;
 
     public constructor(child: Action) {
         super("not", 0);
@@ -382,7 +387,7 @@ export function not(f: Action): Action {
 }
 
 export class RefAction extends Action {
-    private name: string;
+    public name: string;
 
     public constructor(productionName: string) {
         super("ref", 1);
@@ -415,8 +420,8 @@ export function ref(name: string): Action {
 }
 
 export class ListAction extends Action {
-    private first: Action;
-    private rest: Action;
+    public first: Action;
+    public rest: Action;
 
     public constructor(first: Action, rest: Action) {
         super("list", 1);
@@ -517,7 +522,7 @@ export function sequence(actions: Action[]): Action {
 }
 
 export class SpliceNullAction extends LeafAction {
-    private index: number;
+    public index: number;
 
     public constructor(index: number) {
         super("spliceNull", -index);
@@ -534,7 +539,11 @@ export class SpliceNullAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "spliceNull(" + this.index + ")");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "spliceNull(" + this.index + ")";
     }
 }
 
@@ -543,8 +552,8 @@ export function spliceNull(index: number): Action {
 }
 
 export class SpliceReplaceAction extends LeafAction {
-    private index: number;
-    private srcIndex: number;
+    public index: number;
+    public srcIndex: number;
 
     public constructor(index: number, srcIndex: number) {
         super("spliceReplace", -index);
@@ -563,7 +572,11 @@ export class SpliceReplaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "spliceReplace(" + this.index + ", " + this.srcIndex + ")");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "spliceReplace(" + this.index + ", " + this.srcIndex + ")";
     }
 }
 
@@ -572,11 +585,11 @@ export function spliceReplace(index: number, srcIndex: number): Action {
 }
 
 export class SpliceNodeAction extends LeafAction {
-    private index: number;
-    private name: string;
-    private startIndex: number;
-    private endIndex: number;
-    private childIndices: number[];
+    public index: number;
+    public name: string;
+    public startIndex: number;
+    public endIndex: number;
+    public childIndices: number[];
 
     public constructor(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]) {
         super("spliceNode", -index);
@@ -607,17 +620,18 @@ export class SpliceNodeAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(
-            this.stats(output) +
-            prefix +
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return (
             "spliceNode(" +
             this.index + ", " +
             JSON.stringify(this.name) + ", " +
             this.startIndex + ", " +
             this.endIndex + ", " +
             "[" + this.childIndices.map((n: number) => n.toString()).join(", ") + "]" +
-            ")"
-        );
+            ")");
     }
 }
 
@@ -626,11 +640,11 @@ export function spliceNode(index: number, name: string, startIndex: number, endI
 }
 
 export class SpliceStringNodeAction extends LeafAction {
-    private index: number;
-    private nodeName: string;
-    private startIndex: number;
-    private endIndex: number;
-    private valueIndex: number;
+    public index: number;
+    public nodeName: string;
+    public startIndex: number;
+    public endIndex: number;
+    public valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
         super("spliceStringNode", -index);
@@ -663,7 +677,14 @@ export class SpliceStringNodeAction extends LeafAction {
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(
             this.stats(output) +
-            prefix + "spliceStringNode(" + this.index + ", " +
+            prefix +
+            this.shortString()
+        );
+    }
+
+    public shortString(): string {
+        return (
+            "spliceStringNode(" + this.index + ", " +
             JSON.stringify(this.nodeName) + ", " +
             this.startIndex + ", " +
             this.endIndex + ", " +
@@ -677,11 +698,11 @@ export function spliceStringNode(index: number, name: string, startIndex: number
 }
 
 export class SpliceNumberNodeAction extends LeafAction {
-    private index: number;
-    private nodeName: string;
-    private startIndex: number;
-    private endIndex: number;
-    private valueIndex: number;
+    public index: number;
+    public nodeName: string;
+    public startIndex: number;
+    public endIndex: number;
+    public valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
         super("spliceNumberNode", -index);
@@ -712,9 +733,12 @@ export class SpliceNumberNodeAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(
-            this.stats(output) +
-            prefix + "spliceNumberNode(" + this.index + ", " +
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return (
+            "spliceNumberNode(" + this.index + ", " +
             JSON.stringify(this.nodeName) + ", " +
             this.startIndex + ", " +
             this.endIndex + ", " +
@@ -728,9 +752,9 @@ export function spliceNumberNode(index: number, name: string, startIndex: number
 }
 
 export class SpliceEmptyListNodeAction extends LeafAction {
-    private index: number;
-    private startIndex: number;
-    private endIndex: number;
+    public index: number;
+    public startIndex: number;
+    public endIndex: number;
 
     public constructor(index: number, startIndex: number, endIndex: number) {
         super("spliceEmptyListNode", -index);
@@ -752,7 +776,11 @@ export class SpliceEmptyListNodeAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "spliceEmptyListNode(" + this.index + ", " + this.startIndex + ", " + this.endIndex + ")");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "spliceEmptyListNode(" + this.index + ", " + this.startIndex + ", " + this.endIndex + ")";
     }
 }
 
@@ -776,7 +804,11 @@ export class PopAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "pop()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "pop()";
     }
 }
 
@@ -785,7 +817,7 @@ export function pop(): Action {
 }
 
 export class OptAction extends Action {
-    private child: Action;
+    public child: Action;
 
     public constructor(child: Action) {
         super("opt", 1);
@@ -881,7 +913,7 @@ export function choice(actions: Action[]): Action {
 }
 
 export class RepeatAction extends Action {
-    private child: Action;
+    public child: Action;
 
     public constructor(child: Action) {
         super("repeat", 0);
@@ -929,7 +961,11 @@ export class PosAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "pos()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "pos()";
     }
 }
 
@@ -938,7 +974,7 @@ export function pos(): Action {
 }
 
 export class ValueAction extends LeafAction {
-    private value: any;
+    public value: any;
 
     public constructor(value: any) {
         super("value", 1);
@@ -955,7 +991,11 @@ export class ValueAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "value(" + JSON.stringify(this.value) + ")");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "value(" + JSON.stringify(this.value) + ")";
     }
 }
 
@@ -964,7 +1004,7 @@ export function value(value: any): Action {
 }
 
 export class KeywordAction extends LeafAction {
-    private str: string;
+    public str: string;
 
     public constructor(str: string) {
         super("keyword", 1);
@@ -987,7 +1027,11 @@ export class KeywordAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "keyword(" + JSON.stringify(this.str) + ")");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "keyword(" + JSON.stringify(this.str) + ")";
     }
 }
 
@@ -996,7 +1040,7 @@ export function keyword(str: string): Action {
 }
 
 export class IdentifierAction extends LeafAction {
-    private str: string;
+    public str: string;
 
     public constructor(str: string) {
         super("identifier", 1);
@@ -1022,7 +1066,11 @@ export class IdentifierAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "identifier(" + JSON.stringify(this.str) + ")");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "identifier(" + JSON.stringify(this.str) + ")";
     }
 }
 
@@ -1045,7 +1093,11 @@ export class WhitespaceAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "whitespace()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "whitespace()";
     }
 }
 
@@ -1068,7 +1120,11 @@ export class WhitespaceNoNewlineAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "whitespaceNoNewline()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "whitespaceNoNewline()";
     }
 }
 
@@ -1096,7 +1152,11 @@ export class IdentifierTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "identifier_token()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "identifier_token()";
     }
 }
 
@@ -1125,7 +1185,11 @@ export class NumericLiteralTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "numeric_literal_token()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "numeric_literal_token()";
     }
 }
 
@@ -1153,7 +1217,11 @@ export class StringLiteralTokenAction extends LeafAction {
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
-        output.write(this.stats(output) + prefix + "string_literal_token()");
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public shortString(): string {
+        return "string_literal_token()";
     }
 }
 
