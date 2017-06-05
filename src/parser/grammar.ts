@@ -262,6 +262,8 @@ export abstract class Action {
     }
 
     public abstract visitChildren(v: Visitor): Action;
+
+    public abstract toString(): string;
 }
 
 export abstract class LeafAction extends Action {
@@ -269,6 +271,10 @@ export abstract class LeafAction extends Action {
         return this;
     }
     public abstract shortString(): string;
+
+    public toString(): string {
+        return this.shortString();
+    }
 }
 
 export class ProductionAction extends Action {
@@ -305,6 +311,10 @@ export class ProductionAction extends Action {
     public visitChildren(v: Visitor): Action {
         this.child = this.child.visit(v);
         return this;
+    }
+
+    public toString(): string {
+        return "<Production " + this.name + ">";
     }
 }
 
@@ -380,6 +390,10 @@ export class NotAction extends Action {
         this.child = this.child.visit(v);
         return this;
     }
+
+    public toString(): string {
+        return "<not>";
+    }
 }
 
 export function not(f: Action): Action {
@@ -412,6 +426,10 @@ export class RefAction extends Action {
 
     public visitChildren(v: Visitor): Action {
         return this;
+    }
+
+    public toString(): string {
+        return "<ref " + this.name + ">";
     }
 }
 
@@ -477,6 +495,10 @@ export class ListAction extends Action {
         this.rest = this.rest.visit(v);
         return this;
     }
+
+    public toString(): string {
+        return "<list>";
+    }
 }
 
 export function list(first: Action, rest: Action): Action {
@@ -514,6 +536,10 @@ export class SequenceAction extends Action {
         for (let i = 0; i < this.actions.length; i++)
             this.actions[i] = this.actions[i].visit(v);
         return this;
+    }
+
+    public toString(): string {
+        return "<sequence>";
     }
 }
 
@@ -855,6 +881,10 @@ export class OptAction extends Action {
         this.child = this.child.visit(v);
         return this;
     }
+
+    public toString(): string {
+        return "<opt>";
+    }
 }
 
 export function opt(f: Action): Action {
@@ -906,6 +936,10 @@ export class ChoiceAction extends Action {
             this.actions[i] = this.actions[i].visit(v);
         return this;
     }
+
+    public toString(): string {
+        return "<choice>";
+    }
 }
 
 export function choice(actions: Action[]): Action {
@@ -940,6 +974,10 @@ export class RepeatAction extends Action {
     public visitChildren(v: Visitor): Action {
         this.child = this.child.visit(v);
         return this;
+    }
+
+    public toString(): string {
+        return "<repeat>";
     }
 }
 
