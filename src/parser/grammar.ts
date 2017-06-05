@@ -40,6 +40,8 @@ export interface OutputOptions {
     write(str: string): void;
 }
 
+type Visitor = (action: Action, visitChildren: () => Action) => Action;
+
 export class Grammar {
     public productions: { [name: string]: Action } = {};
     public names: string[] = [];
@@ -58,6 +60,16 @@ export class Grammar {
     public dump(output: OutputOptions): void {
         for (const name of this.names)
             this.productions[name].dump("", "", output);
+    }
+
+    public visit(v: Visitor) {
+        for (let i = 0; i < this.names.length; i++) {
+            const name = this.names[i];
+            const action = this.productions[name];
+            if (action === undefined)
+                throw new Error("Action " + JSON.stringify(name) + " not found");
+            this.productions[name] = v(this.productions[name], () => action.visitChildren(v));
+        }
     }
 }
 
@@ -237,9 +249,25 @@ export abstract class Action {
     public abstract executeImpl(b: Builder): void;
 
     public abstract dump(prefix: string, indent: string, output: OutputOptions): void;
+
+    public visit(v: Visitor): Action {
+        // let action: Action = this;
+        // if (v.before)
+        //     action = v.before(action);
+        // action.visitChildren(action);
+        // if (v.after)
+        //     action = v.after(action);
+        // return action;
+        return v(this, () => this.visitChildren(v));
+    }
+
+    public abstract visitChildren(v: Visitor): Action;
 }
 
 export abstract class LeafAction extends Action {
+    public visitChildren(v: Visitor): Action {
+        return this;
+    }
 }
 
 export class ProductionAction extends Action {
@@ -271,6 +299,11 @@ export class ProductionAction extends Action {
         output.write(this.stats(output) + "grm.define(" + JSON.stringify(this.name) + ",\n");
         this.child.dump(indent + "    ", indent + "    ", output);
         output.write(");\n\n");
+    }
+
+    public visitChildren(v: Visitor): Action {
+        this.child = this.child.visit(v);
+        return this;
     }
 }
 
@@ -337,6 +370,11 @@ export class NotAction extends Action {
         this.child.dump("", indent, output);
         output.write(")");
     }
+
+    public visitChildren(v: Visitor): Action {
+        this.child = this.child.visit(v);
+        return this;
+    }
 }
 
 export function not(f: Action): Action {
@@ -365,6 +403,10 @@ export class RefAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "ref(" + JSON.stringify(this.name) + ")");
+    }
+
+    public visitChildren(v: Visitor): Action {
+        return this;
     }
 }
 
@@ -424,6 +466,12 @@ export class ListAction extends Action {
         this.rest.dump(indent + "    ", indent + "    ", output);
         output.write("\n" + this.space(output) + indent + ")");
     }
+
+    public visitChildren(v: Visitor): Action {
+        this.first = this.first.visit(v);
+        this.rest = this.rest.visit(v);
+        return this;
+    }
 }
 
 export function list(first: Action, rest: Action): Action {
@@ -455,6 +503,12 @@ export class SequenceAction extends Action {
             output.write(",\n");
         }
         output.write(this.space(output) + indent + "])");
+    }
+
+    public visitChildren(v: Visitor): Action {
+        for (let i = 0; i < this.actions.length; i++)
+            this.actions[i] = this.actions[i].visit(v);
+        return this;
     }
 }
 
@@ -764,6 +818,11 @@ export class OptAction extends Action {
         this.child.dump("", indent, output);
         output.write(")");
     }
+
+    public visitChildren(v: Visitor): Action {
+        this.child = this.child.visit(v);
+        return this;
+    }
 }
 
 export function opt(f: Action): Action {
@@ -809,6 +868,12 @@ export class ChoiceAction extends Action {
         }
         output.write(this.stats(output) + indent + "])");
     }
+
+    public visitChildren(v: Visitor): Action {
+        for (let i = 0; i < this.actions.length; i++)
+            this.actions[i] = this.actions[i].visit(v);
+        return this;
+    }
 }
 
 export function choice(actions: Action[]): Action {
@@ -838,6 +903,11 @@ export class RepeatAction extends Action {
         output.write(this.stats(output) + indent + "repeat(");
         this.child.dump("", indent, output);
         output.write(")");
+    }
+
+    public visitChildren(v: Visitor): Action {
+        this.child = this.child.visit(v);
+        return this;
     }
 }
 
