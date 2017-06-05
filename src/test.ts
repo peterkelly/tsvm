@@ -63,39 +63,81 @@ function grammarToString(g: Grammar): string {
     return components.join("");
 }
 
+function omitPrefix(action: grammar.Action, prefix: Action): Action {
+    // const newChildren: Action[] = [];
+    if ((action instanceof grammar.SequenceAction) && (action.actions.length > 0)) {
+        const first = action.actions[0];
+        if (first.equals(prefix))
+            return new grammar.SequenceAction(action.actions.slice(1));
+    }
+    return action;
+    // return new grammar.SequenceAction(newChildren);
+}
+
+interface FirstInfo {
+    action: Action;
+    count: number;
+    indices: number[];
+}
+
 function leftFactor(g: Grammar): void {
     g.visit((action, visitChildren) => {
         action = visitChildren();
+        if (action instanceof grammar.ProductionAction) {
+            console.log("Production: " + action.name);
+        }
+        // console.log("action is a " + (<any> action).constructor.name);
         if (action instanceof grammar.ChoiceAction) {
-            let foundCommon: boolean;
-            do {
-                foundCommon = false;
-                let candidate: Action | null = null;
-                const matches: Action[] = [];
-                // const common: Action[] = [];
-                for (const child of action.actions) {
-                    if ((child instanceof grammar.SequenceAction) && (child.actions.length > 0)) {
-                        const candidate = child.actions[0];
+            // console.log("==== have a choice");
+            const choices = action.actions;
+            const firsts: FirstInfo[] = [];
+            for (let i = 0; i < choices.length; i++) {
+                let choice = choices[i];
+                if ((choice instanceof grammar.SequenceAction) && (choice.actions.length > 0))
+                    choice = choice.actions[0];
+                let exists = false;
+                for (const f of firsts) {
+                    if (choice.equals(f.action)) {
+                        f.count++;
+                        f.indices.push(i);
+                        exists = true;
+                        break;
                     }
-                    if (child instanceof grammar.SequenceAction) {
-                        for (const grandChild of child.actions) {
-                            if (grandChild instanceof grammar.KeywordAction) {
-                                if (candidate === null)
-                                    candidate = grandChild;
-                                else
-                                    foundCommon = true;
-                                matches.push(candidate);
-                            }
+                }
+                if (!exists) {
+                    firsts.push({ action: choice, count: 1, indices: [i] });
+                }
+            }
+
+            console.log("    Firsts:");
+            for (const f of firsts) {
+                console.log("        " + f.action + " (" + f.count + ") " + f.indices.join(", "));
+            }
+            let selected: FirstInfo | null = null;
+            for (const f of firsts) {
+                if (f.count > 1) {
+                    selected = f;
+                    // break;
+                }
+            }
+
+            if (selected !== null) {
+                const outerChoices: Action[] = [];
+                const innerChoices: Action[] = [];
+                for (let i = 0; i < choices.length; i++) {
+                    if (selected.indices.indexOf(i) >= 0) {
+                        innerChoices.push(omitPrefix(choices[i], selected.action));
+                        if (selected.indices.indexOf(i) === 0) {
+                            outerChoices.push(new grammar.SequenceAction([selected.action, new grammar.ChoiceAction(innerChoices)]));
                         }
                     }
+                    else {
+                        outerChoices.push(choices[i]);
+                    }
                 }
-                if (foundCommon) {
-                    const revisedChoices: Action[] = [];
-
-                }
-            } while (!foundCommon);
+                return new grammar.ChoiceAction(outerChoices);
+            }
         }
-
         return action;
     });
 }
@@ -113,14 +155,16 @@ function main(): void {
 
     const beforeStr = grammarToString(sampleGrammar);
 
-    let indent = 0;
-    sampleGrammar.visit((action, visitChildren) => {
-        indent++;
-        console.log(leftpad("", indent * 4) + (<any> action.constructor).name);
-        action = visitChildren();
-        indent--;
-        return action;
-    });
+    leftFactor(sampleGrammar);
+
+    // let indent = 0;
+    // sampleGrammar.visit((action, visitChildren) => {
+    //     indent++;
+    //     console.log(leftpad("", indent * 4) + (<any> action.constructor).name);
+    //     action = visitChildren();
+    //     indent--;
+    //     return action;
+    // });
 
     const afterStr = grammarToString(sampleGrammar);
 
