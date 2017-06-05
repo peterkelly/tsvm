@@ -242,7 +242,7 @@ export abstract class Action {
 export abstract class LeafAction extends Action {
 }
 
-class ProductionAction extends Action {
+export class ProductionAction extends Action {
     private child: Action;
     private name: string;
 
@@ -274,7 +274,7 @@ class ProductionAction extends Action {
     }
 }
 
-class EmptyAction extends LeafAction {
+export class EmptyAction extends LeafAction {
     public constructor() {
         super("empty", 0);
     }
@@ -296,7 +296,7 @@ export function empty(): Action {
     return new EmptyAction();
 }
 
-class NotAction extends Action {
+export class NotAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
@@ -343,7 +343,7 @@ export function not(f: Action): Action {
     return new NotAction(f);
 }
 
-class RefAction extends Action {
+export class RefAction extends Action {
     private name: string;
 
     public constructor(productionName: string) {
@@ -372,7 +372,7 @@ export function ref(name: string): Action {
     return new RefAction(name);
 }
 
-class ListAction extends Action {
+export class ListAction extends Action {
     private first: Action;
     private rest: Action;
 
@@ -430,7 +430,7 @@ export function list(first: Action, rest: Action): Action {
     return new ListAction(first, rest);
 }
 
-class SequenceAction extends Action {
+export class SequenceAction extends Action {
     private actions: Action[];
 
     public constructor(actions: Action[]) {
@@ -462,7 +462,7 @@ export function sequence(actions: Action[]): Action {
     return new SequenceAction(actions);
 }
 
-class SpliceNullAction extends LeafAction {
+export class SpliceNullAction extends LeafAction {
     private index: number;
 
     public constructor(index: number) {
@@ -488,7 +488,7 @@ export function spliceNull(index: number): Action {
     return new SpliceNullAction(index);
 }
 
-class SpliceReplaceAction extends LeafAction {
+export class SpliceReplaceAction extends LeafAction {
     private index: number;
     private srcIndex: number;
 
@@ -517,7 +517,7 @@ export function spliceReplace(index: number, srcIndex: number): Action {
     return new SpliceReplaceAction(index, srcIndex);
 }
 
-class SpliceNodeAction extends LeafAction {
+export class SpliceNodeAction extends LeafAction {
     private index: number;
     private name: string;
     private startIndex: number;
@@ -571,7 +571,7 @@ export function spliceNode(index: number, name: string, startIndex: number, endI
     return new SpliceNodeAction(index, name, startIndex, endIndex, childIndices);
 }
 
-class SpliceStringNodeAction extends LeafAction {
+export class SpliceStringNodeAction extends LeafAction {
     private index: number;
     private nodeName: string;
     private startIndex: number;
@@ -622,7 +622,7 @@ export function spliceStringNode(index: number, name: string, startIndex: number
     return new SpliceStringNodeAction(index, name, startIndex, endIndex, valueIndex);
 }
 
-class SpliceNumberNodeAction extends LeafAction {
+export class SpliceNumberNodeAction extends LeafAction {
     private index: number;
     private nodeName: string;
     private startIndex: number;
@@ -673,7 +673,7 @@ export function spliceNumberNode(index: number, name: string, startIndex: number
     return new SpliceNumberNodeAction(index, name, startIndex, endIndex, valueIndex);
 }
 
-class SpliceEmptyListNodeAction extends LeafAction {
+export class SpliceEmptyListNodeAction extends LeafAction {
     private index: number;
     private startIndex: number;
     private endIndex: number;
@@ -706,7 +706,7 @@ export function spliceEmptyListNode(index: number, startIndex: number, endIndex:
     return new SpliceEmptyListNodeAction(index, startIndex, endIndex);
 }
 
-class PopAction extends LeafAction {
+export class PopAction extends LeafAction {
     public constructor() {
         super("pop", -1);
     }
@@ -730,7 +730,7 @@ export function pop(): Action {
     return new PopAction();
 }
 
-class OptAction extends Action {
+export class OptAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
@@ -770,7 +770,7 @@ export function opt(f: Action): Action {
     return new OptAction(f);
 }
 
-class ChoiceAction extends Action {
+export class ChoiceAction extends Action {
     private actions: Action[];
 
     public constructor(actions: Action[]) {
@@ -815,7 +815,7 @@ export function choice(actions: Action[]): Action {
     return new ChoiceAction(actions);
 }
 
-class RepeatAction extends Action {
+export class RepeatAction extends Action {
     private child: Action;
 
     public constructor(child: Action) {
@@ -845,7 +845,7 @@ export function repeat(f: Action): Action {
     return new RepeatAction(f);
 }
 
-class PosAction extends LeafAction {
+export class PosAction extends LeafAction {
     public constructor() {
         super("pos", 1);
     }
@@ -867,7 +867,7 @@ export function pos(): Action {
     return new PosAction();
 }
 
-class ValueAction extends LeafAction {
+export class ValueAction extends LeafAction {
     private value: any;
 
     public constructor(value: any) {
@@ -893,7 +893,7 @@ export function value(value: any): Action {
     return new ValueAction(value);
 }
 
-class KeywordAction extends LeafAction {
+export class KeywordAction extends LeafAction {
     private str: string;
 
     public constructor(str: string) {
@@ -925,7 +925,7 @@ export function keyword(str: string): Action {
     return new KeywordAction(str);
 }
 
-class IdentifierAction extends LeafAction {
+export class IdentifierAction extends LeafAction {
     private str: string;
 
     public constructor(str: string) {
@@ -960,7 +960,7 @@ export function identifier(str: string): Action {
     return new IdentifierAction(str);
 }
 
-class WhitespaceAction extends LeafAction {
+export class WhitespaceAction extends LeafAction {
     public constructor() {
         super("whitespace", 1);
     }
@@ -983,7 +983,7 @@ export function whitespace(): Action {
     return new WhitespaceAction();
 }
 
-class WhitespaceNoNewlineAction extends LeafAction {
+export class WhitespaceNoNewlineAction extends LeafAction {
     public constructor() {
         super("whitespaceNoNewline", 1);
     }
@@ -1006,7 +1006,7 @@ export function whitespaceNoNewline(): Action {
     return new WhitespaceNoNewlineAction();
 }
 
-class IdentifierTokenAction extends LeafAction {
+export class IdentifierTokenAction extends LeafAction {
     public constructor() {
         super("identifier_token", 1);
     }
@@ -1034,7 +1034,7 @@ export function identifier_token(): Action {
     return new IdentifierTokenAction();
 }
 
-class NumericLiteralTokenAction extends LeafAction {
+export class NumericLiteralTokenAction extends LeafAction {
     public constructor() {
         super("numeric_literal_token", 1);
     }
@@ -1063,7 +1063,7 @@ export function numeric_literal_token(): Action {
     return new NumericLiteralTokenAction();
 }
 
-class StringLiteralTokenAction extends LeafAction {
+export class StringLiteralTokenAction extends LeafAction {
     public constructor() {
         super("string_literal_token", 1);
     }
