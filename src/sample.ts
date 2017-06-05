@@ -77,12 +77,12 @@ grm.define("Main",
             ref("NUMBER"),
             spliceNull(2),
         ]),
-        // sequence([
-        //     keyword("if"),
-        //     keyword("catch"),
-        //     ref("IDENT"),
-        //     spliceNull(2),
-        // ]),
+        sequence([
+            keyword("if"),
+            keyword("catch"),
+            ref("IDENT"),
+            spliceNull(2),
+        ]),
         sequence([
             keyword("while"),
             ref("IDENT"),
