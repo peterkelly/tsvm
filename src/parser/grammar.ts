@@ -479,7 +479,7 @@ export function list(first: Action, rest: Action): Action {
 }
 
 export class SequenceAction extends Action {
-    private actions: Action[];
+    public actions: Action[];
 
     public constructor(actions: Action[]) {
         super("sequence", actionsTotalOffset(actions));
@@ -830,7 +830,7 @@ export function opt(f: Action): Action {
 }
 
 export class ChoiceAction extends Action {
-    private actions: Action[];
+    public actions: Action[];
 
     public constructor(actions: Action[]) {
         super("choice", actionsSameOffset(actions));
