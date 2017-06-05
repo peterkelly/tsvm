@@ -324,7 +324,7 @@ function execute(relFilename: string) {
 
 function printGrammar(): void {
     const components: string[] = [];
-    grm.dump((str: string) => components.push(str));
+    grm.dump({ write: (str: string) => components.push(str) });
     console.log(components.join(""));
 }
 
@@ -354,7 +354,10 @@ function perftest(): void {
         // console.log(time + " ms");
 
         const output: string[] = [];
-        grm.dump(s => output.push(s));
+        grm.dump({
+            profile: true,
+            write: s => output.push(s),
+        });
         console.log(output.join(""));
     }
 
