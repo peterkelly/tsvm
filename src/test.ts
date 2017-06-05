@@ -138,8 +138,8 @@ function leftFactor(g: Grammar): void {
                             outerChoices.push(choices[i]);
                         }
                     }
-                    // action = grammar.ChoiceAction(outerChoices).visitChildren(visitor);
-                    action = new grammar.ChoiceAction(outerChoices);
+                    action = new grammar.ChoiceAction(outerChoices).visitChildren(visitor);
+                    // action = new grammar.ChoiceAction(outerChoices);
                     changed = true;
                 }
             }
