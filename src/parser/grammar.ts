@@ -31,9 +31,18 @@ import {
     GenericStringNode,
     GenericNumberNode,
 } from "./ast";
-import { leftpad } from "../util";
+import { leftpad, rightpad } from "../util";
 
 const PROFILE_WIDTH = 24;
+const PRODUCTION_WIDTH = 40;
+
+const TOP_PRECEDENCE = 11;
+const CHOICE_PRECEDENCE = 10;
+const SEQUENCE_PRECEDENCE = 9;
+const NOT_PRECEDENCE = 8;
+const QUESTION_PRECEDENCE = 7;
+const STAR_PRECEDENCE = 7;
+const PLUS_PRECEDENCE = 7;
 
 export interface OutputOptions {
     profile?: boolean;
@@ -41,6 +50,10 @@ export interface OutputOptions {
 }
 
 export type Visitor = (action: Action, visitChildren: () => Action) => Action;
+
+function needParentheses(precedence: number, target: number): boolean {
+    return precedence <= target;
+}
 
 export class Grammar {
     public productions: { [name: string]: Action } = {};
@@ -60,6 +73,13 @@ export class Grammar {
     public dump(output: OutputOptions): void {
         for (const name of this.names)
             this.productions[name].dump("", "", output);
+    }
+
+    public toSyntax(output: OutputOptions): void {
+        for (const name of this.names) {
+            this.productions[name].toSyntax(output, TOP_PRECEDENCE);
+            output.write("\n");
+        }
     }
 
     public visit(v: Visitor) {
@@ -250,6 +270,8 @@ export abstract class Action {
 
     public abstract dump(prefix: string, indent: string, output: OutputOptions): void;
 
+    public abstract toSyntax(output: OutputOptions, precedence: number): void;
+
     public visit(v: Visitor): Action {
         // let action: Action = this;
         // if (v.before)
@@ -308,6 +330,23 @@ export class ProductionAction extends Action {
         output.write(");\n\n");
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(rightpad(this.name, PRODUCTION_WIDTH) + " = ");
+        if (this.child instanceof ChoiceAction) {
+            for (let i = 0; i < this.child.actions.length; i++) {
+                if (i > 0)
+                    output.write(rightpad("", PRODUCTION_WIDTH) + " | ");
+                this.child.actions[i].toSyntax(output, CHOICE_PRECEDENCE);
+                if (i + 1 < this.child.actions.length)
+                    output.write("\n");
+            }
+        }
+        else {
+            this.child.toSyntax(output, precedence);
+        }
+        output.write(";");
+    }
+
     public visitChildren(v: Visitor): Action {
         this.child = this.child.visit(v);
         return this;
@@ -333,6 +372,10 @@ export class EmptyAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + indent + this.shortString());
+    }
+
+    public toSyntax(): string {
+        return "<empty>";
     }
 
     public shortString(): string {
@@ -386,6 +429,15 @@ export class NotAction extends Action {
         output.write(")");
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("!");
+        if (needParentheses(precedence, NOT_PRECEDENCE))
+            output.write("(");
+        this.child.toSyntax(output, NOT_PRECEDENCE);
+        if (needParentheses(precedence, NOT_PRECEDENCE))
+            output.write(")");
+    }
+
     public visitChildren(v: Visitor): Action {
         this.child = this.child.visit(v);
         return this;
@@ -422,6 +474,10 @@ export class RefAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "ref(" + JSON.stringify(this.name) + ")");
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.name);
     }
 
     public visitChildren(v: Visitor): Action {
@@ -490,6 +546,14 @@ export class ListAction extends Action {
         output.write("\n" + this.space(output) + indent + ")");
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("list(");
+        this.first.toSyntax(output, precedence);
+        output.write(", ");
+        this.rest.toSyntax(output, precedence);
+        output.write(")");
+    }
+
     public visitChildren(v: Visitor): Action {
         this.first = this.first.visit(v);
         this.rest = this.rest.visit(v);
@@ -532,6 +596,22 @@ export class SequenceAction extends Action {
         output.write(this.space(output) + indent + "])");
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        if (needParentheses(precedence, SEQUENCE_PRECEDENCE))
+            output.write("(");
+        const actionsToPrint = this.actions.filter(action => {
+            return (!(action instanceof PosAction));
+        });
+        for (let i = 0; i < actionsToPrint.length; i++) {
+            const act = actionsToPrint[i];
+            act.toSyntax(output, SEQUENCE_PRECEDENCE);
+            if (i + 1 < actionsToPrint.length)
+                output.write(" ");
+        }
+        if (needParentheses(precedence, SEQUENCE_PRECEDENCE))
+            output.write(")");
+    }
+
     public visitChildren(v: Visitor): Action {
         for (let i = 0; i < this.actions.length; i++)
             this.actions[i] = this.actions[i].visit(v);
@@ -568,6 +648,10 @@ export class SpliceNullAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
+    }
+
     public shortString(): string {
         return "spliceNull(" + this.index + ")";
     }
@@ -599,6 +683,10 @@ export class SpliceReplaceAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
     }
 
     public shortString(): string {
@@ -647,6 +735,10 @@ export class SpliceNodeAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("=> " + this.name + "(" + this.childIndices.map((n: number) => n.toString()).join(", ") + ")");
     }
 
     public shortString(): string {
@@ -708,6 +800,10 @@ export class SpliceStringNodeAction extends LeafAction {
         );
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
+    }
+
     public shortString(): string {
         return (
             "spliceStringNode(" + this.index + ", " +
@@ -762,6 +858,10 @@ export class SpliceNumberNodeAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
+    }
+
     public shortString(): string {
         return (
             "spliceNumberNode(" + this.index + ", " +
@@ -805,6 +905,10 @@ export class SpliceEmptyListNodeAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
+    }
+
     public shortString(): string {
         return "spliceEmptyListNode(" + this.index + ", " + this.startIndex + ", " + this.endIndex + ")";
     }
@@ -831,6 +935,10 @@ export class PopAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
     }
 
     public shortString(): string {
@@ -875,6 +983,15 @@ export class OptAction extends Action {
         output.write(this.stats(output) + indent + "opt(");
         this.child.dump("", indent, output);
         output.write(")");
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        if (needParentheses(precedence, QUESTION_PRECEDENCE))
+            output.write("(");
+        this.child.toSyntax(output, QUESTION_PRECEDENCE);
+        if (needParentheses(precedence, QUESTION_PRECEDENCE))
+            output.write(")");
+        output.write(")?");
     }
 
     public visitChildren(v: Visitor): Action {
@@ -931,6 +1048,19 @@ export class ChoiceAction extends Action {
         output.write(this.stats(output) + indent + "])");
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        if (needParentheses(precedence, CHOICE_PRECEDENCE))
+            output.write("(");
+        for (let i = 0; i < this.actions.length; i++) {
+            const act = this.actions[i];
+            act.toSyntax(output, CHOICE_PRECEDENCE);
+            if (i + 1 < this.actions.length)
+                output.write(" | ");
+        }
+        if (needParentheses(precedence, CHOICE_PRECEDENCE))
+            output.write(")");
+    }
+
     public visitChildren(v: Visitor): Action {
         for (let i = 0; i < this.actions.length; i++)
             this.actions[i] = this.actions[i].visit(v);
@@ -971,6 +1101,15 @@ export class RepeatAction extends Action {
         output.write(")");
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        if (needParentheses(precedence, STAR_PRECEDENCE))
+            output.write("(");
+        this.child.toSyntax(output, STAR_PRECEDENCE);
+        if (needParentheses(precedence, STAR_PRECEDENCE))
+            output.write(")");
+        output.write("*");
+    }
+
     public visitChildren(v: Visitor): Action {
         this.child = this.child.visit(v);
         return this;
@@ -1002,6 +1141,10 @@ export class PosAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("<pos>");
+    }
+
     public shortString(): string {
         return "pos()";
     }
@@ -1030,6 +1173,10 @@ export class ValueAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
     }
 
     public shortString(): string {
@@ -1066,6 +1213,10 @@ export class KeywordAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(JSON.stringify(this.str));
     }
 
     public shortString(): string {
@@ -1107,6 +1258,10 @@ export class IdentifierAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(JSON.stringify(this.str));
+    }
+
     public shortString(): string {
         return "identifier(" + JSON.stringify(this.str) + ")";
     }
@@ -1134,6 +1289,10 @@ export class WhitespaceAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(".");
+    }
+
     public shortString(): string {
         return "whitespace()";
     }
@@ -1159,6 +1318,10 @@ export class WhitespaceNoNewlineAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(".n");
     }
 
     public shortString(): string {
@@ -1191,6 +1354,10 @@ export class IdentifierTokenAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("<identifier>");
     }
 
     public shortString(): string {
@@ -1226,6 +1393,10 @@ export class NumericLiteralTokenAction extends LeafAction {
         output.write(this.stats(output) + prefix + this.shortString());
     }
 
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("<number>");
+    }
+
     public shortString(): string {
         return "numeric_literal_token()";
     }
@@ -1256,6 +1427,10 @@ export class StringLiteralTokenAction extends LeafAction {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write("<string>");
     }
 
     public shortString(): string {

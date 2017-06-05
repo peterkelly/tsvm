@@ -328,6 +328,12 @@ function printGrammar(): void {
     console.log(components.join(""));
 }
 
+function printGrammarSyntax(): void {
+    const components: string[] = [];
+    grm.toSyntax({ write: (str: string) => components.push(str) });
+    console.log(components.join(""));
+}
+
 function perftest(): void {
     run();
 
@@ -390,6 +396,9 @@ function main(): void {
     }
     else if ((i < argc) && (argv[i] === "grammar")) {
         printGrammar();
+    }
+    else if ((i < argc) && (argv[i] === "grammar-syntax")) {
+        printGrammarSyntax();
     }
     else if ((i < argc) && (argv[i] === "execute")) {
         i++;
