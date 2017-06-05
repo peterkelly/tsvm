@@ -35,6 +35,11 @@ import { leftpad } from "../util";
 
 const PROFILE_WIDTH = 24;
 
+export interface OutputOptions {
+    profile?: boolean;
+    write(str: string): void;
+}
+
 export class Grammar {
     public productions: { [name: string]: Action } = {};
     public names: string[] = [];
@@ -50,7 +55,7 @@ export class Grammar {
         return this.productions[name];
     }
 
-    public dump(output: (str: string) => void): void {
+    public dump(output: OutputOptions): void {
         for (const name of this.names)
             this.productions[name].dump("", "", output);
     }
@@ -212,14 +217,18 @@ export abstract class Action {
         this.finished++;
     }
 
-    public stats(): string {
+    public stats(output: OutputOptions): string {
+        if (!output.profile)
+            return "";
         if (this.started === 0)
-            return this.space();
+            return this.space(output);
         const pct = (this.started > 0) ? (Math.round(100 * (this.finished / this.started)) + "%") : "0%";
         return leftpad(this.started, 7) + " " + leftpad(this.finished, 7) + " " + leftpad(pct, 4) + "    ";
     }
 
-    public space(): string {
+    public space(output: OutputOptions): string {
+        if (!output.profile)
+            return "";
         return leftpad("", PROFILE_WIDTH);
     }
 
@@ -227,7 +236,7 @@ export abstract class Action {
 
     public abstract executeImpl(b: Builder): void;
 
-    public abstract dump(prefix: string, indent: string, output: (str: string) => void): void;
+    public abstract dump(prefix: string, indent: string, output: OutputOptions): void;
 }
 
 export abstract class LeafAction extends Action {
@@ -258,10 +267,10 @@ class ProductionAction extends Action {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + "grm.define(" + JSON.stringify(this.name) + ",\n");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + "grm.define(" + JSON.stringify(this.name) + ",\n");
         this.child.dump(indent + "    ", indent + "    ", output);
-        output(");\n\n");
+        output.write(");\n\n");
     }
 }
 
@@ -278,8 +287,8 @@ class EmptyAction extends LeafAction {
         // Do nothing; just succeed
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + indent + "empty()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + indent + "empty()");
     }
 }
 
@@ -323,10 +332,10 @@ class NotAction extends Action {
             throw new ParseError(b.parser, b.parser.pos, "NOT predicate failed");
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + indent + "not(");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + indent + "not(");
         this.child.dump("", indent, output);
-        output(")");
+        output.write(")");
     }
 }
 
@@ -354,8 +363,8 @@ class RefAction extends Action {
         production.execute(b);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "ref(" + JSON.stringify(this.name) + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "ref(" + JSON.stringify(this.name) + ")");
     }
 }
 
@@ -408,12 +417,12 @@ class ListAction extends Action {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "list(\n");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "list(\n");
         this.first.dump(indent + "    ", indent + "    ", output);
-        output(",\n");
+        output.write(",\n");
         this.rest.dump(indent + "    ", indent + "    ", output);
-        output("\n" + this.space() + indent + ")");
+        output.write("\n" + this.space(output) + indent + ")");
     }
 }
 
@@ -439,13 +448,13 @@ class SequenceAction extends Action {
             act.execute(b);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "sequence([\n");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "sequence([\n");
         for (const act of this.actions) {
             act.dump(indent + "    ", indent + "    ", output);
-            output(",\n");
+            output.write(",\n");
         }
-        output(this.space() + indent + "])");
+        output.write(this.space(output) + indent + "])");
     }
 }
 
@@ -470,8 +479,8 @@ class SpliceNullAction extends LeafAction {
         b.splice(this.index, null);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "spliceNull(" + this.index + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "spliceNull(" + this.index + ")");
     }
 }
 
@@ -499,8 +508,8 @@ class SpliceReplaceAction extends LeafAction {
         b.splice(this.index, b.get(this.srcIndex));
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "spliceReplace(" + this.index + ", " + this.srcIndex + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "spliceReplace(" + this.index + ", " + this.srcIndex + ")");
     }
 }
 
@@ -543,9 +552,9 @@ class SpliceNodeAction extends LeafAction {
         b.splice(this.index, new GenericNode(new Range(start, end), this.name, children));
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(
-            this.stats() +
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(
+            this.stats(output) +
             prefix +
             "spliceNode(" +
             this.index + ", " +
@@ -597,9 +606,9 @@ class SpliceStringNodeAction extends LeafAction {
             b.splice(this.index, new GenericStringNode(range, this.nodeName, valueNode.value));
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(
-            this.stats() +
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(
+            this.stats(output) +
             prefix + "spliceStringNode(" + this.index + ", " +
             JSON.stringify(this.nodeName) + ", " +
             this.startIndex + ", " +
@@ -648,9 +657,9 @@ class SpliceNumberNodeAction extends LeafAction {
             b.splice(this.index, new GenericNumberNode(range, this.nodeName, valueNode.value));
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(
-            this.stats() +
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(
+            this.stats(output) +
             prefix + "spliceNumberNode(" + this.index + ", " +
             JSON.stringify(this.nodeName) + ", " +
             this.startIndex + ", " +
@@ -688,8 +697,8 @@ class SpliceEmptyListNodeAction extends LeafAction {
         b.splice(this.index, new ListNode(new Range(start, end), []));
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "spliceEmptyListNode(" + this.index + ", " + this.startIndex + ", " + this.endIndex + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "spliceEmptyListNode(" + this.index + ", " + this.startIndex + ", " + this.endIndex + ")");
     }
 }
 
@@ -712,8 +721,8 @@ class PopAction extends LeafAction {
         b.stack.length--;
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "pop()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "pop()");
     }
 }
 
@@ -750,10 +759,10 @@ class OptAction extends Action {
         }
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + indent + "opt(");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + indent + "opt(");
         this.child.dump("", indent, output);
-        output(")");
+        output.write(")");
     }
 }
 
@@ -792,13 +801,13 @@ class ChoiceAction extends Action {
         throw new ParseError(b.parser, b.parser.pos, "No valid alternative found");
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "choice([\n");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "choice([\n");
         for (const act of this.actions) {
             act.dump(indent + "    ", indent + "    ", output);
-            output(",\n");
+            output.write(",\n");
         }
-        output(this.stats() + indent + "])");
+        output.write(this.stats(output) + indent + "])");
     }
 }
 
@@ -825,10 +834,10 @@ class RepeatAction extends Action {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + indent + "repeat(");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + indent + "repeat(");
         this.child.dump("", indent, output);
-        output(")");
+        output.write(")");
     }
 }
 
@@ -849,8 +858,8 @@ class PosAction extends LeafAction {
         b.push(b.parser.pos);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "pos()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "pos()");
     }
 }
 
@@ -875,8 +884,8 @@ class ValueAction extends LeafAction {
         b.push(this.value);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "value(" + JSON.stringify(this.value) + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "value(" + JSON.stringify(this.value) + ")");
     }
 }
 
@@ -907,8 +916,8 @@ class KeywordAction extends LeafAction {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "keyword(" + JSON.stringify(this.str) + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "keyword(" + JSON.stringify(this.str) + ")");
     }
 }
 
@@ -942,8 +951,8 @@ class IdentifierAction extends LeafAction {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "identifier(" + JSON.stringify(this.str) + ")");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "identifier(" + JSON.stringify(this.str) + ")");
     }
 }
 
@@ -965,8 +974,8 @@ class WhitespaceAction extends LeafAction {
         b.push(null);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "whitespace()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "whitespace()");
     }
 }
 
@@ -988,8 +997,8 @@ class WhitespaceNoNewlineAction extends LeafAction {
         b.push(null);
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "whitespaceNoNewline()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "whitespaceNoNewline()");
     }
 }
 
@@ -1016,8 +1025,8 @@ class IdentifierTokenAction extends LeafAction {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "identifier_token()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "identifier_token()");
     }
 }
 
@@ -1045,8 +1054,8 @@ class NumericLiteralTokenAction extends LeafAction {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "numeric_literal_token()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "numeric_literal_token()");
     }
 }
 
@@ -1073,8 +1082,8 @@ class StringLiteralTokenAction extends LeafAction {
         });
     }
 
-    public dump(prefix: string, indent: string, output: (str: string) => void): void {
-        output(this.stats() + prefix + "string_literal_token()");
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + "string_literal_token()");
     }
 }
 
