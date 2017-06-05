@@ -81,65 +81,72 @@ interface FirstInfo {
 }
 
 function leftFactor(g: Grammar): void {
-    g.visit((action, visitChildren) => {
+    const visitor: grammar.Visitor = (action, visitChildren) => {
         action = visitChildren();
-        if (action instanceof grammar.ProductionAction) {
-            console.log("Production: " + action.name);
-        }
-        // console.log("action is a " + (<any> action).constructor.name);
-        if (action instanceof grammar.ChoiceAction) {
-            // console.log("==== have a choice");
-            const choices = action.actions;
-            const firsts: FirstInfo[] = [];
-            for (let i = 0; i < choices.length; i++) {
-                let choice = choices[i];
-                if ((choice instanceof grammar.SequenceAction) && (choice.actions.length > 0))
-                    choice = choice.actions[0];
-                let exists = false;
+        let changed: boolean;
+        do {
+            changed = false;
+            if (action instanceof grammar.ProductionAction) {
+                console.log("Production: " + action.name);
+            }
+            // console.log("action is a " + (<any> action).constructor.name);
+            if (action instanceof grammar.ChoiceAction) {
+                // console.log("==== have a choice");
+                const choices = action.actions;
+                const firsts: FirstInfo[] = [];
+                for (let i = 0; i < choices.length; i++) {
+                    let choice = choices[i];
+                    if ((choice instanceof grammar.SequenceAction) && (choice.actions.length > 0))
+                        choice = choice.actions[0];
+                    let exists = false;
+                    for (const f of firsts) {
+                        if (choice.equals(f.action)) {
+                            f.count++;
+                            f.indices.push(i);
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        firsts.push({ action: choice, count: 1, indices: [i] });
+                    }
+                }
+
+                console.log("    Firsts:");
                 for (const f of firsts) {
-                    if (choice.equals(f.action)) {
-                        f.count++;
-                        f.indices.push(i);
-                        exists = true;
+                    console.log("        " + f.action + " (" + f.count + ") " + f.indices.join(", "));
+                }
+                let selected: FirstInfo | null = null;
+                for (const f of firsts) {
+                    if (f.count > 1) {
+                        selected = f;
                         break;
                     }
                 }
-                if (!exists) {
-                    firsts.push({ action: choice, count: 1, indices: [i] });
-                }
-            }
 
-            console.log("    Firsts:");
-            for (const f of firsts) {
-                console.log("        " + f.action + " (" + f.count + ") " + f.indices.join(", "));
-            }
-            let selected: FirstInfo | null = null;
-            for (const f of firsts) {
-                if (f.count > 1) {
-                    selected = f;
-                    // break;
-                }
-            }
-
-            if (selected !== null) {
-                const outerChoices: Action[] = [];
-                const innerChoices: Action[] = [];
-                for (let i = 0; i < choices.length; i++) {
-                    if (selected.indices.indexOf(i) >= 0) {
-                        innerChoices.push(omitPrefix(choices[i], selected.action));
-                        if (selected.indices.indexOf(i) === 0) {
-                            outerChoices.push(new grammar.SequenceAction([selected.action, new grammar.ChoiceAction(innerChoices)]));
+                if (selected !== null) {
+                    const outerChoices: Action[] = [];
+                    const innerChoices: Action[] = [];
+                    for (let i = 0; i < choices.length; i++) {
+                        if (selected.indices.indexOf(i) >= 0) {
+                            innerChoices.push(omitPrefix(choices[i], selected.action));
+                            if (selected.indices.indexOf(i) === 0) {
+                                outerChoices.push(new grammar.SequenceAction([selected.action, new grammar.ChoiceAction(innerChoices)]));
+                            }
+                        }
+                        else {
+                            outerChoices.push(choices[i]);
                         }
                     }
-                    else {
-                        outerChoices.push(choices[i]);
-                    }
+                    // action = grammar.ChoiceAction(outerChoices).visitChildren(visitor);
+                    action = new grammar.ChoiceAction(outerChoices);
+                    changed = true;
                 }
-                return new grammar.ChoiceAction(outerChoices);
             }
-        }
+        } while (changed);
         return action;
-    });
+    };
+    g.visit(visitor);
 }
 
 function main(): void {
