@@ -40,7 +40,7 @@ export interface OutputOptions {
     write(str: string): void;
 }
 
-type Visitor = (action: Action, visitChildren: () => Action) => Action;
+export type Visitor = (action: Action, visitChildren: () => Action) => Action;
 
 export class Grammar {
     public productions: { [name: string]: Action } = {};
