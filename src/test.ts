@@ -253,6 +253,10 @@ function main(): void {
     //     return action;
     // });
 
+    sampleGrammar.derive("IfStatementA", grammar.keyword("test1"));
+    sampleGrammar.derive("IfStatementA", grammar.keyword("test2"));
+    sampleGrammar.derive("IfStatementA", grammar.keyword("test3"));
+
     const afterStr = grammarToString(sampleGrammar);
 
     if (beforeFilename && afterFilename) {

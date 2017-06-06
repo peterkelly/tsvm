@@ -66,6 +66,22 @@ export class Grammar {
         this.names.push(name);
     }
 
+    public derive(name: string, fun: Action): ProductionAction {
+        const match = name.match(/(^.*)_([0-9]+)$/);
+        const baseName = match ? match[1] : name;
+        let num = 1;
+        while (this.productions[baseName + ":" + num])
+            num++;
+        const derivedName = baseName + ":" + num;
+        let index = this.names.indexOf(baseName);
+        index = (index >= 0) ? index : this.names.length;
+
+        const production = new ProductionAction(derivedName, fun, fun.offset);
+        this.productions[derivedName] = production;
+        this.names.splice(index, 0, derivedName);
+        return production;
+    }
+
     public lookup(name: string): Action {
         if (!this.productions[name])
             throw new Error("Production not found: " + name);
@@ -305,8 +321,8 @@ export class ProductionAction extends Action {
     public child: Action;
     public name: string;
 
-    public constructor(name: string, child: Action) {
-        super("[" + name + "]", 1);
+    public constructor(name: string, child: Action, offset?: number) {
+        super("[" + name + "]", (offset !== undefined) ? offset : 1);
         this.name = name;
         this.child = child;
     }
@@ -457,8 +473,8 @@ export function not(f: Action): Action {
 export class RefAction extends Action {
     public name: string;
 
-    public constructor(productionName: string) {
-        super("ref", 1);
+    public constructor(productionName: string, offset?: number) {
+        super("ref", (offset !== undefined) ? offset : 1);
         this.name = productionName;
     }
 
