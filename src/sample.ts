@@ -63,94 +63,171 @@ grm.define("IDENT", identifier_token());
 grm.define("NUMBER", numeric_literal_token());
 grm.define("STRING", string_literal_token());
 
-grm.define("a", keyword("a"));
-grm.define("b", keyword("b"));
-grm.define("c", keyword("c"));
-grm.define("d", keyword("d"));
-grm.define("e", keyword("e"));
-grm.define("f", keyword("f"));
+// grm.define("a", keyword("a"));
+// grm.define("b", keyword("b"));
+// grm.define("c", keyword("c"));
+// grm.define("d", keyword("d"));
+// grm.define("e", keyword("e"));
+// grm.define("f", keyword("f"));
+// grm.define("0", keyword("0"));
+// grm.define("1", keyword("1"));
+// grm.define("2", keyword("2"));
+//
+// grm.define("Precedence1",
+//     sequence([
+//         ref("a"),
+//         ref("b"),
+//         ref("c"),
+//         ref("d"),
+//         ref("e"),
+//     ])
+// );
+//
+// grm.define("Precedence2",
+//     sequence([
+//         ref("a"),
+//         ref("b"),
+//         sequence([
+//             ref("0"),
+//             ref("1"),
+//             ref("2"),
+//         ]),
+//         ref("c"),
+//         ref("d"),
+//         ref("e"),
+//     ])
+// );
+//
+// grm.define("Precedence3",
+//     choice([
+//         ref("a"),
+//         ref("b"),
+//         ref("c"),
+//         ref("d"),
+//         ref("e"),
+//     ])
+// );
+//
+// grm.define("Precedence4",
+//     choice([
+//         ref("a"),
+//         ref("b"),
+//         choice([
+//             ref("0"),
+//             ref("1"),
+//             ref("2"),
+//         ]),
+//         ref("c"),
+//         ref("d"),
+//         ref("e"),
+//     ])
+// );
+//
+// grm.define("Precedence5",
+//     choice([
+//         sequence([
+//             ref("a"),
+//             ref("b"),
+//         ]),
+//         sequence([
+//             ref("c"),
+//             ref("d"),
+//         ])
+//     ])
+// );
+//
+// grm.define("Precedence6",
+//     sequence([
+//         choice([
+//             ref("a"),
+//             ref("b"),
+//         ]),
+//         choice([
+//             ref("c"),
+//             ref("d"),
+//         ])
+//     ])
+// );
 
-grm.define("Precedence1",
+grm.define("ForCStatement",
     sequence([
-        ref("a"),
-        ref("b"),
-        ref("c"),
-        ref("d"),
-        ref("e"),
-    ])
-);
+        keyword("for"),
+        keyword("("),
+    ]));
 
-grm.define("Precedence2",
+grm.define("ForInStatement",
     sequence([
-        ref("a"),
-        ref("b"),
-        sequence([
-            ref("0"),
-            ref("1"),
-            ref("2"),
-        ]),
-        ref("c"),
-        ref("d"),
-        ref("e"),
-    ])
-);
+        keyword("for"),
+        keyword("in"),
+    ]));
 
-grm.define("Precedence3",
-    choice([
-        ref("a"),
-        ref("b"),
-        ref("c"),
-        ref("d"),
-        ref("e"),
-    ])
-);
-
-grm.define("Precedence4",
-    choice([
-        ref("a"),
-        ref("b"),
-        choice([
-            ref("0"),
-            ref("1"),
-            ref("2"),
-        ]),
-        ref("c"),
-        ref("d"),
-        ref("e"),
-    ])
-);
-
-grm.define("Precedence5",
-    choice([
-        sequence([
-            ref("a"),
-            ref("b"),
-        ]),
-        sequence([
-            ref("c"),
-            ref("d"),
-        ])
-    ])
-);
-
-grm.define("Precedence6",
+grm.define("ForOfStatement",
     sequence([
-        choice([
-            ref("a"),
-            ref("b"),
-        ]),
-        choice([
-            ref("c"),
-            ref("d"),
-        ])
-    ])
-);
+        keyword("for"),
+        keyword("1"),
+    ]));
+
+grm.define("ForStatement",
+    choice([
+        ref("ForCStatement"),
+        ref("ForInStatement"),
+        ref("ForOfStatement"),
+    ]));
+
+grm.define("WhileStatement",
+    sequence([
+        keyword("while"),
+        keyword("{"),
+        keyword("}"),
+    ]));
+
+grm.define("DoStatement",
+sequence([
+    keyword("while"),
+    keyword("{"),
+    keyword("}"),
+]));
+
+grm.define("IterationStatement",
+    choice([
+        ref("ForStatement"),
+        ref("WhileStatement"),
+        ref("DoStatement"),
+    ]));
+
+grm.define("IfStatement1",
+    sequence([
+        keyword("if"),
+        keyword("{"),
+    ]));
+
+grm.define("IfStatement2",
+    sequence([
+        keyword("if"),
+        keyword("*"),
+    ]));
+
+grm.define("TryStatement1",
+    sequence([
+        keyword("try"),
+        keyword("{"),
+    ]));
+
+grm.define("TryStatement2",
+    sequence([
+        keyword("try"),
+        keyword("*"),
+    ]));
 
 
-
-
-
-
+grm.define("Program",
+    choice([
+        ref("IfStatement1"),
+        ref("IfStatement2"),
+        ref("TryStatement1"),
+        ref("TryStatement2"),
+        ref("IterationStatement"),
+    ]));
 
 
 
