@@ -97,6 +97,28 @@ function getPrefix(g: Grammar, action: Action, visiting: string[]): Action | nul
     }
 }
 
+
+function getChoicePrefixes(g: Grammar, action: Action, visiting: string[]): (Action | null)[] {
+    if (action instanceof grammar.RefAction) {
+        if (visiting.indexOf(action.name) >= 0)
+            throw new Error("Left recursion detected: " + visiting.concat([action.name]).join(" -> "));
+        return getChoicePrefixes(g, g.lookup(action.name), visiting.concat([action.name]));
+    }
+    else if (action instanceof grammar.ProductionAction) {
+        return getChoicePrefixes(g, action.child, visiting);
+    }
+    else if (action instanceof grammar.ChoiceAction) {
+        let result: (Action | null)[] = [];
+        for (const choice of action.actions) {
+            result = result.concat(getChoicePrefixes(g, choice, visiting));
+        }
+        return result;
+    }
+    else {
+        return [getPrefix(g, action, visiting)];
+    }
+}
+
 function omitPrefix(action: grammar.Action, prefix: Action): Action {
     // const newChildren: Action[] = [];
     if ((action instanceof grammar.SequenceAction) && (action.actions.length > 0)) {
@@ -127,10 +149,30 @@ function leftFactor(g: Grammar): void {
             if (action instanceof grammar.ChoiceAction) {
                 // console.log("==== have a choice");
                 const choices = action.actions;
+
+                // for (let i = 0; i < choices.length; i++) {
+                //     const prefix = getPrefix(g, choices[i], []);
+                //     console.log(leftpad("choice " + i + ": ", 16) + "prefix " + prefix);
+                // }
+
                 for (let i = 0; i < choices.length; i++) {
-                    const prefix = getPrefix(g, choices[i], []);
-                    console.log("    choice " + i + ": prefix " + prefix);
+                    const prefixes = getChoicePrefixes(g, choices[i], []);
+                    if (prefixes.length === 0) {
+                        console.log(leftpad("choice " + i + ": ", 16) + "no prefixes");
+                    }
+                    else {
+                        for (let p = 0; p < prefixes.length; p++) {
+                            if (p === 0)
+                                console.log(leftpad("choice " + i + ": ", 16) + prefixes[p]);
+                            else
+                                console.log(leftpad("", 16) + prefixes[p]);
+                        }
+
+                    }
+                    // const prefix = getPrefix(g, choices[i], []);
+                    // console.log(leftpad("choice " + i + ": ", 16) + "prefix " + prefix);
                 }
+
                 // const firsts: FirstInfo[] = [];
                 // for (let i = 0; i < choices.length; i++) {
                 //     let choice = choices[i];
