@@ -195,25 +195,25 @@ grm.define("IterationStatement",
         ref("DoStatement"),
     ]));
 
-grm.define("IfStatement1",
+grm.define("IfStatementA",
     sequence([
         keyword("if"),
         keyword("{"),
     ]));
 
-grm.define("IfStatement2",
+grm.define("IfStatementB",
     sequence([
         keyword("if"),
         keyword("*"),
     ]));
 
-grm.define("TryStatement1",
+grm.define("TryStatementA",
     sequence([
         keyword("try"),
         keyword("{"),
     ]));
 
-grm.define("TryStatement2",
+grm.define("TryStatementB",
     sequence([
         keyword("try"),
         keyword("*"),
@@ -222,10 +222,10 @@ grm.define("TryStatement2",
 
 grm.define("Program",
     choice([
-        ref("IfStatement1"),
-        ref("IfStatement2"),
-        ref("TryStatement1"),
-        ref("TryStatement2"),
+        ref("IfStatementA"),
+        ref("IfStatementB"),
+        ref("TryStatementA"),
+        ref("TryStatementB"),
         ref("IterationStatement"),
     ]));
 
