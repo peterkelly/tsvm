@@ -59,112 +59,29 @@ import {
 
 export const grm = new Grammar();
 
-grm.define("IDENT", identifier_token());
-grm.define("NUMBER", numeric_literal_token());
-grm.define("STRING", string_literal_token());
-
-// grm.define("a", keyword("a"));
-// grm.define("b", keyword("b"));
-// grm.define("c", keyword("c"));
-// grm.define("d", keyword("d"));
-// grm.define("e", keyword("e"));
-// grm.define("f", keyword("f"));
-// grm.define("0", keyword("0"));
-// grm.define("1", keyword("1"));
-// grm.define("2", keyword("2"));
-//
-// grm.define("Precedence1",
-//     sequence([
-//         ref("a"),
-//         ref("b"),
-//         ref("c"),
-//         ref("d"),
-//         ref("e"),
-//     ])
-// );
-//
-// grm.define("Precedence2",
-//     sequence([
-//         ref("a"),
-//         ref("b"),
-//         sequence([
-//             ref("0"),
-//             ref("1"),
-//             ref("2"),
-//         ]),
-//         ref("c"),
-//         ref("d"),
-//         ref("e"),
-//     ])
-// );
-//
-// grm.define("Precedence3",
-//     choice([
-//         ref("a"),
-//         ref("b"),
-//         ref("c"),
-//         ref("d"),
-//         ref("e"),
-//     ])
-// );
-//
-// grm.define("Precedence4",
-//     choice([
-//         ref("a"),
-//         ref("b"),
-//         choice([
-//             ref("0"),
-//             ref("1"),
-//             ref("2"),
-//         ]),
-//         ref("c"),
-//         ref("d"),
-//         ref("e"),
-//     ])
-// );
-//
-// grm.define("Precedence5",
-//     choice([
-//         sequence([
-//             ref("a"),
-//             ref("b"),
-//         ]),
-//         sequence([
-//             ref("c"),
-//             ref("d"),
-//         ])
-//     ])
-// );
-//
-// grm.define("Precedence6",
-//     sequence([
-//         choice([
-//             ref("a"),
-//             ref("b"),
-//         ]),
-//         choice([
-//             ref("c"),
-//             ref("d"),
-//         ])
-//     ])
-// );
+// grm.define("IDENT", identifier_token());
+// grm.define("NUMBER", numeric_literal_token());
+// grm.define("STRING", string_literal_token());
 
 grm.define("ForCStatement",
     sequence([
         keyword("for"),
-        keyword("("),
+        keyword("c"),
+        spliceNull(1),
     ]));
 
 grm.define("ForInStatement",
     sequence([
         keyword("for"),
         keyword("in"),
+        spliceNull(1),
     ]));
 
 grm.define("ForOfStatement",
     sequence([
         keyword("for"),
-        keyword("1"),
+        keyword("of"),
+        spliceNull(1),
     ]));
 
 grm.define("ForStatement",
@@ -177,105 +94,13 @@ grm.define("ForStatement",
 grm.define("WhileStatement",
     sequence([
         keyword("while"),
-        keyword("{"),
-        keyword("}"),
+        keyword("("),
+        keyword(")"),
+        spliceNull(2),
     ]));
 
-grm.define("DoStatement",
-sequence([
-    keyword("while"),
-    keyword("{"),
-    keyword("}"),
-]));
-
-grm.define("IterationStatement",
+grm.define("Statement",
     choice([
         ref("ForStatement"),
         ref("WhileStatement"),
-        ref("DoStatement"),
     ]));
-
-grm.define("IfStatementA",
-    sequence([
-        keyword("if"),
-        keyword("{"),
-    ]));
-
-grm.define("IfStatementB",
-    sequence([
-        keyword("if"),
-        keyword("*"),
-    ]));
-
-grm.define("TryStatementA",
-    sequence([
-        keyword("try"),
-        keyword("{"),
-    ]));
-
-grm.define("TryStatementB",
-    sequence([
-        keyword("try"),
-        keyword("*"),
-    ]));
-
-
-grm.define("Program",
-    choice([
-        ref("IfStatementA"),
-        ref("IfStatementB"),
-        ref("TryStatementA"),
-        ref("TryStatementB"),
-        ref("IterationStatement"),
-    ]));
-
-
-
-
-
-// grm.define("Main",
-//     choice([
-//         sequence([
-//             keyword("if"),
-//             keyword("try"),
-//             ref("IDENT"),
-//             spliceNull(2),
-//         ]),
-//         sequence([
-//             keyword("if"),
-//             keyword("try"),
-//             ref("NUMBER"),
-//             spliceNull(2),
-//         ]),
-//         sequence([
-//             keyword("if"),
-//             keyword("catch"),
-//             ref("IDENT"),
-//             spliceNull(2),
-//         ]),
-//         sequence([
-//             keyword("while"),
-//             ref("IDENT"),
-//             spliceNull(1),
-//         ]),
-//         sequence([
-//             keyword("while"),
-//             ref("NUMBER"),
-//             spliceNull(1),
-//         ]),
-//     ])
-// );
-
-// grm.define("Program",
-//     sequence([
-//         whitespace(),               // 8
-//         pos(),                      // 7
-//         ref("IDENT"),               // 6
-//         whitespace(),               // 5
-//         ref("IDENT"),               // 4
-//         whitespace(),               // 3
-//         ref("IDENT"),               // 2
-//         pos(),                      // 1
-//         whitespace(),               // 0
-//         spliceNode(8,"Test",1,7,[6,4,2])
-//     ]));
