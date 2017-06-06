@@ -59,8 +59,34 @@ export function parseSample(g: Grammar, input: string): ASTNode {
 
 function grammarToString(g: Grammar): string {
     const components: string[] = [];
-    g.dump({ write: (str: string) => components.push(str) });
+    // g.dump({ write: (str: string) => components.push(str) });
+    g.toSyntax({ write: (str: string) => components.push(str) });
     return components.join("");
+}
+
+function getPrefix(action: Action, visiting: string[]): Action | null {
+    if (action instanceof grammar.SequenceAction) {
+        if (action.actions.length === 0)
+            return null;
+        else
+            return getPrefix(action.actions[0], visiting);
+    }
+    else if (action instanceof grammar.ChoiceAction) {
+        if (action.actions.length === 0)
+            return null;
+        const first = getPrefix(action.actions[0], visiting);
+        if (first === null)
+            return null;
+        for (let i = 1; i < action.actions.length; i++) {
+            const other = getPrefix(action.actions[i], visiting);
+            if ((other === null) || !first.equals(other))
+                return null;
+        }
+        return first;
+    }
+    else {
+        return action;
+    }
 }
 
 function omitPrefix(action: grammar.Action, prefix: Action): Action {
@@ -93,6 +119,10 @@ function leftFactor(g: Grammar): void {
             if (action instanceof grammar.ChoiceAction) {
                 // console.log("==== have a choice");
                 const choices = action.actions;
+                // for (let i = 0; i < choices.length; i++) {
+                //     const prefix = getPrefix(choices[i], []);
+                //     console.log("    choice " + i + ": prefix " + prefix);
+                // }
                 const firsts: FirstInfo[] = [];
                 for (let i = 0; i < choices.length; i++) {
                     let choice = choices[i];
