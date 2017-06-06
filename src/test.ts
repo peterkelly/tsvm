@@ -59,30 +59,38 @@ export function parseSample(g: Grammar, input: string): ASTNode {
 
 function grammarToString(g: Grammar): string {
     const components: string[] = [];
-    // g.dump({ write: (str: string) => components.push(str) });
-    g.toSyntax({ write: (str: string) => components.push(str) });
+    g.dump({ write: (str: string) => components.push(str) });
+    // g.toSyntax({ write: (str: string) => components.push(str) });
     return components.join("");
 }
 
-function getPrefix(action: Action, visiting: string[]): Action | null {
+function getPrefix(g: Grammar, action: Action, visiting: string[]): Action | null {
     if (action instanceof grammar.SequenceAction) {
         if (action.actions.length === 0)
             return null;
         else
-            return getPrefix(action.actions[0], visiting);
+            return getPrefix(g, action.actions[0], visiting);
     }
     else if (action instanceof grammar.ChoiceAction) {
         if (action.actions.length === 0)
             return null;
-        const first = getPrefix(action.actions[0], visiting);
+        const first = getPrefix(g, action.actions[0], visiting);
         if (first === null)
             return null;
         for (let i = 1; i < action.actions.length; i++) {
-            const other = getPrefix(action.actions[i], visiting);
+            const other = getPrefix(g, action.actions[i], visiting);
             if ((other === null) || !first.equals(other))
                 return null;
         }
         return first;
+    }
+    else if (action instanceof grammar.RefAction) {
+        if (visiting.indexOf(action.name) >= 0)
+            throw new Error("Left recursion detected: " + visiting.concat([action.name]).join(" -> "));
+        return getPrefix(g, g.lookup(action.name), visiting.concat([action.name]));
+    }
+    else if (action instanceof grammar.ProductionAction) {
+        return getPrefix(g, action.child, visiting);
     }
     else {
         return action;
@@ -119,59 +127,59 @@ function leftFactor(g: Grammar): void {
             if (action instanceof grammar.ChoiceAction) {
                 // console.log("==== have a choice");
                 const choices = action.actions;
-                // for (let i = 0; i < choices.length; i++) {
-                //     const prefix = getPrefix(choices[i], []);
-                //     console.log("    choice " + i + ": prefix " + prefix);
-                // }
-                const firsts: FirstInfo[] = [];
                 for (let i = 0; i < choices.length; i++) {
-                    let choice = choices[i];
-                    if ((choice instanceof grammar.SequenceAction) && (choice.actions.length > 0))
-                        choice = choice.actions[0];
-                    let exists = false;
-                    for (const f of firsts) {
-                        if (choice.equals(f.action)) {
-                            f.count++;
-                            f.indices.push(i);
-                            exists = true;
-                            break;
-                        }
-                    }
-                    if (!exists) {
-                        firsts.push({ action: choice, count: 1, indices: [i] });
-                    }
+                    const prefix = getPrefix(g, choices[i], []);
+                    console.log("    choice " + i + ": prefix " + prefix);
                 }
-
-                console.log("    Firsts:");
-                for (const f of firsts) {
-                    console.log("        " + f.action + " (" + f.count + ") " + f.indices.join(", "));
-                }
-                let selected: FirstInfo | null = null;
-                for (const f of firsts) {
-                    if (f.count > 1) {
-                        selected = f;
-                        break;
-                    }
-                }
-
-                if (selected !== null) {
-                    const outerChoices: Action[] = [];
-                    const innerChoices: Action[] = [];
-                    for (let i = 0; i < choices.length; i++) {
-                        if (selected.indices.indexOf(i) >= 0) {
-                            innerChoices.push(omitPrefix(choices[i], selected.action));
-                            if (selected.indices.indexOf(i) === 0) {
-                                outerChoices.push(new grammar.SequenceAction([selected.action, new grammar.ChoiceAction(innerChoices)]));
-                            }
-                        }
-                        else {
-                            outerChoices.push(choices[i]);
-                        }
-                    }
-                    action = new grammar.ChoiceAction(outerChoices).visitChildren(visitor);
-                    // action = new grammar.ChoiceAction(outerChoices);
-                    changed = true;
-                }
+                // const firsts: FirstInfo[] = [];
+                // for (let i = 0; i < choices.length; i++) {
+                //     let choice = choices[i];
+                //     if ((choice instanceof grammar.SequenceAction) && (choice.actions.length > 0))
+                //         choice = choice.actions[0];
+                //     let exists = false;
+                //     for (const f of firsts) {
+                //         if (choice.equals(f.action)) {
+                //             f.count++;
+                //             f.indices.push(i);
+                //             exists = true;
+                //             break;
+                //         }
+                //     }
+                //     if (!exists) {
+                //         firsts.push({ action: choice, count: 1, indices: [i] });
+                //     }
+                // }
+                //
+                // console.log("    Firsts:");
+                // for (const f of firsts) {
+                //     console.log("        " + f.action + " (" + f.count + ") " + f.indices.join(", "));
+                // }
+                // let selected: FirstInfo | null = null;
+                // for (const f of firsts) {
+                //     if (f.count > 1) {
+                //         selected = f;
+                //         break;
+                //     }
+                // }
+                //
+                // if (selected !== null) {
+                //     const outerChoices: Action[] = [];
+                //     const innerChoices: Action[] = [];
+                //     for (let i = 0; i < choices.length; i++) {
+                //         if (selected.indices.indexOf(i) >= 0) {
+                //             innerChoices.push(omitPrefix(choices[i], selected.action));
+                //             if (selected.indices.indexOf(i) === 0) {
+                //                 outerChoices.push(new grammar.SequenceAction([selected.action, new grammar.ChoiceAction(innerChoices)]));
+                //             }
+                //         }
+                //         else {
+                //             outerChoices.push(choices[i]);
+                //         }
+                //     }
+                //     action = new grammar.ChoiceAction(outerChoices).visitChildren(visitor);
+                //     // action = new grammar.ChoiceAction(outerChoices);
+                //     changed = true;
+                // }
             }
         } while (changed);
         return action;

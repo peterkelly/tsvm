@@ -67,6 +67,8 @@ export class Grammar {
     }
 
     public lookup(name: string): Action {
+        if (!this.productions[name])
+            throw new Error("Production not found: " + name);
         return this.productions[name];
     }
 
