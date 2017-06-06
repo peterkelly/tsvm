@@ -63,6 +63,99 @@ grm.define("IDENT", identifier_token());
 grm.define("NUMBER", numeric_literal_token());
 grm.define("STRING", string_literal_token());
 
+grm.define("a", keyword("a"));
+grm.define("b", keyword("b"));
+grm.define("c", keyword("c"));
+grm.define("d", keyword("d"));
+grm.define("e", keyword("e"));
+grm.define("f", keyword("f"));
+
+grm.define("Precedence1",
+    sequence([
+        ref("a"),
+        ref("b"),
+        ref("c"),
+        ref("d"),
+        ref("e"),
+    ])
+);
+
+grm.define("Precedence2",
+    sequence([
+        ref("a"),
+        ref("b"),
+        sequence([
+            ref("0"),
+            ref("1"),
+            ref("2"),
+        ]),
+        ref("c"),
+        ref("d"),
+        ref("e"),
+    ])
+);
+
+grm.define("Precedence3",
+    choice([
+        ref("a"),
+        ref("b"),
+        ref("c"),
+        ref("d"),
+        ref("e"),
+    ])
+);
+
+grm.define("Precedence4",
+    choice([
+        ref("a"),
+        ref("b"),
+        choice([
+            ref("0"),
+            ref("1"),
+            ref("2"),
+        ]),
+        ref("c"),
+        ref("d"),
+        ref("e"),
+    ])
+);
+
+grm.define("Precedence5",
+    choice([
+        sequence([
+            ref("a"),
+            ref("b"),
+        ]),
+        sequence([
+            ref("c"),
+            ref("d"),
+        ])
+    ])
+);
+
+grm.define("Precedence6",
+    sequence([
+        choice([
+            ref("a"),
+            ref("b"),
+        ]),
+        choice([
+            ref("c"),
+            ref("d"),
+        ])
+    ])
+);
+
+
+
+
+
+
+
+
+
+
+
 grm.define("Main",
     choice([
         sequence([
