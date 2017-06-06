@@ -275,6 +275,51 @@ function leftFactor(g: Grammar): void {
     g.visit(visitor);
 }
 
+function expand(g: Grammar): void {
+    const visitor: grammar.Visitor = (action, visitChildren) => {
+        // Before visiting children
+        if (action instanceof grammar.ProductionAction) {
+            console.log("Production: " + action.name);
+        }
+
+        action = visitChildren();
+
+        // After visiting children
+        let changed: boolean;
+        do {
+            changed = false;
+            if (action instanceof grammar.ChoiceAction) {
+                const choices = action.actions;
+                const newChoices: Action[] = [];
+                for (const choice of choices) {
+                    if (choice instanceof grammar.RefAction) {
+                        const production = g.lookup(choice.name);
+                        newChoices.push(production);
+                        changed = true;
+                    }
+                    else if (choice instanceof grammar.ProductionAction) {
+                        newChoices.push(choice.child);
+                        changed = true;
+                    }
+                    else if (choice instanceof grammar.ChoiceAction) {
+                        for (const c of choice.actions)
+                            newChoices.push(c);
+                        changed = true;
+                    }
+                    else {
+                        newChoices.push(choice);
+                    }
+                }
+                if (changed)
+                    action = new grammar.ChoiceAction(newChoices);
+            }
+        } while (changed);
+
+        return action;
+    };
+    g.visit(visitor);
+}
+
 function main(): void {
     let beforeFilename: string | null = null;
     let afterFilename: string | null = null;
@@ -288,7 +333,8 @@ function main(): void {
 
     const beforeStr = grammarToString(sampleGrammar);
 
-    leftFactor(sampleGrammar);
+    // leftFactor(sampleGrammar);
+    expand(sampleGrammar);
 
     // let indent = 0;
     // sampleGrammar.visit((action, visitChildren) => {
