@@ -136,15 +136,33 @@ interface FirstInfo {
     indices: number[];
 }
 
+interface PrefixInfo {
+    prefix: Action | null;
+    count: number;
+}
+
+function nullablePrefixEquals(a: Action | null, b: Action | null): boolean {
+    if (a === null)
+        return (b === null);
+    else if (b === null)
+        return (a === null);
+    else
+        return a.equals(b);
+}
+
 function leftFactor(g: Grammar): void {
     const visitor: grammar.Visitor = (action, visitChildren) => {
+        // Before visiting children
+        if (action instanceof grammar.ProductionAction) {
+            console.log("Production: " + action.name);
+        }
+
         action = visitChildren();
+
+        // After visiting children
         let changed: boolean;
         do {
             changed = false;
-            if (action instanceof grammar.ProductionAction) {
-                console.log("Production: " + action.name);
-            }
             // console.log("action is a " + (<any> action).constructor.name);
             if (action instanceof grammar.ChoiceAction) {
                 // console.log("==== have a choice");
@@ -155,22 +173,50 @@ function leftFactor(g: Grammar): void {
                 //     console.log(leftpad("choice " + i + ": ", 16) + "prefix " + prefix);
                 // }
 
-                for (let i = 0; i < choices.length; i++) {
-                    const prefixes = getChoicePrefixes(g, choices[i], []);
-                    if (prefixes.length === 0) {
-                        console.log(leftpad("choice " + i + ": ", 16) + "no prefixes");
-                    }
-                    else {
-                        for (let p = 0; p < prefixes.length; p++) {
-                            if (p === 0)
-                                console.log(leftpad("choice " + i + ": ", 16) + prefixes[p]);
-                            else
-                                console.log(leftpad("", 16) + prefixes[p]);
-                        }
+                // for (let i = 0; i < choices.length; i++) {
+                //     const prefixes = getChoicePrefixes(g, choices[i], []);
+                //     if (prefixes.length === 0) {
+                //         console.log(leftpad("choice " + i + ": ", 16) + "no prefixes");
+                //     }
+                //     else {
+                //         for (let p = 0; p < prefixes.length; p++) {
+                //             if (p === 0)
+                //                 console.log(leftpad("choice " + i + ": ", 16) + prefixes[p]);
+                //             else
+                //                 console.log(leftpad("", 16) + prefixes[p]);
+                //         }
+                //
+                //     }
+                //     // const prefix = getPrefix(g, choices[i], []);
+                //     // console.log(leftpad("choice " + i + ": ", 16) + "prefix " + prefix);
+                // }
+                console.log("    Choice prefixes:");
+                const prefixes = getChoicePrefixes(g, action, []);
+                for (const prefix of prefixes) {
+                    console.log("        " + prefix);
+                }
 
+                const infoArray: PrefixInfo[] = [];
+                for (const prefix of prefixes) {
+                    let found = false;
+                    for (const info of infoArray) {
+                        if (nullablePrefixEquals(info.prefix, prefix)) {
+                            found = true;
+                            info.count++;
+                            break;
+                        }
                     }
-                    // const prefix = getPrefix(g, choices[i], []);
-                    // console.log(leftpad("choice " + i + ": ", 16) + "prefix " + prefix);
+                    if (!found) {
+                        infoArray.push({
+                            prefix: prefix,
+                            count: 1,
+                        });
+                    }
+                }
+
+                console.log("    Consolidated prefixes: ");
+                for (const info of infoArray) {
+                    console.log("        (" + info.count + "): " + info.prefix);
                 }
 
                 // const firsts: FirstInfo[] = [];
@@ -252,10 +298,6 @@ function main(): void {
     //     indent--;
     //     return action;
     // });
-
-    sampleGrammar.derive("IfStatementA", grammar.keyword("test1"));
-    sampleGrammar.derive("IfStatementA", grammar.keyword("test2"));
-    sampleGrammar.derive("IfStatementA", grammar.keyword("test3"));
 
     const afterStr = grammarToString(sampleGrammar);
 

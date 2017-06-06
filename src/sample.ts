@@ -233,38 +233,38 @@ grm.define("Program",
 
 
 
-grm.define("Main",
-    choice([
-        sequence([
-            keyword("if"),
-            keyword("try"),
-            ref("IDENT"),
-            spliceNull(2),
-        ]),
-        sequence([
-            keyword("if"),
-            keyword("try"),
-            ref("NUMBER"),
-            spliceNull(2),
-        ]),
-        sequence([
-            keyword("if"),
-            keyword("catch"),
-            ref("IDENT"),
-            spliceNull(2),
-        ]),
-        sequence([
-            keyword("while"),
-            ref("IDENT"),
-            spliceNull(1),
-        ]),
-        sequence([
-            keyword("while"),
-            ref("NUMBER"),
-            spliceNull(1),
-        ]),
-    ])
-);
+// grm.define("Main",
+//     choice([
+//         sequence([
+//             keyword("if"),
+//             keyword("try"),
+//             ref("IDENT"),
+//             spliceNull(2),
+//         ]),
+//         sequence([
+//             keyword("if"),
+//             keyword("try"),
+//             ref("NUMBER"),
+//             spliceNull(2),
+//         ]),
+//         sequence([
+//             keyword("if"),
+//             keyword("catch"),
+//             ref("IDENT"),
+//             spliceNull(2),
+//         ]),
+//         sequence([
+//             keyword("while"),
+//             ref("IDENT"),
+//             spliceNull(1),
+//         ]),
+//         sequence([
+//             keyword("while"),
+//             ref("NUMBER"),
+//             spliceNull(1),
+//         ]),
+//     ])
+// );
 
 // grm.define("Program",
 //     sequence([
