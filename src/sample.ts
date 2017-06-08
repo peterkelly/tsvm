@@ -59,105 +59,99 @@ import {
 
 export const grm = new Grammar();
 
-// grm.define("IDENT", identifier_token());
-// grm.define("NUMBER", numeric_literal_token());
+grm.define("NUMBER", numeric_literal_token());
+grm.define("IDENT", identifier_token());
 // grm.define("STRING", string_literal_token());
 
-grm.define("ForCStatement",
-    sequence([
-        keyword("for"),
-        keyword("c"),
-        spliceNull(1),
-    ]));
+// Primary        = NUMBER | IDENT | "(" Expression ")"
 
-grm.define("ForInStatement",
-    sequence([
-        keyword("for"),
-        keyword("in"),
-        spliceNull(1),
-    ]));
-
-grm.define("ForOfStatement",
-    sequence([
-        keyword("for"),
-        keyword("of"),
-        spliceNull(1),
-    ]));
-
-grm.define("ForStatement",
+grm.define("Primary",
     choice([
-        ref("ForCStatement"),
-        ref("ForInStatement"),
-        ref("ForOfStatement"),
+        ref("NUMBER"),
+        ref("IDENT"),
+        sequence([
+            keyword("("),
+            ref("Expression"),
+            keyword(")"),
+            spliceReplace(2, 1),
+        ]),
     ]));
 
-grm.define("WhileStatement",
+//
+// Multiplicative = Primary
+//                    ( "*" Multiplicative |
+//                      "/" Multiplicative |
+//                      "%" Multiplicative)*
+
+grm.define("Multiplicative",
     sequence([
-        keyword("while"),
-        keyword("("),
-        keyword(")"),
-        spliceNull(2),
+        ref("Primary"),
+        repeat(
+            choice([
+                sequence([
+                    keyword("*"),
+                    ref("Multiplicative"),
+                    spliceNode(2, "Mul", -1, -1, [2, 0]),
+                ]),
+                sequence([
+                    keyword("/"),
+                    ref("Multiplicative"),
+                    spliceNode(2, "Div", -1, -1, [2, 0]),
+                ]),
+                sequence([
+                    keyword("%"),
+                    ref("Multiplicative"),
+                    spliceNode(2, "Mod", -1, -1, [2, 0]),
+                ]),
+            ])
+        )
     ]));
 
-grm.define("Statement",
+// Additive       = Multiplicative
+//                    ( "+" Additive |
+//                      "-" Additive )*
+
+grm.define("Additive",
+    sequence([
+        ref("Multiplicative"),
+        repeat(
+            choice([
+                sequence([
+                    keyword("+"),
+                    ref("Additive"),
+                    spliceNode(2, "Add", -1, -1, [2, 0]),
+                ]),
+                sequence([
+                    keyword("-"),
+                    ref("Additive"),
+                    spliceNode(2, "Sub", -1, -1, [2, 0]),
+                ]),
+            ])
+        )
+    ]));
+
+// Equality       = Additive "==" Additive |
+//                  Additive "!=" Additive |
+//                  Additive
+
+grm.define("Equality",
     choice([
-        ref("ForStatement"),
-        ref("WhileStatement"),
+        sequence([
+            ref("Additive"),
+            keyword("=="),
+            ref("Additive"),
+            spliceNode(2, "Eq", -1, -1, [2, 0]),
+        ]),
+        sequence([
+            ref("Additive"),
+            keyword("!="),
+            ref("Additive"),
+            spliceNode(2, "Ne", -1, -1, [2, 0]),
+        ]),
+        ref("Additive"),
     ]));
 
-grm.define("ParenthesizedExpression",
-    sequence([
-        keyword("("),
-        ref("Expression"),
-        keyword(")"),
-        spliceReplace(2, 1),
-    ]));
-
-grm.define("PrimaryExpression",
-    choice([
-        string_literal_token(),
-        numeric_literal_token(),
-        ref("ParenthesizedExpression"),
-    ]));
-
-grm.define("MultiplicativeExpression",
-    sequence([
-        ref("PrimaryExpression"),
-        repeat(choice([
-            sequence([
-                keyword("*"),
-                ref("PrimaryExpression"),
-                spliceNode(1, "Multiply", -1, -1, [1, 0]),
-            ]),
-            sequence([
-                keyword("/"),
-                ref("PrimaryExpression"),
-                spliceNode(1, "Divide", -1, -1, [1, 0]),
-            ]),
-            sequence([
-                keyword("%"),
-                ref("PrimaryExpression"),
-                spliceNode(1, "Modulo", -1, -1, [1, 0]),
-            ]),
-        ])),
-    ]));
-
-grm.define("AdditiveExpression",
-    sequence([
-        ref("MultiplicativeExpression"),
-        repeat(choice([
-            sequence([
-                keyword("+"),
-                ref("MultiplicativeExpression"),
-                spliceNode(1, "Add", -1, -1, [1, 0]),
-            ]),
-            sequence([
-                keyword("-"),
-                ref("MultiplicativeExpression"),
-                spliceNode(1, "Subtract", -1, -1, [1, 0]),
-            ]),
-        ])),
-    ]));
+// Expression     = Equality
 
 grm.define("Expression",
-    ref("AdditiveExpression"));
+    ref("Equality"));
