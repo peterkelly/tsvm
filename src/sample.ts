@@ -104,3 +104,60 @@ grm.define("Statement",
         ref("ForStatement"),
         ref("WhileStatement"),
     ]));
+
+grm.define("ParenthesizedExpression",
+    sequence([
+        keyword("("),
+        ref("Expression"),
+        keyword(")"),
+        spliceReplace(2, 1),
+    ]));
+
+grm.define("PrimaryExpression",
+    choice([
+        string_literal_token(),
+        numeric_literal_token(),
+        ref("ParenthesizedExpression"),
+    ]));
+
+grm.define("MultiplicativeExpression",
+    sequence([
+        ref("PrimaryExpression"),
+        repeat(choice([
+            sequence([
+                keyword("*"),
+                ref("PrimaryExpression"),
+                spliceNode(1, "Multiply", -1, -1, [1, 0]),
+            ]),
+            sequence([
+                keyword("/"),
+                ref("PrimaryExpression"),
+                spliceNode(1, "Divide", -1, -1, [1, 0]),
+            ]),
+            sequence([
+                keyword("%"),
+                ref("PrimaryExpression"),
+                spliceNode(1, "Modulo", -1, -1, [1, 0]),
+            ]),
+        ])),
+    ]));
+
+grm.define("AdditiveExpression",
+    sequence([
+        ref("MultiplicativeExpression"),
+        repeat(choice([
+            sequence([
+                keyword("+"),
+                ref("MultiplicativeExpression"),
+                spliceNode(1, "Add", -1, -1, [1, 0]),
+            ]),
+            sequence([
+                keyword("-"),
+                ref("MultiplicativeExpression"),
+                spliceNode(1, "Subtract", -1, -1, [1, 0]),
+            ]),
+        ])),
+    ]));
+
+grm.define("Expression",
+    ref("AdditiveExpression"));
