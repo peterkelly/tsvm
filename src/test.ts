@@ -276,32 +276,50 @@ function leftFactor(g: Grammar): void {
 }
 
 function expand(g: Grammar): void {
+    const visiting: string[] = [];
     const visitor: grammar.Visitor = (action, visitChildren) => {
+        let productionName: string | null = null;
         // Before visiting children
         if (action instanceof grammar.ProductionAction) {
             console.log("Production: " + action.name);
+            productionName = action.name;
+            visiting.push(productionName);
         }
 
         action = visitChildren();
+
+        const expanded: string[] = [];
 
         // After visiting children
         let changed: boolean;
         do {
             changed = false;
-            if (action instanceof grammar.ChoiceAction) {
+            if (action instanceof grammar.RefAction) {
+                if (expanded.indexOf(action.name) < 0) {
+                    expanded.push(action.name);
+                    action = g.lookup(action.name);
+                    changed = true;
+                }
+            }
+            else if (action instanceof grammar.ProductionAction) {
+                action = action.child;
+                changed = true;
+            }
+            else if (action instanceof grammar.ChoiceAction) {
                 const choices = action.actions;
                 const newChoices: Action[] = [];
                 for (const choice of choices) {
-                    if (choice instanceof grammar.RefAction) {
-                        const production = g.lookup(choice.name);
-                        newChoices.push(production);
-                        changed = true;
-                    }
-                    else if (choice instanceof grammar.ProductionAction) {
-                        newChoices.push(choice.child);
-                        changed = true;
-                    }
-                    else if (choice instanceof grammar.ChoiceAction) {
+                    // if (choice instanceof grammar.RefAction) {
+                    //     const production = g.lookup(choice.name);
+                    //     newChoices.push(production);
+                    //     changed = true;
+                    // }
+                    // else if (choice instanceof grammar.ProductionAction) {
+                    //     newChoices.push(choice.child);
+                    //     changed = true;
+                    // }
+                    // else
+                    if (choice instanceof grammar.ChoiceAction) {
                         for (const c of choice.actions)
                             newChoices.push(c);
                         changed = true;
@@ -314,6 +332,12 @@ function expand(g: Grammar): void {
                     action = new grammar.ChoiceAction(newChoices);
             }
         } while (changed);
+
+        if (productionName !== null) {
+            if ((visiting.length === 0) || (visiting[visiting.length - 1] !== productionName))
+                throw new Error("Expected production name " + JSON.stringify(productionName) + " to be at top of visiting stack");
+            visiting.pop();
+        }
 
         return action;
     };
