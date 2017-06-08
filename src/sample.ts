@@ -59,16 +59,17 @@ import {
 
 export const grm = new Grammar();
 
-grm.define("NUMBER", numeric_literal_token());
-grm.define("IDENT", identifier_token());
+// grm.define("NUMBER", numeric_literal_token());
+// grm.define("IDENT", identifier_token());
+
 // grm.define("STRING", string_literal_token());
 
 // Primary        = NUMBER | IDENT | "(" Expression ")"
 
 grm.define("Primary",
     choice([
-        ref("NUMBER"),
-        ref("IDENT"),
+        keyword("NUMBER"),
+        keyword("IDENT"),
         sequence([
             keyword("("),
             ref("Expression"),
