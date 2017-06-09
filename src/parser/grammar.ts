@@ -49,7 +49,7 @@ export interface OutputOptions {
     write(str: string): void;
 }
 
-export type Visitor = (action: Action, visitChildren: () => Action) => Action;
+export type Transformer = (action: Action, t: Transformer, g: Grammar) => Action;
 
 function needParentheses(precedence: number, target: number): boolean {
     return precedence <= target;
@@ -102,19 +102,32 @@ export class Grammar {
         }
     }
 
-    public visit(v: Visitor) {
-        for (let i = 0; i < this.names.length; i++) {
-            const name = this.names[i];
-            const production = this.productions.get(name);
+    public clone(): Grammar {
+        const newGrammar = new Grammar();
+        for (const name of this.names) {
+            const production = this.lookup(name);
+            newGrammar.productions.set(name, production);
+            newGrammar.names.push(name);
+        }
+        return newGrammar;
+    }
+
+    public transform(t: Transformer) {
+        const newGrammar = this.clone();
+        for (let i = 0; i < newGrammar.names.length; i++) {
+            const name = newGrammar.names[i];
+            const production = newGrammar.productions.get(name);
             if (production === undefined)
                 throw new Error("Action " + JSON.stringify(name) + " not found");
-            const result = v(production, () => production.visitChildren(v));
+            const result = t(production, t, newGrammar);
             if (result instanceof ProductionAction)
-                this.productions.set(name, result);
+                newGrammar.productions.set(name, result);
             else
-                this.productions.set(name, new ProductionAction(name, result, result.offset));
+                newGrammar.productions.set(name, new ProductionAction(name, result, result.offset));
         }
+        return newGrammar;
     }
+
 }
 
 export class Builder {
@@ -296,24 +309,13 @@ export abstract class Action {
 
     public abstract toSyntax(output: OutputOptions, precedence: number): void;
 
-    public visit(v: Visitor): Action {
-        // let action: Action = this;
-        // if (v.before)
-        //     action = v.before(action);
-        // action.visitChildren(action);
-        // if (v.after)
-        //     action = v.after(action);
-        // return action;
-        return v(this, () => this.visitChildren(v));
-    }
-
-    public abstract visitChildren(v: Visitor): Action;
+    public abstract transform(t: Transformer, g: Grammar): Action;
 
     public abstract toString(): string;
 }
 
 export abstract class LeafAction extends Action {
-    public visitChildren(v: Visitor): Action {
+    public transform(t: Transformer, g: Grammar): Action {
         return this;
     }
     public abstract shortString(): string;
@@ -324,8 +326,8 @@ export abstract class LeafAction extends Action {
 }
 
 export class ProductionAction extends Action {
-    public child: Action;
-    public name: string;
+    public readonly child: Action;
+    public readonly name: string;
 
     public constructor(name: string, child: Action, offset?: number) {
         super("[" + name + "]", (offset !== undefined) ? offset : 1);
@@ -371,9 +373,12 @@ export class ProductionAction extends Action {
         output.write(";");
     }
 
-    public visitChildren(v: Visitor): Action {
-        this.child = this.child.visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const child = t(this.child, t, g);
+        if (child === this.child)
+            return this;
+        else
+            return new ProductionAction(this.name, child, child.offset);
     }
 
     public toString(): string {
@@ -412,7 +417,7 @@ export function empty(): Action {
 }
 
 export class NotAction extends Action {
-    public child: Action;
+    public readonly child: Action;
 
     public constructor(child: Action) {
         super("not", 0);
@@ -462,9 +467,9 @@ export class NotAction extends Action {
             output.write(")");
     }
 
-    public visitChildren(v: Visitor): Action {
-        this.child = this.child.visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const child = t(this.child, t, g);
+        return (child !== this.child) ? new NotAction(child) : this;
     }
 
     public toString(): string {
@@ -477,7 +482,7 @@ export function not(f: Action): Action {
 }
 
 export class RefAction extends Action {
-    public name: string;
+    public readonly name: string;
 
     public constructor(productionName: string, offset?: number) {
         super("ref", (offset !== undefined) ? offset : 1);
@@ -504,7 +509,7 @@ export class RefAction extends Action {
         output.write(this.name);
     }
 
-    public visitChildren(v: Visitor): Action {
+    public transform(t: Transformer, g: Grammar): Action {
         return this;
     }
 
@@ -518,8 +523,8 @@ export function ref(name: string): Action {
 }
 
 export class ListAction extends Action {
-    public first: Action;
-    public rest: Action;
+    public readonly first: Action;
+    public readonly rest: Action;
 
     public constructor(first: Action, rest: Action) {
         super("list", 1);
@@ -578,10 +583,13 @@ export class ListAction extends Action {
         output.write(")");
     }
 
-    public visitChildren(v: Visitor): Action {
-        this.first = this.first.visit(v);
-        this.rest = this.rest.visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const first = t(this.first, t, g);
+        const rest = t(this.rest, t, g);
+        if ((first !== this.first) || (rest !== this.rest))
+            return new ListAction(first, rest);
+        else
+            return this;
     }
 
     public toString(): string {
@@ -594,7 +602,7 @@ export function list(first: Action, rest: Action): Action {
 }
 
 export class SequenceAction extends Action {
-    public actions: Action[];
+    public readonly actions: Action[];
 
     public constructor(actions: Action[]) {
         super("sequence", actionsTotalOffset(actions));
@@ -636,10 +644,14 @@ export class SequenceAction extends Action {
             output.write(")");
     }
 
-    public visitChildren(v: Visitor): Action {
-        for (let i = 0; i < this.actions.length; i++)
-            this.actions[i] = this.actions[i].visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const newActions: Action[] = [];
+        let different = false;
+        for (let i = 0; i < this.actions.length; i++) {
+            newActions.push(t(this.actions[i], t, g));
+            different = different || (newActions[i] !== this.actions[i]);
+        }
+        return different ? new SequenceAction(newActions) : this;
     }
 
     public toString(): string {
@@ -652,7 +664,7 @@ export function sequence(actions: Action[]): Action {
 }
 
 export class SpliceNullAction extends LeafAction {
-    public index: number;
+    public readonly index: number;
 
     public constructor(index: number) {
         super("spliceNull", -index);
@@ -686,8 +698,8 @@ export function spliceNull(index: number): Action {
 }
 
 export class SpliceReplaceAction extends LeafAction {
-    public index: number;
-    public srcIndex: number;
+    public readonly index: number;
+    public readonly srcIndex: number;
 
     public constructor(index: number, srcIndex: number) {
         super("spliceReplace", -index);
@@ -723,11 +735,11 @@ export function spliceReplace(index: number, srcIndex: number): Action {
 }
 
 export class SpliceNodeAction extends LeafAction {
-    public index: number;
-    public name: string;
-    public startIndex: number;
-    public endIndex: number;
-    public childIndices: number[];
+    public readonly index: number;
+    public readonly name: string;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
+    public readonly childIndices: number[];
 
     public constructor(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]) {
         super("spliceNode", -index);
@@ -782,11 +794,11 @@ export function spliceNode(index: number, name: string, startIndex: number, endI
 }
 
 export class SpliceStringNodeAction extends LeafAction {
-    public index: number;
-    public nodeName: string;
-    public startIndex: number;
-    public endIndex: number;
-    public valueIndex: number;
+    public readonly index: number;
+    public readonly nodeName: string;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
+    public readonly valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
         super("spliceStringNode", -index);
@@ -844,11 +856,11 @@ export function spliceStringNode(index: number, name: string, startIndex: number
 }
 
 export class SpliceNumberNodeAction extends LeafAction {
-    public index: number;
-    public nodeName: string;
-    public startIndex: number;
-    public endIndex: number;
-    public valueIndex: number;
+    public readonly index: number;
+    public readonly nodeName: string;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
+    public readonly valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
         super("spliceNumberNode", -index);
@@ -902,9 +914,9 @@ export function spliceNumberNode(index: number, name: string, startIndex: number
 }
 
 export class SpliceEmptyListNodeAction extends LeafAction {
-    public index: number;
-    public startIndex: number;
-    public endIndex: number;
+    public readonly index: number;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
 
     public constructor(index: number, startIndex: number, endIndex: number) {
         super("spliceEmptyListNode", -index);
@@ -975,7 +987,7 @@ export function pop(): Action {
 }
 
 export class OptAction extends Action {
-    public child: Action;
+    public readonly child: Action;
 
     public constructor(child: Action) {
         super("opt", 1);
@@ -1018,9 +1030,9 @@ export class OptAction extends Action {
         output.write(")?");
     }
 
-    public visitChildren(v: Visitor): Action {
-        this.child = this.child.visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const child = t(this.child, t, g);
+        return (child !== this.child) ? new OptAction(child) : this;
     }
 
     public toString(): string {
@@ -1033,7 +1045,7 @@ export function opt(f: Action): Action {
 }
 
 export class ChoiceAction extends Action {
-    public actions: Action[];
+    public readonly actions: Action[];
 
     public constructor(actions: Action[]) {
         super("choice", actionsSameOffset(actions));
@@ -1085,10 +1097,14 @@ export class ChoiceAction extends Action {
             output.write(")");
     }
 
-    public visitChildren(v: Visitor): Action {
-        for (let i = 0; i < this.actions.length; i++)
-            this.actions[i] = this.actions[i].visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const newActions: Action[] = [];
+        let different = false;
+        for (let i = 0; i < this.actions.length; i++) {
+            newActions.push(t(this.actions[i], t, g));
+            different = different || (newActions[i] !== this.actions[i]);
+        }
+        return different ? new ChoiceAction(newActions) : this;
     }
 
     public toString(): string {
@@ -1101,7 +1117,7 @@ export function choice(actions: Action[]): Action {
 }
 
 export class RepeatAction extends Action {
-    public child: Action;
+    public readonly child: Action;
 
     public constructor(child: Action) {
         super("repeat", 0);
@@ -1134,9 +1150,9 @@ export class RepeatAction extends Action {
         output.write("*");
     }
 
-    public visitChildren(v: Visitor): Action {
-        this.child = this.child.visit(v);
-        return this;
+    public transform(t: Transformer, g: Grammar): Action {
+        const child = t(this.child, t, g);
+        return (child !== this.child) ? new RepeatAction(child) : this;
     }
 
     public toString(): string {
@@ -1179,7 +1195,7 @@ export function pos(): Action {
 }
 
 export class ValueAction extends LeafAction {
-    public value: any;
+    public readonly value: any;
 
     public constructor(value: any) {
         super("value", 1);
@@ -1213,7 +1229,7 @@ export function value(value: any): Action {
 }
 
 export class KeywordAction extends LeafAction {
-    public str: string;
+    public readonly str: string;
 
     public constructor(str: string) {
         super("keyword", 1);
@@ -1253,7 +1269,7 @@ export function keyword(str: string): Action {
 }
 
 export class IdentifierAction extends LeafAction {
-    public str: string;
+    public readonly str: string;
 
     public constructor(str: string) {
         super("identifier", 1);

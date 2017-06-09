@@ -150,14 +150,14 @@ function nullablePrefixEquals(a: Action | null, b: Action | null): boolean {
         return a.equals(b);
 }
 
-function leftFactor(g: Grammar): void {
-    const visitor: grammar.Visitor = (action, visitChildren) => {
+function leftFactor(gr: Grammar): Grammar {
+    return gr.transform((action, t, g) => {
         // Before visiting children
         if (action instanceof grammar.ProductionAction) {
             console.log("Production: " + action.name);
         }
 
-        action = visitChildren();
+        action = action.transform(t, g);
 
         // After visiting children
         let changed: boolean;
@@ -271,13 +271,12 @@ function leftFactor(g: Grammar): void {
             }
         } while (changed);
         return action;
-    };
-    g.visit(visitor);
+    });
 }
 
-function expand(g: Grammar): void {
+function expand(gr: Grammar): Grammar {
     const visiting: string[] = [];
-    const visitor: grammar.Visitor = (action, visitChildren) => {
+    return gr.transform((action, t, g) => {
         let productionName: string | null = null;
         // Before visiting children
         if (action instanceof grammar.ProductionAction) {
@@ -286,7 +285,7 @@ function expand(g: Grammar): void {
             visiting.push(productionName);
         }
 
-        action = visitChildren();
+        action = action.transform(t, g);
 
         const expanded: string[] = [];
 
@@ -340,8 +339,7 @@ function expand(g: Grammar): void {
         }
 
         return action;
-    };
-    g.visit(visitor);
+    });
 }
 
 function main(): void {

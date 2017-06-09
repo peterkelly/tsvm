@@ -34,9 +34,9 @@ function padString(length: number): string {
     return s;
 }
 
-function expandFirstitem(g: Grammar): void {
-    const visitor: grammar.Visitor = (action, visitChildren) => {
-        action = visitChildren();
+function expandFirstitem(gr: Grammar): Grammar {
+    return gr.transform((action, t, g) => {
+        action = action.transform(t, g);
 
         if ((action instanceof SequenceAction) && (action.actions.length > 0)) {
             let first = action.actions[0];
@@ -52,13 +52,12 @@ function expandFirstitem(g: Grammar): void {
         }
 
         return action;
-    };
-    g.visit(visitor);
+    });
 }
 
-function liftPrefix(g: Grammar): void {
-    const visitor: grammar.Visitor = (action, visitChildren) => {
-        action = visitChildren();
+function liftPrefix(gr: Grammar): Grammar {
+    return gr.transform((action, t, g) => {
+        action = action.transform(t, g);
 
         if (action instanceof ChoiceAction) {
             const prefixes = action.actions.map((choice): Action => {
@@ -97,13 +96,12 @@ function liftPrefix(g: Grammar): void {
             }
         }
         return action;
-    };
-    g.visit(visitor);
+    });
 }
 
-function printGrammar(g: Grammar): void {
+function printGrammar(gr: Grammar): void {
     let depth = 0;
-    const visitor: grammar.Visitor = (action, visitChildren) => {
+    gr.transform((action, t, g) => {
         if (action instanceof grammar.ProductionAction)
             console.log(padString(depth) + "Production " + action.name);
         else if (action instanceof KeywordAction)
@@ -116,17 +114,17 @@ function printGrammar(g: Grammar): void {
             console.log(padString(depth) + (<any> action).constructor.name);
 
         depth++;
-        action = visitChildren();
+        action = action.transform(t, g);
         depth--;
         return action;
-    };
-    g.visit(visitor);
+    });
 }
 
 function main(): void {
-    liftPrefix(sampleGrammar);
-    expandFirstitem(sampleGrammar);
-    printGrammar(sampleGrammar);
+    let gr = sampleGrammar;
+    gr = liftPrefix(gr);
+    gr = expandFirstitem(gr);
+    printGrammar(gr);
 }
 
 main();
