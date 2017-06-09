@@ -24,6 +24,8 @@ import {
     EmptyAction,
     OptAction,
     SpliceNodeAction,
+    LabelAction,
+    GotoAction,
 } from "./parser/grammar";
 import { grm as sampleGrammar } from "./sample";
 
@@ -99,6 +101,41 @@ function liftPrefix(gr: Grammar): Grammar {
     });
 }
 
+function appendGotoOnSuccess(action: Action, labelId: number): Action {
+    return grammar.sequence([
+        action,
+        grammar.goto(labelId),
+    ]);
+}
+
+function appendGotoOnFailure(action: Action, labelId: number): Action {
+    return grammar.choice([
+        action,
+        grammar.goto(labelId),
+    ]);
+}
+
+function collapseIteration(gr: Grammar): Grammar {
+    return gr.transform((action, t, g) => {
+        action = action.transform(t, g);
+
+        if (action instanceof grammar.RepeatAction) {
+            const startLabel = grammar.label();
+            const endLabel = grammar.label();
+            return grammar.sequence([
+                startLabel,
+                appendGotoOnFailure(
+                    appendGotoOnSuccess(action.child, startLabel.labelId),
+                    endLabel.labelId,
+                ),
+                endLabel,
+            ]);
+        }
+
+        return action;
+    });
+}
+
 function printGrammar(gr: Grammar): void {
     let depth = 0;
     gr.transform((action, t, g) => {
@@ -110,6 +147,10 @@ function printGrammar(gr: Grammar): void {
             console.log(padString(depth) + "[" + action.name + "]");
         else if (action instanceof SpliceNodeAction)
             console.log(padString(depth) + "=> " + action.name + "(" + action.childIndices.join(",") + ")");
+        else if (action instanceof LabelAction)
+            console.log(padString(depth) + "label" + action.labelId + ":");
+        else if (action instanceof GotoAction)
+            console.log(padString(depth) + "goto label" + action.labelId + ";");
         else
             console.log(padString(depth) + (<any> action).constructor.name);
 
@@ -124,6 +165,7 @@ function main(): void {
     let gr = sampleGrammar;
     gr = liftPrefix(gr);
     gr = expandFirstitem(gr);
+    gr = collapseIteration(gr);
     printGrammar(gr);
 }
 
