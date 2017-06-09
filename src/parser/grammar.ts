@@ -1481,3 +1481,75 @@ export class StringLiteralTokenAction extends LeafAction {
 export function string_literal_token(): Action {
     return new StringLiteralTokenAction();
 }
+
+export class LabelAction extends LeafAction {
+    private static nextLabelId = 0;
+    public readonly labelId: number;
+    public constructor() {
+        super("Label", 0);
+        this.labelId = LabelAction.nextLabelId++;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof LabelAction) && (other.labelId === this.labelId));
+    }
+
+    public executeImpl(b: Builder): void {
+    }
+
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
+    }
+
+    public transform(t: Transformer, g: Grammar): Action {
+        return this;
+    }
+
+    public shortString(): string {
+        return "label " + this.labelId;
+    }
+}
+
+export function label(): LabelAction {
+    return new LabelAction();
+}
+
+export class GotoAction extends LeafAction {
+    public readonly labelId: number;
+    public constructor(labelId: number) {
+        super("Goto", 0);
+        this.labelId = labelId;
+    }
+
+    public equals(other: Action): boolean {
+        return ((other instanceof GotoAction) && (other.labelId === this.labelId));
+    }
+
+    public executeImpl(b: Builder): void {
+    }
+
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + prefix + this.shortString());
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        output.write(this.shortString());
+    }
+
+    public transform(t: Transformer, g: Grammar): Action {
+        return this;
+    }
+
+    public shortString(): string {
+        return "goto " + this.labelId;
+    }
+
+}
+
+export function goto(labelId: number): GotoAction {
+    return new GotoAction(labelId);
+}
