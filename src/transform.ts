@@ -102,51 +102,61 @@ function liftPrefix(gr: Grammar): Grammar {
     });
 }
 
-function appendGotoOnSuccess(action: Action, labelId: number): Action {
-    if (action instanceof ChoiceAction) { // Optimisation only
-        return grammar.choice(action.choices.map(choice => appendGotoOnSuccess(choice, labelId)));
-    }
-    else if (action instanceof SequenceAction) { // Optimisation only
-        return grammar.sequence(action.items.concat([grammar.goto(labelId)]));
-    }
-    else {
-        return grammar.sequence([
-            action,
-            grammar.goto(labelId),
-        ]);
-    }
-}
+// function appendGotoOnSuccess(action: Action, labelId: number): Action {
+//     if (action instanceof ChoiceAction) { // Optimisation only
+//         return grammar.choice(action.choices.map(choice => appendGotoOnSuccess(choice, labelId)));
+//     }
+//     else if (action instanceof SequenceAction) { // Optimisation only
+//         return grammar.sequence(action.items.concat([grammar.goto(labelId)]));
+//     }
+//     else {
+//         return grammar.sequence([
+//             action,
+//             grammar.goto(labelId),
+//         ]);
+//     }
+// }
+//
+// function appendGotoOnFailure(action: Action, labelId: number): Action {
+//     if (action instanceof ChoiceAction) { // Optimisation only
+//         return grammar.choice(action.choices.concat([grammar.goto(labelId)]));
+//     }
+//     else {
+//         return grammar.choice([
+//             action,
+//             grammar.goto(labelId),
+//         ]);
+//     }
+// }
 
-function appendGotoOnFailure(action: Action, labelId: number): Action {
-    if (action instanceof ChoiceAction) { // Optimisation only
-        return grammar.choice(action.choices.concat([grammar.goto(labelId)]));
-    }
-    else {
-        return grammar.choice([
-            action,
-            grammar.goto(labelId),
-        ]);
-    }
+function flattenRepeat(action: Action, t: Transformer, g: Grammar): Action {
+    if (!(action instanceof grammar.RepeatAction))
+        return action;
+    const startLabel = grammar.label();
+    const endLabel = grammar.label();
+    return grammar.sequence([
+        startLabel,
+        grammar.choice([
+            grammar.sequence([
+                action.child,
+                grammar.goto(startLabel.labelId),
+            ]),
+            grammar.goto(endLabel.labelId),
+        ]),
+        endLabel,
+    ]);
 }
 
 function collapseIteration(gr: Grammar): Grammar {
     return gr.transform((action, t, g) => {
         action = action.transform(t, g);
 
-        if (action instanceof grammar.RepeatAction) {
-            const startLabel = grammar.label();
-            const endLabel = grammar.label();
-            return grammar.sequence([
-                startLabel,
-                appendGotoOnFailure(
-                    appendGotoOnSuccess(action.child, startLabel.labelId),
-                    endLabel.labelId,
-                ),
-                endLabel,
-            ]);
+        while (true) {
+            const prevAction = action;
+            if ((action = flattenRepeat(action, t, g)) !== prevAction)
+                continue;
+            return action;
         }
-
-        return action;
     });
 }
 
@@ -238,27 +248,46 @@ function simplify(gr: Grammar): Grammar {
     });
 }
 
-function printGrammar(gr: Grammar): void {
+function actionTreeString(act: Action, gr: Grammar): string {
+    const output: string[] = [];
     let depth = 0;
-    gr.transform((action, t, g) => {
+    const transform: Transformer = (action, t, g) => {
         if (action instanceof grammar.ProductionAction)
-            console.log(padString(depth) + "Production " + action.name);
+            output.push(padString(depth) + "Production " + action.name);
         else if (action instanceof KeywordAction)
-            console.log(padString(depth) + JSON.stringify(action.str));
+            output.push(padString(depth) + JSON.stringify(action.str));
         else if (action instanceof RefAction)
-            console.log(padString(depth) + "[" + action.name + "]");
+            output.push(padString(depth) + "[" + action.name + "]");
         else if (action instanceof SpliceNodeAction)
-            console.log(padString(depth) + "=> " + action.name + "(" + action.childIndices.join(",") + ")");
+            output.push(padString(depth) + "=> " + action.name + "(" + action.childIndices.join(",") + ")");
         else if (action instanceof LabelAction)
-            console.log(padString(depth) + "label" + action.labelId + ":");
+            output.push(padString(depth) + "label" + action.labelId + ":");
         else if (action instanceof GotoAction)
-            console.log(padString(depth) + "goto label" + action.labelId + ";");
+            output.push(padString(depth) + "goto label" + action.labelId + ";");
         else
-            console.log(padString(depth) + (<any> action).constructor.name);
+            output.push(padString(depth) + (<any> action).constructor.name);
 
         depth++;
         action = action.transform(t, g);
         depth--;
+        return action;
+    };
+    act.transform(transform, gr);
+    return output.join("\n");
+}
+
+function printGrammar(gr: Grammar): void {
+    let depth = 0;
+    gr.transform((action, t, g) => {
+        if (action instanceof grammar.ProductionAction) {
+            console.log("Production " + action.name);
+            const raw = actionTreeString(action, gr);
+            for (const line of raw.split("\n")) {
+                console.log("    " + line);
+            }
+        }
+        else {
+        }
         return action;
     });
 }
