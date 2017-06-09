@@ -602,26 +602,26 @@ export function list(first: Action, rest: Action): Action {
 }
 
 export class SequenceAction extends Action {
-    public readonly actions: Action[];
+    public readonly items: Action[];
 
-    public constructor(actions: Action[]) {
-        super("sequence", actionsTotalOffset(actions));
-        this.actions = actions;
+    public constructor(items: Action[]) {
+        super("sequence", actionsTotalOffset(items));
+        this.items = items;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof SequenceAction) &&
-                actionArrayEquals(this.actions, other.actions));
+                actionArrayEquals(this.items, other.items));
     }
 
     public executeImpl(b: Builder): void {
-        for (const act of this.actions)
+        for (const act of this.items)
             act.execute(b);
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "sequence([\n");
-        for (const act of this.actions) {
+        for (const act of this.items) {
             act.dump(indent + "    ", indent + "    ", output);
             output.write(",\n");
         }
@@ -631,13 +631,13 @@ export class SequenceAction extends Action {
     public toSyntax(output: OutputOptions, precedence: number): void {
         if (needParentheses(precedence, SEQUENCE_PRECEDENCE))
             output.write("(");
-        const actionsToPrint = this.actions.filter(action => {
+        const itemsToPrint = this.items.filter(action => {
             return (!(action instanceof PosAction));
         });
-        for (let i = 0; i < actionsToPrint.length; i++) {
-            const act = actionsToPrint[i];
+        for (let i = 0; i < itemsToPrint.length; i++) {
+            const act = itemsToPrint[i];
             act.toSyntax(output, SEQUENCE_PRECEDENCE);
-            if (i + 1 < actionsToPrint.length)
+            if (i + 1 < itemsToPrint.length)
                 output.write(" ");
         }
         if (needParentheses(precedence, SEQUENCE_PRECEDENCE))
@@ -645,13 +645,13 @@ export class SequenceAction extends Action {
     }
 
     public transform(t: Transformer, g: Grammar): Action {
-        const newActions: Action[] = [];
+        const newItems: Action[] = [];
         let different = false;
-        for (let i = 0; i < this.actions.length; i++) {
-            newActions.push(t(this.actions[i], t, g));
-            different = different || (newActions[i] !== this.actions[i]);
+        for (let i = 0; i < this.items.length; i++) {
+            newItems.push(t(this.items[i], t, g));
+            different = different || (newItems[i] !== this.items[i]);
         }
-        return different ? new SequenceAction(newActions) : this;
+        return different ? new SequenceAction(newItems) : this;
     }
 
     public toString(): string {
@@ -659,8 +659,8 @@ export class SequenceAction extends Action {
     }
 }
 
-export function sequence(actions: Action[]): Action {
-    return new SequenceAction(actions);
+export function sequence(items: Action[]): Action {
+    return new SequenceAction(items);
 }
 
 export class SpliceNullAction extends LeafAction {

@@ -66,10 +66,10 @@ function grammarToString(g: Grammar): string {
 
 function getPrefix(g: Grammar, action: Action, visiting: string[]): Action | null {
     if (action instanceof grammar.SequenceAction) {
-        if (action.actions.length === 0)
+        if (action.items.length === 0)
             return null;
         else
-            return getPrefix(g, action.actions[0], visiting);
+            return getPrefix(g, action.items[0], visiting);
     }
     else if (action instanceof grammar.ChoiceAction) {
         if (action.actions.length === 0)
@@ -121,10 +121,10 @@ function getChoicePrefixes(g: Grammar, action: Action, visiting: string[]): (Act
 
 function omitPrefix(action: grammar.Action, prefix: Action): Action {
     // const newChildren: Action[] = [];
-    if ((action instanceof grammar.SequenceAction) && (action.actions.length > 0)) {
-        const first = action.actions[0];
+    if ((action instanceof grammar.SequenceAction) && (action.items.length > 0)) {
+        const first = action.items[0];
         if (first.equals(prefix))
-            return new grammar.SequenceAction(action.actions.slice(1));
+            return new grammar.SequenceAction(action.items.slice(1));
     }
     return action;
     // return new grammar.SequenceAction(newChildren);
