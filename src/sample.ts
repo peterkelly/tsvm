@@ -156,3 +156,26 @@ grm.define("Equality",
 
 grm.define("Expression",
     ref("Equality"));
+
+/*
+grm.define("test",
+    sequence([
+        sequence([
+            sequence([
+                choice([
+                    choice([
+                        choice([
+                            sequence([
+                                sequence([
+                                    sequence([
+                                        keyword('x'),
+                                    ]),
+                                ]),
+                            ]),
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ]),
+    ]));
+*/

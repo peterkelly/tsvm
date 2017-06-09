@@ -14,6 +14,7 @@
 
 import * as grammar from "./parser/grammar";
 import {
+    Transformer,
     Grammar,
     Action,
     ProductionAction,
@@ -149,35 +150,91 @@ function collapseIteration(gr: Grammar): Grammar {
     });
 }
 
+export namespace strategy {
+    export function repeat(transformer: Transformer): Transformer {
+        return (action: Action, t: Transformer, g: Grammar): Action => {
+            let prevAction = action;
+            while (true) {
+                action = action.transform(t, g)
+                if (action === prevAction)
+                    return action;
+                prevAction = action;
+            }
+        }
+    }
+}
+
+function sequenceContainsSequence(action: SequenceAction): boolean {
+    for (const item of action.items) {
+        if (item instanceof SequenceAction)
+            return true;
+    }
+    return false;
+}
+
+function choiceContainsChoice(action: ChoiceAction): boolean {
+    for (const choice of action.choices) {
+        if (choice instanceof ChoiceAction)
+            return true;
+    }
+    return false;
+}
+
+function simplifyNestedSequence(action: Action, t: Transformer, g: Grammar): Action {
+    if (!(action instanceof SequenceAction) || !sequenceContainsSequence(action))
+        return action;
+    const newItems: Action[] = [];
+    for (const item of action.items) {
+        if (item instanceof SequenceAction)
+            newItems.push(...item.items);
+        else
+            newItems.push(item);
+    }
+    return grammar.sequence(newItems);
+}
+
+function simplifyNestedChoice(action: Action, t: Transformer, g: Grammar): Action {
+    if (!(action instanceof ChoiceAction) || !choiceContainsChoice(action))
+        return action;
+    const newChoices: Action[] = [];
+    for (const choice of action.choices) {
+        if (choice instanceof ChoiceAction)
+            newChoices.push(...choice.choices);
+        else
+            newChoices.push(choice);
+    }
+    return grammar.choice(newChoices);
+}
+
+function simplifyUnarySequence(action: Action, t: Transformer, g: Grammar): Action {
+    if ((action instanceof SequenceAction) && (action.items.length === 1))
+        return action.items[0];
+    else
+        return action;
+}
+
+function simplifyUnaryChoice(action: Action, t: Transformer, g: Grammar): Action {
+    if ((action instanceof ChoiceAction) && (action.choices.length === 1))
+        return action.choices[0];
+    else
+        return action;
+}
+
 function simplify(gr: Grammar): Grammar {
     return gr.transform((action, t, g) => {
         action = action.transform(t, g);
 
         let changed: boolean;
-        do {
-            changed = false;
+        while (true) {
+            const prevAction = action;
 
-            if (action instanceof SequenceAction) {
-                let containsSequenceItems = false;
-                const newItems: Action[] = [];
-                for (const item of action.items) {
-                    if (item instanceof SequenceAction) {
-                        containsSequenceItems = true;
-                        for (const innerItem of item.items)
-                            newItems.push(innerItem);
-                    }
-                    else {
-                        newItems.push(item);
-                    }
-                }
-                if (containsSequenceItems) {
-                    changed = true;
-                    action = grammar.sequence(newItems);
-                }
-            }
-        } while (changed);
+            if ((action = simplifyNestedSequence(action, t, g)) !== prevAction) continue;
+            if ((action = simplifyNestedChoice(action, t, g)) !== prevAction) continue;
+            if ((action = simplifyUnarySequence(action, t, g)) !== prevAction) continue;
+            if ((action = simplifyUnaryChoice(action, t, g)) !== prevAction) continue;
 
-        return action;
+            return action;
+        }
     });
 }
 
