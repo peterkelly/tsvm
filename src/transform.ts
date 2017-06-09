@@ -38,16 +38,16 @@ function expandFirstitem(gr: Grammar): Grammar {
     return gr.transform((action, t, g) => {
         action = action.transform(t, g);
 
-        if ((action instanceof SequenceAction) && (action.actions.length > 0)) {
-            let first = action.actions[0];
+        if ((action instanceof SequenceAction) && (action.items.length > 0)) {
+            let first = action.items[0];
             if (first instanceof RefAction) {
                 first = g.lookup(first.name);
                 if (first instanceof ProductionAction)
                     first = first.child;
                 if (first instanceof SequenceAction)
-                    return new SequenceAction(first.actions.concat(action.actions.slice(1)));
+                    return new SequenceAction(first.items.concat(action.items.slice(1)));
                 else
-                    return new SequenceAction([first].concat(action.actions.slice(1)));
+                    return new SequenceAction([first].concat(action.items.slice(1)));
             }
         }
 
@@ -61,8 +61,8 @@ function liftPrefix(gr: Grammar): Grammar {
 
         if (action instanceof ChoiceAction) {
             const prefixes = action.actions.map((choice): Action => {
-                if ((choice instanceof SequenceAction) && (choice.actions.length > 0))
-                    return choice.actions[0];
+                if ((choice instanceof SequenceAction) && (choice.items.length > 0))
+                    return choice.items[0];
                 else
                     return choice;
             });
@@ -78,8 +78,8 @@ function liftPrefix(gr: Grammar): Grammar {
                     const newChoices: Action[] = [];
                     let haveEmpty = false;
                     for (const choice of action.actions) {
-                        if ((choice instanceof SequenceAction) && (choice.actions.length > 0)) {
-                            newChoices.push(new SequenceAction(choice.actions.slice(1)));
+                        if ((choice instanceof SequenceAction) && (choice.items.length > 0)) {
+                            newChoices.push(new SequenceAction(choice.items.slice(1)));
                         }
                         else {
                             haveEmpty = true;
