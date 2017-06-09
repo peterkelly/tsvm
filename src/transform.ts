@@ -102,17 +102,30 @@ function liftPrefix(gr: Grammar): Grammar {
 }
 
 function appendGotoOnSuccess(action: Action, labelId: number): Action {
-    return grammar.sequence([
-        action,
-        grammar.goto(labelId),
-    ]);
+    if (action instanceof ChoiceAction) { // Optimisation only
+        return grammar.choice(action.choices.map(choice => appendGotoOnSuccess(choice, labelId)));
+    }
+    else if (action instanceof SequenceAction) { // Optimisation only
+        return grammar.sequence(action.items.concat([grammar.goto(labelId)]));
+    }
+    else {
+        return grammar.sequence([
+            action,
+            grammar.goto(labelId),
+        ]);
+    }
 }
 
 function appendGotoOnFailure(action: Action, labelId: number): Action {
-    return grammar.choice([
-        action,
-        grammar.goto(labelId),
-    ]);
+    if (action instanceof ChoiceAction) { // Optimisation only
+        return grammar.choice(action.choices.concat([grammar.goto(labelId)]));
+    }
+    else {
+        return grammar.choice([
+            action,
+            grammar.goto(labelId),
+        ]);
+    }
 }
 
 function collapseIteration(gr: Grammar): Grammar {
@@ -131,6 +144,38 @@ function collapseIteration(gr: Grammar): Grammar {
                 endLabel,
             ]);
         }
+
+        return action;
+    });
+}
+
+function simplify(gr: Grammar): Grammar {
+    return gr.transform((action, t, g) => {
+        action = action.transform(t, g);
+
+        let changed: boolean;
+        do {
+            changed = false;
+
+            if (action instanceof SequenceAction) {
+                let containsSequenceItems = false;
+                const newItems: Action[] = [];
+                for (const item of action.items) {
+                    if (item instanceof SequenceAction) {
+                        containsSequenceItems = true;
+                        for (const innerItem of item.items)
+                            newItems.push(innerItem);
+                    }
+                    else {
+                        newItems.push(item);
+                    }
+                }
+                if (containsSequenceItems) {
+                    changed = true;
+                    action = grammar.sequence(newItems);
+                }
+            }
+        } while (changed);
 
         return action;
     });
@@ -166,6 +211,7 @@ function main(): void {
     gr = liftPrefix(gr);
     gr = expandFirstitem(gr);
     gr = collapseIteration(gr);
+    gr = simplify(gr);
     printGrammar(gr);
 }
 
