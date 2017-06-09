@@ -359,11 +359,11 @@ export class ProductionAction extends Action {
     public toSyntax(output: OutputOptions, precedence: number): void {
         output.write(rightpad(this.name, PRODUCTION_WIDTH) + " = ");
         if (this.child instanceof ChoiceAction) {
-            for (let i = 0; i < this.child.actions.length; i++) {
+            for (let i = 0; i < this.child.choices.length; i++) {
                 if (i > 0)
                     output.write(rightpad("", PRODUCTION_WIDTH) + " | ");
-                this.child.actions[i].toSyntax(output, CHOICE_PRECEDENCE);
-                if (i + 1 < this.child.actions.length)
+                this.child.choices[i].toSyntax(output, CHOICE_PRECEDENCE);
+                if (i + 1 < this.child.choices.length)
                     output.write("\n");
             }
         }
@@ -1045,22 +1045,22 @@ export function opt(f: Action): Action {
 }
 
 export class ChoiceAction extends Action {
-    public readonly actions: Action[];
+    public readonly choices: Action[];
 
-    public constructor(actions: Action[]) {
-        super("choice", actionsSameOffset(actions));
-        this.actions = actions;
+    public constructor(choices: Action[]) {
+        super("choice", actionsSameOffset(choices));
+        this.choices = choices;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof ChoiceAction) &&
-                actionArrayEquals(this.actions, other.actions));
+                actionArrayEquals(this.choices, other.choices));
     }
 
     public executeImpl(b: Builder): void {
         const start = b.parser.pos;
         const length = b.stack.length;
-        for (const act of this.actions) {
+        for (const act of this.choices) {
             try {
                 act.execute(b);
                 return;
@@ -1077,7 +1077,7 @@ export class ChoiceAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "choice([\n");
-        for (const act of this.actions) {
+        for (const act of this.choices) {
             act.dump(indent + "    ", indent + "    ", output);
             output.write(",\n");
         }
@@ -1087,10 +1087,10 @@ export class ChoiceAction extends Action {
     public toSyntax(output: OutputOptions, precedence: number): void {
         if (needParentheses(precedence, CHOICE_PRECEDENCE))
             output.write("(");
-        for (let i = 0; i < this.actions.length; i++) {
-            const act = this.actions[i];
+        for (let i = 0; i < this.choices.length; i++) {
+            const act = this.choices[i];
             act.toSyntax(output, CHOICE_PRECEDENCE);
-            if (i + 1 < this.actions.length)
+            if (i + 1 < this.choices.length)
                 output.write(" | ");
         }
         if (needParentheses(precedence, CHOICE_PRECEDENCE))
@@ -1098,13 +1098,13 @@ export class ChoiceAction extends Action {
     }
 
     public transform(t: Transformer, g: Grammar): Action {
-        const newActions: Action[] = [];
+        const newChoices: Action[] = [];
         let different = false;
-        for (let i = 0; i < this.actions.length; i++) {
-            newActions.push(t(this.actions[i], t, g));
-            different = different || (newActions[i] !== this.actions[i]);
+        for (let i = 0; i < this.choices.length; i++) {
+            newChoices.push(t(this.choices[i], t, g));
+            different = different || (newChoices[i] !== this.choices[i]);
         }
-        return different ? new ChoiceAction(newActions) : this;
+        return different ? new ChoiceAction(newChoices) : this;
     }
 
     public toString(): string {
@@ -1112,8 +1112,8 @@ export class ChoiceAction extends Action {
     }
 }
 
-export function choice(actions: Action[]): Action {
-    return new ChoiceAction(actions);
+export function choice(choices: Action[]): Action {
+    return new ChoiceAction(choices);
 }
 
 export class RepeatAction extends Action {
