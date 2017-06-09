@@ -72,13 +72,13 @@ function getPrefix(g: Grammar, action: Action, visiting: string[]): Action | nul
             return getPrefix(g, action.items[0], visiting);
     }
     else if (action instanceof grammar.ChoiceAction) {
-        if (action.actions.length === 0)
+        if (action.choices.length === 0)
             return null;
-        const first = getPrefix(g, action.actions[0], visiting);
+        const first = getPrefix(g, action.choices[0], visiting);
         if (first === null)
             return null;
-        for (let i = 1; i < action.actions.length; i++) {
-            const other = getPrefix(g, action.actions[i], visiting);
+        for (let i = 1; i < action.choices.length; i++) {
+            const other = getPrefix(g, action.choices[i], visiting);
             if ((other === null) || !first.equals(other))
                 return null;
         }
@@ -109,7 +109,7 @@ function getChoicePrefixes(g: Grammar, action: Action, visiting: string[]): (Act
     }
     else if (action instanceof grammar.ChoiceAction) {
         let result: (Action | null)[] = [];
-        for (const choice of action.actions) {
+        for (const choice of action.choices) {
             result = result.concat(getChoicePrefixes(g, choice, visiting));
         }
         return result;
@@ -166,7 +166,7 @@ function leftFactor(gr: Grammar): Grammar {
             // console.log("action is a " + (<any> action).constructor.name);
             if (action instanceof grammar.ChoiceAction) {
                 // console.log("==== have a choice");
-                const choices = action.actions;
+                const choices = action.choices;
 
                 // for (let i = 0; i < choices.length; i++) {
                 //     const prefix = getPrefix(g, choices[i], []);
@@ -305,7 +305,7 @@ function expand(gr: Grammar): Grammar {
                 changed = true;
             }
             else if (action instanceof grammar.ChoiceAction) {
-                const choices = action.actions;
+                const choices = action.choices;
                 const newChoices: Action[] = [];
                 for (const choice of choices) {
                     // if (choice instanceof grammar.RefAction) {
@@ -319,7 +319,7 @@ function expand(gr: Grammar): Grammar {
                     // }
                     // else
                     if (choice instanceof grammar.ChoiceAction) {
-                        for (const c of choice.actions)
+                        for (const c of choice.choices)
                             newChoices.push(c);
                         changed = true;
                     }

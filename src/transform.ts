@@ -60,7 +60,7 @@ function liftPrefix(gr: Grammar): Grammar {
         action = action.transform(t, g);
 
         if (action instanceof ChoiceAction) {
-            const prefixes = action.actions.map((choice): Action => {
+            const prefixes = action.choices.map((choice): Action => {
                 if ((choice instanceof SequenceAction) && (choice.items.length > 0))
                     return choice.items[0];
                 else
@@ -77,7 +77,7 @@ function liftPrefix(gr: Grammar): Grammar {
                 if (same) {
                     const newChoices: Action[] = [];
                     let haveEmpty = false;
-                    for (const choice of action.actions) {
+                    for (const choice of action.choices) {
                         if ((choice instanceof SequenceAction) && (choice.items.length > 0)) {
                             newChoices.push(new SequenceAction(choice.items.slice(1)));
                         }
