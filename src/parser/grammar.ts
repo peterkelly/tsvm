@@ -387,8 +387,8 @@ export class ProductionAction extends Action {
 }
 
 export class EmptyAction extends LeafAction {
-    public constructor() {
-        super("empty", 0);
+    public constructor(offset?: number) {
+        super("empty", offset || 0);
     }
 
     public equals(other: Action): boolean {
@@ -396,7 +396,8 @@ export class EmptyAction extends LeafAction {
     }
 
     public executeImpl(b: Builder): void {
-        // Do nothing; just succeed
+        for (let i = 0; i < this.offset; i++)
+            b.push(null);
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
@@ -412,8 +413,8 @@ export class EmptyAction extends LeafAction {
     }
 }
 
-export function empty(): Action {
-    return new EmptyAction();
+export function empty(offset?: number): Action {
+    return new EmptyAction(offset);
 }
 
 export class NotAction extends Action {
