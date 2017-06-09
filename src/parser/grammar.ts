@@ -56,13 +56,13 @@ function needParentheses(precedence: number, target: number): boolean {
 }
 
 export class Grammar {
-    public productions: { [name: string]: Action } = {};
-    public names: string[] = [];
+    private productions = new Map<string, ProductionAction>();
+    private names: string[] = [];
 
     public define(name: string, fun: Action) {
-        if (this.productions[name] != null)
+        if (this.productions.has(name))
             throw new Error("Production " + name + " is already defined");
-        this.productions[name] = new ProductionAction(name, fun);
+        this.productions.set(name, new ProductionAction(name, fun));
         this.names.push(name);
     }
 
@@ -70,32 +70,34 @@ export class Grammar {
         const match = name.match(/(^.*)_([0-9]+)$/);
         const baseName = match ? match[1] : name;
         let num = 1;
-        while (this.productions[baseName + ":" + num])
+        while (this.productions.has(baseName + ":" + num))
             num++;
         const derivedName = baseName + ":" + num;
         let index = this.names.indexOf(baseName);
         index = (index >= 0) ? index : this.names.length;
 
         const production = new ProductionAction(derivedName, fun, fun.offset);
-        this.productions[derivedName] = production;
+        this.productions.set(derivedName, production);
         this.names.splice(index, 0, derivedName);
         return production;
     }
 
-    public lookup(name: string): Action {
-        if (!this.productions[name])
+    public lookup(name: string): ProductionAction {
+        const production = this.productions.get(name);
+        if (production === undefined)
             throw new Error("Production not found: " + name);
-        return this.productions[name];
+        return production;
     }
 
     public dump(output: OutputOptions): void {
-        for (const name of this.names)
-            this.productions[name].dump("", "", output);
+        for (const name of this.names) {
+            this.lookup(name).dump("", "", output);
+        }
     }
 
     public toSyntax(output: OutputOptions): void {
         for (const name of this.names) {
-            this.productions[name].toSyntax(output, TOP_PRECEDENCE);
+            this.lookup(name).toSyntax(output, TOP_PRECEDENCE);
             output.write("\n");
         }
     }
@@ -103,10 +105,14 @@ export class Grammar {
     public visit(v: Visitor) {
         for (let i = 0; i < this.names.length; i++) {
             const name = this.names[i];
-            const action = this.productions[name];
-            if (action === undefined)
+            const production = this.productions.get(name);
+            if (production === undefined)
                 throw new Error("Action " + JSON.stringify(name) + " not found");
-            this.productions[name] = v(this.productions[name], () => action.visitChildren(v));
+            const result = v(production, () => production.visitChildren(v));
+            if (result instanceof ProductionAction)
+                this.productions.set(name, result);
+            else
+                this.productions.set(name, new ProductionAction(name, result, result.offset));
         }
     }
 }
