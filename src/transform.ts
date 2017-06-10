@@ -59,8 +59,23 @@ function showTransform(name: string, before: Action, after: Action, ctx: Transfo
             afterAdded.add(action);
     }
 
-    const beforeLines = actionTreeString(before, ctx.grammar, { removed: beforeRemoved }).split("\n");
-    const afterLines = actionTreeString(after, ctx.grammar, { added: afterAdded }).split("\n");
+    const derived = new Set<Action>();
+    for (const action of Array.from(afterActionSet)) {
+        for (let d: Action | null = action; d !== null; d = d.derivedFrom) {
+            if (beforeRemoved.has(d)) {
+                beforeRemoved.delete(d);
+                afterAdded.delete(d);
+                derived.add(d);
+
+                beforeRemoved.delete(action);
+                afterAdded.delete(action);
+                derived.add(action);
+            }
+        }
+    }
+
+    const beforeLines = actionTreeString(before, ctx.grammar, { removed: beforeRemoved, derived: derived }).split("\n");
+    const afterLines = actionTreeString(after, ctx.grammar, { added: afterAdded, derived: derived }).split("\n");
     console.log("================================================================================");
     // console.log(actionTreeString(before, gr));
     // console.log(actionTreeString(after, gr));
@@ -155,32 +170,35 @@ function liftPrefix(gr: Grammar): Grammar {
     });
 }
 
-// function appendGotoOnSuccess(action: Action, labelId: number): Action {
-//     if (action instanceof ChoiceAction) { // Optimisation only
-//         return grammar.choice(action.choices.map(choice => appendGotoOnSuccess(choice, labelId)));
-//     }
-//     else if (action instanceof SequenceAction) { // Optimisation only
-//         return grammar.sequence(action.items.concat([grammar.goto(labelId)]));
-//     }
-//     else {
-//         return grammar.sequence([
-//             action,
-//             grammar.goto(labelId),
-//         ]);
-//     }
-// }
-//
-// function appendGotoOnFailure(action: Action, labelId: number): Action {
-//     if (action instanceof ChoiceAction) { // Optimisation only
-//         return grammar.choice(action.choices.concat([grammar.goto(labelId)]));
-//     }
-//     else {
-//         return grammar.choice([
-//             action,
-//             grammar.goto(labelId),
-//         ]);
-//     }
-// }
+function appendGotoOnSuccess(action: Action, labelId: number): Action {
+    if (action instanceof ChoiceAction) { // Optimisation only
+        return grammar.choice(action.choices.map(choice => appendGotoOnSuccess(choice, labelId)))
+            .recordDerivation(action);
+    }
+    else if (action instanceof SequenceAction) { // Optimisation only
+        return grammar.sequence(action.items.concat([grammar.goto(labelId)]))
+            .recordDerivation(action);
+    }
+    else {
+        return grammar.sequence([
+            action,
+            grammar.goto(labelId),
+        ]);
+    }
+}
+
+function appendGotoOnFailure(action: Action, labelId: number): Action {
+    if (action instanceof ChoiceAction) { // Optimisation only
+        return grammar.choice(action.choices.concat([grammar.goto(labelId)]))
+            .recordDerivation(action);
+    }
+    else {
+        return grammar.choice([
+            action,
+            grammar.goto(labelId),
+        ]);
+    }
+}
 
 function flattenRepeat(action: Action, ctx: TransformationContext): Action {
     if (!(action instanceof grammar.RepeatAction))
@@ -189,59 +207,27 @@ function flattenRepeat(action: Action, ctx: TransformationContext): Action {
     const endLabel = grammar.label();
     return grammar.sequence([
         startLabel,
-        grammar.choice([
-            grammar.sequence([
+        appendGotoOnFailure(
+            appendGotoOnSuccess(
                 action.child,
-                grammar.goto(startLabel.labelId),
-            ]),
-            grammar.goto(endLabel.labelId),
-        ]),
+                startLabel.labelId
+            ),
+            endLabel.labelId
+        ),
         endLabel,
     ]);
-}
-
-// function moveTrailingGotoInsideSequence(action: Action, ctx: TransformationContext): Action {
-//     if (!(action instanceof SequenceAction))
-//         return action;
-//     if (action.items.length === 0)
-//         return action;
-//     const gotoItem = action.items[action.items.length - 1];
-//     if (!(gotoItem instanceof GotoAction))
-//         return action;
-//
-//     return new SequenceAction(
-//         action.items.slice(0, action.items.length - 1).map(item =>
-//             grammar.sequence([item, gotoItem])
-//         )
-//     );
-// }
-
-function moveTrailingGotoInsideChoice(action: Action, ctx: TransformationContext): Action {
-    if (!(action instanceof ChoiceAction))
-        return action;
-    if (action.choices.length === 0)
-        return action;
-    const gotoItem = action.choices[action.choices.length - 1];
-    if (!(gotoItem instanceof GotoAction))
-        return action;
-
-    return new ChoiceAction(
-        action.choices.slice(0, action.choices.length - 1).map(item =>
-            grammar.sequence([item, gotoItem])
-        )
-    );
 }
 
 function collapseIteration(gr: Grammar): Grammar {
     return gr.transform((action1, ctx) => {
         let action = action1;
 
+        action = action.transform(ctx);
+
         while (true) {
             const prevAction = action;
 
-            if ((action = action.transform(ctx)) !== prevAction) continue;
             if ((action = tryTransform(flattenRepeat, action, ctx)) !== prevAction) continue;
-            if ((action = tryTransform(moveTrailingGotoInsideChoice, action, ctx)) !== prevAction) continue;
 
             return action;
         }
@@ -274,7 +260,7 @@ function simplifyNestedSequence(action: Action, ctx: TransformationContext): Act
         else
             newItems.push(item);
     }
-    return grammar.sequence(newItems);
+    return grammar.sequence(newItems).recordDerivation(action);
 }
 
 function simplifyNestedChoice(action: Action, ctx: TransformationContext): Action {
@@ -287,7 +273,7 @@ function simplifyNestedChoice(action: Action, ctx: TransformationContext): Actio
         else
             newChoices.push(choice);
     }
-    return grammar.choice(newChoices);
+    return grammar.choice(newChoices).recordDerivation(action);
 }
 
 function simplifyUnarySequence(action: Action, ctx: TransformationContext): Action {
@@ -336,9 +322,12 @@ function simplify(gr: Grammar): Grammar {
     });
 }
 
-function actionTreeString(act: Action, gr: Grammar, options?: { added?: Set<Action>, removed?: Set<Action>}): string {
+function actionTreeString(act: Action, gr: Grammar, options?: {
+        added?: Set<Action>, removed?: Set<Action>, derived?: Set<Action>,
+    }): string {
     const added = (options && options.added) ? options.added : new Set<Action>();
     const removed = (options && options.removed) ? options.removed : new Set<Action>();
+    const derived = (options && options.derived) ? options.derived : new Set<Action>();
     const output: string[] = [];
     let depth = 0;
     const transform: Transformer = (action, ctx) => {
@@ -358,12 +347,28 @@ function actionTreeString(act: Action, gr: Grammar, options?: { added?: Set<Acti
         else
             line += (<any> action).constructor.name;
 
-        if (added.has(action))
+        const inSets: string[] = [];
+
+        if (added.has(action)) {
             output.push(ansi.green(line));
-        else if (removed.has(action))
+            inSets.push("added");
+        }
+        else if (removed.has(action)) {
             output.push(ansi.red(line));
-        else
+            inSets.push("removed");
+        }
+        else if (derived.has(action)) {
+            output.push(ansi.yellow(line));
+            inSets.push("derived");
+        }
+        else {
             output.push(line);
+        }
+
+        if (inSets.length > 1) {
+            throw new Error("Action is in multiple sets: " + action.id + " " +
+                (<any> action).constructor.name + " (" + inSets.join(", ") + ")");
+        }
 
         depth++;
         action = action.transform(ctx);
@@ -398,9 +403,9 @@ function printGrammar(gr: Grammar): void {
 
 function main(): void {
     let gr = sampleGrammar;
-    // gr = liftPrefix(gr);
-    // gr = expandFirstitem(gr);
-    // gr = collapseIteration(gr);
+    gr = liftPrefix(gr);
+    gr = expandFirstitem(gr);
+    gr = collapseIteration(gr);
     gr = simplify(gr);
     // console.log("");
     console.log("================================================================================");
