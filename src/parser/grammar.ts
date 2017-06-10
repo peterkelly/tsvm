@@ -41,23 +41,27 @@ export interface OutputOptions {
 }
 
 export class Grammar {
-    public productions: { [name: string]: Action } = {};
-    public names: string[] = [];
+    private productions = new Map<string, ProductionAction>();
+    private names: string[] = [];
 
     public define(name: string, fun: Action) {
-        if (this.productions[name] != null)
+        if (this.productions.has(name))
             throw new Error("Production " + name + " is already defined");
-        this.productions[name] = new ProductionAction(name, fun);
+        this.productions.set(name, new ProductionAction(name, fun));
         this.names.push(name);
     }
 
-    public lookup(name: string): Action {
-        return this.productions[name];
+    public lookup(name: string): ProductionAction {
+        const production = this.productions.get(name);
+        if (production === undefined)
+            throw new Error("Production not found: " + name);
+        return production;
     }
 
     public dump(output: OutputOptions): void {
-        for (const name of this.names)
-            this.productions[name].dump("", "", output);
+        for (const name of this.names) {
+            this.lookup(name).dump("", "", output);
+        }
     }
 }
 
