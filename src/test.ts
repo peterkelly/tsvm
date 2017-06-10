@@ -90,7 +90,7 @@ function getPrefix(g: Grammar, action: Action, visiting: string[]): Action | nul
         return getPrefix(g, g.lookup(action.name), visiting.concat([action.name]));
     }
     else if (action instanceof grammar.ProductionAction) {
-        return getPrefix(g, action.child, visiting);
+        return getPrefix(g, action.body, visiting);
     }
     else {
         return action;
@@ -105,7 +105,7 @@ function getChoicePrefixes(g: Grammar, action: Action, visiting: string[]): (Act
         return getChoicePrefixes(g, g.lookup(action.name), visiting.concat([action.name]));
     }
     else if (action instanceof grammar.ProductionAction) {
-        return getChoicePrefixes(g, action.child, visiting);
+        return getChoicePrefixes(g, action.body, visiting);
     }
     else if (action instanceof grammar.ChoiceAction) {
         let result: (Action | null)[] = [];
@@ -301,7 +301,7 @@ function expand(gr: Grammar): Grammar {
                 }
             }
             else if (action instanceof grammar.ProductionAction) {
-                action = action.child;
+                action = action.body;
                 changed = true;
             }
             else if (action instanceof grammar.ChoiceAction) {
