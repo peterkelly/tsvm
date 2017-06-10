@@ -348,25 +348,25 @@ export abstract class LeafAction extends Action {
 }
 
 export class ProductionAction extends Action {
-    public readonly child: Action;
+    public readonly body: Action;
     public readonly name: string;
 
-    public constructor(name: string, child: Action, offset?: number) {
+    public constructor(name: string, body: Action, offset?: number) {
         super("[" + name + "]", (offset !== undefined) ? offset : 1);
         this.name = name;
-        this.child = child;
+        this.body = body;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof ProductionAction) &&
-                this.child.equals(other.child) &&
+                this.body.equals(other.body) &&
                 (this.name === other.name));
     }
 
     public executeImpl(b: Builder): void {
         b.attempt((): void => {
             const oldLength = b.length;
-            this.child.execute(b);
+            this.body.execute(b);
             b.assertLengthIs(oldLength + 1);
             b.getNode(0); // Check that the top of the stack is either a node null
         });
@@ -374,33 +374,33 @@ export class ProductionAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + "grm.define(" + JSON.stringify(this.name) + ",\n");
-        this.child.dump(indent + "    ", indent + "    ", output);
+        this.body.dump(indent + "    ", indent + "    ", output);
         output.write(");\n\n");
     }
 
     public toSyntax(output: OutputOptions, precedence: number): void {
         output.write(rightpad(this.name, PRODUCTION_WIDTH) + " = ");
-        if (this.child instanceof ChoiceAction) {
-            for (let i = 0; i < this.child.choices.length; i++) {
+        if (this.body instanceof ChoiceAction) {
+            for (let i = 0; i < this.body.choices.length; i++) {
                 if (i > 0)
                     output.write(rightpad("", PRODUCTION_WIDTH) + " | ");
-                this.child.choices[i].toSyntax(output, CHOICE_PRECEDENCE);
-                if (i + 1 < this.child.choices.length)
+                this.body.choices[i].toSyntax(output, CHOICE_PRECEDENCE);
+                if (i + 1 < this.body.choices.length)
                     output.write("\n");
             }
         }
         else {
-            this.child.toSyntax(output, precedence);
+            this.body.toSyntax(output, precedence);
         }
         output.write(";");
     }
 
     public transform(ctx: TransformationContext): Action {
-        const child = ctx.process(this.child);
-        if (child === this.child)
+        const body = ctx.process(this.body);
+        if (body === this.body)
             return this;
         else
-            return new ProductionAction(this.name, child, child.offset);
+            return new ProductionAction(this.name, body, body.offset);
     }
 
     public toString(): string {

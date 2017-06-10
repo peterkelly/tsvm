@@ -115,7 +115,7 @@ function expandFirstitem(gr: Grammar): Grammar {
             if (first instanceof RefAction) {
                 first = ctx.grammar.lookup(first.name);
                 if (first instanceof ProductionAction)
-                    first = first.child;
+                    first = first.body;
                 if (first instanceof SequenceAction)
                     return new SequenceAction(first.items.concat(action.items.slice(1)));
                 else
@@ -228,7 +228,7 @@ function flattenOpt(action: Action, ctx: TransformationContext): Action {
             skipLabel.labelId
         ),
         skipLabel,
-    ])
+    ]);
 }
 
 function collapseIteration(gr: Grammar): Grammar {
