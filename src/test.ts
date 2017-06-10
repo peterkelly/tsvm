@@ -14,7 +14,7 @@
 
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
-import { Grammar, Action, Builder, ref } from "./parser/grammar";
+import { TransformationContext, Grammar, Action, Builder, ref } from "./parser/grammar";
 import * as grammar from "./parser/grammar";
 import { grm as sampleGrammar } from "./sample";
 import { leftpad, rightpad } from "./util";
@@ -151,13 +151,13 @@ function nullablePrefixEquals(a: Action | null, b: Action | null): boolean {
 }
 
 function leftFactor(gr: Grammar): Grammar {
-    return gr.transform((action, t, g) => {
+    return gr.transform((action, ctx) => {
         // Before visiting children
         if (action instanceof grammar.ProductionAction) {
             console.log("Production: " + action.name);
         }
 
-        action = action.transform(t, g);
+        action = action.transform(ctx);
 
         // After visiting children
         let changed: boolean;
@@ -191,7 +191,7 @@ function leftFactor(gr: Grammar): Grammar {
                 //     // console.log(leftpad("choice " + i + ": ", 16) + "prefix " + prefix);
                 // }
                 console.log("    Choice prefixes:");
-                const prefixes = getChoicePrefixes(g, action, []);
+                const prefixes = getChoicePrefixes(ctx.grammar, action, []);
                 for (const prefix of prefixes) {
                     console.log("        " + prefix);
                 }
@@ -276,7 +276,7 @@ function leftFactor(gr: Grammar): Grammar {
 
 function expand(gr: Grammar): Grammar {
     const visiting: string[] = [];
-    return gr.transform((action, t, g) => {
+    return gr.transform((action, ctx) => {
         let productionName: string | null = null;
         // Before visiting children
         if (action instanceof grammar.ProductionAction) {
@@ -285,7 +285,7 @@ function expand(gr: Grammar): Grammar {
             visiting.push(productionName);
         }
 
-        action = action.transform(t, g);
+        action = action.transform(ctx);
 
         const expanded: string[] = [];
 
@@ -296,7 +296,7 @@ function expand(gr: Grammar): Grammar {
             if (action instanceof grammar.RefAction) {
                 if (expanded.indexOf(action.name) < 0) {
                     expanded.push(action.name);
-                    action = g.lookup(action.name);
+                    action = ctx.grammar.lookup(action.name);
                     changed = true;
                 }
             }
