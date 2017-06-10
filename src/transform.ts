@@ -20,6 +20,7 @@ import {
     Action,
     ProductionAction,
     RefAction,
+    TokenAction,
     KeywordAction,
     ChoiceAction,
     SequenceAction,
@@ -28,6 +29,8 @@ import {
     SpliceNodeAction,
     LabelAction,
     GotoAction,
+    CaseAction,
+    SwitchAction,
 } from "./parser/grammar";
 import { grm as sampleGrammar } from "./sample";
 import { leftpad, rightpad } from "./util";
@@ -200,6 +203,62 @@ function appendGotoOnFailure(action: Action, labelId: number): Action {
     }
 }
 
+function getFirstToken(action: Action): TokenAction | null {
+    if (action instanceof TokenAction) {
+        return action;
+    }
+    else if ((action instanceof SequenceAction) && (action.items.length > 0)) {
+        return getFirstToken(action.items[0]);
+    }
+    else if ((action instanceof ChoiceAction) && (action.choices.length > 0)) {
+        const token = getFirstToken(action.choices[0]);
+        if (token !== null) {
+            for (let i = 1; i < action.choices.length; i++) {
+                const other = getFirstToken(action.choices[i]);
+                if ((other === null) || !other.equals(token))
+                    return null;
+            }
+            return token;
+        }
+    }
+    return null;
+}
+
+function removeFirstToken(tok: TokenAction, action: Action): Action {
+    if (action instanceof TokenAction) {
+        if (!action.equals(tok))
+            throw new Error("Token mismatch: expected " + tok + ", got " + action);
+        return grammar.empty();
+    }
+    else if ((action instanceof SequenceAction) && (action.items.length > 0)) {
+        const first = removeFirstToken(tok, action.items[0]);
+        const rest = action.items.slice(1);
+
+        return grammar.sequence([first].concat(rest))
+            .recordDerivation(action);
+    }
+    else if ((action instanceof ChoiceAction) && (action.choices.length > 0)) {
+        return grammar.choice(action.choices.map(choice => removeFirstToken(tok, choice)))
+            .recordDerivation(action);
+    }
+    else {
+        return action;
+    }
+}
+
+function choiceToSwitch(action: Action, ctx: Context): Action {
+    if (!(action instanceof ChoiceAction))
+        return action;
+    const cases: CaseAction[] = [];
+    for (const choice of action.choices) {
+        const token = getFirstToken(choice);
+        if (token === null)
+            return action;
+        cases.push(new CaseAction(token, removeFirstToken(token, choice)));
+    }
+    return new SwitchAction(cases, grammar.fail());
+}
+
 function flattenRepeat(action: Action, ctx: Context): Action {
     if (!(action instanceof grammar.RepeatAction))
         return action;
@@ -240,6 +299,7 @@ function collapseIteration(gr: Grammar): Grammar {
         while (true) {
             const prevAction = action;
 
+            if ((action = tryTransform(choiceToSwitch, action, ctx)) !== prevAction) continue;
             if ((action = tryTransform(flattenRepeat, action, ctx)) !== prevAction) continue;
             if ((action = tryTransform(flattenOpt, action, ctx)) !== prevAction) continue;
 
@@ -346,6 +406,29 @@ function actionTreeString(act: Action, gr: Grammar, options?: {
     let depth = 0;
     const transform: Transformer = (action, ctx) => {
         let line = linePrefix(depth, action);
+
+        if (action instanceof CaseAction) {
+            line += "case " + action.token;
+            output.push(colorLine(line, action));
+            depth++;
+            ctx.process(action.body);
+            depth--;
+            return action;
+        }
+
+        if (action instanceof SwitchAction) {
+            line += "switch";
+            output.push(colorLine(line, action));
+            depth++;
+            for (const cas of action.cases) {
+                ctx.process(cas);
+            }
+            output.push(colorLine(linePrefix(depth - 1, action) + "otherwise", action));
+            ctx.process(action.otherwise);
+            depth--;
+            return action;
+        }
+
         if (action instanceof grammar.ProductionAction)
             line += "Production " + action.name;
         else if (action instanceof KeywordAction)
@@ -361,28 +444,7 @@ function actionTreeString(act: Action, gr: Grammar, options?: {
         else
             line += (<any> action).constructor.name;
 
-        const inSets: string[] = [];
-
-        if (added.has(action)) {
-            output.push(ansi.green(line));
-            inSets.push("added");
-        }
-        else if (removed.has(action)) {
-            output.push(ansi.red(line));
-            inSets.push("removed");
-        }
-        else if (derived.has(action)) {
-            output.push(ansi.yellow(line));
-            inSets.push("derived");
-        }
-        else {
-            output.push(line);
-        }
-
-        if (inSets.length > 1) {
-            throw new Error("Action is in multiple sets: " + action.id + " " +
-                (<any> action).constructor.name + " (" + inSets.join(", ") + ")");
-        }
+        output.push(colorLine(line, action));
 
         depth++;
         action = action.transform(ctx);
@@ -397,6 +459,31 @@ function actionTreeString(act: Action, gr: Grammar, options?: {
             return padString(depth) + " " + action.id + " ";
         else
             return action.id + " ";
+    }
+
+    function colorLine(line: string, action: Action): string {
+        const inSets: string[] = [];
+        let result: string;
+        if (added.has(action)) {
+            result = ansi.green(line);
+            inSets.push("added");
+        }
+        else if (removed.has(action)) {
+            result = ansi.red(line);
+            inSets.push("removed");
+        }
+        else if (derived.has(action)) {
+            result = ansi.yellow(line);
+            inSets.push("derived");
+        }
+        else {
+            result = line;
+        }
+        if (inSets.length > 1) {
+            throw new Error("Action is in multiple sets: " + action.id + " " +
+                (<any> action).constructor.name + " (" + inSets.join(", ") + ")");
+        }
+        return result;
     }
 }
 
