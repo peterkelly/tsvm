@@ -49,7 +49,16 @@ export interface OutputOptions {
     write(str: string): void;
 }
 
-export type Transformer = (action: Action, t: Transformer, g: Grammar) => Action;
+export type Transformer = (action: Action, ctx: TransformationContext) => Action;
+
+export class TransformationContext {
+    public _class_TransformationContext: any;
+    public constructor(public transformer: Transformer, public grammar: Grammar) {
+    }
+    public process(action: Action): Action {
+        return this.transformer(action, this);
+    }
+}
 
 function needParentheses(precedence: number, target: number): boolean {
     return precedence <= target;
@@ -114,12 +123,13 @@ export class Grammar {
 
     public transform(t: Transformer) {
         const newGrammar = this.clone();
+        const ctx = new TransformationContext(t, newGrammar);
         for (let i = 0; i < newGrammar.names.length; i++) {
             const name = newGrammar.names[i];
             const production = newGrammar.productions.get(name);
             if (production === undefined)
                 throw new Error("Action " + JSON.stringify(name) + " not found");
-            const result = t(production, t, newGrammar);
+            const result = ctx.process(production);
             if (result instanceof ProductionAction)
                 newGrammar.productions.set(name, result);
             else
@@ -309,13 +319,13 @@ export abstract class Action {
 
     public abstract toSyntax(output: OutputOptions, precedence: number): void;
 
-    public abstract transform(t: Transformer, g: Grammar): Action;
+    public abstract transform(ctx: TransformationContext): Action;
 
     public abstract toString(): string;
 }
 
 export abstract class LeafAction extends Action {
-    public transform(t: Transformer, g: Grammar): Action {
+    public transform(ctx: TransformationContext): Action {
         return this;
     }
     public abstract shortString(): string;
@@ -373,8 +383,8 @@ export class ProductionAction extends Action {
         output.write(";");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
-        const child = t(this.child, t, g);
+    public transform(ctx: TransformationContext): Action {
+        const child = ctx.process(this.child);
         if (child === this.child)
             return this;
         else
@@ -468,8 +478,8 @@ export class NotAction extends Action {
             output.write(")");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
-        const child = t(this.child, t, g);
+    public transform(ctx: TransformationContext): Action {
+        const child = ctx.process(this.child);
         return (child !== this.child) ? new NotAction(child) : this;
     }
 
@@ -510,7 +520,7 @@ export class RefAction extends Action {
         output.write(this.name);
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
+    public transform(ctx: TransformationContext): Action {
         return this;
     }
 
@@ -584,9 +594,9 @@ export class ListAction extends Action {
         output.write(")");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
-        const first = t(this.first, t, g);
-        const rest = t(this.rest, t, g);
+    public transform(ctx: TransformationContext): Action {
+        const first = ctx.process(this.first);
+        const rest = ctx.process(this.rest);
         if ((first !== this.first) || (rest !== this.rest))
             return new ListAction(first, rest);
         else
@@ -645,11 +655,11 @@ export class SequenceAction extends Action {
             output.write(")");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
+    public transform(ctx: TransformationContext): Action {
         const newItems: Action[] = [];
         let different = false;
         for (let i = 0; i < this.items.length; i++) {
-            newItems.push(t(this.items[i], t, g));
+            newItems.push(ctx.process(this.items[i]));
             different = different || (newItems[i] !== this.items[i]);
         }
         return different ? new SequenceAction(newItems) : this;
@@ -1031,8 +1041,8 @@ export class OptAction extends Action {
         output.write(")?");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
-        const child = t(this.child, t, g);
+    public transform(ctx: TransformationContext): Action {
+        const child = ctx.process(this.child);
         return (child !== this.child) ? new OptAction(child) : this;
     }
 
@@ -1098,11 +1108,11 @@ export class ChoiceAction extends Action {
             output.write(")");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
+    public transform(ctx: TransformationContext): Action {
         const newChoices: Action[] = [];
         let different = false;
         for (let i = 0; i < this.choices.length; i++) {
-            newChoices.push(t(this.choices[i], t, g));
+            newChoices.push(ctx.process(this.choices[i]));
             different = different || (newChoices[i] !== this.choices[i]);
         }
         return different ? new ChoiceAction(newChoices) : this;
@@ -1151,8 +1161,8 @@ export class RepeatAction extends Action {
         output.write("*");
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
-        const child = t(this.child, t, g);
+    public transform(ctx: TransformationContext): Action {
+        const child = ctx.process(this.child);
         return (child !== this.child) ? new RepeatAction(child) : this;
     }
 
@@ -1506,7 +1516,7 @@ export class LabelAction extends LeafAction {
         output.write(this.shortString());
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
+    public transform(ctx: TransformationContext): Action {
         return this;
     }
 
@@ -1541,7 +1551,7 @@ export class GotoAction extends LeafAction {
         output.write(this.shortString());
     }
 
-    public transform(t: Transformer, g: Grammar): Action {
+    public transform(ctx: TransformationContext): Action {
         return this;
     }
 
