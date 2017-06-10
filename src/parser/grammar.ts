@@ -40,6 +40,22 @@ export interface OutputOptions {
     write(str: string): void;
 }
 
+export type Transformer = (action: Action, ctx: Context) => Action;
+
+export class Context {
+    public readonly transformer: Transformer;
+    public readonly grammar: Grammar;
+
+    public constructor(transformer: Transformer, grammar: Grammar) {
+        this.transformer = transformer;
+        this.grammar = grammar;
+    }
+
+    public process(action: Action): Action {
+        return this.transformer(action, this);
+    }
+}
+
 export class Grammar {
     private productions = new Map<string, ProductionAction>();
     private names: string[] = [];
@@ -49,6 +65,22 @@ export class Grammar {
             throw new Error("Production " + name + " is already defined");
         this.productions.set(name, new ProductionAction(name, fun));
         this.names.push(name);
+    }
+
+    public derive(name: string, fun: Action): ProductionAction {
+        const match = name.match(/(^.*)_([0-9]+)$/);
+        const baseName = match ? match[1] : name;
+        let num = 1;
+        while (this.productions.has(baseName + ":" + num))
+            num++;
+        const derivedName = baseName + ":" + num;
+        let index = this.names.indexOf(baseName);
+        index = (index >= 0) ? index : this.names.length;
+
+        const production = new ProductionAction(derivedName, fun, fun.offset);
+        this.productions.set(derivedName, production);
+        this.names.splice(index, 0, derivedName);
+        return production;
     }
 
     public lookup(name: string): ProductionAction {
@@ -63,6 +95,34 @@ export class Grammar {
             this.lookup(name).dump("", "", output);
         }
     }
+
+    public clone(): Grammar {
+        const newGrammar = new Grammar();
+        for (const name of this.names) {
+            const production = this.lookup(name);
+            newGrammar.productions.set(name, production);
+            newGrammar.names.push(name);
+        }
+        return newGrammar;
+    }
+
+    public transform(t: Transformer) {
+        const newGrammar = this.clone();
+        const ctx = new Context(t, newGrammar);
+        for (let i = 0; i < newGrammar.names.length; i++) {
+            const name = newGrammar.names[i];
+            const production = newGrammar.productions.get(name);
+            if (production === undefined)
+                throw new Error("Action " + JSON.stringify(name) + " not found");
+            const result = ctx.process(production);
+            if (result instanceof ProductionAction)
+                newGrammar.productions.set(name, result);
+            else
+                newGrammar.productions.set(name, new ProductionAction(name, result, result.offset));
+        }
+        return newGrammar;
+    }
+
 }
 
 export class Builder {
@@ -241,17 +301,22 @@ export abstract class Action {
     public abstract executeImpl(b: Builder): void;
 
     public abstract dump(prefix: string, indent: string, output: OutputOptions): void;
+
+    public abstract transform(ctx: Context): Action;
 }
 
 export abstract class LeafAction extends Action {
+    public transform(ctx: Context): Action {
+        return this;
+    }
 }
 
 export class ProductionAction extends Action {
     public readonly body: Action;
     public readonly name: string;
 
-    public constructor(name: string, body: Action) {
-        super("[" + name + "]", 1);
+    public constructor(name: string, body: Action, offset?: number) {
+        super("[" + name + "]", (offset !== undefined) ? offset : 1);
         this.name = name;
         this.body = body;
     }
@@ -275,6 +340,14 @@ export class ProductionAction extends Action {
         output.write(this.stats(output) + "grm.define(" + JSON.stringify(this.name) + ",\n");
         this.body.dump(indent + "    ", indent + "    ", output);
         output.write(");\n\n");
+    }
+
+    public transform(ctx: Context): Action {
+        const body = ctx.process(this.body);
+        if (body === this.body)
+            return this;
+        else
+            return new ProductionAction(this.name, body, body.offset);
     }
 }
 
@@ -341,6 +414,11 @@ export class NotAction extends Action {
         this.child.dump("", indent, output);
         output.write(")");
     }
+
+    public transform(ctx: Context): Action {
+        const child = ctx.process(this.child);
+        return (child !== this.child) ? new NotAction(child) : this;
+    }
 }
 
 export function not(f: Action): Action {
@@ -369,6 +447,10 @@ export class RefAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "ref(" + JSON.stringify(this.name) + ")");
+    }
+
+    public transform(ctx: Context): Action {
+        return this;
     }
 }
 
@@ -428,6 +510,15 @@ export class ListAction extends Action {
         this.rest.dump(indent + "    ", indent + "    ", output);
         output.write("\n" + this.space(output) + indent + ")");
     }
+
+    public transform(ctx: Context): Action {
+        const first = ctx.process(this.first);
+        const rest = ctx.process(this.rest);
+        if ((first !== this.first) || (rest !== this.rest))
+            return new ListAction(first, rest);
+        else
+            return this;
+    }
 }
 
 export function list(first: Action, rest: Action): Action {
@@ -459,6 +550,16 @@ export class SequenceAction extends Action {
             output.write(",\n");
         }
         output.write(this.space(output) + indent + "])");
+    }
+
+    public transform(ctx: Context): Action {
+        const newItems: Action[] = [];
+        let different = false;
+        for (let i = 0; i < this.items.length; i++) {
+            newItems.push(ctx.process(this.items[i]));
+            different = different || (newItems[i] !== this.items[i]);
+        }
+        return different ? new SequenceAction(newItems) : this;
     }
 }
 
@@ -768,6 +869,11 @@ export class OptAction extends Action {
         this.child.dump("", indent, output);
         output.write(")");
     }
+
+    public transform(ctx: Context): Action {
+        const child = ctx.process(this.child);
+        return (child !== this.child) ? new OptAction(child) : this;
+    }
 }
 
 export function opt(f: Action): Action {
@@ -813,6 +919,16 @@ export class ChoiceAction extends Action {
         }
         output.write(this.stats(output) + indent + "])");
     }
+
+    public transform(ctx: Context): Action {
+        const newChoices: Action[] = [];
+        let different = false;
+        for (let i = 0; i < this.choices.length; i++) {
+            newChoices.push(ctx.process(this.choices[i]));
+            different = different || (newChoices[i] !== this.choices[i]);
+        }
+        return different ? new ChoiceAction(newChoices) : this;
+    }
 }
 
 export function choice(choices: Action[]): Action {
@@ -842,6 +958,11 @@ export class RepeatAction extends Action {
         output.write(this.stats(output) + indent + "repeat(");
         this.child.dump("", indent, output);
         output.write(")");
+    }
+
+    public transform(ctx: Context): Action {
+        const child = ctx.process(this.child);
+        return (child !== this.child) ? new RepeatAction(child) : this;
     }
 }
 
