@@ -59,6 +59,7 @@ import {
 
 export const grm = new Grammar();
 
+/*
 // grm.define("NUMBER", numeric_literal_token());
 // grm.define("IDENT", identifier_token());
 
@@ -156,19 +157,27 @@ grm.define("Equality",
 
 grm.define("Expression",
     ref("Equality"));
+*/
 
-/*
 grm.define("test",
     sequence([
+        keyword("f"),
         sequence([
+            keyword("e"),
             sequence([
+                keyword("d"),
                 choice([
+                    sequence([keyword("z1"), keyword("z2"), keyword("z3")]),
                     choice([
+                        sequence([keyword("y1"), keyword("y2"), keyword("y3")]),
                         choice([
+                            sequence([keyword("x1"), keyword("x2"), keyword("x3")]),
                             sequence([
+                                keyword("c"),
                                 sequence([
+                                    keyword("b"),
                                     sequence([
-                                        keyword('x'),
+                                        keyword("a"),
                                     ]),
                                 ]),
                             ]),
@@ -178,4 +187,3 @@ grm.define("test",
             ]),
         ]),
     ]));
-*/

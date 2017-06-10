@@ -29,6 +29,33 @@ import {
     GotoAction,
 } from "./parser/grammar";
 import { grm as sampleGrammar } from "./sample";
+import { leftpad, rightpad } from "./util";
+
+function showTransform(name: string, before: Action, after: Action, gr: Grammar): void {
+    const beforeLines = actionTreeString(before, gr).split("\n");
+    const afterLines = actionTreeString(after, gr).split("\n");
+    console.log("================================================================================");
+    // console.log(actionTreeString(before, gr));
+    // console.log(actionTreeString(after, gr));
+    console.log(name);
+    console.log("================================================================================");
+    console.log("");
+    const beforeWidth = Math.max(...beforeLines.map(s => s.length)) + 8;
+    for (let lineno = 0; (lineno < beforeLines.length) || (lineno < afterLines.length); lineno++) {
+        let before: string;
+        let after: string;
+        if (lineno < beforeLines.length)
+            before = rightpad(beforeLines[lineno], beforeWidth);
+        else
+            before = rightpad("", beforeWidth);
+        if (lineno < afterLines.length)
+            after = afterLines[lineno];
+        else
+            after = "";
+        console.log(before + after);
+    }
+    console.log("");
+}
 
 function padString(length: number): string {
     let s = "";
@@ -165,12 +192,12 @@ export namespace strategy {
         return (action: Action, t: Transformer, g: Grammar): Action => {
             let prevAction = action;
             while (true) {
-                action = action.transform(t, g)
+                action = action.transform(t, g);
                 if (action === prevAction)
                     return action;
                 prevAction = action;
             }
-        }
+        };
     }
 }
 
@@ -234,14 +261,26 @@ function simplify(gr: Grammar): Grammar {
     return gr.transform((action, t, g) => {
         action = action.transform(t, g);
 
-        let changed: boolean;
         while (true) {
             const prevAction = action;
 
-            if ((action = simplifyNestedSequence(action, t, g)) !== prevAction) continue;
-            if ((action = simplifyNestedChoice(action, t, g)) !== prevAction) continue;
-            if ((action = simplifyUnarySequence(action, t, g)) !== prevAction) continue;
-            if ((action = simplifyUnaryChoice(action, t, g)) !== prevAction) continue;
+            if ((action = simplifyNestedSequence(action, t, g)) !== prevAction) {
+                showTransform("simplifyNestedSequence", prevAction, action, g);
+                continue;
+            }
+            if ((action = simplifyNestedChoice(action, t, g)) !== prevAction) {
+                showTransform("simplifyNestedChoice", prevAction, action, g);
+                continue;
+            }
+
+            if ((action = simplifyUnarySequence(action, t, g)) !== prevAction) {
+                showTransform("simplifyUnarySequence", prevAction, action, g);
+                continue;
+            }
+            if ((action = simplifyUnaryChoice(action, t, g)) !== prevAction) {
+                showTransform("simplifyUnaryChoice", prevAction, action, g);
+                continue;
+            }
 
             return action;
         }
@@ -272,12 +311,11 @@ function actionTreeString(act: Action, gr: Grammar): string {
         depth--;
         return action;
     };
-    act.transform(transform, gr);
+    transform(act, transform, gr);
     return output.join("\n");
 }
 
 function printGrammar(gr: Grammar): void {
-    let depth = 0;
     gr.transform((action, t, g) => {
         if (action instanceof grammar.ProductionAction) {
             console.log("Production " + action.name);
@@ -294,10 +332,13 @@ function printGrammar(gr: Grammar): void {
 
 function main(): void {
     let gr = sampleGrammar;
-    gr = liftPrefix(gr);
-    gr = expandFirstitem(gr);
-    gr = collapseIteration(gr);
+    // gr = liftPrefix(gr);
+    // gr = expandFirstitem(gr);
+    // gr = collapseIteration(gr);
     gr = simplify(gr);
+    console.log("");
+    console.log("================================================================================");
+    console.log("");
     printGrammar(gr);
 }
 
