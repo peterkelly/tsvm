@@ -285,6 +285,8 @@ export abstract class Action {
     public started = 0;
     public finished = 0;
     public readonly id: number;
+    public derivedFrom: Action | null = null;
+    public readonly derivatives: Set<Action> = new Set<Action>();
 
     private static nextId = 0;
 
@@ -313,6 +315,12 @@ export abstract class Action {
         if (!output.profile)
             return "";
         return leftpad("", PROFILE_WIDTH);
+    }
+
+    public recordDerivation(from: Action): this {
+        from.derivatives.add(this);
+        this.derivedFrom = from;
+        return this;
     }
 
     public abstract equals(other: Action): boolean;

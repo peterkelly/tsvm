@@ -59,7 +59,6 @@ import {
 
 export const grm = new Grammar();
 
-/*
 // grm.define("NUMBER", numeric_literal_token());
 // grm.define("IDENT", identifier_token());
 
@@ -157,8 +156,8 @@ grm.define("Equality",
 
 grm.define("Expression",
     ref("Equality"));
-*/
 
+/*
 grm.define("test",
     sequence([
         keyword("f"),
@@ -187,3 +186,4 @@ grm.define("test",
             ]),
         ]),
     ]));
+*/
