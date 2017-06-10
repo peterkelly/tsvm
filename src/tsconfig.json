@@ -16,7 +16,11 @@
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "../dist",
         "sourceMap": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "lib": [
+            "dom",
+            "es2015"
+        ]
     },
     "compileOnSave": true,
     "buildOnSave": false,
