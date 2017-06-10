@@ -284,10 +284,14 @@ export abstract class Action {
     public readonly offset: number;
     public started = 0;
     public finished = 0;
+    public readonly id: number;
+
+    private static nextId = 0;
 
     public constructor(kind: string, offset: number) {
         this.kind = kind;
         this.offset = offset;
+        this.id = Action.nextId++;
     }
 
     public execute(b: Builder): void {

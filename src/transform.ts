@@ -31,10 +31,36 @@ import {
 } from "./parser/grammar";
 import { grm as sampleGrammar } from "./sample";
 import { leftpad, rightpad } from "./util";
+import * as ansi from "./ansi";
+
+function setOfActions(root: Action, gr: Grammar): Set<Action> {
+    const result = new Set<Action>();
+    const transform: Transformer = (action, ctx) => {
+        result.add(action);
+        return action.transform(ctx);
+    };
+    new TransformationContext(transform, gr).process(root);
+    return result;
+}
 
 function showTransform(name: string, before: Action, after: Action, ctx: TransformationContext): void {
-    const beforeLines = actionTreeString(before, ctx.grammar).split("\n");
-    const afterLines = actionTreeString(after, ctx.grammar).split("\n");
+    const beforeActionSet = setOfActions(before, ctx.grammar);
+    const afterActionSet = setOfActions(after, ctx.grammar);
+
+    const beforeRemoved = new Set<Action>();
+    for (const action of Array.from(beforeActionSet)) {
+        if (!afterActionSet.has(action))
+            beforeRemoved.add(action);
+    }
+
+    const afterAdded = new Set<Action>();
+    for (const action of Array.from(afterActionSet)) {
+        if (!beforeActionSet.has(action))
+            afterAdded.add(action);
+    }
+
+    const beforeLines = actionTreeString(before, ctx.grammar, { removed: beforeRemoved }).split("\n");
+    const afterLines = actionTreeString(after, ctx.grammar, { added: afterAdded }).split("\n");
     console.log("================================================================================");
     // console.log(actionTreeString(before, gr));
     // console.log(actionTreeString(after, gr));
@@ -46,9 +72,9 @@ function showTransform(name: string, before: Action, after: Action, ctx: Transfo
         let before: string;
         let after: string;
         if (lineno < beforeLines.length)
-            before = rightpad(beforeLines[lineno], beforeWidth);
+            before = ansi.padRight(beforeLines[lineno], beforeWidth);
         else
-            before = rightpad("", beforeWidth);
+            before = ansi.padRight("", beforeWidth);
         if (lineno < afterLines.length)
             after = afterLines[lineno];
         else
@@ -121,7 +147,6 @@ function liftPrefix(gr: Grammar): Grammar {
                     if (haveEmpty)
                         remainder = new OptAction(remainder);
 
-
                     return new SequenceAction([prefixes[0], remainder]);
                 }
             }
@@ -175,14 +200,49 @@ function flattenRepeat(action: Action, ctx: TransformationContext): Action {
     ]);
 }
 
+// function moveTrailingGotoInsideSequence(action: Action, ctx: TransformationContext): Action {
+//     if (!(action instanceof SequenceAction))
+//         return action;
+//     if (action.items.length === 0)
+//         return action;
+//     const gotoItem = action.items[action.items.length - 1];
+//     if (!(gotoItem instanceof GotoAction))
+//         return action;
+//
+//     return new SequenceAction(
+//         action.items.slice(0, action.items.length - 1).map(item =>
+//             grammar.sequence([item, gotoItem])
+//         )
+//     );
+// }
+
+function moveTrailingGotoInsideChoice(action: Action, ctx: TransformationContext): Action {
+    if (!(action instanceof ChoiceAction))
+        return action;
+    if (action.choices.length === 0)
+        return action;
+    const gotoItem = action.choices[action.choices.length - 1];
+    if (!(gotoItem instanceof GotoAction))
+        return action;
+
+    return new ChoiceAction(
+        action.choices.slice(0, action.choices.length - 1).map(item =>
+            grammar.sequence([item, gotoItem])
+        )
+    );
+}
+
 function collapseIteration(gr: Grammar): Grammar {
-    return gr.transform((action, ctx) => {
-        action = action.transform(ctx);
+    return gr.transform((action1, ctx) => {
+        let action = action1;
 
         while (true) {
             const prevAction = action;
-            if ((action = flattenRepeat(action, ctx)) !== prevAction)
-                continue;
+
+            if ((action = action.transform(ctx)) !== prevAction) continue;
+            if ((action = tryTransform(flattenRepeat, action, ctx)) !== prevAction) continue;
+            if ((action = tryTransform(moveTrailingGotoInsideChoice, action, ctx)) !== prevAction) continue;
+
             return action;
         }
     });
@@ -252,10 +312,11 @@ function tryTransform(t: Transformer, action: Action, ctx: TransformationContext
     }
     catch (e) {
     }
+    const heading = name + " " + action.id + " " + (<any> action).constructor.name;
     const newAction = t(action, ctx);
     if (newAction !== action)
-        showTransform(name, action, newAction, ctx);
-    return action;
+        showTransform(heading, action, newAction, ctx);
+    return newAction;
 }
 
 function simplify(gr: Grammar): Grammar {
@@ -275,24 +336,34 @@ function simplify(gr: Grammar): Grammar {
     });
 }
 
-function actionTreeString(act: Action, gr: Grammar): string {
+function actionTreeString(act: Action, gr: Grammar, options?: { added?: Set<Action>, removed?: Set<Action>}): string {
+    const added = (options && options.added) ? options.added : new Set<Action>();
+    const removed = (options && options.removed) ? options.removed : new Set<Action>();
     const output: string[] = [];
     let depth = 0;
     const transform: Transformer = (action, ctx) => {
+        let line = linePrefix(depth, action);
         if (action instanceof grammar.ProductionAction)
-            output.push(padString(depth) + "Production " + action.name);
+            line += "Production " + action.name;
         else if (action instanceof KeywordAction)
-            output.push(padString(depth) + JSON.stringify(action.str));
+            line += JSON.stringify(action.str);
         else if (action instanceof RefAction)
-            output.push(padString(depth) + "[" + action.name + "]");
+            line += "[" + action.name + "]";
         else if (action instanceof SpliceNodeAction)
-            output.push(padString(depth) + "=> " + action.name + "(" + action.childIndices.join(",") + ")");
+            line += "=> " + action.name + "(" + action.childIndices.join(",") + ")";
         else if (action instanceof LabelAction)
-            output.push(padString(depth) + "label" + action.labelId + ":");
+            line += "label" + action.labelId + ":";
         else if (action instanceof GotoAction)
-            output.push(padString(depth) + "goto label" + action.labelId + ";");
+            line += "goto label" + action.labelId + ";";
         else
-            output.push(padString(depth) + (<any> action).constructor.name);
+            line += (<any> action).constructor.name;
+
+        if (added.has(action))
+            output.push(ansi.green(line));
+        else if (removed.has(action))
+            output.push(ansi.red(line));
+        else
+            output.push(line);
 
         depth++;
         action = action.transform(ctx);
@@ -301,6 +372,13 @@ function actionTreeString(act: Action, gr: Grammar): string {
     };
     new TransformationContext(transform, gr).process(act);
     return output.join("\n");
+
+    function linePrefix(depth: number, action: Action): string {
+        if (depth > 0)
+            return padString(depth) + " " + action.id + " ";
+        else
+            return action.id + " ";
+    }
 }
 
 function printGrammar(gr: Grammar): void {
@@ -324,7 +402,7 @@ function main(): void {
     // gr = expandFirstitem(gr);
     // gr = collapseIteration(gr);
     gr = simplify(gr);
-    console.log("");
+    // console.log("");
     console.log("================================================================================");
     console.log("");
     printGrammar(gr);
