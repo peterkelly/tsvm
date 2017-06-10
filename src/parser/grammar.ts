@@ -242,26 +242,26 @@ export abstract class Action {
 export abstract class LeafAction extends Action {
 }
 
-class ProductionAction extends Action {
-    private child: Action;
-    private name: string;
+export class ProductionAction extends Action {
+    public readonly body: Action;
+    public readonly name: string;
 
-    public constructor(name: string, child: Action) {
+    public constructor(name: string, body: Action) {
         super("[" + name + "]", 1);
         this.name = name;
-        this.child = child;
+        this.body = body;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof ProductionAction) &&
-                this.child.equals(other.child) &&
+                this.body.equals(other.body) &&
                 (this.name === other.name));
     }
 
     public executeImpl(b: Builder): void {
         b.attempt((): void => {
             const oldLength = b.length;
-            this.child.execute(b);
+            this.body.execute(b);
             b.assertLengthIs(oldLength + 1);
             b.getNode(0); // Check that the top of the stack is either a node null
         });
@@ -269,12 +269,12 @@ class ProductionAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + "grm.define(" + JSON.stringify(this.name) + ",\n");
-        this.child.dump(indent + "    ", indent + "    ", output);
+        this.body.dump(indent + "    ", indent + "    ", output);
         output.write(");\n\n");
     }
 }
 
-class EmptyAction extends LeafAction {
+export class EmptyAction extends LeafAction {
     public constructor() {
         super("empty", 0);
     }
@@ -296,8 +296,8 @@ export function empty(): Action {
     return new EmptyAction();
 }
 
-class NotAction extends Action {
-    private child: Action;
+export class NotAction extends Action {
+    public readonly child: Action;
 
     public constructor(child: Action) {
         super("not", 0);
@@ -343,8 +343,8 @@ export function not(f: Action): Action {
     return new NotAction(f);
 }
 
-class RefAction extends Action {
-    private name: string;
+export class RefAction extends Action {
+    public readonly name: string;
 
     public constructor(productionName: string) {
         super("ref", 1);
@@ -372,9 +372,9 @@ export function ref(name: string): Action {
     return new RefAction(name);
 }
 
-class ListAction extends Action {
-    private first: Action;
-    private rest: Action;
+export class ListAction extends Action {
+    public readonly first: Action;
+    public readonly rest: Action;
 
     public constructor(first: Action, rest: Action) {
         super("list", 1);
@@ -430,27 +430,27 @@ export function list(first: Action, rest: Action): Action {
     return new ListAction(first, rest);
 }
 
-class SequenceAction extends Action {
-    private actions: Action[];
+export class SequenceAction extends Action {
+    public readonly items: Action[];
 
-    public constructor(actions: Action[]) {
-        super("sequence", actionsTotalOffset(actions));
-        this.actions = actions;
+    public constructor(items: Action[]) {
+        super("sequence", actionsTotalOffset(items));
+        this.items = items;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof SequenceAction) &&
-                actionArrayEquals(this.actions, other.actions));
+                actionArrayEquals(this.items, other.items));
     }
 
     public executeImpl(b: Builder): void {
-        for (const act of this.actions)
+        for (const act of this.items)
             act.execute(b);
     }
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "sequence([\n");
-        for (const act of this.actions) {
+        for (const act of this.items) {
             act.dump(indent + "    ", indent + "    ", output);
             output.write(",\n");
         }
@@ -458,12 +458,12 @@ class SequenceAction extends Action {
     }
 }
 
-export function sequence(actions: Action[]): Action {
-    return new SequenceAction(actions);
+export function sequence(items: Action[]): Action {
+    return new SequenceAction(items);
 }
 
-class SpliceNullAction extends LeafAction {
-    private index: number;
+export class SpliceNullAction extends LeafAction {
+    public readonly index: number;
 
     public constructor(index: number) {
         super("spliceNull", -index);
@@ -488,9 +488,9 @@ export function spliceNull(index: number): Action {
     return new SpliceNullAction(index);
 }
 
-class SpliceReplaceAction extends LeafAction {
-    private index: number;
-    private srcIndex: number;
+export class SpliceReplaceAction extends LeafAction {
+    public readonly index: number;
+    public readonly srcIndex: number;
 
     public constructor(index: number, srcIndex: number) {
         super("spliceReplace", -index);
@@ -517,12 +517,12 @@ export function spliceReplace(index: number, srcIndex: number): Action {
     return new SpliceReplaceAction(index, srcIndex);
 }
 
-class SpliceNodeAction extends LeafAction {
-    private index: number;
-    private name: string;
-    private startIndex: number;
-    private endIndex: number;
-    private childIndices: number[];
+export class SpliceNodeAction extends LeafAction {
+    public readonly index: number;
+    public readonly name: string;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
+    public readonly childIndices: number[];
 
     public constructor(index: number, name: string, startIndex: number, endIndex: number, childIndices: number[]) {
         super("spliceNode", -index);
@@ -571,12 +571,12 @@ export function spliceNode(index: number, name: string, startIndex: number, endI
     return new SpliceNodeAction(index, name, startIndex, endIndex, childIndices);
 }
 
-class SpliceStringNodeAction extends LeafAction {
-    private index: number;
-    private nodeName: string;
-    private startIndex: number;
-    private endIndex: number;
-    private valueIndex: number;
+export class SpliceStringNodeAction extends LeafAction {
+    public readonly index: number;
+    public readonly nodeName: string;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
+    public readonly valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
         super("spliceStringNode", -index);
@@ -622,12 +622,12 @@ export function spliceStringNode(index: number, name: string, startIndex: number
     return new SpliceStringNodeAction(index, name, startIndex, endIndex, valueIndex);
 }
 
-class SpliceNumberNodeAction extends LeafAction {
-    private index: number;
-    private nodeName: string;
-    private startIndex: number;
-    private endIndex: number;
-    private valueIndex: number;
+export class SpliceNumberNodeAction extends LeafAction {
+    public readonly index: number;
+    public readonly nodeName: string;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
+    public readonly valueIndex: number;
 
     public constructor(index: number, nodeName: string, startIndex: number, endIndex: number, valueIndex: number) {
         super("spliceNumberNode", -index);
@@ -673,10 +673,10 @@ export function spliceNumberNode(index: number, name: string, startIndex: number
     return new SpliceNumberNodeAction(index, name, startIndex, endIndex, valueIndex);
 }
 
-class SpliceEmptyListNodeAction extends LeafAction {
-    private index: number;
-    private startIndex: number;
-    private endIndex: number;
+export class SpliceEmptyListNodeAction extends LeafAction {
+    public readonly index: number;
+    public readonly startIndex: number;
+    public readonly endIndex: number;
 
     public constructor(index: number, startIndex: number, endIndex: number) {
         super("spliceEmptyListNode", -index);
@@ -706,7 +706,7 @@ export function spliceEmptyListNode(index: number, startIndex: number, endIndex:
     return new SpliceEmptyListNodeAction(index, startIndex, endIndex);
 }
 
-class PopAction extends LeafAction {
+export class PopAction extends LeafAction {
     public constructor() {
         super("pop", -1);
     }
@@ -730,8 +730,8 @@ export function pop(): Action {
     return new PopAction();
 }
 
-class OptAction extends Action {
-    private child: Action;
+export class OptAction extends Action {
+    public readonly child: Action;
 
     public constructor(child: Action) {
         super("opt", 1);
@@ -770,23 +770,23 @@ export function opt(f: Action): Action {
     return new OptAction(f);
 }
 
-class ChoiceAction extends Action {
-    private actions: Action[];
+export class ChoiceAction extends Action {
+    public readonly choices: Action[];
 
-    public constructor(actions: Action[]) {
-        super("choice", actionsSameOffset(actions));
-        this.actions = actions;
+    public constructor(choices: Action[]) {
+        super("choice", actionsSameOffset(choices));
+        this.choices = choices;
     }
 
     public equals(other: Action): boolean {
         return ((other instanceof ChoiceAction) &&
-                actionArrayEquals(this.actions, other.actions));
+                actionArrayEquals(this.choices, other.choices));
     }
 
     public executeImpl(b: Builder): void {
         const start = b.parser.pos;
         const length = b.stack.length;
-        for (const act of this.actions) {
+        for (const act of this.choices) {
             try {
                 act.execute(b);
                 return;
@@ -803,7 +803,7 @@ class ChoiceAction extends Action {
 
     public dump(prefix: string, indent: string, output: OutputOptions): void {
         output.write(this.stats(output) + prefix + "choice([\n");
-        for (const act of this.actions) {
+        for (const act of this.choices) {
             act.dump(indent + "    ", indent + "    ", output);
             output.write(",\n");
         }
@@ -811,12 +811,12 @@ class ChoiceAction extends Action {
     }
 }
 
-export function choice(actions: Action[]): Action {
-    return new ChoiceAction(actions);
+export function choice(choices: Action[]): Action {
+    return new ChoiceAction(choices);
 }
 
-class RepeatAction extends Action {
-    private child: Action;
+export class RepeatAction extends Action {
+    public readonly child: Action;
 
     public constructor(child: Action) {
         super("repeat", 0);
@@ -845,7 +845,7 @@ export function repeat(f: Action): Action {
     return new RepeatAction(f);
 }
 
-class PosAction extends LeafAction {
+export class PosAction extends LeafAction {
     public constructor() {
         super("pos", 1);
     }
@@ -867,8 +867,8 @@ export function pos(): Action {
     return new PosAction();
 }
 
-class ValueAction extends LeafAction {
-    private value: any;
+export class ValueAction extends LeafAction {
+    public readonly value: any;
 
     public constructor(value: any) {
         super("value", 1);
@@ -893,8 +893,8 @@ export function value(value: any): Action {
     return new ValueAction(value);
 }
 
-class KeywordAction extends LeafAction {
-    private str: string;
+export class KeywordAction extends LeafAction {
+    public readonly str: string;
 
     public constructor(str: string) {
         super("keyword", 1);
@@ -925,8 +925,8 @@ export function keyword(str: string): Action {
     return new KeywordAction(str);
 }
 
-class IdentifierAction extends LeafAction {
-    private str: string;
+export class IdentifierAction extends LeafAction {
+    public readonly str: string;
 
     public constructor(str: string) {
         super("identifier", 1);
@@ -960,7 +960,7 @@ export function identifier(str: string): Action {
     return new IdentifierAction(str);
 }
 
-class WhitespaceAction extends LeafAction {
+export class WhitespaceAction extends LeafAction {
     public constructor() {
         super("whitespace", 1);
     }
@@ -983,7 +983,7 @@ export function whitespace(): Action {
     return new WhitespaceAction();
 }
 
-class WhitespaceNoNewlineAction extends LeafAction {
+export class WhitespaceNoNewlineAction extends LeafAction {
     public constructor() {
         super("whitespaceNoNewline", 1);
     }
@@ -1006,7 +1006,7 @@ export function whitespaceNoNewline(): Action {
     return new WhitespaceNoNewlineAction();
 }
 
-class IdentifierTokenAction extends LeafAction {
+export class IdentifierTokenAction extends LeafAction {
     public constructor() {
         super("identifier_token", 1);
     }
@@ -1034,7 +1034,7 @@ export function identifier_token(): Action {
     return new IdentifierTokenAction();
 }
 
-class NumericLiteralTokenAction extends LeafAction {
+export class NumericLiteralTokenAction extends LeafAction {
     public constructor() {
         super("numeric_literal_token", 1);
     }
@@ -1063,7 +1063,7 @@ export function numeric_literal_token(): Action {
     return new NumericLiteralTokenAction();
 }
 
-class StringLiteralTokenAction extends LeafAction {
+export class StringLiteralTokenAction extends LeafAction {
     public constructor() {
         super("string_literal_token", 1);
     }
