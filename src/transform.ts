@@ -218,6 +218,19 @@ function flattenRepeat(action: Action, ctx: TransformationContext): Action {
     ]);
 }
 
+function flattenOpt(action: Action, ctx: TransformationContext): Action {
+    if (!(action instanceof OptAction))
+        return action;
+    const skipLabel = grammar.label();
+    return grammar.sequence([
+        appendGotoOnFailure(
+            action.child,
+            skipLabel.labelId
+        ),
+        skipLabel,
+    ])
+}
+
 function collapseIteration(gr: Grammar): Grammar {
     return gr.transform((action1, ctx) => {
         let action = action1;
@@ -228,6 +241,7 @@ function collapseIteration(gr: Grammar): Grammar {
             const prevAction = action;
 
             if ((action = tryTransform(flattenRepeat, action, ctx)) !== prevAction) continue;
+            if ((action = tryTransform(flattenOpt, action, ctx)) !== prevAction) continue;
 
             return action;
         }
