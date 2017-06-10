@@ -15,7 +15,7 @@
 import * as grammar from "./parser/grammar";
 import {
     Transformer,
-    TransformationContext,
+    Context,
     Grammar,
     Action,
     ProductionAction,
@@ -39,11 +39,11 @@ function setOfActions(root: Action, gr: Grammar): Set<Action> {
         result.add(action);
         return action.transform(ctx);
     };
-    new TransformationContext(transform, gr).process(root);
+    new Context(transform, gr).process(root);
     return result;
 }
 
-function showTransform(name: string, before: Action, after: Action, ctx: TransformationContext): void {
+function showTransform(name: string, before: Action, after: Action, ctx: Context): void {
     const beforeActionSet = setOfActions(before, ctx.grammar);
     const afterActionSet = setOfActions(after, ctx.grammar);
 
@@ -200,7 +200,7 @@ function appendGotoOnFailure(action: Action, labelId: number): Action {
     }
 }
 
-function flattenRepeat(action: Action, ctx: TransformationContext): Action {
+function flattenRepeat(action: Action, ctx: Context): Action {
     if (!(action instanceof grammar.RepeatAction))
         return action;
     const startLabel = grammar.label();
@@ -218,7 +218,7 @@ function flattenRepeat(action: Action, ctx: TransformationContext): Action {
     ]);
 }
 
-function flattenOpt(action: Action, ctx: TransformationContext): Action {
+function flattenOpt(action: Action, ctx: Context): Action {
     if (!(action instanceof OptAction))
         return action;
     const skipLabel = grammar.label();
@@ -264,7 +264,7 @@ function choiceContainsChoice(action: ChoiceAction): boolean {
     return false;
 }
 
-function simplifyNestedSequence(action: Action, ctx: TransformationContext): Action {
+function simplifyNestedSequence(action: Action, ctx: Context): Action {
     if (!(action instanceof SequenceAction) || !sequenceContainsSequence(action))
         return action;
     const newItems: Action[] = [];
@@ -277,7 +277,7 @@ function simplifyNestedSequence(action: Action, ctx: TransformationContext): Act
     return grammar.sequence(newItems).recordDerivation(action);
 }
 
-function simplifyNestedChoice(action: Action, ctx: TransformationContext): Action {
+function simplifyNestedChoice(action: Action, ctx: Context): Action {
     if (!(action instanceof ChoiceAction) || !choiceContainsChoice(action))
         return action;
     const newChoices: Action[] = [];
@@ -290,21 +290,21 @@ function simplifyNestedChoice(action: Action, ctx: TransformationContext): Actio
     return grammar.choice(newChoices).recordDerivation(action);
 }
 
-function simplifyUnarySequence(action: Action, ctx: TransformationContext): Action {
+function simplifyUnarySequence(action: Action, ctx: Context): Action {
     if ((action instanceof SequenceAction) && (action.items.length === 1))
         return action.items[0];
     else
         return action;
 }
 
-function simplifyUnaryChoice(action: Action, ctx: TransformationContext): Action {
+function simplifyUnaryChoice(action: Action, ctx: Context): Action {
     if ((action instanceof ChoiceAction) && (action.choices.length === 1))
         return action.choices[0];
     else
         return action;
 }
 
-function tryTransform(t: Transformer, action: Action, ctx: TransformationContext): Action {
+function tryTransform(t: Transformer, action: Action, ctx: Context): Action {
     let name = "(unknown)";
     try {
         if (typeof(t.name) === "string")
@@ -389,7 +389,7 @@ function actionTreeString(act: Action, gr: Grammar, options?: {
         depth--;
         return action;
     };
-    new TransformationContext(transform, gr).process(act);
+    new Context(transform, gr).process(act);
     return output.join("\n");
 
     function linePrefix(depth: number, action: Action): string {

@@ -14,7 +14,7 @@
 
 import { Parser, ParseError } from "./parser/parser";
 import { ASTNode } from "./parser/ast";
-import { TransformationContext, Grammar, Action, Builder, ref } from "./parser/grammar";
+import { Context, Grammar, Action, Builder, ref } from "./parser/grammar";
 import * as grammar from "./parser/grammar";
 import { grm as sampleGrammar } from "./sample";
 import { leftpad, rightpad } from "./util";

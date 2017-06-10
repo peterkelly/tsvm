@@ -49,12 +49,17 @@ export interface OutputOptions {
     write(str: string): void;
 }
 
-export type Transformer = (action: Action, ctx: TransformationContext) => Action;
+export type Transformer = (action: Action, ctx: Context) => Action;
 
-export class TransformationContext {
-    public _class_TransformationContext: any;
-    public constructor(public transformer: Transformer, public grammar: Grammar) {
+export class Context {
+    public readonly transformer: Transformer;
+    public readonly grammar: Grammar;
+
+    public constructor(transformer: Transformer, grammar: Grammar) {
+        this.transformer = transformer;
+        this.grammar = grammar;
     }
+
     public process(action: Action): Action {
         return this.transformer(action, this);
     }
@@ -123,7 +128,7 @@ export class Grammar {
 
     public transform(t: Transformer) {
         const newGrammar = this.clone();
-        const ctx = new TransformationContext(t, newGrammar);
+        const ctx = new Context(t, newGrammar);
         for (let i = 0; i < newGrammar.names.length; i++) {
             const name = newGrammar.names[i];
             const production = newGrammar.productions.get(name);
@@ -331,13 +336,13 @@ export abstract class Action {
 
     public abstract toSyntax(output: OutputOptions, precedence: number): void;
 
-    public abstract transform(ctx: TransformationContext): Action;
+    public abstract transform(ctx: Context): Action;
 
     public abstract toString(): string;
 }
 
 export abstract class LeafAction extends Action {
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         return this;
     }
     public abstract shortString(): string;
@@ -395,7 +400,7 @@ export class ProductionAction extends Action {
         output.write(";");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const body = ctx.process(this.body);
         if (body === this.body)
             return this;
@@ -490,7 +495,7 @@ export class NotAction extends Action {
             output.write(")");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const child = ctx.process(this.child);
         return (child !== this.child) ? new NotAction(child) : this;
     }
@@ -532,7 +537,7 @@ export class RefAction extends Action {
         output.write(this.name);
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         return this;
     }
 
@@ -606,7 +611,7 @@ export class ListAction extends Action {
         output.write(")");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const first = ctx.process(this.first);
         const rest = ctx.process(this.rest);
         if ((first !== this.first) || (rest !== this.rest))
@@ -667,7 +672,7 @@ export class SequenceAction extends Action {
             output.write(")");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const newItems: Action[] = [];
         let different = false;
         for (let i = 0; i < this.items.length; i++) {
@@ -1053,7 +1058,7 @@ export class OptAction extends Action {
         output.write(")?");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const child = ctx.process(this.child);
         return (child !== this.child) ? new OptAction(child) : this;
     }
@@ -1120,7 +1125,7 @@ export class ChoiceAction extends Action {
             output.write(")");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const newChoices: Action[] = [];
         let different = false;
         for (let i = 0; i < this.choices.length; i++) {
@@ -1173,7 +1178,7 @@ export class RepeatAction extends Action {
         output.write("*");
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         const child = ctx.process(this.child);
         return (child !== this.child) ? new RepeatAction(child) : this;
     }
@@ -1528,7 +1533,7 @@ export class LabelAction extends LeafAction {
         output.write(this.shortString());
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         return this;
     }
 
@@ -1563,7 +1568,7 @@ export class GotoAction extends LeafAction {
         output.write(this.shortString());
     }
 
-    public transform(ctx: TransformationContext): Action {
+    public transform(ctx: Context): Action {
         return this;
     }
 
