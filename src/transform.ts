@@ -188,20 +188,6 @@ function collapseIteration(gr: Grammar): Grammar {
     });
 }
 
-export namespace strategy {
-    export function repeat(transformer: Transformer): Transformer {
-        return (action: Action, ctx: TransformationContext): Action => {
-            let prevAction = action;
-            while (true) {
-                action = action.transform(ctx);
-                if (action === prevAction)
-                    return action;
-                prevAction = action;
-            }
-        };
-    }
-}
-
 function sequenceContainsSequence(action: SequenceAction): boolean {
     for (const item of action.items) {
         if (item instanceof SequenceAction)
@@ -258,6 +244,20 @@ function simplifyUnaryChoice(action: Action, ctx: TransformationContext): Action
         return action;
 }
 
+function tryTransform(t: Transformer, action: Action, ctx: TransformationContext): Action {
+    let name = "(unknown)";
+    try {
+        if (typeof(t.name) === "string")
+            name = t.name;
+    }
+    catch (e) {
+    }
+    const newAction = t(action, ctx);
+    if (newAction !== action)
+        showTransform(name, action, newAction, ctx);
+    return action;
+}
+
 function simplify(gr: Grammar): Grammar {
     return gr.transform((action, ctx) => {
         action = action.transform(ctx);
@@ -265,23 +265,10 @@ function simplify(gr: Grammar): Grammar {
         while (true) {
             const prevAction = action;
 
-            if ((action = simplifyNestedSequence(action, ctx)) !== prevAction) {
-                showTransform("simplifyNestedSequence", prevAction, action, ctx);
-                continue;
-            }
-            if ((action = simplifyNestedChoice(action, ctx)) !== prevAction) {
-                showTransform("simplifyNestedChoice", prevAction, action, ctx);
-                continue;
-            }
-
-            if ((action = simplifyUnarySequence(action, ctx)) !== prevAction) {
-                showTransform("simplifyUnarySequence", prevAction, action, ctx);
-                continue;
-            }
-            if ((action = simplifyUnaryChoice(action, ctx)) !== prevAction) {
-                showTransform("simplifyUnaryChoice", prevAction, action, ctx);
-                continue;
-            }
+            if ((action = tryTransform(simplifyNestedSequence, action, ctx)) !== prevAction) continue;
+            if ((action = tryTransform(simplifyNestedChoice, action, ctx)) !== prevAction) continue;
+            if ((action = tryTransform(simplifyUnarySequence, action, ctx)) !== prevAction) continue;
+            if ((action = tryTransform(simplifyUnaryChoice, action, ctx)) !== prevAction) continue;
 
             return action;
         }
