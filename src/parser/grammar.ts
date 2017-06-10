@@ -278,8 +278,12 @@ function actionsSameOffset(actions: Action[]): number {
         return 0;
     const result = actions[0].offset;
     for (let i = 1; i < actions.length; i++) {
-        if (actions[i].offset !== result)
-            throw new Error("Choice has children with different offset values");
+        if ((actions[i].offset !== result) &&
+            !(actions[i] instanceof FailAction) &&
+            !(actions[i] instanceof LabelAction) &&
+            !(actions[i] instanceof GotoAction)) // FIXME: Unsure if we should include goto here
+            throw new Error("Choice has children with different offset values " +
+                actions.map(action => (<any> action).constructor.name + " (" + action.offset + ")").join(", "));
     }
     return result;
 }
@@ -442,6 +446,37 @@ export class EmptyAction extends LeafAction {
 
 export function empty(offset?: number): Action {
     return new EmptyAction(offset);
+}
+
+export class FailAction extends LeafAction {
+    public constructor(offset?: number) {
+        super("fail", offset || 0);
+    }
+
+    public equals(other: Action): boolean {
+        return (other instanceof FailAction);
+    }
+
+    public executeImpl(b: Builder): void {
+        for (let i = 0; i < this.offset; i++)
+            b.push(null);
+    }
+
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        output.write(this.stats(output) + indent + this.shortString());
+    }
+
+    public toSyntax(): string {
+        return "<fail>";
+    }
+
+    public shortString(): string {
+        return "fail()";
+    }
+}
+
+export function fail(offset?: number): Action {
+    return new FailAction(offset);
 }
 
 export class NotAction extends Action {
@@ -1256,7 +1291,10 @@ export function value(value: any): Action {
     return new ValueAction(value);
 }
 
-export class KeywordAction extends LeafAction {
+export abstract class TokenAction extends LeafAction {
+}
+
+export class KeywordAction extends TokenAction {
     public readonly str: string;
 
     public constructor(str: string) {
@@ -1508,6 +1546,98 @@ export class StringLiteralTokenAction extends LeafAction {
 
 export function string_literal_token(): Action {
     return new StringLiteralTokenAction();
+}
+
+export class CaseAction extends Action {
+    public readonly token: TokenAction;
+    public readonly body: Action;
+
+    public constructor(token: TokenAction, body: Action) {
+        super("case", body.offset);
+        this.token = token;
+        this.body = body;
+    }
+
+    public equals(other: Action): boolean {
+        throw new Error("TODO: CaseAction.equals() not implemented");
+    }
+
+    public executeImpl(b: Builder): void {
+        throw new Error("TODO: CaseAction.executeImpl() not implemented");
+    }
+
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        throw new Error("TODO: CaseAction.dump() not implemented");
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        throw new Error("TODO: CaseAction.toSyntax() not implemented");
+    }
+
+    public transform(ctx: Context): CaseAction {
+        const newToken = ctx.process(this.token);
+        if (!(newToken instanceof TokenAction))
+            throw new Error("Case token must be a TokenAction subclass");
+        const newBody = ctx.process(this.body);
+        if ((newToken !== this.token) || (newBody !== this.body))
+            return new CaseAction(newToken, newBody);
+        else
+            return this;
+    }
+
+    public toString(): string {
+        return "<case " + this.token.toString() + ">";
+    }
+}
+
+export class SwitchAction extends Action {
+    public cases: CaseAction[];
+    public otherwise: Action;
+
+    public constructor(cases: CaseAction[], otherwise: Action) {
+        // super("switch", actionsSameOffset((<Action[]> cases).concat([otherwise])));
+        super("switch", actionsSameOffset(cases)); // FIXME: Check offsets
+        this.cases = cases;
+        this.otherwise = otherwise;
+    }
+
+    public equals(other: Action): boolean {
+        throw new Error("TODO: SwitchAction.equals() not implemented");
+    }
+
+    public executeImpl(b: Builder): void {
+        throw new Error("TODO: SwitchAction.executeImpl() not implemented");
+    }
+
+    public dump(prefix: string, indent: string, output: OutputOptions): void {
+        throw new Error("TODO: SwitchAction.dump() not implemented");
+    }
+
+    public toSyntax(output: OutputOptions, precedence: number): void {
+        throw new Error("TODO: SwitchAction.toSyntax() not implemented");
+    }
+
+    public transform(ctx: Context): Action {
+        let different = false;
+        const newCases: CaseAction[] = [];
+        for (const action of this.cases) {
+            const newAction = ctx.process(action);
+            if (!(newAction instanceof CaseAction))
+                throw new Error("Switch transform on CaseAction returned " + (<any> newAction).constructor.name);
+            newCases.push(newAction);
+            different = different || (newAction !== action);
+        }
+        const newOtherwise = ctx.process(this.otherwise);
+        different = different || (newOtherwise !== this.otherwise);
+        if (different)
+            return new SwitchAction(newCases, newOtherwise);
+        else
+            return this;
+    }
+
+    public toString(): string {
+        return "<switch>";
+    }
 }
 
 export class LabelAction extends LeafAction {
