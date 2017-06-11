@@ -56,6 +56,7 @@ import {
     numeric_literal_token,
     string_literal_token,
 } from "./grammar";
+import * as pvm from "./pvm";
 
 export const grm = new Grammar();
 
@@ -3277,7 +3278,8 @@ grm.define("ExportSpecifier",
 export function parseScript(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(grm, p);
-        ref("Script").execute(b);
+        // ref("Script").execute(b);
+        pvm.execute(ref("Script"), b);
         b.assertLengthIs(1);
         return b.getNode(0);
     });
@@ -3286,7 +3288,8 @@ export function parseScript(p: Parser): ASTNode {
 export function parseModule(p: Parser): ASTNode {
     return p.attempt(() => {
         const b = new Builder(grm, p);
-        ref("Module").execute(b);
+        // ref("Module").execute(b);
+        pvm.execute(ref("Module"), b);
         b.assertLengthIs(1);
         return b.getNode(0);
     });
