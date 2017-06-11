@@ -145,7 +145,7 @@ function Object_prototype_propertyIsEnumerable(realm: Realm, thisArg: JSValue, a
 
     // 3. Let O be ToObject(this value).
     // 4. ReturnIfAbrupt(O).
-    const OComp = ToObject(realm, this.value);
+    const OComp = ToObject(realm, thisArg);
     if (!(OComp instanceof NormalCompletion))
         return OComp;
     const O = OComp.value;
